@@ -199,7 +199,7 @@ function drawShapeSvg(par) {
 	obj.setClass("parts");
 
 	//зеркалим объект если это есть в его параметрах
-	if (shape.drawing.mirrow) mirrow(obj, "y")
+	if (shape.drawing.mirrow) mirrow(obj, "y");
 
 	var b = obj.getBBox()
 	var width = b.width;
