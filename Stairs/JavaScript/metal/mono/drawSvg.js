@@ -179,7 +179,7 @@ function makeSvg() {
 		other: "прочее",
 	}
 
-	printLayersControls(svgLayers)
+	printLayersControls(svgLayers);
 
 
 }
