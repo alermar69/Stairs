@@ -240,9 +240,9 @@ function drawShapeSvg(par) {
 
 	//базовые точки размеров
 	var p1 = { x: b.x, y: -b.y }
-	var p2 = newPoint_xy(p1, b.width, 0)
-	var p3 = newPoint_xy(p1, b.width, -b.height)
-	var p4 = newPoint_xy(p1, 0, -b.height)
+	var p2 = newPoint_xy(p1, b.width, 0);
+	var p3 = newPoint_xy(p1, b.width, -b.height);
+	var p4 = newPoint_xy(p1, 0, -b.height);
 
 	if (!(shape.drawing.isTurned || shape.drawing.group == "stringers")) {
 		//горизонтальный размер
