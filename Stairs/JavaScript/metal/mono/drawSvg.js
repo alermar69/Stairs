@@ -146,7 +146,7 @@ function makeSvg() {
 				var text = drawText(str, textPos, textHeight, draw)
 				text.attr({ "font-size": textHeight, })
 				var b = text.getBBox();
-				text.attr({ x: textPos.x + b.width / 2, })
+				text.attr({ x: textPos.x + b.width / 2, });
 
 				svgPar.basePoint = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 200);
 			}
