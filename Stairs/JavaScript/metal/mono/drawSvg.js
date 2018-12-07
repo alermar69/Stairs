@@ -70,7 +70,7 @@ function makeSvg() {
 	});
 
 	//создаем сборочный чертеж монокосоура
-	basePoint = { x: 0, y: 0 }
+    basePoint = { x: 0, y: 0 };
 	for (var key in shapesMarsh) {
 		var shapes = shapesMarsh[key].shapes;
 
@@ -260,14 +260,14 @@ function drawShapeSvg(par) {
 
 
 		//вертикальный размер
-		var dimPar = {
-			type: "vert",
-			p1: p2,
-			p2: p3,
-			offset: 50,
-			side: "right",
-			draw: draw,
-		}
+	    var dimPar = {
+	        type: "vert",
+	        p1: p2,
+	        p2: p3,
+	        offset: 50,
+	        side: "right",
+	        draw: draw,
+	    }
 
 		var dim = drawDim(dimPar);
 		dim.setClass("dimensions");
