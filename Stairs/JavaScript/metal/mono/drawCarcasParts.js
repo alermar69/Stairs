@@ -2294,9 +2294,11 @@ function drawTreadPlateCabriole2(par) {
 	plate.position.y = params.treadPlateThickness;
 	plate.position.z = par.treadPlateWidth / 2;
 
-	treadPlate.add(plate);
+    treadPlate.add(plate);
 
-	if (par.isSvg) {
+    if (par.isSvg || par.isPlatform || par.isTopLast) par.isSvg = true;
+
+    if (par.isSvg) {
 		shape.drawing = {
 			name: "Подложка",
 			group: "treadPlate",
@@ -2305,7 +2307,9 @@ function drawTreadPlateCabriole2(par) {
 			plateId: par.plateId,
 			basePoint: copyPoint(basePointSvg),
 		}
-		if (par.isFirst) shape.drawing.marshId = 0;
+        if (par.isFirst) shape.drawing.marshId += "_first";
+        if (par.isPlatform) shape.drawing.marshId += "_platform";
+        if (par.isTopLast) shape.drawing.marshId += "_topLast";
 		shapesList.push(shape);
 		basePointSvg.x += par.treadPlateWidth + 100;
 	}
@@ -2360,7 +2364,9 @@ function drawTreadPlateCabriole2(par) {
 				marshId: par.marshId,
 				basePoint: copyPoint(basePointSvg),
 			}
-			if (par.isFirst) shape.drawing.marshId = 0;
+		    if (par.isFirst) shape.drawing.marshId += "_first";
+		    if (par.isPlatform) shape.drawing.marshId += "_platform";
+		    if (par.isTopLast) shape.drawing.marshId += "_topLast";
 			shapesList.push(shape);
 			if (!par.isBot) basePointSvg.x += par.treadPlateWidth + 100;
 			if (par.isBot) basePointSvg.y -= 100;
@@ -2417,7 +2423,9 @@ function drawTreadPlateCabriole2(par) {
 				marshId: par.marshId,
 				basePoint: copyPoint(basePointSvg),
 			}
-			if (par.isFirst) shape.drawing.marshId = 0;
+		    if (par.isFirst) shape.drawing.marshId += "_first";
+		    if (par.isPlatform) shape.drawing.marshId += "_platform";
+		    if (par.isTopLast) shape.drawing.marshId += "_topLast";
 			shapesList.push(shape);
 			basePointSvg.x += par.treadPlateWidth + 100;
 		}
@@ -2498,7 +2506,9 @@ function drawTreadPlateCabriole2(par) {
 					marshId: par.marshId,
 					basePoint: copyPoint(basePointSvg),
 				}
-				if (par.isFirst) shape.drawing.marshId = 0;
+			    if (par.isFirst) shape.drawing.marshId += "_first";
+			    if (par.isPlatform) shape.drawing.marshId += "_platform";
+			    if (par.isTopLast) shape.drawing.marshId += "_topLast";
 				shapesList.push(shape);
 				basePointSvg.x += par.widthIn + 100;
 			}
@@ -2556,19 +2566,16 @@ function drawMonoFlan(par) {
 			holeY: 20,
 			dxfBasePoint: par.dxfBasePoint,
 		};
-		if (par.pointCurrentSvg) {
-			flanPar.drawing = {
-				name: "Нижний фланец крепления к полу",
-				group: "carcasFlans",
-				location: "out",
-				isRotate: true,
-				marshId: par.marshId,
-				basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y - 100),
-			}
-			//корректировка положения после поворота
-			flanPar.drawing.basePoint.x += flanPar.height / 2 - flanPar.width / 2;
-			flanPar.drawing.basePoint.y += flanPar.height / 2 - flanPar.width / 2;
-		}
+	    flanPar.drawing = {
+	        name: par.name,
+	        group: "carcasFlans",
+	        marshId: par.marshId,
+	    }
+	    //корректировка положения после поворота
+	    //flanPar.drawing.basePoint.x += flanPar.height / 2 - flanPar.width / 2;
+     //   flanPar.drawing.basePoint.y += flanPar.height / 2 - flanPar.width / 2;
+
+
 		flanPar.noBolts = true; //болты не добавляются
 
 		flanPar.roundHoleCenters = [];
@@ -2608,7 +2615,7 @@ function drawMonoFlan(par) {
 		if (par.pointCurrentSvg) {
 			flanPar.drawing = {
 				name: "Внутренний нижний фланец-заглушка",
-				group: "carcasFlans",
+				group: "carcasFlans_In",
 				location: "in",
 				isRotate: true,
 				marshId: par.marshId,
@@ -2648,15 +2655,11 @@ function drawMonoFlan(par) {
 		if (!par.isCentralHoles) flanPar.holeY = 25;
 		par.width = flanPar.width;
 
-		if (par.pointCurrentSvg) {
-			flanPar.drawing = {
-				name: "Фланец для соединения косоуров",
-				group: "carcasFlans",
-				location: "out",
-				marshId: par.marshId,
-				basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y),
-			}
-		}
+	    flanPar.drawing = {
+	        name: par.name,
+	        group: "carcasFlans",
+	        marshId: par.marshId,
+	    }
 
 
 		flanPar.roundHoleCenters = [];
@@ -2692,7 +2695,13 @@ function drawMonoFlan(par) {
 			holeX: 20,
 			holeY: 25 - params.metalThickness ,
 			dxfBasePoint: par.dxfBasePoint,
-		};
+        };
+	    flanPar.drawing = {
+	        name: par.name,
+	        group: "carcasFlans",
+	        marshId: par.marshId,
+        }
+
 		if (par.height) flanPar.height = par.height;
 		flanPar.noBolts = par.noBolts; //болты не добавляются
 
@@ -2730,8 +2739,7 @@ function drawMonoFlan(par) {
 		if (par.pointCurrentSvg) {
 			flanPar.drawing = {
 				name: "Внутренний фланец-заглушка",
-				group: "carcasFlans",
-				location: "in",
+                group: "carcasFlans_In",
 				marshId: par.marshId,
 				basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y),
 			}
@@ -2774,7 +2782,13 @@ function drawMonoFlan(par) {
 			holeX: 30,
 			holeY: 20,
 			dxfBasePoint: par.dxfBasePoint,
-		};
+        };
+	    flanPar.drawing = {
+	        name: par.name,
+	        group: "carcasFlans",
+	        marshId: par.marshId,
+        }
+
 		flanPar.noBolts = true; //болты не добавляются
 		var sidePlateOverlay = params.sidePlateOverlay;
 		if (par.topEnd == 'забег') sidePlateOverlay -= params.flanThickness;
@@ -2839,15 +2853,11 @@ function drawMonoFlan(par) {
 		flanPar.height += Math.abs(params.topHolePos) + 20.0;
 		if (params.topAnglePosition == "над ступенью") flanPar.height += params.treadThickness + params.metalThickness;
 
-		if (par.pointCurrentSvg) {
-			flanPar.drawing = {
-				name: "Фланец крепление к верхнему перекрытию",
-				group: "carcasFlans",
-				location: "out",
-				marshId: par.marshId,
-				basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y),
-			}
-		}
+	    flanPar.drawing = {
+	        name: par.name,
+	        group: "carcasFlans",
+	        marshId: par.marshId,
+	    }
 
 		flanPar.roundHoleCenters = [];
 
@@ -2897,8 +2907,7 @@ function drawMonoFlan(par) {
 		if (par.pointCurrentSvg) {
 			flanPar.drawing = {
 				name: "Внутренний фланец-заглушка",
-				group: "carcasFlans",
-				location: "in",
+                group: "carcasFlans_In",
 				marshId: par.marshId,
 				basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y),
 			}
@@ -4879,7 +4888,12 @@ function drawFlanPipeBot(par) {
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: 20,
 		radIn: 0
-	}
+    }
+    shapePar.drawing = {
+        name: par.name,
+        group: "carcasFlans",
+        marshId: par.marshId,
+    }
 
 	par.shape = drawShapeByPoints2(shapePar).shape;
 
@@ -4989,7 +5003,12 @@ function drawFlanPipeTop(par) {
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: 10,
 		radIn: holeRad
-	}
+    }
+    shapePar.drawing = {
+        name: par.name,
+        group: "carcasFlans",
+        marshId: par.marshId,
+    }
 
 	par.shape = drawShapeByPoints2(shapePar).shape;
 
@@ -5068,9 +5087,22 @@ function drawFlanTop(par) {
 		radOut: par.cornerRad,
 		radIn: par.cornerRad,
 		//markPoints: true,
-	}
-
-	par.shape = drawShapeByPoints2(shapePar).shape;
+    }
+    if (par.drawing) {
+        shapePar.drawing = {
+            name: par.drawing.name,
+            group: par.drawing.group,
+            marshId: par.drawing.marshId,
+        }
+    }
+    else {
+        shapePar.drawing = {
+            name: "Фланец крепления к перекрытию",
+            group: "carcasFlans",
+            marshId: par.marshId,
+        } 
+    }
+    par.shape = drawShapeByPoints2(shapePar).shape;
 
 	//добавляем  отверстия в центре
 	if (par.roundHoleCenters) {

@@ -372,6 +372,7 @@ function drawComplexStringer(par) {
 					if (params.model == "труба") {
 						platePar.isTopNot = true;
 						platePar.step = 136;
+					    platePar.isPlatform = true;
 					}
 				}
 
@@ -450,7 +451,7 @@ function drawComplexStringer(par) {
 						}
 					}
 					if (params.model == "труба") {
-						isPlate = false;
+                        isPlate = false;
 					}
 				}
 
@@ -460,6 +461,7 @@ function drawComplexStringer(par) {
 						platePar.step += params.treadPlateThickness;
 						if (params.topAnglePosition == "под ступенью") {
 							platePar.isTopNot = true;
+							platePar.isTopLast = true;
 							platePar.step -= params.treadPlateThickness;
 						}
 					}
@@ -729,9 +731,10 @@ function drawComplexStringer(par) {
 			if (par.botEnd == "пол") {
 				var flanPar = {
 					marshId: par.marshId,
-					type: "bot", //ширина фланца
-					pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
-					dxfBasePoint: dxfBasePoint,
+					type: "bot", 
+					pointsShape: par.pointsShape, 
+                    dxfBasePoint: dxfBasePoint,
+                    name: "Фланец крепления к полу",
 				};
 				flanPar.pointCurrentSvg = copyPoint(par.pointsShape[1]);
 				flanPar.pointStartSvg = copyPoint(par.pointsShape[1]);
@@ -747,8 +750,8 @@ function drawComplexStringer(par) {
 				dxfBasePoint.y -= dxfStep;
 				var flanPar = {
 					marshId: par.marshId,
-					type: "botStub", //ширина фланца
-					pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
+					type: "botStub",
+					pointsShape: par.pointsShape, 
 					dxfBasePoint: dxfBasePoint,
 				};
 				flanPar.pointCurrentSvg = copyPoint(par.pointsShape[1]);
@@ -766,9 +769,10 @@ function drawComplexStringer(par) {
 				dxfBasePoint.y -= dxfStep;
 				var flanPar = {
 					marshId: par.marshId,
-					type: "join", //ширина фланца
-					pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
-					dxfBasePoint: dxfBasePoint,
+					type: "join",
+					pointsShape: par.pointsShape,
+                    dxfBasePoint: dxfBasePoint,
+                    name: "Фланец площадки крепления к стене",
 				};
 
 				//если соединение к стене
@@ -793,13 +797,11 @@ function drawComplexStringer(par) {
 					var flan = drawMonoFlan(flanPar).mesh;
 					flan.position.x = sidePlate2.position.x + par.pointsShape[1].x;
 					flan.position.y = sidePlate2.position.y + par.pointsShape[1].y + params.metalThickness;
-					// flan.position.x = sidePlate2.position.x;
-					// flan.position.y = sidePlate2.position.y + params.metalThickness;
 					par.flans.add(flan);
 				}
 				//если соединение косоуров
 				if (!par.botConnection || params.stairModel == "П-образная с площадкой") {
-
+                    flanPar.name = "Фланец площадки соединения косоуров";
 					var flan = drawMonoFlan(flanPar).mesh;
 					flan.position.x = sidePlate2.position.x - params.flanThickness + par.pointsShape[1].x;
 					flan.position.y = sidePlate2.position.y + par.pointsShape[1].y;
@@ -864,13 +866,13 @@ function drawComplexStringer(par) {
 					//dxfBasePoint.y -= dxfStep;
 					var flanPar = {
 						marshId: par.marshId,
-						type: "join", //ширина фланца
-						pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
-						dxfBasePoint: dxfBasePoint,
+						type: "join", 
+						pointsShape: par.pointsShape, 
+                        dxfBasePoint: dxfBasePoint,
+                        name: "Фланец площадки крепления к стене",
                     };
 					//если соединение к стене
 					if (par.topConnection ) {
-
 						if (par.topEnd === "забег") flanPar.height = 215.0;
 						flanPar.noBolts = true; //болты не добавляются
 						flanPar.isCentralHoles = true; //отверстия в центре
@@ -903,7 +905,8 @@ function drawComplexStringer(par) {
 					}
 					
 					//если соединение косоуров
-					if (!par.topConnection && params.stairModel !== 'П-образная с площадкой') {
+                    if (!par.topConnection && params.stairModel !== 'П-образная с площадкой') {
+                        flanPar.name = "Фланец площадки соединения косоуров";
 						var flan = drawMonoFlan(flanPar).mesh;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
 						flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y;
@@ -918,7 +921,7 @@ function drawComplexStringer(par) {
 						par.flans.add(flan);
 					}
 					if (!par.topConnection && params.stairModel == 'П-образная с площадкой' && par.marshId == 1) {
-						var pointId = par.pointsShape.length - 2;
+                        var pointId = par.pointsShape.length - 2;
 						var platePar = {
 								isLong: false,
 								marshId: par.marshId,
@@ -942,9 +945,10 @@ function drawComplexStringer(par) {
 					//Фланец соединения косоуров
 					if (par.topEnd == 'площадка' && !par.lastMarsh) {
 						var flanPar = {
-							type: "join", //ширина фланца
-							pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
-							dxfBasePoint: dxfBasePoint,
+							type: "join",
+							pointsShape: par.pointsShape, 
+                            dxfBasePoint: dxfBasePoint,
+                            name: "Фланец площадки соединения косоуров",
                         };
 						var flan = drawMonoFlan(flanPar).mesh;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
@@ -962,9 +966,10 @@ function drawComplexStringer(par) {
 					//Фланец крепления к перекрытию
 					if (par.topEnd == 'площадка' && par.lastMarsh) {
 						var flanPar = {
-							type: "top", //ширина фланца
-							pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
-							dxfBasePoint: dxfBasePoint,
+							type: "top", 
+							pointsShape: par.pointsShape, 
+                            dxfBasePoint: dxfBasePoint,
+                            name: "Фланец крепления к перекрытию",
 						};
 		
 						var flan = drawMonoFlan(flanPar).mesh;
@@ -976,8 +981,8 @@ function drawComplexStringer(par) {
 						//верхний фланец-заглушка
 						dxfBasePoint.y -= dxfStep;
 						var flanPar = {
-							type: "topStub", //ширина фланца
-							pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
+							type: "topStub",
+							pointsShape: par.pointsShape,
 							dxfBasePoint: dxfBasePoint,
 						};
 		
@@ -995,7 +1000,6 @@ function drawComplexStringer(par) {
 								marshId: par.marshId,
 								plateId: 0,
 								stairAngle1: par.marshAngle,
-								//stringerWidth: params.stringerWidth + params.metalThickness * 2,
 								dxfArr: dxfPrimitivesArr,
 								dxfBasePoint: dxfBasePoint,
 								height: 215 - 20 - 5 - params.metalThickness * 2.5, //пластина рисуется на 20мм длиннее
@@ -1015,17 +1019,17 @@ function drawComplexStringer(par) {
 				}
 			}
 			if (par.topEnd == "пол") {
-				//dxfBasePoint.y -= dxfStep;
 				dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.keyPoints.topPoint.x + 100, par.keyPoints.topPoint.y)
 
 				var flanPar = {
 					marshId: par.marshId,
-					type: "top", //ширина фланца
-					pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
-					dxfBasePoint: dxfBasePoint,
+					type: "top", 
+					pointsShape: par.pointsShape,
+                    dxfBasePoint: dxfBasePoint,
+					name: "Фланец крепления к перекрытию",
 				};
 				flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[par.stepPoints.length - 1], 50, 0);
-				flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
+				flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);0
 
 				var flan = drawMonoFlan(flanPar).mesh;
 				flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
@@ -1037,8 +1041,8 @@ function drawComplexStringer(par) {
 				dxfBasePoint.y -= dxfStep;
 				var flanPar = {
 					marshId: par.marshId,
-					type: "topStub", //ширина фланца
-					pointsShape: par.pointsShape, //длина фланца (высота при вертикальном расположении)
+					type: "topStub", 
+					pointsShape: par.pointsShape,
 					dxfBasePoint: dxfBasePoint,
 				};
 				flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[par.stepPoints.length - 1], 50, 0);
@@ -1059,8 +1063,10 @@ function drawComplexStringer(par) {
 			//нижний фланец
 			if (par.botEnd == "пол") {
 				dxfBasePoint.y -= dxfStep;
-				var flanPar = {
-					dxfBasePoint: dxfBasePoint, //базовая точка для вставки контуров в dxf файл
+                var flanPar = {
+                    marshId: par.marshId,
+                    name: "Фланец крепления к полу",
+                    dxfBasePoint: dxfBasePoint, //базовая точка для вставки контуров в dxf файл                 
 					};
 				
 				var ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
@@ -1093,7 +1099,9 @@ function drawComplexStringer(par) {
 				if (!par.botConnection || par.botEnd === "забег") {
 					//фланец площадки соединения косоуров
 					dxfBasePoint.y -= dxfStep;
-					var flanPar = {
+                    var flanPar = {
+                        marshId: par.marshId,
+                        name: "Фланец площадки соединения косоуров",
 						dxfBasePoint: dxfBasePoint, //базовая точка для вставки контуров в dxf файл
 				};
 					flanPar.isWndTurn = false; //является ли поворот забежным
@@ -1128,7 +1136,9 @@ function drawComplexStringer(par) {
 						type: "joinProf", //ширина фланца
 						pointsShape: par.pointsShape,
 						stringerHeight: par.pointsShape[1].y - par.pointsShape[2].y,
-						dxfBasePoint: dxfBasePoint,
+                        dxfBasePoint: dxfBasePoint,
+						marshId: par.marshId,
+                        name: "Фланец площадки крепления к стене",
 					};
 
 					flanPar.topEnd = "площадка";
@@ -1152,7 +1162,8 @@ function drawComplexStringer(par) {
 						pointsShape: par.pointsShape,
 						stringerHeight: par.pointsShape[i].y - par.pointsShape[i - 1].y,
 						dxfBasePoint: dxfBasePoint,
-						
+						marshId: par.marshId,
+                        name: "Фланец площадки крепления к стене",
 					};
 
 					flanPar.topEnd = par.topEnd;
@@ -1214,7 +1225,9 @@ function drawComplexStringer(par) {
 				dxfBasePoint.y -= dxfStep;
 				var flanPar = {
 					pointsShape: par.pointsShape,
-					dxfBasePoint: dxfBasePoint, //базовая точка для вставки контуров в dxf файл
+                    dxfBasePoint: dxfBasePoint, //базовая точка для вставки контуров в dxf файл
+					marshId: par.marshId,
+                    name: "Фланец крепления к перекрытию",
 				};
 
 				var dy = params.topHolePos + 20 * 2 + 20;

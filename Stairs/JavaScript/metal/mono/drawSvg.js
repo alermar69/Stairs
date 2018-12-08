@@ -19,7 +19,9 @@ function makeSvg() {
 	var shapesMarsh = {};
 	var shapesMarsh1 = {};
 	var shapesTreadPlateCabriole = {};
-	var isTreadPlateCabriole = false;
+	var shapesFlans = {};
+    var isTreadPlateCabriole = false;
+    var isFlans = false;
 	$.each(shapesList, function () {
 		var isUnique = true;
 		var shape = this;
@@ -42,11 +44,12 @@ function makeSvg() {
 
 		if (!shape.drawing) shape.drawing = {};
 
-		if (shape.drawing.marshId || shape.drawing.marshId === 0) {
+		if (shape.drawing.marshId) {
 			var marshId = shape.drawing.marshId;
 			if (!shapesMarsh[marshId]) {
 				shapesMarsh[marshId] = {shapes:[]};
 				shapesTreadPlateCabriole[marshId] = {shapes:[]};
+			    shapesFlans[marshId] = {shapes:[]};
 			}
 
 			if (shape.drawing.group == "stringers") {
@@ -55,7 +58,7 @@ function makeSvg() {
 			if (shape.drawing.group == "carcasPlates") {
 				shapesMarsh[marshId].shapes.push(shape);
 			}
-			if (shape.drawing.group == "carcasFlans" && shape.drawing.location == "in") {
+            if (shape.drawing.group == "carcasFlans_In") {
 				shapesMarsh[marshId].shapes.push(shape);
 			}
 
@@ -63,7 +66,11 @@ function makeSvg() {
 			if (shape.drawing.group == "treadPlate") {
 				shapesTreadPlateCabriole[marshId].shapes.push(shape);
 				isTreadPlateCabriole = true;
-			}
+            }
+		    if (shape.drawing.group == "carcasFlans") {
+		        shapesFlans[marshId].shapes.push(shape);
+		        isFlans = true;
+		    }
 		}
 
 		
@@ -132,17 +139,22 @@ function makeSvg() {
 
 
 				var marshParams = getMarshParams(key);
-				var count = marshParams.stairAmt;
+                var count = marshParams.stairAmt;
+			    if (marshParams.botTurn == "пол") count -= 1;
+			    if (marshParams.lastMarsh && marshParams.topTurn == "пол") count -= 1;
 
 
 				//подпись
 				var textHeight = 30 * dimScale; //высота текста
 				var textPos = newPoint_xy(svgPar.borderFrame.botLeft, 50, - 50)
-				var str = "Сборочный чертеж подложек " + key + " марша: кол-во - " + count + " шт.";
-				if (key == 0) str = "Сборочный чертеж первой подложки первого марша";
-				if (key.length > 1 && key.substr(2) == "Turn1TreadPlate") str = "Сборочный чертеж первой забежной подложки " + key.substr(0, 1) + " марша";
-				if (key.length > 1 && key.substr(2) == "Turn2TreadPlate") str = "Сборочный чертеж второй забежной подложки " + key.substr(0, 1) + " марша";
-				if (key.length > 1 && key.substr(2) == "Turn3TreadPlate") str = "Сборочный чертеж третьей забежной подложки " + key.substr(0, 1) + " марша";
+                var str = "Сборочный чертеж подложек " + key + " марша: кол-во - " + count + " шт.";
+
+                if (key.length > 1 && key.substr(2) == "first") str = "Сборочный чертеж первой подложки первого марша: кол-во - 1шт.";
+                if (key.length > 1 && key.substr(2) == "topLast") str = "Сборочный чертеж последней подложки последнего марша: кол-во - 1шт.";
+                if (key.length > 1 && key.substr(2) == "platform") str = "Сборочный чертеж подложки площадки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
+                if (key.length > 1 && key.substr(2) == "Turn1TreadPlate") str = "Сборочный чертеж первой забежной подложки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
+                if (key.length > 1 && key.substr(2) == "Turn2TreadPlate") str = "Сборочный чертеж второй забежной подложки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
+                if (key.length > 1 && key.substr(2) == "Turn3TreadPlate") str = "Сборочный чертеж третьей забежной подложки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
 				var text = drawText(str, textPos, textHeight, draw)
 				text.attr({ "font-size": textHeight, })
 				var b = text.getBBox();
@@ -164,6 +176,61 @@ function makeSvg() {
 
 		basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
 	}
+
+    //создаем сборочный чертеж подложек для трубы
+    if (isFlans) {
+        var svgPar = {
+            draw: draw,
+            basePoint: basePoint,
+            basePointOffY: 0,
+            borderFrame:
+                { botLeft: copyPoint(basePoint), topRigth: copyPoint(basePoint) }, //объект для точек границ сборочного чертежа
+        }
+        for (var key in shapesFlans) {
+            var shapes = shapesFlans[key].shapes;
+
+            if (shapes.length > 0) {
+                //рисуем сборочный чертеж монокосоура		              
+                for (var j = 0; j < shapes.length; j++) {
+                    svgPar.shape = shapes[j];
+                    drawShapeSvg(svgPar);
+                    svgPar.basePoint.x += svgPar.rect.width + 100;
+
+                    //подпись
+                    var textHeight = 20 * dimScale; //высота текста
+                    var textPos = { x: svgPar.rect.x - 30, y: -svgPar.rect.y2 - 30 }
+                    var str = svgPar.shape.drawing.name;
+                    var text = drawText(str, textPos, textHeight, draw)
+                    text.attr({ "font-size": textHeight, })
+                    var b = text.getBBox();
+                    text.attr({ x: textPos.x + b.width / 2, });
+                }
+
+                //подпись
+                var textHeight = 30 * dimScale; //высота текста
+                var textPos = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 50)
+                var str = key + " марш";
+                var text = drawText(str, textPos, textHeight, draw)
+                text.attr({ "font-size": textHeight, })
+                var b = text.getBBox();
+                text.attr({ x: textPos.x + b.width / 2, });
+
+                svgPar.basePoint = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 200);
+            }
+        }
+
+        //определяем масштаб и координаты листа
+        scaleBorderDraw(svgPar);
+        //создаем рамку листа
+        var rect = drawRect(svgPar.borderFrame.botLeft, svgPar.formatX * svgPar.formatScale, -svgPar.formatY * svgPar.formatScale, draw).attr({
+            fill: "none",
+            stroke: "#555",
+            "stroke-width": 1,
+        })
+        rect.setClass("other");
+
+        basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
+    }
 
 	//зум и сдвиг мышкой
 	var panZoom = svgPanZoom('#svgOutputDiv svg', {
@@ -333,7 +400,9 @@ function drawShapeSvg(par) {
 	par.borderFrame.height = par.borderFrame.topRigth.y - par.borderFrame.botLeft.y;
 
 
-	if (shape.drawing.group == "stringers") par.basePointOffY = b.height;
+    if (shape.drawing.group == "stringers") par.basePointOffY = b.height;
+
+    par.rect = b;
 
 	return par;
 }
@@ -379,4 +448,98 @@ function scaleBorderDraw(par) {
 }
 
 
+function drawRectFlan2(par) {
 
+    par.mesh = new THREE.Object3D();
+
+    var dxfArr = dxfPrimitivesArr;
+    //если не задана базовая точка, в dxf контур не выводим
+    if (!par.dxfBasePoint) {
+        dxfArr = [];
+        par.dxfBasePoint = { x: 0, y: 0, }
+    }
+    if (!par.thk) par.thk = 8;
+    if (!par.material) par.material = params.materials.metal2
+
+    var p1 = { x: 0, y: 0, };
+    var p2 = newPoint_xy(p1, 0, par.height);
+    var p3 = newPoint_xy(p2, par.width, 0);
+    var p4 = newPoint_xy(p1, par.width, 0);
+
+    var points = [p1, p2, p3, p4];
+
+    //срезанный задний угол для пресснастила
+    if (par.cutAngle) {
+        var p5 = newPoint_xy(p1, 0, 30);
+        points[0].x += 30;
+        points.splice(1, 0, p5)
+    }
+
+    //создаем шейп
+    var shapePar = {
+        points: points,
+        dxfArr: dxfArr,
+        dxfBasePoint: par.dxfBasePoint,
+    }
+    if (par.cornerRad) {
+        shapePar.radOut = par.cornerRad;
+        shapePar.radIn = par.cornerRad;
+    }
+    if (par.drawing) {
+        shapePar.drawing = {
+            name: par.drawing.name,
+            group: par.drawing.group,
+            marshId: par.drawing.marshId,
+            basePoint: par.drawing.basePoint,
+        }
+        if (par.drawing.isRotate) shapePar.drawing.baseLine = { p1: p1, p2: p2 }
+    }
+
+    par.shape = drawShapeByPoints2(shapePar).shape;
+
+    if (par.pathHoles) par.shape.holes.push(...par.pathHoles);
+
+    if (par.roundHoleCenters) {
+        var holesPar = {
+            holeArr: par.roundHoleCenters,
+            dxfBasePoint: par.dxfBasePoint,
+            shape: par.shape,
+        }
+        if (par.holeRad) holesPar.holeRad = par.holeRad;
+        addHolesToShape(holesPar);
+    }
+
+    var extrudeOptions = {
+        amount: par.thk,
+        bevelEnabled: false,
+        curveSegments: 12,
+        steps: 1
+    };
+
+    var geom = new THREE.ExtrudeGeometry(par.shape, extrudeOptions);
+    geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+    var flan = new THREE.Mesh(geom, par.material);
+    par.mesh.add(flan);
+
+    //болты в отверстиях
+
+    if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //anglesHasBolts - глобальная переменная
+        var boltPar = {
+            diam: boltDiam,
+            len: boltLen,
+        };
+        if (par.roundHoleCenters) {
+            for (var i = 0; i < par.roundHoleCenters.length; i++) {
+                var bolt = drawBolt(boltPar).mesh;
+                bolt.rotation.x = Math.PI / 2;
+                bolt.position.x = par.roundHoleCenters[i].x;
+                bolt.position.y = par.roundHoleCenters[i].y;
+                bolt.position.z = boltPar.len / 2 - boltBulge;
+                par.mesh.add(bolt);
+            }
+        }
+    }
+
+    return par;
+
+}//end of drawRectFlan2
