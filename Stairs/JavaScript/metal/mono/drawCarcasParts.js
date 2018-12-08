@@ -55,7 +55,10 @@ function drawColumn(par){
 			type: "botColon",
 			pointsShape: par.pointsShape,
 			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -500),
-			profSize: par.profSize,
+            profSize: par.profSize,
+            marshId: par.marshId,
+            countColon: par.countColon,
+            isSvg: par.isSvgBot,
 		};
 
 		var flan = drawMonoFlan(flanPar).mesh;
@@ -428,7 +431,9 @@ function drawColumn(par){
 			pointsShape: par.pointsShape,
 			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -500),
 			profSize: par.profSize,
-			topAngle: par.topAngle,
+            topAngle: par.topAngle,
+			marshId: par.marshId,
+			isSvg: true,
 		};
 
 		var flan = drawMonoFlan(flanPar).mesh;
@@ -2939,8 +2944,15 @@ function drawMonoFlan(par) {
 			holeX: 20,
 			holeY: 20,
 			dxfBasePoint: par.dxfBasePoint,
-		};
-		flanPar.noBolts = true; //болты не добавляются
+        };
+	    if (par.isSvg) {
+	        flanPar.drawing = {
+                name: "Фланец колонны нижний: кол-во - " + par.countColon + " шт.",
+	            group: "carcasFlans",
+	            marshId: par.marshId,
+	        }
+	    }
+	    flanPar.noBolts = true; //болты не добавляются
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
 
 		//добавляем  отверстия по краям
@@ -2967,7 +2979,14 @@ function drawMonoFlan(par) {
 			holeX: 20,
 			holeY: 20,
 			dxfBasePoint: par.dxfBasePoint,
-		};
+        };
+	    if (par.isSvg) {
+	        flanPar.drawing = {
+	            name: "Фланец колонны верхний",
+	            group: "carcasFlans",
+	            marshId: par.marshId,
+	        }
+	    }
 		if (params.model == "труба") flanPar.noBolts = true; //болты не добавляются
 
 

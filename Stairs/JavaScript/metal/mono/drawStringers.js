@@ -1265,16 +1265,29 @@ function drawComplexStringer(par) {
 		columnHoles: columnHoles,
 		unitsPos: unitsPos
 	};
-	calcColumnParams(columnParams_all);
-	
-	//Параметры колонны
-	var columnParams = {
-		profSize: columnParams_all.profSize,
-		dxfArr: dxfPrimitivesArr,
-		dxfBasePoint: par.dxfBasePoint,
-	};
-	
-	for (var i = 0; i < columnParams_all.columns.length; i++) {
+    calcColumnParams(columnParams_all);
+
+    var countColon = 0;
+    var isSvgBot = false;
+    if (par.marshId == 1) {
+        isSvgBot = true;
+        for (var i = 0; i < columnParams_all.columns.length; i++) {
+            if (columnParams_all.columns[i].type == "колонна") countColon += 1;
+        }
+    }
+
+    //Параметры колонны
+    var columnParams = {
+        profSize: columnParams_all.profSize,
+        dxfArr: dxfPrimitivesArr,
+        dxfBasePoint: par.dxfBasePoint,
+        marshId: par.marshId,
+        countColon: countColon,
+        isSvgBot: isSvgBot,
+    }
+
+
+    for (var i = 0; i < columnParams_all.columns.length; i++) {
 		var currentColumn = columnParams_all.columns[i];//Текущая колонна
 		if (currentColumn.isVisible) {
 			columnParams.topAngle = currentColumn.topAngle;
@@ -1287,7 +1300,8 @@ function drawComplexStringer(par) {
 			column.position.y += sidePlate2.position.y + currentColumn.position.y;
 			if (currentColumn.position.z) column.position.z -= currentColumn.position.z;
 			if (currentColumn.rotation) column.rotation.y += currentColumn.rotation;
-			par.mesh2.add(column);
+            par.mesh2.add(column);
+            columnParams.isSvgBot = false;
 		}
 	}
 	
