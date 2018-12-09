@@ -183,7 +183,7 @@ function drawColumn(par){
 
 	} //end of подкос
 
-	if (par.type == "двойной подкос") {
+    if (par.type == "двойной подкос") {
 		//контур подкоса
 		var maxHeight = 400;
 		var minHeight = 100;
@@ -284,7 +284,14 @@ function drawColumn(par){
 		cons2.position.x = cons.position.x + plateDist;
 		cons2.position.y = cons.position.y;
 		cons2.position.z = cons.position.z;
-		par.mesh.add(cons2);
+        par.mesh.add(cons2);
+
+        shape.drawing = {
+            name: "Пластина подкоса: кол-во - 2 шт.",
+            group: "carcasFlans",
+            marshId: "Подкос " + par.marshId,
+        }
+        shapesList.push(shape);
 
 		//фланец к стене
 
@@ -310,7 +317,14 @@ function drawColumn(par){
 		};
 
 		//добавляем фланец
-		flanParams = drawRectFlan(flanParams);
+        flanParams = drawRectFlan(flanParams);
+
+        flanParams.shape.drawing = {
+            name: "Фланец подкоса к стене",
+            group: "carcasFlans",
+            marshId: "Подкос " + par.marshId,
+        }
+        shapesList.push(flanParams.shape);
 
 		var thickness = 8;
 		var extrudeOptions = {
@@ -329,23 +343,6 @@ function drawColumn(par){
 		if (par.side == "right") flan.position.z = params.M / 2 - params.flanThickness + params.stringerLedge1;
 
 		par.mesh.add(flan);
-
-		//торцевая пластина
-
-		var endPlatePar = {
-			len: plateDist - 8,
-			width: minHeight,
-			thk: params.flanThickness,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, length + 500, 0),
-			material: params.materials.metal,
-			}
-
-		var endPlate = drawPlate(endPlatePar).mesh;
-		endPlate.position.x = -plateDist / 2 + 8;
-		endPlate.position.y = cons.position.y + maxHeight - endPlatePar.width;
-		endPlate.position.z = 50 + extraLen - params.flanThickness;
-		if (par.side == "right") endPlate.position.z = -(50 + extraLen);
-		par.mesh.add(endPlate);
 
 		//наклонные пластины фланца
 		var gap = 1;
@@ -368,7 +365,7 @@ function drawColumn(par){
 			dxfArr: par.dxfArr,
 			dxfBasePoint: newPoint_xy(par.dxfBasePoint, length + 800, 0),
 			radOut: 0, //радиус скругления внешних углов
-			}
+        }       
 
 		var shape = drawShapeByPoints2(shapePar).shape;
 		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
@@ -382,14 +379,45 @@ function drawColumn(par){
 		par.mesh.add(plate);
 
 		//вторая пластина
-		shapePar.dxfBasePoint = newPoint_xy(shapePar.dxfBasePoint, 0, (p2.y - p6.y) + 100);
+        shapePar.dxfBasePoint = newPoint_xy(shapePar.dxfBasePoint, 0, (p2.y - p6.y) + 100);
+        shapePar.drawing = {
+            name: "Наклонные пластины: кол-во-2шт.",
+            group: "carcasFlans",
+            marshId: "Подкос " + par.marshId,
+        }
 		var shapeDop = drawShapeByPoints2(shapePar).shape;
 
 		var plate2 = new THREE.Mesh(geom, params.materials.metal2);
 		plate2.position.x = plate.position.x;
 		plate2.position.y = plate.position.y;
 		plate2.position.z = 50 - 8;
-		par.mesh.add(plate2);
+        par.mesh.add(plate2);
+
+
+        //торцевая пластина
+
+        var endPlatePar = {
+            len: plateDist - 8,
+            width: minHeight,
+            thk: params.flanThickness,
+            dxfBasePoint: newPoint_xy(par.dxfBasePoint, length + 500, 0),
+            material: params.materials.metal,
+        }
+
+        var endPlate = drawPlate(endPlatePar).mesh;
+        endPlate.position.x = -plateDist / 2 + 8;
+        endPlate.position.y = cons.position.y + maxHeight - endPlatePar.width;
+        endPlate.position.z = 50 + extraLen - params.flanThickness;
+        if (par.side == "right") endPlate.position.z = -(50 + extraLen);
+        par.mesh.add(endPlate);
+
+        endPlatePar.shape.drawing = {
+            name: "Торцевая пластина",
+            group: "carcasFlans",
+            marshId: "Подкос " + par.marshId,
+            notShiftBasePoint: true,
+        }
+        shapesList.push(endPlatePar.shape);
 
 		//поперечные пластины с овальным пазом
 		var headBridgePar = {
@@ -411,14 +439,21 @@ function drawColumn(par){
 		par.mesh.add(headBridge);
 
 		//вторая пластина
-		headBridgePar.dxfBasePoint = newPoint_xy(headBridgePar.dxfBasePoint, 0, headBridgePar.height + 100);
+        headBridgePar.dxfBasePoint = newPoint_xy(headBridgePar.dxfBasePoint, 0, headBridgePar.height + 100);
+
+        headBridgePar.drawingSvg = {
+            name: "Поперечные пластины: кол-во-2шт.",
+            group: "carcasFlans",
+            marshId: "Подкос " + par.marshId,
+            basePoint: { x: 0, y: -endPlatePar.width - 100 },
+        }
 
 		var headBridge = drawJumperPlatform(headBridgePar).mesh;
 		headBridge.rotation.y = Math.PI / 2;
 		headBridge.position.x = plateDist / 2 - 8 - gap;
 		headBridge.position.y = plate.position.y - headBridgePar.height;
 		headBridge.position.z = 50 - 8;
-		par.mesh.add(headBridge);
+        par.mesh.add(headBridge);
 
 	} //end of подкос
 
@@ -434,7 +469,8 @@ function drawColumn(par){
             topAngle: par.topAngle,
 			marshId: par.marshId,
 			isSvg: true,
-		};
+        };
+        if (par.type == "двойной подкос") flanPar.marshId =  "Подкос " + par.marshId;
 
 		var flan = drawMonoFlan(flanPar).mesh;
 		flan.position.y -= deltaHeightFlan;//par.length - deltaHeightFlan - 0.01;
@@ -896,7 +932,17 @@ function drawHorPlate(par) {
 			marshId: par.marshId,
 			basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x + shiftXY - 100, -par.pointStartSvg.y + shiftXY + par.width + 50),
 		}
-	}
+    }
+    if (par.type == "treadPlate" && par.isSvg) {
+        var marshParams = getMarshParams(par.marshId);
+        var count = marshParams.stairAmt;
+        shapePar.drawing = {
+            name: "Подложка марша: кол-во " + count + " шт.",
+            group: "carcasFlans",
+            marshId: par.marshId,
+        }
+        if (par.isBotPlatform) shapePar.drawing.name = "Подложка площадки: кол-во 1шт.";
+    }
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 
@@ -1080,9 +1126,17 @@ function drawHorPlates(par) {
 				dxfBasePoint: par.dxfBasePoint,
 				radOut: par.cornerRad, //радиус скругления внешних углов
 
-			}
-
-			var shape = drawShapeByPoints2(shapePar).shape;
+            }
+		    if (par.type == "treadPlate") {
+		        if (j == 0) {
+		            shapePar.drawing = {
+		                name: "Подложка площадки: кол-во " + count + " шт.",
+		                group: "carcasFlans",
+		                marshId: par.marshId,
+		            }
+		        }
+		    }
+		    var shape = drawShapeByPoints2(shapePar).shape;
 		}
 
 
@@ -1619,7 +1673,12 @@ function drawTurnPlate1(par) {
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: par.cornerRad, //радиус скругления внешних углов
 
-	}
+    }
+    shapePar.drawing = {
+        name: "Подложка первой забежной ступени",
+        group: "carcasFlans",
+        marshId: par.marshId,
+    }
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 
@@ -1752,7 +1811,12 @@ function drawTurnPlate3(par){
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: par.cornerRad, //радиус скругления внешних углов
 
-	}
+    }
+    shapePar.drawing = {
+        name: "Подложка третьей забежной ступени",
+        group: "carcasFlans",
+        marshId: par.marshId,
+    }
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 
@@ -1897,7 +1961,12 @@ function drawTurnPlate2(par) {
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: par.cornerRad, //радиус скругления внешних углов
 
-	}
+    }
+    shapePar.drawing = {
+        name: "Подложка второй забежной ступени",
+        group: "carcasFlans",
+        marshId: par.marshId,
+    }
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 
@@ -2984,8 +3053,10 @@ function drawMonoFlan(par) {
 	        flanPar.drawing = {
 	            name: "Фланец колонны верхний",
 	            group: "carcasFlans",
-	            marshId: par.marshId,
-	        }
+                marshId: par.marshId,
+                isRotate: true,
+                basePoint: { x: flanPar.height / 2 - flanPar.width / 2, y: flanPar.height / 2 - flanPar.width / 2},//коррекция положения после поворота
+            }
 	    }
 		if (params.model == "труба") flanPar.noBolts = true; //болты не добавляются
 
@@ -5530,7 +5601,10 @@ function drawJumperPlatform(par) {
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: 0,
 		radIn: 0
-	}
+    }
+    if (par.drawingSvg) {
+        shapePar.drawing = par.drawingSvg;
+    }
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 

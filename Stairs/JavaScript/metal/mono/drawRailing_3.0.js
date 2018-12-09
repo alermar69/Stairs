@@ -1228,7 +1228,8 @@ function drawRackMono(par){
 	//фланцы
 	if(par.type == 'first'){
 		var flanPar = {
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+            dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+            marshId: par.marshId,
 			}
 		var botFlan =  drawPlatformRailingFlan(flanPar).mesh;
 		botFlan.position.z = rackProfile / 2;
@@ -1238,7 +1239,8 @@ function drawRackMono(par){
 	
 	if(par.type == 'last'){
 		var flanPar = {
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+            dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+            marshId: par.marshId,
 			}
 		var botFlan =  drawLastRackFlan(flanPar).mesh;
 		botFlan.rotation.y = Math.PI / 2;
@@ -1943,7 +1945,13 @@ function drawLastRackFlan(par){
 		dxfArr: dxfPrimitivesArr,
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: 10,
-		}
+    }
+    shapePar.drawing = {
+        name: "Фланец стойки ограждения",
+        group: "carcasFlans",
+        marshId: 3,
+        isCount: true,//указывает что надо будет потом подсчитать общее количество
+    }
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 	

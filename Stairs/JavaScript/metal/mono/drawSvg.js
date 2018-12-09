@@ -67,8 +67,21 @@ function makeSvg() {
 				shapesTreadPlateCabriole[marshId].shapes.push(shape);
 				isTreadPlateCabriole = true;
             }
-		    if (shape.drawing.group == "carcasFlans") {
-		        shapesFlans[marshId].shapes.push(shape);
+            if (shape.drawing.group == "carcasFlans") {
+                var isPush = true;
+                //если надо подсчитываем общее кол-во одинаковых элементов
+                if (shape.drawing.isCount) {
+                    var shapes = shapesFlans[marshId].shapes;
+                    for (var k = 0; k < shapes.length; k++) {
+                        if (shape.drawing.name == shapes[k].drawing.name) {
+                            shapes[k].drawing.count += 1;
+                            isPush = false;
+                        }
+                    }
+                    if (isPush) shape.drawing.count = 1;
+                }
+
+                if (isPush) shapesFlans[marshId].shapes.push(shape);
 		        isFlans = true;
 		    }
 		}
@@ -177,7 +190,7 @@ function makeSvg() {
 		basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
 	}
 
-    //создаем сборочный чертеж подложек для трубы
+    //создаем сборочный чертеж фланцев
     if (isFlans) {
         var svgPar = {
             draw: draw,
@@ -192,14 +205,15 @@ function makeSvg() {
             if (shapes.length > 0) {
                 //рисуем сборочный чертеж монокосоура		              
                 for (var j = 0; j < shapes.length; j++) {
-                    svgPar.shape = shapes[j];
+                    svgPar.shape = shapes[j];                   
                     drawShapeSvg(svgPar);
-                    svgPar.basePoint.x += svgPar.rect.width + 150;
+                    if (!svgPar.shape.drawing.notShiftBasePoint) svgPar.basePoint.x += svgPar.rect.width + 150;
 
                     //подпись
                     var textHeight = 15 * dimScale; //высота текста
                     var textPos = { x: svgPar.rect.x - 30, y: -svgPar.rect.y2 - 30 }
                     var str = svgPar.shape.drawing.name;
+                    if (svgPar.shape.drawing.isCount) str += ": кол-во " + svgPar.shape.drawing.count + " шт.";
                     var text = drawText(str, textPos, textHeight, draw)
                     text.attr({ "font-size": textHeight, })
                     var b = text.getBBox();

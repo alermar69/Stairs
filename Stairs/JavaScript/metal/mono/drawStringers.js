@@ -344,6 +344,7 @@ function drawComplexStringer(par) {
 				platePar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -(platePar.step + 150) * i - 1000);
 				platePar.hasTrapHole = false;
 				platePar.isFirst = false;
+				platePar.isBotPlatform = false;
 
 				var isPlate = true;
 				var basePointShiftX = 0;
@@ -447,7 +448,8 @@ function drawComplexStringer(par) {
 						}
 						else {
 							basePointShiftX = params.stringerThickness / 2 + params.flanThickness - (params.M / 2) / 2 - 5 - 30;
-							platePar.step += basePointShiftX;
+                            platePar.step += basePointShiftX;
+                            platePar.isBotPlatform = true;
 						}
 					}
 					if (params.model == "труба") {
@@ -472,7 +474,8 @@ function drawComplexStringer(par) {
 
 				if (isPlate) {					
 					var plate = drawTreadPlate(platePar).mesh;
-					if (!platePar.isFirst) platePar.isSvg = false;
+                    if (!platePar.isFirst || params.model == "сварной") platePar.isSvg = false;
+                    if (platePar.isBotPlatform) platePar.isSvg = true;
 				}
 
 				if (plate) {
@@ -1494,11 +1497,13 @@ function drawPltStringer(par) {
 		}
 		if (par.isTreadPlate) {
 			//подложки ступеней
-			var platePar = {
+            var platePar = {
+                marshId: par.marshId,
 				plateId: 0,
 				dxfArr: dxfPrimitivesArr,
 				dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -1000),
-				type: "treadPlate",
+                type: "treadPlate",
+                isSvg: true,
 			}
 			if (par.backOffHoles) platePar.backOffHoles = par.backOffHoles;
 			platePar.step = par.pointsShape[2].x - par.pointsShape[1].x;
@@ -1511,7 +1516,8 @@ function drawPltStringer(par) {
 
 
 			//верхняя пластина косоура
-			var platePar = {
+            var platePar = {
+                marshId: par.marshId,
 				plateId: 0,
 				dxfArr: dxfPrimitivesArr,
 				dxfBasePoint: newPoint_xy(par.dxfBasePoint, par.length + params.stringerThickness / 2 + 50, 0),
@@ -1560,10 +1566,12 @@ function drawPltStringer(par) {
 
 		/*ФЛАНЦЫ*/
 		//фланец соединения косоруров
-		var flanPar = {
+        var flanPar = {
+            marshId: par.marshId,
 			type: "join",
 			pointsShape: par.pointsShape,
-			dxfBasePoint: par.dxfBasePoint,
+            dxfBasePoint: par.dxfBasePoint,
+            name: "Фланец площадки соединения косоуров",
 		};
 		if (par.isReversBolt) flanPar.noBolts = true; //болты не добавляются
 
@@ -1574,10 +1582,12 @@ function drawPltStringer(par) {
 
 		//фланец соединения косорура к стене
 		if (!par.isNotFlan) {
-			var flanPar = {
+            var flanPar = {
+                marshId: par.marshId,
 				type: "join",
 				pointsShape: par.pointsShape,
-				dxfBasePoint: par.dxfBasePoint,
+                dxfBasePoint: par.dxfBasePoint,
+                name: "Фланец площадки крепления к стене",
 			};
 			if (!par.isReversBolt) flanPar.noBolts = true; //болты не добавляются
 
