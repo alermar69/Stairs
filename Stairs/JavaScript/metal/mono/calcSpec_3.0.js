@@ -317,7 +317,7 @@ calcWorks(partsAmt, "staircase");
 calcWorks(partsAmt_bal, "banister");
 printWorks2();
 
-	
+
     // вывод спецификации "Комплектовка"
     printSpecificationCollation(partsList);
     // вывод спецификации "Сборка"

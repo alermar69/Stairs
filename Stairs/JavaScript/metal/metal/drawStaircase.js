@@ -208,11 +208,8 @@ drawStaircase = function (viewportId, isVisible) {
 		//смещаем все ступени для лотков
 		if(params.stairType == "лотки" && model.objects[i].layer == "treads") {
 			obj.position.y += 4;
-			//obj.position.y -= calcTreadFixHeight();
 		}
-		if (params.topFlan == "есть") {
-			obj.position.x -= 8;
-		}
+
 		//добавляем белые ребра
 		if($sceneStruct.vl_1.wireframes){
 			addWareframe(obj, obj);

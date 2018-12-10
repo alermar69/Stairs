@@ -1688,11 +1688,15 @@ function drawTreadFrame2(par){
 	if (par.isPltPFrame && turnFactor == -1 && !par.isPltFrameMarshDist) flanPar.noBolts = false;
 	flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.height - 50);
 	var sideFlan2 = drawRectFlan2(flanPar).mesh;
-	sideFlan2.position.x = flanPar.height + par.profWidth;
+	sideFlan2.rotation.z = Math.PI / 2;
+	//переворачиваем фланец чтобы болты имели правильную ориентацию
+	sideFlan2.rotation.y = Math.PI;	
+	
+	sideFlan2.position.x = par.profWidth;
 	sideFlan2.position.y = - flanPar.width;
 	if(params.stairType == "пресснастил" && !par.isPltFrame) sideFlan2.position.y += 5;
-	sideFlan2.position.z = par.length - flanPar.thk;
-	sideFlan2.rotation.z = toRadians(90);
+	sideFlan2.position.z = par.length;
+	
 	frame.add(sideFlan2);
 
 	// определяем параметры верхнего фланца

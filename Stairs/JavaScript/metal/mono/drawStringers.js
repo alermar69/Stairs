@@ -716,7 +716,8 @@ function drawComplexStringer(par) {
 			        platePar.pStart.x += params.metalThickness * Math.sin(ang2);
 		        }
 				platePar.pEnd = par.pointsShape[par.pointsShape.length - 2];
-				platePar.pointCurrentSvg = copyPoint(platePar.pStart);
+                platePar.pointCurrentSvg = copyPoint(platePar.pStart);
+                if (par.topEnd == "площадка") platePar.pointCurrentSvg = newPoint_xy(platePar.pEnd, 0, -params.stringerThickness - 200);
 				platePar.topPlate = true;
 
 		        var plate = drawBackPlate(platePar).mesh;

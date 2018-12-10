@@ -1,29 +1,5 @@
 var draw = "";
 
-$(function(){
-	$("#makeSvg").click(function(){
-		makeSvg();
-		$("#svgParForm").show();
-		
-	})
-	
-	$("#saveSvg2").click(function(){
-		var text = $("#svgOutputDiv").html();
-		saveSvgFile(text);
-	})
-	
-	$("#saveDxf2").click(function(){		
-		var svg = $("#svgOutputDiv").find("svg").clone().attr({"id": "temp"});
-		$("#svgOutputDiv").append(svg)
-		$("svg#temp g").removeAttr("transform")
-		$("svg#temp g").removeAttr("style")
-		flatten($("svg#temp")[0])
-		svgToDxf($("svg#temp")[0])
-		$("svg#temp").remove();
-	})
-
-})
-
 function makeSvg(){
 	
 	//инициализация
@@ -67,7 +43,7 @@ function makeSvg(){
 		obj.setClass("parts");
 		
 		//зеркалим объект если это есть в его параметрах
-		if(this.drawing.mirrow) mirrow(obj, "y")
+		if(this.drawing && this.drawing.mirrow) mirrow(obj, "y")
 		
 		//угол поворота
 		var ang = 0;
@@ -131,6 +107,23 @@ function makeSvg(){
 		
 		basePoint.y -= b.height + objDst;
 	});
+	
+	//кованые секции
+	
+	function addForgedSections(arr, obj){
+		if(obj.children){
+			$.each(obj.children, function(){
+				if(this.drawing && this.drawing.group == "forgedSections"){
+					arr.push(this);
+				}
+				addForgedSections(arr, this)
+			})
+		}
+	}
+	
+	var sections = [];
+	addForgedSections(sections, view.scene);
+	console.log(sections);
 	
 	//зум и сдвиг мышкой
 	var panZoom = svgPanZoom('#svgOutputDiv svg', {

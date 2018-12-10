@@ -516,9 +516,10 @@ function drawMarshStringers(par, marshId){
 			}
 		for (i = 0; i < stringerParams.elmIns["out"].bridges.length; i++) {
 			//перемычки с двойными уголками
+
 			bridgePar.hasDoubleTreadAngles = false;
 			bridgePar.rotated = false;
-			if (i == stringerParams.elmIns["out"].bridges.length - 1 && marshParams.topTurn == "площадка" && !stringerParams.isWndP) {
+			if (i == stringerParams.elmIns["out"].bridges.length - 1 && marshParams.topTurn == "площадка" && !stringerParams.isWndP && stringerParams.topEndLength > 600) {
 				bridgePar.hasDoubleTreadAngles = true;
 				bridgePar.rotated = true;
 				}

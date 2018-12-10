@@ -134,7 +134,7 @@ $(function () {
     //скрываем ненужные блоки
     $("#mainImages").hide();
     $("#marshRailingImages2D").hide();
-	$("#svgDrawings").hide();
+	//$("#svgDrawings").hide();
     //$("#cost").hide();
 	$('#specificationList').show();
 	

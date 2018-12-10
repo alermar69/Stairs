@@ -1307,6 +1307,8 @@ function drawFrontPlate(par) {
 		dxfArr: par.dxfArr,
 		dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, par.height),
 	}
+	
+	if(!par.pointStartSvg) par.pointStartSvg = {x:0, y:0} //костыль чтобы не было фатальной ошибки
 	shapePar.drawing = {
 		name: "Вертикальные передняя пластина каркаса",
 		group: "carcasPlates",

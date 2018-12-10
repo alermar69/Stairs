@@ -519,7 +519,7 @@ function drawBotStepLt_pltPIn(par) {
 		par.pointsHoleBot.push(center2);
 
 		// отверстия под перемычку 2
-		center1 = newPoint_xy(pt, params.platformLength_1 / 2 - 25, par.stepHoleY + 45); //25 подогнано
+		center1 = newPoint_xy(pt, params.platformLength_1 / 2 - 25, par.stepHoleY + 5 + params.treadThickness); //25 подогнано
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
 		par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0, 20.0));
@@ -709,7 +709,7 @@ function drawBotStepLt_pltPOut(par) {
 		var rutelHoleBase4 = copyPoint(center1);
 		// отверстия под перемычку 2
 
-		center1 = newPoint_xy(p1, params.platformLength_1  / 2 - 25 , -65.0); //25 подогнано
+		center1 = newPoint_xy(p1, params.platformLength_1  / 2 - 25 , -25.0 - params.treadThickness); //25 подогнано
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
 		par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0, 20.0));
@@ -2000,13 +2000,15 @@ function drawTopStepLt_pltG(par) {
 		par.pointsHole.push(center2);
 
 		// отверстия под перемычку 2
-		center1 = newPoint_xy(p2, ((par.topEndLength * 0.5) + 29), par.carcasAnglePosY);
-		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
-		center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
-		par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0 - 29 - 39, 20.0));
-		var pCentralHoles = copyPoint(center1);
-		par.pointsHole.push(center2);
-		par.pointsHole.push(center1);
+		if(par.topEndLength > 600){
+			center1 = newPoint_xy(p2, ((par.topEndLength * 0.5) + 29), par.carcasAnglePosY);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
+			par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0 - 29 - 39, 20.0));
+			var pCentralHoles = copyPoint(center1);
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
+		}
 
 		// отверстия под 2 уголок площадки
 		var stepHoleXside2 = (par.topEndLength / 2 - 64) / 2 + par.topEndLength / 2 - holeDist / 2;
@@ -2498,7 +2500,7 @@ function drawTopStepLt_pltPIn(par) {
 		par.pointsHoleTop.push(center2);
 
 		// отверстия под перемычку
-		center1 = newPoint_xy(pt, -(params.platformLength_1 / 2 - 25), par.stepHoleY + 45);
+		center1 = newPoint_xy(pt, -(params.platformLength_1 / 2 - 25), par.stepHoleY + 5 + params.treadThickness);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false;
 		par.pointsHoleTop.push(center1);
@@ -2696,7 +2698,7 @@ function drawTopStepLt_pltPOut(par) {
 		par.pointsHole.push(center2);
 
 		// отверстия под перемычку 2
-		center1 = newPoint_xy(topLineP1, -(params.platformLength_1 / 2 - 25), -65);
+		center1 = newPoint_xy(topLineP1, -(params.platformLength_1 / 2 - 25), -25.0 - params.treadThickness);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
 		par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0 - 29 - 39, 20.0));

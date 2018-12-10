@@ -1023,6 +1023,7 @@ function drawMiddleStepsKo(par){
 		}
 
 		// отверстия под опорные колонны
+		/*
 		if (params.stairModel == "Прямая" && i == Math.round(par.stairAmt / 2) && par.profWidth){
 			var isZen = false;
 			if ((params.isColumn1 && par.key == "in") || (params.isColumn2 && par.key == "out")){
@@ -1035,6 +1036,7 @@ function drawMiddleStepsKo(par){
 				par.pointsHole.push(center2);
 			}
 		}
+		*/
 	}
 	
 
@@ -1839,7 +1841,7 @@ function drawTopStepKo_wndIn(par) {
 		if (params.railingModel != "Самонесущее стекло"){
 			
 			center1 = newPoint_xy(p0, par.rutelPosX, par.stepHoleY);
-			if(params.rackBottom == "боковое" && par.stringerLast){
+			if(params.rackBottom == "боковое"){
 				//удлиннение последней стойки
 				var dyLastRack = calcLastRackDeltaY("wnd_ko", par.marshId); //функция в файле drawRailing;
 				center1.x += (dyLastRack - 50) / Math.tan(par.marshAng);

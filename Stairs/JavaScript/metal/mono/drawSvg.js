@@ -17,7 +17,6 @@ function makeSvg() {
 	// выводим только уникальные шейпы. Для повторяющихся считаем кол-во
 	var shapesAmtList = [];
 	var shapesMarsh = {};
-	var shapesMarsh1 = {};
 	var shapesTreadPlateCabriole = {};
 	var shapesFlans = {};
     var isTreadPlateCabriole = false;
@@ -144,7 +143,7 @@ function makeSvg() {
 			var shapes = shapesTreadPlateCabriole[key].shapes;			
 
 			if (shapes.length > 0) {
-				//рисуем сборочный чертеж монокосоура				
+				//рисуем сборочный чертеж подложек
 				for (var j = 0; j < shapes.length; j++) {
 					svgPar.shape = shapes[j];
 					drawShapeSvg(svgPar);
@@ -203,7 +202,7 @@ function makeSvg() {
             var shapes = shapesFlans[key].shapes;
 
             if (shapes.length > 0) {
-                //рисуем сборочный чертеж монокосоура		              
+                //рисуем сборочный чертеж фланцев
                 for (var j = 0; j < shapes.length; j++) {
                     svgPar.shape = shapes[j];                   
                     drawShapeSvg(svgPar);
