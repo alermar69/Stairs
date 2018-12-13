@@ -1719,7 +1719,7 @@ function drawTopStepKo_pltP(par){
 		}
 	}
 
-	par.keyPoints[par.key].marshTopEnd = newPoint_xy(p2, - par.b / 2, 0);
+	//par.keyPoints[par.key].marshTopEnd = newPoint_xy(p2, - par.b / 2, 0);
 
 	//сохраняем координаты угла тетивы для самонесущего стекла
 	par.keyPoints[par.key].botLineP10 = newPoint_xy(p2, 0, par.h);
@@ -1843,10 +1843,12 @@ function drawTopStepKo_wndIn(par) {
 			center1 = newPoint_xy(p0, par.rutelPosX, par.stepHoleY);
 			if(params.rackBottom == "боковое"){
 				//удлиннение последней стойки
-				var dyLastRack = calcLastRackDeltaY("wnd_ko", par.marshId); //функция в файле drawRailing;
-				center1.x += (dyLastRack - 50) / Math.tan(par.marshAng);
-				center1.y -= 50;
-				//смещаем отверстие чуть назад, чтобы не было пересечения с отверстием рамки
+                var dyLastRack = calcLastRackDeltaY("wnd_ko", par.marshId); //функция в файле drawRailing;
+                if (params.railingModel != "Кованые балясины1") {
+			        center1.x += (dyLastRack - 50) / Math.tan(par.marshAng);
+			        center1.y -= 50;
+			    }
+			    //смещаем отверстие чуть назад, чтобы не было пересечения с отверстием рамки
 				if(Math.abs(lastFrameHole2.x - center1.x) < 30) center1 = newPoint_x1(center1, -(30 - (lastFrameHole2.x - center1.x)), par.marshAng)
 			}
 			

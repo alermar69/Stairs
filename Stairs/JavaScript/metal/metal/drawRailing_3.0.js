@@ -825,7 +825,16 @@ function drawRailingSectionGlass(par){
 	
 	//поручни
 
-	if(params.handrail !== "нет"){
+    if (params.handrail !== "нет") {
+        var meterHandrailPar = {
+            prof: params.handrailProf,
+            sideSlots: params.handrailSlots,
+            handrailType: params.handrail,
+            metalPaint: params.metalPaint_perila,
+            timberPaint: params.timberPaint_perila,
+        }
+        meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
+
 		handrailParams = {
 			points: handrailPoints,
 			side: par.railingSide,
@@ -853,28 +862,26 @@ function drawRailingSectionGlass(par){
 					y: 0,
 					}
 					//newPoint_xy(handrailParams.points[0], 0, -glassHeight);
-				handrailParams.points.unshift(startPoint);
+                handrailParams.points.unshift(startPoint);
+                if (par.topEnd == 'нет') {
+                    if (params.model == "ко") handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY - 3, marshAngle);
+                    if (params.model == "лт") handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY + handrailParams.extraLengthEnd, marshAngle);
+                    var startPoint = newPoint_xy(handrailParams.points[handrailParams.points.length - 1], 0, -glassHeight); //поправить
+			        handrailParams.points.push(startPoint);
+			    }
 				}
 			//средний марш
-			if(par.marshId == 2 && par.botEnd == 'нет') {
+            if (par.marshId == 2 && par.botEnd == 'нет') {
 				var startPoint = newPoint_xy(handrailParams.points[0], 0, -glassHeight); //поправить
 				handrailParams.points.unshift(startPoint);
 				}
 			//верхний марш
-			if(par.marshId == 3 && par.botEnd == 'нет') {
+            if (par.marshId == 3 && par.botEnd == 'нет') {
 				var startPoint = newPoint_xy(handrailParams.points[0], 0, -glassHeight); //поправить
 				handrailParams.points.unshift(startPoint);
 				}
 		}
-		if (par.marshId == "topPlt" && params.handrailFixType == "кронштейны") {
-			var meterHandrailPar = {
-				prof: params.handrailProf,
-				sideSlots: params.handrailSlots,
-				handrailType: params.handrail,
-				metalPaint: params.metalPaint_perila,
-				timberPaint: params.timberPaint_perila,
-			}
-			meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
+		if (par.marshId == "topPlt" && params.handrailFixType == "кронштейны") {			
 			var extraLengthBack = 50 + meterHandrailPar.profZ / 2 + 5;// 50- расстояние от стены до оси поручня
 			handrailParams.extraLengthEnd -= extraLengthBack * 2;
 		}

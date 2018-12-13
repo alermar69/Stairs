@@ -1663,7 +1663,8 @@ function drawTopStepLt_floor(par) {
 	
 	if (par.isMiddleStringer) {
 		topLineP1.x -= par.treadFrontOverhang;
-	}
+    }
+    var topLineP1Tmp = copyPoint(topLineP1);
 	//верхний выступ
 	var topLedgePoints = [];
 
@@ -1712,18 +1713,22 @@ function drawTopStepLt_floor(par) {
 
 		}
 
-	if (params.stringerType != "ломаная") {
-		var botLineP2 = itercection(p20, p21, topLineP1, newPoint_xy(topLineP1, 0, 100));
-		//если уголок не помещается
-		if (params.topAnglePosition == "под ступенью" && botLineP1.y < botLineP2.y) {
-			botLineP2 = itercection(p20, p21, botLineP1, newPoint_xy(botLineP1, 100, 0));
-			if ((botLineP1.x - botLineP2.x) > 10) botLinePoints.push(botLineP2);
-			}
-		else {
-			botLineP1 = botLineP2;
-			}
-		}
-
+    if (params.stringerType != "ломаная") {
+        var botLineP2 = itercection(p20, p21, topLineP1, newPoint_xy(topLineP1, 0, 100));
+        if (par.stairAmt == 0 && par.botEnd == "winder") {
+            botLineP2 = newPoint_xy(topLineP1Tmp, 0, -100);
+        }
+        else {
+            //если уголок не помещается
+            if (params.topAnglePosition == "под ступенью" && botLineP1.y < botLineP2.y) {
+                botLineP2 = itercection(p20, p21, botLineP1, newPoint_xy(botLineP1, 100, 0));
+                if ((botLineP1.x - botLineP2.x) > 10) botLinePoints.push(botLineP2);
+            }
+            else {
+                botLineP1 = botLineP2;
+            }
+        }
+    }
 
 
 //	if (par.stairAmt > 1) par.pointsShape.push(p1);

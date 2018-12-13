@@ -107,10 +107,14 @@
     <Content Include="JavaScript\metal\metal\drawStringerPartsKo.js" />
     <Content Include="JavaScript\metal\metal\drawStringerPartsLt.js" />
     <Content Include="JavaScript\metal\metal\drawStringers.js" />
+    <Content Include="JavaScript\metal\metal\drawSvg.js" />
     <Content Include="JavaScript\metal\metal\drawTreads.js" />
     <Content Include="JavaScript\metal\metal\index.php" />
+    <Content Include="JavaScript\metal\metal\ladderRailing.js" />
     <Content Include="JavaScript\metal\metal\main.js" />
     <Content Include="JavaScript\metal\metal\personalScripts.js" />
+    <Content Include="JavaScript\metal\metal\sideHandrail.js" />
+    <Content Include="JavaScript\metal\metal\testing.js" />
     <Content Include="JavaScript\metal\metal_com\drawCarcasParts.js" />
     <Content Include="JavaScript\metal\metal_com\drawRailing.js" />
     <Content Include="JavaScript\metal\metal_com\drawStaircase.js" />
