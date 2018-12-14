@@ -804,7 +804,8 @@ function drawComplexStringer(par) {
 					par.flans.add(flan);
 				}
 				//если соединение косоуров
-				if (!par.botConnection || params.stairModel == "П-образная с площадкой") {
+                if (!par.botConnection || params.stairModel == "П-образная с площадкой") {
+                    flanPar.type = "joinStub";
                     flanPar.name = "Фланец площадки соединения косоуров";
 					var flan = drawMonoFlan(flanPar).mesh;
 					flan.position.x = sidePlate2.position.x - params.flanThickness + par.pointsShape[1].x;
@@ -812,7 +813,8 @@ function drawComplexStringer(par) {
 					par.flans.add(flan);
 
 					//усиливающий фланец
-					flanPar.type = "joinStrong";
+					//flanPar.type = "joinStrong";
+                    //flanPar.type = "joinStub";
 					flanPar.noBolts = true; //болты не добавляются
 					var flan2 = drawMonoFlan(flanPar).mesh;
 					flan2.position.x = flan.position.x - params.flanThickness - params.metalThickness - 0.1;
@@ -910,6 +912,7 @@ function drawComplexStringer(par) {
 					
 					//если соединение косоуров
                     if (!par.topConnection && params.stairModel !== 'П-образная с площадкой') {
+                        flanPar.type = "joinStub";
                         flanPar.name = "Фланец площадки соединения косоуров";
 						var flan = drawMonoFlan(flanPar).mesh;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
@@ -917,7 +920,8 @@ function drawComplexStringer(par) {
 						par.flans.add(flan);
 
 						//усиливающий фланец
-						flanPar.type = "joinStrong";
+                        //flanPar.type = "joinStrong";
+                        flanPar.type = "joinStub";
 						flanPar.noBolts = true; //болты не добавляются
 						var flan = drawMonoFlan(flanPar).mesh;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x + params.metalThickness + params.flanThickness + 0.01;
@@ -954,13 +958,14 @@ function drawComplexStringer(par) {
                             dxfBasePoint: dxfBasePoint,
                             name: "Фланец площадки соединения косоуров",
                         };
+					    flanPar.type = "joinStub";
 						var flan = drawMonoFlan(flanPar).mesh;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
 						flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y;
 						par.flans.add(flan);
 						
 						//усиливающий фланец
-						flanPar.type = "joinStrong";
+						//flanPar.type = "joinStrong";
 						flanPar.noBolts = true; //болты не добавляются
 						var flan = drawMonoFlan(flanPar).mesh;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x + params.metalThickness + params.flanThickness + 0.01;

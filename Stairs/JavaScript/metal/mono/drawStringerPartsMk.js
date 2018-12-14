@@ -959,7 +959,7 @@ function drawTopStepMk_wnd(par) {
 			var lengthFlan = (215 - 5 - params.metalThickness * 2) / 2;
 			// добавляем отверстия для крепления с другим косоуром
 			var p = newPoint_xy(topLineP1, params.flanThickness - params.M / 2 - par.stringerLedge, -lengthFlan - 5 - params.metalThickness);
-			if (!par.topConnection) p.x += params.M / 4 - params.flanThickness;
+            if (!par.topConnection) p.x += params.M / 4 - params.flanThickness + par.stringerLedge;
 			//var p = newPoint_xy(topLineP1, params.flanThickness - params.M / 2 - par.stringerLedge - par.topEndLength, -lengthFlan - 5 - params.metalThickness);
 
 			var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20.0 - params.metalThickness, lengthFlan - 20);

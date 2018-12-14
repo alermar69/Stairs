@@ -158,7 +158,8 @@ function drawRailingSectionGlass(par){
 	var section = new THREE.Object3D();
 	var handrails = new THREE.Object3D();
 
-	var marshParams = getMarshParams(par.marshId);
+    var marshParams = getMarshParams(par.marshId);
+    var nextMarshParams = getMarshParams(marshParams.nextMarshId);
 
 	//адаптация к единой функции drawMarshRailing
 	if(par.stringerParams){
@@ -863,7 +864,7 @@ function drawRailingSectionGlass(par){
 					}
 					//newPoint_xy(handrailParams.points[0], 0, -glassHeight);
                 handrailParams.points.unshift(startPoint);
-                if (par.topEnd == 'нет') {
+                if (par.key == 'in' && (!nextMarshParams.hasRailing.in || params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная с забегом")) {
                     if (params.model == "ко") handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY - 3, marshAngle);
                     if (params.model == "лт") handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY + handrailParams.extraLengthEnd, marshAngle);
                     var startPoint = newPoint_xy(handrailParams.points[handrailParams.points.length - 1], 0, -glassHeight); //поправить
@@ -872,11 +873,25 @@ function drawRailingSectionGlass(par){
 				}
 			//средний марш
             if (par.marshId == 2 && par.botEnd == 'нет') {
+                if (par.key == 'in') {
+                    if (params.model == "ко") handrailParams.points[0] = newPoint_x1(handrailParams.points[0], (meterHandrailPar.profY - 40) + 3, marshAngle);
+                    if (params.model == "лт") handrailParams.points[0] = newPoint_x1(handrailParams.points[0], (meterHandrailPar.profY - 40), marshAngle);
+                }
 				var startPoint = newPoint_xy(handrailParams.points[0], 0, -glassHeight); //поправить
-				handrailParams.points.unshift(startPoint);
+                handrailParams.points.unshift(startPoint);
+                if (par.key == 'in' && (!nextMarshParams.hasRailing.in || params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная с забегом")) {
+                    if (params.model == "ко") handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY - 3, marshAngle);
+                    if (params.model == "лт") handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY + handrailParams.extraLengthEnd, marshAngle);
+                    var startPoint = newPoint_xy(handrailParams.points[handrailParams.points.length - 1], 0, -glassHeight); //поправить
+                    handrailParams.points.push(startPoint);
+                }
 				}
 			//верхний марш
             if (par.marshId == 3 && par.botEnd == 'нет') {
+                if (par.key == 'in') {
+                    if (params.model == "ко") handrailParams.points[0] = newPoint_x1(handrailParams.points[0], (meterHandrailPar.profY - 40) + 3, marshAngle);
+                    if (params.model == "лт") handrailParams.points[0] = newPoint_x1(handrailParams.points[0], (meterHandrailPar.profY - 40), marshAngle);
+                }
 				var startPoint = newPoint_xy(handrailParams.points[0], 0, -glassHeight); //поправить
 				handrailParams.points.unshift(startPoint);
 				}

@@ -2920,7 +2920,11 @@ function drawTopStepLt_wndIn(par) {
 				}
 			if(par.stairAmt > 1) botLinePoints.push(botLineP1);
 			//корректируем нижнюю точку, чтобы задняя линия была вертикальной
-			if(par.stairAmt == 1) par.pointsShape[0].x = topLineP1.x;
+            if ((par.pointsShape[0].x > (topLineP1.x + 10)) && par.stairAmt !== 0) {
+                par.pointsShape.shift();
+                par.pointsShape.shift();
+                par.pointsShape.unshift(itercection(par.pointsShape[0], polar(par.pointsShape[0], 0, 100), topLineP1, polar(topLineP1, Math.PI / 2, 100)));
+            }
 			//внутренний промежуточный косоур П-образной с забегом
 			if(par.stairAmt == 0){
 				//нет уступа

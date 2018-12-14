@@ -1868,14 +1868,12 @@ function drawTreads() {
         platform.position.y = risers.position.y = lastMarshEnd.y;
         platform.position.z = risers.position.z = lastMarshEnd.z;
         if (params.platformTop == 'увеличенная') {
-            //if ((params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && turnFactor == -1 && (params.stairType == 'дпк' || params.stairType == "лиственница тер.")) {
             if ((params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && turnFactor == -1 && (params.stairType == 'дпк')) {
                 platform.position.z -= (pltPar.width - params.M) / 2 + (params.M - calcTreadLen()) / 2;
                 if (turnFactor == -1) {
                     platform.position.z = lastMarshEnd.z
                 }
             }
-            //if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && (params.stairModel == 'дпк' || params.stairType == "лиственница тер.")) {//Считаем положения
             if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && (params.stairModel == 'дпк')) {//Считаем положения
                 platform.position.x += (pltPar.width - params.M) / 2 + (params.M - calcTreadLen()) / 2;//-pltPar.len / 2 * turnFactor - params.stringerThickness * 2;
                 if (turnFactor == -1) {
@@ -1918,16 +1916,16 @@ function drawTreads() {
 
 function calcPltPartsParams(par) {
     var minPartWidth = 30;
-    if (params.stairType == 'дпк') {
+    if (params.stairType == 'дпк' || params.stairType == "лиственница тер.") {
         par.maxWidth = params.dpcWidth;
         par.partLen = par.maxWidth;
         par.partsGap = params.dpcDst;
         par.partsAmt = Math.floor(par.len / par.maxWidth);
-        var lastPartLen = par.len - (par.partsAmt * par.partsGap) - (par.maxWidth * par.partsAmt);
+        var lastPartLen = par.len - ((par.partsAmt -1) * par.partsGap) - (par.maxWidth * par.partsAmt);
         if (lastPartLen >= minPartWidth + par.partsGap) par.lastPartLen = lastPartLen, par.partsAmt++;
         if (lastPartLen < -par.partsGap) par.lastPartLen = par.partLen + (lastPartLen + par.partsGap);
     }
-    if (params.stairType != 'дпк' || params.stairType == "лиственница тер.") {
+    if (params.stairType != 'дпк' && params.stairType !== "лиственница тер." ) {
         //поперек волокон площадка делается из кусков не шире 600мм
         par.maxWidth = 600;
         par.partsGap = 2; //зазор между частями площадки
@@ -2315,7 +2313,7 @@ function drawRailingSectionForge2(par) {
             }
         }
 
-        if (params.model !== "ко") parRacks.angMarsh = angle(topPoint2, topPoint3)
+        parRacks.angMarsh = angle(topPoint2, topPoint3)
         //parRacks.angMarsh = marshPar.ang;
         parRacks.marshLen = distance(topPoint2, topPoint3)
 
@@ -2952,3 +2950,326 @@ function drawRailingSectionForge2(par) {
     return result;
 
 } // end of drawRailingSectionForge2
+
+
+
+function calcLastRackDeltaY(unit, marshId) {
+    if (!marshId) marshId = 3;
+    if (params.stairModel == 'Прямая') marshId = 1;
+
+    var marshParams = getMarshParams(marshId);
+
+    var dyLastRack = 0;
+    if (params.platformTop == "нет") {
+        if (params.model == "лт") {
+            if (params.topAnglePosition == "под ступенью" ||
+                params.topAnglePosition == "рамка верхней ступени") {
+                dyLastRack = 25;
+                if (params.stairType == "дпк") {
+                    dyLastRack = (marshParams.a - 80 - marshParams.b / 2) * Math.tan(marshParams.ang);
+                }
+            }
+            if (params.topAnglePosition == "над ступенью") {
+                if ((marshParams.a - marshParams.b) > 50)
+                    dyLastRack = (marshParams.a - marshParams.b - 20) * Math.tan(marshParams.ang);
+            }
+        }
+        if (params.model == "ко") {
+            var dyLastRack = 50;
+            if (params.topAnglePosition == "вертикальная рамка") dyLastRack = 100;
+        }
+    }
+    if (params.calcType == 'mono') {
+        dyLastRack = (marshParams.a - 50 - 95) * Math.tan(marshParams.ang);
+    }
+
+    if (params.stairModel == 'Прямая горка' && params.calcType == 'vhod') dyLastRack = 0;
+
+    if (unit == "wnd_ko") {
+        var offsetX = params.nose - 5 + 0.1;
+        if (params.riserType == "есть") offsetX += params.riserThickness;
+
+        dyLastRack = marshParams.h * (0.5 - offsetX / marshParams.b);
+    }
+
+    if (params.rackBottom == "сверху с крышкой") dyLastRack = 0;
+
+    return dyLastRack;
+}
+
+
+function drawPolylineHandrail(par) {
+
+    var marshPar = getMarshParams(par.marshId);
+
+    var dxfBasePoint = par.dxfBasePoint;
+    var side = par.side;
+
+    //адаптация
+    if (side == "left") side = "out";
+    if (side == "right") side = "in";
+
+    par.mesh = new THREE.Object3D();
+
+    if (!par.points) return par;
+
+    var points = par.points;
+    var offset = par.offset;
+
+    //сортируем массив points в порядке возрастания координаты x
+    par.points.sort(function (a, b) {
+        return a.x - b.x;
+    });
+
+    //удаляем ошибочные точки чтобы поручень отрисовывался в любом случае
+    $.each(par.points, function (i) {
+        if (!isFinite(this.x) || !isFinite(this.y)) {
+            par.points.splice(i, 1);
+        }
+    })
+    //костыль чтобы поручень отрисовывался если не осталось точек
+    if (points.length < 2) {
+        points = [];
+        var p1 = { x: -params.M / 2, y: 0 }
+        var p2 = { x: params.M / 2, y: 0 }
+        points.push(p1, p2)
+    }
+
+    var meterHandrailPar = {
+        prof: params.handrailProf,
+        sideSlots: params.handrailSlots,
+        handrailType: params.handrail,
+        metalPaint: params.metalPaint_perila,
+        timberPaint: params.timberPaint_perila,
+    }
+    meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
+
+    //для круглого поручня базовые точки находятся на оси поручня
+    if (meterHandrailPar.handrailModel == "round") offset -= meterHandrailPar.profY / 2;
+
+    //пересчет базовых точек чтобы сместить поручень на величину offset
+
+    var points1 = []; //массив точек с отступом
+    var points2 = []; //массив центров шарниров
+    for (var i = 0; i < points.length; i++) {
+        //первая точка
+        if (i == 0) {
+            //если первый участок вертикальный
+            if (points[i].x == points[i + 1].x) {
+                var point = newPoint_xy(points[i], offset, 0)
+            }
+            //если первый участок наклонный
+            if (points[i].x != points[i + 1].x) {
+                var handrailAngle = angle(points[i], points[i + 1])
+                var point = newPoint_xy(points[i], 0, -offset / Math.cos(handrailAngle))
+                //удлиннение поручня за начальную точку
+                point = polar(point, handrailAngle, -par.extraLengthStart)
+            }
+            points1.push(point);
+        }
+
+        //промежуточные точки
+        if (i > 0 && i < points.length - 1) {
+            var line1 = parallel(points[i - 1], points[i], -offset);
+            var line2 = parallel(points[i], points[i + 1], -offset);
+            var point = itercection(line1.p1, line1.p2, line2.p1, line2.p2)
+            points1.push(point);
+        }
+
+        //последняя точка
+        if (i == points.length - 1) {
+
+            //если последний участок вертикальный
+            if (points[i - 1].x == points[i].x) {
+                //var point = newPoint_xy(points[i], -offset, 0)
+                var point = newPoint_xy(points[i], offset, 0);
+            }
+            //если последний участок наклонный
+            if (points[i - 1].x != points[i].x) {
+                var handrailAngle = angle(points[i - 1], points[i])
+                var point = newPoint_xy(points[i], 0, -offset / Math.cos(handrailAngle))
+
+                if (params.handrailEndHor == "нет" || !marshPar.lastMarsh) {
+                    //удлиннение поручня за конечную точку
+                    point = polar(point, handrailAngle, par.extraLengthEnd)
+                    //if (params.handrailEndType == "под углом") point = polar(point, handrailAngle, meterHandrailPar.profY)
+                    if (params.calcType == "mono") point = polar(point, handrailAngle, -0.1)
+                }
+
+                if (params.handrailEndHor == "да" && marshPar.lastMarsh) {
+                    point = newPoint_y(point, params.handrailEndHeight, handrailAngle);
+                    points1.push(point);
+                    var point = newPoint_xy(point, params.handrailEndLen, 0)
+                }
+
+            }
+            points1.push(point);
+        }
+    }
+
+    points = points1;
+
+    //расчет длин и углов всех участков поручня
+
+    var startOffset = 0; //смещение начала текущего куска поручня от базовой точки
+    var startAngle = Math.PI / 2; //угол начала текущего куска поручня
+
+    for (var i = 0; i < points.length - 1; i++) {
+        if (points[i] && points[i + 1]) {
+            //расчет угла поручня
+            var p1 = copyPoint(points[i]); //первая точка текущего куска
+            var p2 = copyPoint(points[i + 1]); //вторая точка текущего куска
+            var p3 = copyPoint(points[i + 2]); //вторая точка следующего куска
+
+            var handrailAngle = Math.atan((p2.y - p1.y) / (p2.x - p1.x));
+
+            //расчет начального угла поручня для первого куска
+            if (i == 0 && params.handrailEndType == "под углом" && p2.x != p1.x) {
+                startAngle = Math.PI / 2 - handrailAngle;
+            }
+            //для остальных кусков стартовый угол рассчитан на предыдущей итерации цикла
+
+
+            //расчет конечного угла и длины куска (кроме последнего)
+            if (p3) var handrailAngle2 = Math.atan((p3.y - p2.y) / (p3.x - p2.x));
+
+            if (par.connection == "без зазора" && p3) {
+                var endAngle = Math.PI / 2 - (handrailAngle - handrailAngle2) / 2;
+                //вертикальный участок
+                if (p2.x - p1.x == 0) {
+                    var length = distance(p1, p2) + meterHandrailPar.profY * Math.tan(Math.PI / 2 - endAngle);
+                }
+                //горизонтальный или наклонный участок
+                if (p2.x - p1.x != 0) {
+                    var length = distance(p1, p2) + meterHandrailPar.profY * Math.tan(Math.PI / 2 - endAngle) - meterHandrailPar.profY * Math.tan(Math.PI / 2 - startAngle);
+                }
+            }
+
+            //прямые торцы
+            if (par.connection != "без зазора") {
+                endAngle = Math.PI / 2;
+                var length = distance(p1, p2) - meterHandrailPar.profY * Math.tan(Math.PI / 2 - startAngle);
+            }
+
+            //последний кусок
+            if (i == points.length - 2) {
+                endAngle = Math.PI / 2;
+                if (params.handrailEndType == "под углом" && p2.x != p1.x) {
+                    endAngle = Math.PI / 2 - handrailAngle;
+                }
+                var length = distance(p1, p2);
+                //if (par.connection == "без зазора") length -= meterHandrailPar.profY * Math.tan(Math.PI / 2 - startAngle)
+            }
+
+
+            if (meterHandrailPar.handrailModel == "round") {
+                length = distance(p1, p2);
+                //укорачиваем поручень чтобы он не врезался в стойку верхнего марша
+                var key = par.key;
+                if (params.stairModel == "Прямая" || params.stairModel == "Прямая с промежуточной площадкой") {
+                    if (par.key == "in") key = "out";
+                    if (par.key == "out") key = "in";
+                }
+
+                if (!marshPar.lastMarsh && key == "in") length -= meterHandrailPar.profY * Math.tan(handrailAngle)
+            }
+
+
+
+            //расчет позиции шарниров
+            if (i < points.length - 2 && par.connection == "шарнир") {
+                var axis1 = parallel(p1, p2, meterHandrailPar.profY / 2);
+                var axis2 = parallel(p2, p3, meterHandrailPar.profY / 2);
+                var spherePos = itercection(axis1.p1, axis1.p2, axis2.p1, axis2.p2)
+            }
+
+            //корректировка длины и позиции в зависимости от типа стыковки кусков
+            var basePoint = copyPoint(p1);
+
+            if (par.connection == "без зазора") endOffset = 0;
+
+            if (par.connection == "шарнир") {
+                endOffset = 26;
+                //если есть шарнир
+                if (i <= points.length - 2) {
+                    length -= endOffset * 2;
+                    basePoint = polar(basePoint, handrailAngle, endOffset)
+                }
+            }
+            if (par.connection == "прямые") {
+                length -= startOffset; //вычитаем отступ, рассчитанный на предыдущей итерации
+                basePoint = polar(basePoint, handrailAngle, startOffset)
+                endOffset = 0;
+                if (p3 && handrailAngle < handrailAngle2) endOffset = meterHandrailPar.profY * Math.tan((handrailAngle2 - handrailAngle) / 2);
+                //круглый поручень базируется по оси, поэтому нужны зазоры и при загибе вниз
+                if (meterHandrailPar.handrailModel == "round" && p3 && handrailAngle > handrailAngle2)
+                    endOffset = meterHandrailPar.profY * Math.tan((handrailAngle - handrailAngle2) / 2);
+                length -= endOffset;
+            }
+
+
+
+            //построение поручня
+            var handrailParams = {
+                model: params.handrail,
+                length: length - 0.01, // костыль чтобы не было пересечений
+                dxfArr: dxfPrimitivesArr,
+                dxfBasePoint: par.dxfBasePoint,
+                startAngle: startAngle,
+                endAngle: endAngle,
+                fixType: par.fixType,
+                side: side,
+                poleAngle: handrailAngle,
+                sectText: par.sectText,
+            }
+            if (params.railingModel == "Самонесущее стекло") handrailParams.isGlassHandrail = true;
+
+            handrailParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, basePoint.x, basePoint.y)
+
+            handrailParams = drawHandrail_4(handrailParams);
+            var handrail = handrailParams.mesh;
+            handrail.position.x = basePoint.x;
+            handrail.position.y = basePoint.y;
+
+            par.wallOffset = handrailParams.wallOffset;
+            par.mesh.add(handrail);
+
+
+            //шарнир
+            if (i < points.length - 2 && par.connection == "шарнир") {
+
+                var jointParams = {
+                    rad: 25,
+                    dxfBasePoint: newPoint_xy(par.dxfBasePoint, p2.x, p2.y)
+                }
+                var posZ = jointParams.rad * 2;
+                if (side == "in") posZ = -jointParams.rad * 2;
+
+                var sphere = drawHandrailJoint(jointParams);
+                sphere.position.x = p2.x;
+                sphere.position.y = p2.y;
+                sphere.position.z = posZ;
+                par.mesh.add(sphere);
+
+                //Шарнир на конце если есть соединение со следующим участком
+                if (par.topConnection && i == points.length - 3) {
+                    jointParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, p3.x, p3.y)
+                    var sphere = drawHandrailJoint(jointParams);
+                    sphere.position.x = p3.x;
+                    sphere.position.y = p3.y;
+                    sphere.position.z = posZ;
+                    par.mesh.add(sphere);
+
+                }
+            }
+
+            //сохраняем начальный параметры для следующего участка
+            startAngle = -endAngle;
+            startOffset = endOffset;
+        }
+    }
+
+    par.meterHandrailPar = meterHandrailPar;
+
+    return par;
+} //end of drawPolylineHandrail
