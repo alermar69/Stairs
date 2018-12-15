@@ -151,7 +151,7 @@ function drawBotStepMk_floor(par) {
 	var bottomLineP1 = itercectionBackLineMarsh(p2, p0, 0, par);
 
 	//при большой разнице чистового и чернового пола
-	if (bottomLineP1.x < p0.x && params.botFloorType === "черновой") {
+	if ((bottomLineP1.x - 200) < p0.x && params.botFloorType === "черновой") {
 		pt = newPoint_xy(p0, 100, 0);
 		if (params.model == "сварной") pt.x += 90;
 		var bottomLineP1 = itercectionBackLineMarsh(p2, pt, Math.PI / 2, par);
@@ -246,7 +246,8 @@ function drawBotStepMk_pltG(par) {
 		var pt1 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
 		var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - params.sidePlateOverlay));
 		var pt4 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
-		var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - params.sidePlateOverlay));
+        var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - params.sidePlateOverlay));
+
 
 		par.pointsShape.push(pt1);
 		par.pointsShape.push(pt2);
@@ -285,10 +286,15 @@ function drawBotStepMk_pltG(par) {
 			if (params.stairModel == "П-образная с площадкой")
 				p = newPoint_xy(p2, -(par.a - par.b) + (params.platformLength_1 + 50) / 2, -stringerWidth / 2);
 
-			var center1 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, stringerWidth / 2 - 25);
-			var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
-			var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
-			var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
+			//var center1 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, stringerWidth / 2 - 25);
+			//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
+			//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
+            //var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
+		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25);
+		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25);
+		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25);
+		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25);
+
 
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
@@ -745,10 +751,15 @@ function drawTopStepMk_pltG(par) {
 			if (params.stairModel == "П-образная с площадкой")
 				p = newPoint_xy(p2, -(par.a - par.b) + (params.platformLength_1 + 50) / 2, -stringerWidth / 2);
 
-			var center1 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, stringerWidth / 2 - 25);
-			var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
-			var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
-			var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
+			//var center1 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, stringerWidth / 2 - 25);
+			//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
+			//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
+			//var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
+		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25);
+		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25);
+		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25);
+		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25);
+
 
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);

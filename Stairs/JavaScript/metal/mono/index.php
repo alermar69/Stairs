@@ -59,6 +59,8 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
+<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
+
 <!--визуализация-->
 <script type="text/javascript" src="drawStaircase.js"></script>
 <script type="text/javascript" src="drawCarcasParts.js"></script>
@@ -78,7 +80,7 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>
 <script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
 <script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
+
 
 <!--расчет спецификации-->
 <script type="text/javascript" src="calcSpec_3.0.js"></script>

@@ -2808,7 +2808,10 @@ function drawMonoFlan(par) {
 			holeX: 20,
 			holeY: 20,
 			dxfBasePoint: par.dxfBasePoint,
-		};
+        };
+        if (par.holeY) flanPar.holeY = par.holeY;
+	    if (par.hole1Y) flanPar.hole1Y = par.hole1Y;
+        if (par.hole2Y) flanPar.hole2Y = par.hole2Y;
 		par.width = flanPar.width;
 		if (par.noBolts) flanPar.noBolts = par.noBolts; //болты не добавляются
 
@@ -3081,12 +3084,16 @@ function drawMonoFlan(par) {
 
 	par.mesh = flan;
 
-	function addHolesMonoFlan(par) {
+    function addHolesMonoFlan(par) {
+        var hole1Y = par.holeY;
+        var hole2Y = par.holeY;
+        if (par.hole1Y) hole1Y = par.hole1Y;
+        if (par.hole2Y) hole2Y = par.hole2Y;
 		//функция добавляет координаты отверстий по краям фланца
-		par.roundHoleCenters.push({ x: par.holeX, y: par.holeY });
-		par.roundHoleCenters.push({ x: par.holeX, y: par.height - par.holeY });
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - par.holeY });
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.holeY });
+		par.roundHoleCenters.push({ x: par.holeX, y: hole1Y });
+		par.roundHoleCenters.push({ x: par.holeX, y: par.height - hole2Y});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - hole2Y});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y});
 	}
 	function flanCentralHoles(length) {
 		//функция возвращает координаты центральных отверстий от центра фланца (для нижнего и верхнего фланцев)

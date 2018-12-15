@@ -993,7 +993,7 @@ function drawRackMono(par){
 	var bottomHoleOffset = 20;
 	var holeDiam = 6;
 	var banisterAngleOffset = 16;
-	var banisterFlanThk = 4; //толщина фланца L-образной стойки
+	var banisterFlanThk = 8; //толщина фланца L-образной стойки
 	var sideLen = 120; //длина уступа L-образной стойки
 	//к-т, учитывающий сторону ограждения
 	var sideFactor = 1;
@@ -1925,7 +1925,7 @@ function drawLastRackFlan(par){
 	var width = 120;
 	var boltHoleDiam = 13;
 	var screwHoleDiam = 8;
-	var flanThk = 4;
+	var flanThk = 8;
 	par.mesh = new THREE.Object3D(0);
 	
 	var points = [];

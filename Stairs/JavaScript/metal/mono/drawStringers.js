@@ -1,3 +1,6 @@
+var pointCurrentSvgTmp = {};
+var pointStartSvgTmp = {};
+
 /** функция отрисовывает косоур вметсе со всеми пластинами и подложками
 */
 
@@ -522,7 +525,10 @@ function drawComplexStringer(par) {
 							
 						//пластина на забеге не может быть длинной
 						if (par.topEnd == "забег" && i == par.stepPoints.length - 2) {
-							platePar.isLong = false;
+                            platePar.isLong = false;
+                            //сохраняем в глобальные переменные точки привязки последней вертикальной пластины для фланца соединения косоуров, который строится в следующем марше
+                            pointCurrentSvgTmp = newPoint_xy(platePar.pointCurrentSvg, -params.stringerThickness, platePar.height + 150 + params.stringerThickness + params.metalThickness * 2);
+						    pointStartSvgTmp = copyPoint(platePar.pointStartSvg);
 							}
 						if (par.topEnd == "забег" && par.botEnd == "забег" && i == par.stepPoints.length - 4) {
 							platePar.isLong = false;
@@ -686,8 +692,8 @@ function drawComplexStringer(par) {
 					platePar.isHolesColonPlatform = holesColumnPlatform(par, true, false);
 				
 				platePar.pStart = newPoint_xy(par.pointsShape[1], params.metalThickness, 0);
-				if (par.botEnd == "забег" && par.stairAmt == 1)
-					platePar.pStart = copyPoint(par.pointsShape[1]);
+				//if (par.botEnd == "забег" && par.stairAmt == 1)
+				if (par.botEnd == "забег") platePar.pStart = copyPoint(par.pointsShape[1]);
 				var ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
 				platePar.pEnd = newPoint_xy(par.pointsShape[0], - params.metalThickness * Math.sin(ang), 0);
 
@@ -806,16 +812,23 @@ function drawComplexStringer(par) {
 				//если соединение косоуров
                 if (!par.botConnection || params.stairModel == "П-образная с площадкой") {
                     flanPar.type = "joinStub";
+                    flanPar.height = params.stringerThickness;
+                    flanPar.holeY = 25;
                     flanPar.name = "Фланец площадки соединения косоуров";
+                    flanPar.noBolts = true; //болты в первом фланце не добавляются
+                    flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
 					var flan = drawMonoFlan(flanPar).mesh;
-					flan.position.x = sidePlate2.position.x - params.flanThickness + par.pointsShape[1].x;
+					flan.position.x = sidePlate2.position.x  + par.pointsShape[1].x;
 					flan.position.y = sidePlate2.position.y + par.pointsShape[1].y;
 					par.flans.add(flan);
 
 					//усиливающий фланец
 					//flanPar.type = "joinStrong";
-                    //flanPar.type = "joinStub";
-					flanPar.noBolts = true; //болты не добавляются
+                    flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
+                    flanPar.hole1Y = flanPar.holeY - params.metalThickness;
+                    flanPar.hole2Y = flanPar.holeY - params.metalThickness - 5;
+                    flanPar.noBolts = true; //болты во втором фланце не добавляются
+                    flanPar.isBolts = false; //болты во втором фланце не добавляются
 					var flan2 = drawMonoFlan(flanPar).mesh;
 					flan2.position.x = flan.position.x - params.flanThickness - params.metalThickness - 0.1;
 					flan2.position.y = flan.position.y + params.metalThickness;
@@ -850,8 +863,12 @@ function drawComplexStringer(par) {
 					flanPar.noBolts = true; //болты во втором фланце не добавляются
 					flanPar.isBolts = false; //болты во втором фланце не добавляются
 					flanPar.dxfBasePoint.y += flanPar.height + 50;
-					flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[1], -params.stringerThickness*2 - 100*2, 0);
-					flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
+					//flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[1], -params.stringerThickness*2 - 100*2, 0);
+     //           flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
+
+                flanPar.marshId = getMarshParams(par.marshId).prevMarshId;
+                flanPar.pointCurrentSvg = newPoint_xy(pointCurrentSvgTmp, params.stringerThickness * 2 + 100, 0);
+                flanPar.pointStartSvg = copyPoint(pointStartSvgTmp);
 
 					var plate1 = drawMonoFlan(flanPar).mesh;
 					plate1.position.x = plate.position.x - params.flanThickness - params.metalThickness;
@@ -914,19 +931,26 @@ function drawComplexStringer(par) {
                     if (!par.topConnection && params.stairModel !== 'П-образная с площадкой') {
                         flanPar.type = "joinStub";
                         flanPar.name = "Фланец площадки соединения косоуров";
+                        flanPar.height = params.stringerThickness;
+                        flanPar.holeY = 25;
+                        flanPar.noBolts = true; //болты в первом фланце не добавляются
+                        flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
 						var flan = drawMonoFlan(flanPar).mesh;
-						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
+                        flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x - params.flanThickness;
 						flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y;
 						par.flans.add(flan);
 
 						//усиливающий фланец
                         //flanPar.type = "joinStrong";
-                        flanPar.type = "joinStub";
-						flanPar.noBolts = true; //болты не добавляются
-						var flan = drawMonoFlan(flanPar).mesh;
-						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x + params.metalThickness + params.flanThickness + 0.01;
-						flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y + params.metalThickness;
-						par.flans.add(flan);
+                        flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
+                        flanPar.hole1Y = flanPar.holeY - params.metalThickness;
+                        flanPar.hole2Y = flanPar.holeY - params.metalThickness - 5;
+                        flanPar.noBolts = true; //болты не добавляются
+                        flanPar.isBolts = false; //болты во втором фланце не добавляются
+						var flan2 = drawMonoFlan(flanPar).mesh;
+                        flan2.position.x = flan.position.x + params.flanThickness + params.metalThickness + 0.1;
+                        flan2.position.y = flan.position.y + params.metalThickness;
+						par.flans.add(flan2);
 					}
 					if (!par.topConnection && params.stairModel == 'П-образная с площадкой' && par.marshId == 1) {
                         var pointId = par.pointsShape.length - 2;
@@ -953,24 +977,31 @@ function drawComplexStringer(par) {
 					//Фланец соединения косоуров
 					if (par.topEnd == 'площадка' && !par.lastMarsh) {
 						var flanPar = {
-							type: "join",
+                            type: "joinStub",
 							pointsShape: par.pointsShape, 
                             dxfBasePoint: dxfBasePoint,
                             name: "Фланец площадки соединения косоуров",
                         };
-					    flanPar.type = "joinStub";
+					    flanPar.height = params.stringerThickness;
+                        flanPar.holeY = 25;
+					    flanPar.noBolts = true; //болты в первом фланце не добавляются
+					    flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
 						var flan = drawMonoFlan(flanPar).mesh;
-						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x;
+                        flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x - params.flanThickness;
 						flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y;
 						par.flans.add(flan);
 						
 						//усиливающий фланец
 						//flanPar.type = "joinStrong";
-						flanPar.noBolts = true; //болты не добавляются
-						var flan = drawMonoFlan(flanPar).mesh;
-						flan.position.x = sidePlate2.position.x + par.pointsShape[par.pointsShape.length - 2].x + params.metalThickness + params.flanThickness + 0.01;
-						flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y + params.metalThickness;
-						par.flans.add(flan);
+					    flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
+					    flanPar.hole1Y = flanPar.holeY - params.metalThickness;
+					    flanPar.hole2Y = flanPar.holeY - params.metalThickness - 5;
+                        flanPar.noBolts = true; //болты не добавляются
+					    flanPar.isBolts = false; //болты во втором фланце не добавляются
+						var flan2 = drawMonoFlan(flanPar).mesh;
+					    flan2.position.x = flan.position.x + params.flanThickness + params.metalThickness + 0.1;
+                        flan2.position.y = flan.position.y + params.metalThickness;
+						par.flans.add(flan2);
 					}
 					//Фланец крепления к перекрытию
 					if (par.topEnd == 'площадка' && par.lastMarsh) {
@@ -1396,10 +1427,14 @@ function drawPltStringer(par) {
 		var p = newPoint_xy(p2, - params.M / 2 + params.flanThickness, -params.stringerThickness / 2);
 		if (params.carcasConfig == "002" || params.carcasConfig == "004") p.x += 50;
 		if (par.stringerLedge) p.x -= par.stringerLedge;
-		var center1 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, params.stringerThickness / 2 - 25);
-		var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -params.stringerThickness / 2 + 25);
-		var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, params.stringerThickness / 2 - 25);
-		var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -params.stringerThickness / 2 + 25);
+		//var center1 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, params.stringerThickness / 2 - 25);
+		//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -params.stringerThickness / 2 + 25);
+		//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, params.stringerThickness / 2 - 25);
+        //var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -params.stringerThickness / 2 + 25);
+	    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25);
+        var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25);
+        var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25);
+        var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25);
 
 		par.pointsHole = [];
 		par.pointsHole.push(center1);
@@ -1579,12 +1614,32 @@ function drawPltStringer(par) {
             dxfBasePoint: par.dxfBasePoint,
             name: "Фланец площадки соединения косоуров",
 		};
-		if (par.isReversBolt) flanPar.noBolts = true; //болты не добавляются
+        //if (par.isReversBolt) flanPar.noBolts = true; //болты не добавляются
+
+	    flanPar.type = "joinStub";
+	    flanPar.height = params.stringerThickness;
+	    flanPar.holeY = 25;
+	    flanPar.noBolts = true; //болты в первом фланце не добавляются
+        flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
 
 		var flan = drawMonoFlan(flanPar).mesh;
-		flan.position.x = sidePlate2.position.x - params.flanThickness;
+	    flan.position.x = sidePlate2.position.x;// - params.flanThickness;
+        if (par.isReversFlans) flan.position.x = sidePlate2.position.x + par.pointsShape[2].x - params.flanThickness;
 		flan.position.y = sidePlate2.position.y;
-		par.flans.add(flan);
+        par.flans.add(flan);
+
+	    //усиливающий фланец
+	    //flanPar.type = "joinStrong";
+	    flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
+	    flanPar.hole1Y = flanPar.holeY - params.metalThickness;
+	    flanPar.hole2Y = flanPar.holeY - params.metalThickness - 5;
+	    flanPar.noBolts = true; //болты во втором фланце не добавляются
+	    flanPar.isBolts = false; //болты во втором фланце не добавляются
+	    var flan2 = drawMonoFlan(flanPar).mesh;
+        flan2.position.x = flan.position.x - params.flanThickness - params.metalThickness - 0.1;
+        if (par.isReversFlans) flan2.position.x = flan.position.x + params.flanThickness + params.metalThickness + 0.1;
+	    flan2.position.y = flan.position.y + params.metalThickness;
+	    par.flans.add(flan2);
 
 		//фланец соединения косорура к стене
 		if (!par.isNotFlan) {
@@ -1598,7 +1653,8 @@ function drawPltStringer(par) {
 			if (!par.isReversBolt) flanPar.noBolts = true; //болты не добавляются
 
 			var flan = drawMonoFlan(flanPar).mesh;
-			flan.position.x = sidePlate2.position.x + par.pointsShape[2].x;
+            flan.position.x = sidePlate2.position.x + par.pointsShape[2].x;
+            if (par.isReversFlans) flan.position.x = sidePlate2.position.x - params.flanThickness;
 			flan.position.y = sidePlate2.position.y; // + par.pointsShape[2].y;
 			par.flans.add(flan);
 		}
@@ -2114,14 +2170,14 @@ function calcStringerPar(par) {
 			if (par.topEnd == "площадка") {
 				if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 1) par.stringerLedge1 = params.stringerLedge1;
 				if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2) par.stringerLedge1 = params.stringerLedge2;
-				par.topEndLength = params.M - (par.a - par.b - 45) + par.stringerLedge - params.flanThickness;
+			    par.topEndLength = params.M - (par.a - par.b - 45) + par.stringerLedge - params.flanThickness;
 			}
 			if (par.topEnd == "забег") par.topEndLength = 0;
 			if (par.topEnd == "забег" && par.marshId == 2 && params.stairModel == 'П-образная трехмаршевая') par.topEndLength = -36;
 		}
 		if (!par.topConnection) {
 			if (par.topEnd == "площадка") {
-				par.topEndLength = params.M / 2 - params.stringerThickness / 2 - params.flanThickness - 5 - 0.01;
+				par.topEndLength = params.M / 2 - params.stringerThickness / 2 - 5 - 0.01;
 				//if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && par.stairAmt == 1)
 				//	par.topEndLength -= 40;
 			}
@@ -2149,7 +2205,7 @@ function calcStringerPar(par) {
 		}
 		if (!par.botConnection) {
 			if (par.botEnd == "площадка") {
-				par.botEndLength = params.M / 2 - params.stringerThickness / 2 - params.flanThickness;
+			    par.botEndLength = params.M / 2 - params.stringerThickness / 2;// - params.flanThickness;
 				if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && par.stairAmt == 1)
 					par.botEndLength += params.marshDist + 5;
 			}
@@ -2163,7 +2219,7 @@ function calcStringerPar(par) {
 			if (!par.topConnection)
 				par.topEndLength = params.platformLength_1 - 50 - (par.a - par.b);
 
-			par.botEndLength = (params.platformLength_1 + 50) / 2 - params.stringerThickness / 2 - params.flanThickness;
+		    par.botEndLength = (params.platformLength_1 + 50) / 2 - params.stringerThickness / 2;// - params.flanThickness;
 		}
 
 		if (params.platformTop == "площадка" && (par.marshId == 3 || params.stairModel == "Прямая"))
