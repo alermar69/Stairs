@@ -553,13 +553,14 @@ function drawCarcasPart(par, len) {
 		if (params.stairModel == 'Прямая горка') {
 			begX = par.platformFramesParams.sideHolePosX + 5.0;
 			platformLength -= 5;
-		}
+        }
+        //if (params.stairModel !== 'Прямая' && params.stairModel !== 'Прямая горка') platformLength += 8;
 		if (params.platformRearStringer == "нет") platformLength += params.stringerThickness;
 
-		//var frameAmt = Math.ceil(platformLength / 605.0);  
-		//var frameWidth = platformLength / frameAmt - 5.0;
+
 		var frameAmt = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameAmt;
-		var frameWidth = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameWidth;
+        var frameWidth = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameWidth;
+
 		
 		var i;
 		for (i = 0; i < frameAmt; i++) {
@@ -1167,8 +1168,15 @@ function drawBigPltCarcas(par){
 				frames.position.z = params.platformLength_3 - params.M;// - 2;
 			}
 			frames.position.x += (framePar.length / 2 + params.stringerThickness);
-			frames.rotation.y = Math.PI / 2;
-		}
+            frames.rotation.y = Math.PI / 2;
+            if (params.stairModel == 'Г-образная с площадкой') {
+                if (!(params.stairType == "дпк" || params.stairType == "рифленая сталь")) frames.position.z -= par.platformFramesParams.sideHolePosX;
+                if (params.stairType == "дпк") frames.position.z -= 5;
+                if (params.stairType == "рифленая сталь") frames.position.z -= 15;
+            }
+        }
+	    
+        
 		par.angles.add(frames);
 	}
 	

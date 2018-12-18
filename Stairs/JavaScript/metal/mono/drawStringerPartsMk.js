@@ -290,10 +290,10 @@ function drawBotStepMk_pltG(par) {
 			//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
 			//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
             //var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
-		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25);
-		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25);
-		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25);
-		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25);
+		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
+            var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
+            var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
+            var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
 
 
 			par.pointsHole.push(center1);
@@ -755,10 +755,10 @@ function drawTopStepMk_pltG(par) {
 			//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
 			//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
 			//var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
-		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25);
-		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25);
-		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25);
-		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25);
+		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
+		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
+		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
+		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
 
 
 			par.pointsHole.push(center1);

@@ -1678,7 +1678,7 @@ function drawTreadFrame2(par){
 	sideFlan1.position.y = - flanPar.width;
 	if(params.stairType == "пресснастил" && !par.isPltFrame) sideFlan1.position.y += 5;
 	sideFlan1.position.z = 0;
-	sideFlan1.rotation.z = toRadians(90);
+	sideFlan1.rotation.z = Math.PI / 2;
 	frame.add(sideFlan1);
 
 	// создаем правый боковой фланец
@@ -1687,15 +1687,17 @@ function drawTreadFrame2(par){
 	if (par.isFrameSideNoBolts2) flanPar.noBolts = true;
 	if (par.isPltPFrame && turnFactor == -1 && !par.isPltFrameMarshDist) flanPar.noBolts = false;
 	flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.height - 50);
+	flanPar.mirrowBolts = true;
+	
 	var sideFlan2 = drawRectFlan2(flanPar).mesh;
 	sideFlan2.rotation.z = Math.PI / 2;
 	//переворачиваем фланец чтобы болты имели правильную ориентацию
-	sideFlan2.rotation.y = Math.PI;	
-	
-	sideFlan2.position.x = par.profWidth;
+	//sideFlan2.rotation.y = Math.PI;	
+	//sideFlan2.position.x = par.profWidth;
+	sideFlan2.position.x = sideFlan1.position.x
 	sideFlan2.position.y = - flanPar.width;
 	if(params.stairType == "пресснастил" && !par.isPltFrame) sideFlan2.position.y += 5;
-	sideFlan2.position.z = par.length;
+	sideFlan2.position.z = par.length - flanPar.thk;
 	
 	frame.add(sideFlan2);
 
@@ -2158,7 +2160,7 @@ function calcFrameParams(par){
 	if (params.model == "лт") {
 		par.overhang = 20.0;
 		//увеличиваем свес чтобы передний болт не пересекался с болтом уголка крепления верхнего марша
-		if(par.isPltFrame && !marshParams.lastMarsh) par.overhang = 40;
+        if (par.isPltFrame && !marshParams.lastMarsh && par.marshId !== 0) par.overhang = 40;
 		
 		if(params.stairType == "дпк") par.overhang = 10;		
 		if(params.stairType == "рифленая сталь" || params.stairType == "лотки" || params.stairType == "пресснастил") par.overhang = 0.0;

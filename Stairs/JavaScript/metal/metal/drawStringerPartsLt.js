@@ -1224,6 +1224,7 @@ function drawBotStepLt_wndOut(par) {
 			x: params.M - params.stringerThickness,
 			y: par.h - params.treadThickness - 40 - 5,
 			}
+		if(params.stringerType == "прямая") anglePos.y -= 100;
 		var center1 = newPoint_xy(p1, anglePos.x - 30, anglePos.y -25);
 		var center2 = newPoint_xy(center1, 0, -60);
 		center1.hasAngle = center2.hasAngle = false; 
@@ -2039,6 +2040,7 @@ function drawTopStepLt_pltG(par) {
 		}
 		for (i = 0; i < frameAmt; i++) {
 			center1 = newPoint_xy(p2, begX + deltaX, par.stepHoleY);
+			if(params.stairType == "пресснастил") center1.y += 5; //костыль
 			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX * 2, 0.0);
 			center1.isPltFrame = center2.isPltFrame = true;
 			par.pointsHole.push(center1);
@@ -2548,6 +2550,7 @@ function drawTopStepLt_pltPIn(par) {
 		var i;
 		for (i = 0; i < frameAmt; i++) {
 			center1 = newPoint_xy(ph, begX, par.stepHoleY + dh);
+			if(params.stairType == "пресснастил") center1.y += 5; //костыль
 			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX - par.platformFramesParams.sideHolePosX, 0.0);
 			begX += frameWidth + 5.0;
 			center1.isPltFrame = center2.isPltFrame = true;
@@ -3034,7 +3037,7 @@ function drawTopStepLt_wndIn(par) {
 
 	//уголок на продлении тетивы
 	if(par.longStringerTop){
-		var center1 = newPoint_xy(topLineP3, -35, -25);
+		var center1 = newPoint_xy(topLineP3, -30, -25);
 		var center2 = newPoint_xy(center1, 0, -60);
 		center1.hasAngle = center2.hasAngle = true;
 		par.pointsHole.push(center2);

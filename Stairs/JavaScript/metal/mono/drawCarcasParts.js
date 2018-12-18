@@ -1536,7 +1536,8 @@ function calcColumnsPosition(par){
 		// columnPosition.bot1
 		columnPosition.bot1 = newPoint_xy(endPoint, 220 / 2  - params.metalThickness, 0);
 		if (params.stairModel == 'П-образная с площадкой' && !par.botConnection) {
-			columnPosition.bot1 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness, 0);
+			//columnPosition.bot1 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness, 0);
+			columnPosition.bot1 = newPoint_xy(startPoint, -params.stringerThickness / 2, 0);
 		};
 		if (params.stairModel == 'П-образная с площадкой' && par.botConnection) {
 			columnPosition.bot1 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness * 4 - 2.5 - params.platformLength_1 / 2 + 220 / 2, 0); // 2.5 пока-что подогнано
@@ -1579,8 +1580,9 @@ function calcColumnsPosition(par){
 		}
 		if (params.stairModel == 'П-образная с площадкой' && !par.topConnection) {
 			var stringerThickness = params.stringerThickness;
-			columnPosition.top1 = newPoint_xy(startPoint, width - (dxPlatform + stringerLedge) + params.metalThickness / 2 + params.stringerThickness / 2, 0);
-			if (params.model == 'труба') {
+			//columnPosition.top1 = newPoint_xy(startPoint, width - (dxPlatform + stringerLedge) + params.metalThickness / 2 + params.stringerThickness / 2, 0);
+			columnPosition.top1 = newPoint_xy(startPoint, width - (dxPlatform + stringerLedge) + params.stringerThickness / 2, 0);
+		    if (params.model == 'труба') {
 				columnPosition.top1 = newPoint_xy(endPoint, 7 + 5 + params.profileWidth / 2, 0);
 			}
 		}
@@ -1606,7 +1608,7 @@ function calcColumnsPosition(par){
 		let width = distance(startPoint, endPoint);
 		let ang = calcAngleX1(startPoint, endPoint);
 		var columnX = (220 / 2);
-		columnPosition.top2 = newPoint_xy(startPoint, width - columnX / Math.cos(ang), 0);
+        columnPosition.top2 = newPoint_xy(startPoint, width - columnX / Math.cos(ang), 0);
 		if (params.stairModel == 'П-образная с площадкой' && par.topConnection) {
 			// columnPosition.top2 = newPoint_xy(startPoint, params.platformLength_1 / 2, 0);
 			columnPosition.top2 = newPoint_xy(endPoint, -220 / 2, 0);
