@@ -235,7 +235,12 @@ function drawBotStepMk_pltG(par) {
 	var p4 = newPoint_xy(p3, par.b, 0.0);
 
 	// нижний край косоура
-	var bottomLineP1 = itercectionBackLineMarsh(p2, p0, 0, par);
+    var bottomLineP1 = itercectionBackLineMarsh(p2, p0, 0, par);
+    if (params.model == "сварной") {
+        if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 2 && params.stairAmt2 == 0) {
+           bottomLineP1.x -= 10;
+        }
+    }
 	par.pointsShape.push(bottomLineP1);
 
 	//добавление площадки под фланец соединения косоуров
@@ -829,7 +834,7 @@ function drawTopStepMk_wnd(par) {
 		if (!par.topConnection) lengthB -= params.M / 4 - params.flanThickness;
 
 		if (params.stairModel == "П-образная трехмаршевая" && par.botEnd == "площадка" && par.stairAmt == 1) {
-			lengthB1 -= 40;
+			//lengthB1 -= 40;
 		}
 
 	}
@@ -923,7 +928,15 @@ function drawTopStepMk_wnd(par) {
 			if (params.botFloorType === "черновой") topLineP3 = copyPoint(par.botUnitStart);
 		}
 
-		par.pointsShape.push(topLineP3);
+        par.pointsShape.push(topLineP3);
+
+        if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 2 && params.stairAmt2 == 0 && par.botEnd === "площадка") {
+            //par.pointsShape.pop()
+            //par.pointsShape.shift()
+            //var line = parallel(par.midUnitEnd, p3, -par.stringerWidth);
+            //var topLineP3 = itercection(line.p1, line.p2, par.pointsShape[0], polar(par.pointsShape[0], 0, 100));
+            //par.pointsShape.unshift(topLineP3);
+	    }
 	}
 	if (params.model == "труба") {
 		var ang2 = Math.atan(par.h / lenOut);
@@ -1034,7 +1047,8 @@ function drawTopStepMk_wnd(par) {
 			//}
 
 			//сдвигаем 3 отверстие чтобы болт не пересекался с трубой
-			var line = parallel(p3, polar(p3, ang2, 100), params.sidePlateOverlay - params.sidePlateWidth);
+            var ang2 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
+            var line = parallel(par.midUnitEnd, polar(par.midUnitEnd, ang2, 100), -(params.sidePlateWidth - params.sidePlateOverlay));
 			var pt = itercection(center3, polar(center3, Math.PI / 2, 100), line.p1, line.p2);
 			//var line = parallel(par.midUnitEnd, polar(par.midUnitEnd, ang2, 100), params.sidePlateOverlay - params.sidePlateWidth);
 			//var pt = itercection(center3, polar(center3, Math.PI / 2 - ang2, 100), line.p1, line.p2);
@@ -1993,7 +2007,10 @@ function addPointsRecessFramePlatform(p, pos, par) {
 			//if (params.stairModel == "П-образная трехмаршевая" && par.topEnd == "пол")
 			//	pcenter.x -= 11;
 			if (params.stairModel == "П-образная трехмаршевая" && par.topEnd == "забег")
-				pcenter.x -= 6;
+                pcenter.x -= 6;
+            if (params.stairModel == "П-образная трехмаршевая" &&par.botEnd == "площадка" &&par.marshId == 2 && par.stairAmt == 1) {
+                pcenter.x -= (params.marshDist + 5) / 2;
+            }
 
 			//первая прорезь
 			var p6 = newPoint_xy(pcenter, -(par.framePlatformWidth / 2 - 32), 0);

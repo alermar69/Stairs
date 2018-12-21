@@ -8,6 +8,15 @@ var drawLongBolts = true; //отрисовывать длинные болты, 
 var turnFactor = 1;
 
 drawStaircase = function (viewportId, isVisible) {
+
+    {
+        //if (!params.b1) params.b1 = 150;
+        //if (!params.b2) params.b1 = 150;
+        //if (!params.b3) params.b1 = 150;
+        //if (!params.h1) params.h1 = 150;
+        //if (!params.h2) params.h2 = 150;
+        //if (!params.h3) params.h3 = 150;
+    }
 	
 	if(params.model == "труба") {
 		boltDiam = 8;

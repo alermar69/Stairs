@@ -576,8 +576,8 @@ function calcColumnLogicParams(par){
 		// if (!params.isColumn3 && !params.isColumn4 && marshParams.topTurn == 'забег' && par.marshId == 2 && !par.topConnection) par.top1Visible = true;
 	}
 	if (params.stairModel == "П-образная с забегом") {
-		if (params.isColumn1 && par.marshId == 1 && par.topConnection) par.top1Visible = true;
-		if (params.isColumn2 && par.marshId == 1 && par.topConnection) par.top2Visible = true;
+		if (params.isColumn1 && par.marshId == 1 && par.topConnection) par.top2Visible = true;
+		if (params.isColumn2 && par.marshId == 1 && par.topConnection) par.top1Visible = true;
 		if (params.isColumn3 && par.marshId == 2 && par.topConnection) par.top1Visible = true;
 		if (params.isColumn4 && par.marshId == 2 && par.topConnection) par.top2Visible = true;
 
@@ -1117,13 +1117,15 @@ function drawHorPlates(par) {
 			var p3 = newPoint_xy(p2, par.width, 0);
 			var p4 = newPoint_xy(p1, par.width, 0);
 
-			var points = [p1, p2, p3, p4]
+            var points = [p1, p2, p3, p4]
+
+            var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -(distance(p2, p1) + 150) * j)
 
 			//создаем шейп
 			var shapePar = {
 				points: points,
 				dxfArr: par.dxfArr,
-				dxfBasePoint: par.dxfBasePoint,
+                dxfBasePoint: dxfBasePoint,
 				radOut: par.cornerRad, //радиус скругления внешних углов
 
             }
@@ -1146,7 +1148,7 @@ function drawHorPlates(par) {
 			step: par.step,
 			holeRad: 6.5,
 			dxfArr: par.dxfArr,
-			dxfBasePoint: par.dxfBasePoint,
+			dxfBasePoint: dxfBasePoint,
 			basePointShiftX: 0
 		}
 
@@ -1187,7 +1189,7 @@ function drawHorPlates(par) {
 			par.holeRad = 5;
 
 			for (var i = 0; i < par.holes.length; i++) {
-				addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
+				addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, dxfBasePoint);
 			}
 		}
 
@@ -2688,8 +2690,9 @@ function drawMonoFlan(par) {
 			cornerRad: 0,
 			holeX: 50,
 			holeY: 20,
-			dxfBasePoint: par.dxfBasePoint,
-		};
+            dxfBasePoint: par.dxfBasePoint,
+			mirrowBolts: true,
+        };
 		if (par.pointCurrentSvg) {
 			flanPar.drawing = {
 				name: "Внутренний нижний фланец-заглушка",
@@ -2709,7 +2712,7 @@ function drawMonoFlan(par) {
 		flanPar.roundHoleCenters = flanCentralHoles(pEnd.x - pStart.x + 10);
 		mooveFlanHoles(flanPar);
 
-		flanPar.dxfBasePoint = newPoint_xy(flanPar.dxfBasePoint, 0, -flanPar.width - 100);
+        flanPar.dxfBasePoint = newPoint_xy(flanPar.dxfBasePoint, 0, -flanPar.height - 100);
 
 		var flan = drawRectFlan2(flanPar).mesh;
 		flan.position.z = flanPar.width / 2;
@@ -2809,7 +2812,8 @@ function drawMonoFlan(par) {
 			cornerRad: 0,
 			holeX: 20,
 			holeY: 20,
-			dxfBasePoint: par.dxfBasePoint,
+            dxfBasePoint: par.dxfBasePoint,
+			mirrowBolts: true,
         };
         if (par.holeY) flanPar.holeY = par.holeY;
 	    if (par.hole1Y) flanPar.hole1Y = par.hole1Y;
@@ -2978,7 +2982,8 @@ function drawMonoFlan(par) {
 			cornerRad: 0,
 			holeX: 20,
 			holeY: 50,
-			dxfBasePoint: par.dxfBasePoint,
+            dxfBasePoint: par.dxfBasePoint,
+			mirrowBolts: true,
 		};
 
 		if (params.platformTop != "площадка") {
@@ -5005,7 +5010,7 @@ function drawFlanPipeBot(par) {
 	var center3 = newPoint_xy(p1, holeX, -holeY);
 	var center4 = newPoint_xy(p6, -holeX, -holeY);
 	if (par.isWndTurn && par.offsetTopWndHoleY3) {
-		center3.y -= par.offsetTopWndHoleY3;
+		center4.y -= par.offsetTopWndHoleY3;
 	}
 
 	var holeCenters = [center1, center2, center3, center4];

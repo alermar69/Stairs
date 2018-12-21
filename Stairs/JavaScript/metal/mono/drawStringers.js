@@ -204,7 +204,7 @@ function drawComplexStringer(par) {
 		if (par.botEnd == "площадка" && par.botConnection){
 			var flanParams = getFlanParams('flan_pipe_bot');
 			var holeDist = flanParams.holesDist; //Расстояние между отверстиями
-			var pltLength = params.M;
+            var pltLength = params.M;		    
 			if (params.stairModel == 'П-образная с площадкой') {
 				pltLength = params.platformLength_1 + 50;//Подогнано, пока разбираюсь что за отступ
 			}
@@ -212,7 +212,9 @@ function drawComplexStringer(par) {
 				x: -pltLength / 2 - holeDist / 2,
 				y: -params.treadThickness - (flanParams.height - flanParams.holeY), //140 - расстояние от вершины фланца до середины нижнего отверстия
 			}
-
+		    if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && par.stairAmt == 1) {
+		        hole1.x -= params.marshDist + 5;
+		    }
 			var hole2 = newPoint_xy(hole1, holeDist, 0);
 
 			hole1.diam = hole2.diam = 18;
@@ -293,7 +295,8 @@ function drawComplexStringer(par) {
 		par.stepPoints = [];
 		
 		if (par.botEnd == "пол" && par.topEnd == "забег" && par.stairAmt <= 2 && params.model == "сварной")
-			par.pointsShape.unshift(par.pointsShape[par.pointsShape.length - 1]);
+            par.pointsShape.unshift(par.pointsShape[par.pointsShape.length - 1]);
+       
 
 		var arr = par.pointsShape.concat();
 		arr.shift();
@@ -364,9 +367,11 @@ function drawComplexStringer(par) {
 						if (params.stairModel == "П-образная с площадкой" || par.topConnection) {
 							if (par.topConnection) {
 								platePar.step -= par.stringerLedge;
-							}
+                            }
+                            var stepPlate = par.stepPoints[i - 1].x - par.stepPoints[i - 2].x
+                            platePar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -(stepPlate + 150) * i - 1000);
 
-							var plate = drawHorPlates(platePar).mesh;
+						    var plate = drawHorPlates(platePar).mesh;
 							isPlate = false;
 						}
 						else {
@@ -387,7 +392,7 @@ function drawComplexStringer(par) {
 						platePar.turnSteps = par.turnSteps.params[2];
 						if (params.model == "труба") {
 							if (par.stairAmt <= 1)
-								platePar.angleIn1 = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
+                                platePar.angleIn1 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
 							if (par.stairAmt == 0) platePar.stairAmt = 0;
 							var plate = drawTurn2TreadPlateCabriole(platePar).mesh;
 						}else {
@@ -402,7 +407,7 @@ function drawComplexStringer(par) {
 						platePar.hasTrapHole = true;
 						if (params.model == "труба") {
 							if (par.stairAmt <= 1)
-								platePar.angleIn1 = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
+                                platePar.angleIn1 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
 							if (par.stairAmt == 0) platePar.stairAmt = 0;
 							var plate = drawTurn1TreadPlateCabriole(platePar).mesh;
 						}
@@ -450,7 +455,7 @@ function drawComplexStringer(par) {
 							isPlate = false;
 						}
 						else {
-							basePointShiftX = params.stringerThickness / 2 + params.flanThickness - (params.M / 2) / 2 - 5 - 30;
+							basePointShiftX = params.stringerThickness / 2 - (params.M / 2) / 2 - 5 - 30;
                             platePar.step += basePointShiftX;
                             platePar.isBotPlatform = true;
 						}
@@ -733,7 +738,7 @@ function drawComplexStringer(par) {
             }
 
             par.dxfBasePoint = copyPoint(dxfBasePoint0);
-			var dxfBasePoint = newPoint_xy(dxfBasePoint0, 0, -1000);
+			var dxfBasePoint = newPoint_xy(dxfBasePoint0, 0, -200);
 			var dxfStep = 200;
 			
 			//нижний фланец (Который крепится к полу)
@@ -742,12 +747,12 @@ function drawComplexStringer(par) {
 					marshId: par.marshId,
 					type: "bot", 
 					pointsShape: par.pointsShape, 
-                    dxfBasePoint: dxfBasePoint,
+                    dxfBasePoint: copyPoint(dxfBasePoint),
                     name: "Фланец крепления к полу",
 				};
 				flanPar.pointCurrentSvg = copyPoint(par.pointsShape[1]);
 				flanPar.pointStartSvg = copyPoint(par.pointsShape[1]);
-				if (par.isBotFloorsDist) flanPar.isBotFloorsDist = par.isBotFloorsDist;
+                if (par.isBotFloorsDist) flanPar.isBotFloorsDist = par.isBotFloorsDist;                
 		
 				var flan = drawMonoFlan(flanPar).mesh;
 				flan.position.x = sidePlate2.position.x - 5;
@@ -756,12 +761,11 @@ function drawComplexStringer(par) {
 				par.flans.add(flan);
 				
 				//нижний фланец-заглушка
-				dxfBasePoint.y -= dxfStep;
 				var flanPar = {
 					marshId: par.marshId,
 					type: "botStub",
 					pointsShape: par.pointsShape, 
-					dxfBasePoint: dxfBasePoint,
+                    dxfBasePoint: newPoint_xy(dxfBasePoint, -dxfStep, 0),
 				};
 				flanPar.pointCurrentSvg = copyPoint(par.pointsShape[1]);
 				flanPar.pointStartSvg = copyPoint(par.pointsShape[1]);
@@ -2129,8 +2133,14 @@ function calcStringerPar(par) {
 
 	par.h = marshParams.h;
 	par.b = marshParams.b;
-	par.a = marshParams.a;
-	par.marshAngle = Math.atan(par.h / par.b);
+    par.a = marshParams.a;
+
+    //задаем значения по умолчанию, если значения не заданы
+    //if (!par.b) par.b = 50;
+    //if (!par.h) par.h = 150;
+
+    par.marshAngle = Math.atan(par.h / par.b);
+    
 	if (par.topEnd !== "пол") marshParams.stairAmt += 1;
 	if (par.botEnd == "забег") marshParams.stairAmt += 1;
 	if (params.stairModel == "П-образная с забегом" && par.marshId == 2) marshParams.stairAmt = 0;
