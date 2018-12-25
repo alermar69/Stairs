@@ -2246,10 +2246,13 @@ function drawColumn2(par) {
 		}
 		
 		var bolt = drawBolt(boltPar).mesh;
-		bolt.rotation.x = Math.PI / 2;
+        bolt.rotation.x = Math.PI / 2 * turnFactor;
 		bolt.position.x = - par.profWidth / 2;
 		bolt.position.z = (boltPar.len / 2 - boltBulge - par.profHeight / 2) * turnFactor;
-		if ((par.key == "in" && params.model == "лт") || (par.key == "out" && params.model == "ко")) bolt.position.z *= -1;
+        if (par.key == "in") {
+            bolt.rotation.x *= -1;
+            bolt.position.z *= -1;
+        }
 		par.mesh.add(bolt);
 				
 		var bolt2 = drawBolt(boltPar).mesh;

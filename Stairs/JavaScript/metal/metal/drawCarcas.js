@@ -1429,7 +1429,7 @@ function calcColumnPosHoles(par) {
 			}
 		}
 
-		var stringerPar = calcStringerPar({ marshId: par.marshId });
+		var stringerPar = calcStringerPar({ marshId: par.marshId, key: par.key});
 			
 		// добавляем отверстия в конечный массив
 		for (var k=1; k<=3; k++) {		// k - номер колонны в марше
@@ -1440,7 +1440,7 @@ function calcColumnPosHoles(par) {
 					colHole2.isColumnHole = colHole1.isColumnHole = true;
 					if(params.model == "ко") colHole2.backZenk = colHole1.backZenk = true;
 					colHole2.hasAngle = colHole1.hasAngle = false;
-					if ((k == 1 || k == 2) && par.botEnd == "platformG" && stringerPar.stringerDivision)
+                    if ((k == 1 || k == 2) && par.botEnd == "platformG" && (stringerPar.stringerDivision || stringerPar.stringerDivisionBot))
 						colHole2.place = colHole1.place = "bot";		// в массти для отверстий в нижней части тетивы (pointsHoleBot) должны попасть только отвертия для 1 и 2 колонн
 					columnsHoles.push(colHole1);
 					columnsHoles.push(colHole2);

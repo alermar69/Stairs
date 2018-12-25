@@ -366,7 +366,7 @@ function drawBotStepKo_pltP(par){
 	
 
 	//удлинение внешнего косоура площадки
-	var pltStringerLen = params.platformLength_1 - par.botEndLength - params.stringerThickness * 2 + 20;	
+    var pltStringerLen = params.platformLength_1 - par.botEndLength - params.stringerThickness * 2 + params.nose;	
 	if (params.sideOverHang <= 75) pltStringerLen -= params.sideOverHang;
 	else pltStringerLen -= 75;
 	var pt1 = newPoint_xy(p0, -params.stringerThickness, 0);
@@ -1570,7 +1570,7 @@ function drawTopStepKo_pltP(par){
 		var platformLen = params.platformLength_3;
 	else
 		var platformLen = params.platformLength_1;
-	var pltStringerLen = platformLen - (par.a - par.b) - par.topEndLength - params.stringerThickness - 0.01 + 20;
+	var pltStringerLen = platformLen - (par.a - par.b) - par.topEndLength - params.stringerThickness - 0.01 + params.nose;
 	if (params.sideOverHang <= 75) pltStringerLen -= params.sideOverHang;
 	else pltStringerLen -= 75;
 

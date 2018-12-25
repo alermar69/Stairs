@@ -211,7 +211,6 @@ function drawStringer(par){
 		
 		par.bridge = ltko_set_divide(par.marshId).bridges;
 		par.divide = ltko_set_divide(par.marshId).divide;
-
 		if (par.stairFrame == "нет" && par.marshId != 1 && par.stairAmt > 1 && par.botEnd == "winder")
 			par.bridge.unshift(1);
 		
@@ -296,29 +295,231 @@ function drawStringer(par){
 		//markPoints: true,
 	}
 	
-	//параметры для рабочего чертежа
-	shapePar.drawing = {
-		name: "Косоур марша",
-		group: "stringers",
-		baseLine: {
-			p1: par.keyPoints.botPoint, 
-			p2: par.keyPoints.topPoint
-		},
-		mirrow: (par.marshParams.side[par.key] == 'left'),
+	var marshShapes = [];
+	var divides = [];//[1,3,5,7];
+	if (par.divide && par.divide !== 0) {
+		// divides = [par.divide];
+		divides = [{p1: par.keyPoints.divideP1, p2: par.keyPoints.divideP2}]
+		console.log(par)
+	}
+	console.log(par)
+	if (divides.length == 0) {
+		//параметры для рабочего чертежа
+		shapePar.drawing = {
+			name: "Косоур марша",
+			group: "stringers",
+			baseLine: {
+				p1: par.keyPoints.botPoint, 
+				p2: par.keyPoints.topPoint
+			},
+			mirrow: (par.marshParams.side[par.key] == 'left'),
+		}
+		
+		par.stringerShape = drawShapeByPoints2(shapePar).shape;
+		
+		//рисуем отверстия
+		drawStringerHoles(par);
+		
+		//добавляем отверстия под ограждения
+		var railingHolesPar = {
+			shape: par.stringerShape,
+			holeCenters: par.railingHoles,
+			dxfBasePoint: par.dxfBasePoint,
+		}
+		drawRailingHoles(railingHolesPar);
+	}
+	if (divides.length > 0) {
+		//параметры для рабочего чертежа
+		shapePar.drawing = {
+			name: "Косоур марша",
+			group: "stringers",
+			baseLine: {
+				p1: par.keyPoints.botPoint, 
+				p2: par.keyPoints.topPoint
+			},
+			mirrow: (par.marshParams.side[par.key] == 'left'),
+		}
+		var previousDivideP1 = null;
+		var previousDivideP2 = null;
+		
+		/*
+			Фильтрация точек для разрезов, чтобы не повторяться
+		*/
+		function shapeHasPoint(p, i, dP1, pdP1, dividesCount){
+			if (i == 0 && p.y < dP1.y) {
+				return true;
+			}else if (i !== 0 && p.y < dP1.y && p.y > pdP1.y) {
+				return true;
+			}else if(i == dividesCount && p.y > pdP1.y){
+				return true
+			}else{
+				return false;
+			}
+		}
+		
+		for (var i = 0; i <= divides.length; i++) {
+			var points = [];
+			var divideP1, divideP2;
+			if (i < divides.length) {
+				divideP1 = divides[i].p1;
+				divideP2 = divides[i].p2;
+				divideP1.filletRad = divideP2.filletRad = 0;
+			}
+			points = par.pointsShape.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
+			// points = par.pointsShape.filter(function(p){
+			// 	if (i == 0 && p.y < divideP1.y) {
+			// 		return true;
+			// 	}else if (i !== 0 && p.y < divideP1.y && p.y > previousDivideP1.y) {
+			// 		return true;
+			// 	}else if(i == divides.length && p.y > previousDivideP1.y){
+			// 		return true
+			// 	}else{
+			// 		return false;
+			// 	}
+			// });
+				
+			if (i > 0) points.unshift(previousDivideP2, previousDivideP1);
+			if (i < divides.length) {
+				var lastFilteredPoint = points[points.length - 1];
+				points.push(divideP1, divideP2);
+				previousDivideP1 = divideP1;
+				previousDivideP2 = divideP2;
+				previousDivideP1.filletRad = previousDivideP2.filletRad = 0;
+			}
+			
+			shapePar.points = points;
+		
+			var shape = drawShapeByPoints2(shapePar).shape;
+			marshShapes.push(shape);
+		
+		var holes = par.pointsHole.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
+		// var holes = par.pointsHole.filter(function(p){
+			// 	if (i == 0 && p.y < divideP1.y) {
+			// 		return true;
+			// 	}else if (i !== 0 && p.y < divideP1.y && p.y > previousDivideP1.y) {
+			// 		return true;
+			// 	}else if(i == divides.length && p.y > previousDivideP1.y){
+			// 		return true
+			// 	}else{
+			// 		return false;
+			// 	}
+			// });
+		
+			var stringerHolesParams = {
+				dxfBasePoint: par.dxfBasePoint,
+				elmIns: par.elmIns,
+				stringerShape: shape,
+				key: par.key,
+				pointsHole: holes,
+			}
+		
+			//рисуем отверстия
+			drawStringerHoles(stringerHolesParams);
+		
+			//добавляем отверстия под ограждения
+			var holes = par.railingHoles.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
+			// var holes = par.railingHoles.filter(function(p){
+			// 	if (i == 0 && p.y < divideP1.y) {
+			// 		return true;
+			// 	}else if (i !== 0 && p.y < divideP1.y && p.y > previousDivideP1.y) {
+			// 		return true;
+			// 	}else if(i == divides.length && p.y > previousDivideP1.y){
+			// 		return true
+			// 	}else{
+			// 		return false;
+			// 	}
+			// });
+			var railingHolesPar = {
+				shape: shape,
+				holeCenters: holes,
+				dxfBasePoint: par.dxfBasePoint,
+			}
+			drawRailingHoles(railingHolesPar);
+			
+		}
+		// var previousSplit1 = {};//Точки предыдущего разреза
+		// var previousSplit2 = {};
+		// var lastPoint = par.pointsShape[par.pointsShape.length - 1];//Крайняя точка каркаса(для поиска пересечения)
+		// for (var i = 0; i <= divides.length; i++) {
+		// 	var points = [];
+		// 	var splitPoint1 = {};
+		// 	var splitPoint2 = {};
+		// 	if (i < divides.length) {
+		// 		splitPoint1 = {x: 0, y: par.marshParams.h * (divides[i]) - par.marshParams.h / 2};
+		// 		splitPoint1 = itercection(splitPoint1, newPoint_xy(splitPoint1, 100, 0), par.keyPoints[par.key].botUnitStart, lastPoint);
+		// 	}
+		// 	points = par.pointsShape.filter(function(p){
+		// 		if (i == 0 && p.y < splitPoint1.y) {
+		// 			return true;
+		// 		}else if (i !== 0 && p.y < splitPoint1.y && p.y > previousSplit1.y) {
+		// 			return true;
+		// 		}else if(i == divides.length && p.y > previousSplit1.y){
+		// 			return true
+		// 		}else{
+		// 			return false;
+		// 		}
+		// 	});
+		// 
+		// 	if (i > 0) points.unshift(previousSplit1, previousSplit2);
+		// 	if (i < divides.length) {
+		// 		var lastFilteredPoint = points[points.length - 1];
+		// 		splitPoint2 = itercection(lastFilteredPoint, newPoint_xy(lastFilteredPoint, 0, 100), splitPoint1, newPoint_xy(splitPoint1, 100, 0));
+		// 		points.push(splitPoint2, splitPoint1);
+		// 		previousSplit1 = splitPoint1;
+		// 		previousSplit2 = splitPoint2;
+		// 	}
+		// 
+		// 	shapePar.points = points;
+		// 
+		// 	var shape = drawShapeByPoints2(shapePar).shape;
+		// 	marshShapes.push(shape);
+		// 
+		// 	var holes = par.pointsHole.filter(function(p){
+		// 		if (i == 0 && p.y < splitPoint1.y) {
+		// 			return true;
+		// 		}else if (i !== 0 && p.y < splitPoint1.y && p.y > previousSplit1.y) {
+		// 			return true;
+		// 		}else if(i == divides.length && p.y > previousSplit1.y){
+		// 			return true
+		// 		}else{
+		// 			return false;
+		// 		}
+		// 	});
+		// 
+		// 	var stringerHolesParams = {
+		// 		dxfBasePoint: par.dxfBasePoint,
+		// 		elmIns: par.elmIns,
+		// 		stringerShape: shape,
+		// 		key: par.key,
+		// 		pointsHole: holes,
+		// 	}
+		// 
+		// 	//рисуем отверстия
+		// 	drawStringerHoles(stringerHolesParams);
+		// 
+		// 	//добавляем отверстия под ограждения
+		// 	var holes = par.railingHoles.filter(function(p){
+		// 		if (i == 0 && p.y < splitPoint1.y) {
+		// 			return true;
+		// 		}else if (i !== 0 && p.y < splitPoint1.y && p.y > previousSplit1.y) {
+		// 			return true;
+		// 		}else if(i == divides.length && p.y > previousSplit1.y){
+		// 			return true
+		// 		}else{
+		// 			return false;
+		// 		}
+		// 	});
+		// 	var railingHolesPar = {
+		// 		shape: shape,
+		// 		holeCenters: holes,
+		// 		dxfBasePoint: par.dxfBasePoint,
+		// 	}
+		// 	drawRailingHoles(railingHolesPar);
+		// }
+		// 
+		// 
 	}
 	
-	par.stringerShape = drawShapeByPoints2(shapePar).shape;
-
-	//рисуем отверстия
-	drawStringerHoles(par);
-
-	//добавляем отверстия под ограждения
-	var railingHolesPar = {
-		shape: par.stringerShape,
-		holeCenters: par.railingHoles,
-		dxfBasePoint: par.dxfBasePoint,
-		}
-	drawRailingHoles(railingHolesPar);
 
 	if (par.pointsShapeTop.length > 0){
 		//создаем шейп
@@ -397,13 +598,23 @@ function drawStringer(par){
 		bevelEnabled: false,
 		curveSegments: 12,
 		steps: 1
-		};
-	
-	//косоур на марше
-	var geom = new THREE.ExtrudeGeometry(par.stringerShape, stringerExtrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	var mesh = new THREE.Mesh(geom, params.materials.metal);
-	par.mesh.add(mesh);
+	};
+	if (marshShapes.length > 0) {
+		for (var i = 0; i < marshShapes.length; i++) {
+			var shape = marshShapes[i];
+			//косоур на марше
+			var geom = new THREE.ExtrudeGeometry(shape, stringerExtrudeOptions);
+			geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+			var mesh = new THREE.Mesh(geom, params.materials.metal);
+			par.mesh.add(mesh);
+		}
+	}else{	
+		//косоур на марше
+		var geom = new THREE.ExtrudeGeometry(par.stringerShape, stringerExtrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var mesh = new THREE.Mesh(geom, params.materials.metal);
+		par.mesh.add(mesh);
+	}
 
 	//верхний доп. кусок
 	if (par.pointsShapeTop.length > 0){
@@ -722,7 +933,7 @@ function calcStringerPar(par){
 	}
 
 	par.stringerDivisionBot = true;
-	if (par.key == "out") {
+    if (par.key == "out" && params.model == "ко") {
 		if (params.stringerDivision == "нет") par.stringerDivisionBot = false;
 		if (par.marshId == 3 && (params.stairModel == "П-образная трехмаршевая" || params.stairModel == "П-образная с площадкой")) {
 			par.stringerDivisionBot = true;
@@ -755,13 +966,15 @@ function calcStringerPar(par){
 	// установки размеров под уголки
 	setStairAngles(par);
 
+    par.stepHoleX1 = par.marshFramesParams.stepHoleX1
 	//координаты отверстий для рамки
-	par.stepHoleX1 = par.marshFramesParams.stepHoleX1
-	par.stepHoleX2 = par.marshFramesParams.stepHoleX2	
-	if (hasTreadFrames()) par.holeDist = par.stepHoleX2 - par.stepHoleX1;
-	if(params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
+    if (hasTreadFrames()) {       
+        par.stepHoleX2 = par.marshFramesParams.stepHoleX2
+        par.holeDist = par.stepHoleX2 - par.stepHoleX1;
+        if (params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
+    }
 
-	par.rutelPosX = par.b / 2;
+    par.rutelPosX = par.b / 2;
 	par.rutelDist = 100;
 	
 	

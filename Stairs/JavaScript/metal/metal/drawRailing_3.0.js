@@ -1857,8 +1857,8 @@ function drawMarshTreads2(par) {
                         riserPar.dxfArr = dxfPrimitivesArr
                     }
                 }
-               
-                
+
+
 
                 //отрисовка
                 riserPar = drawRectRiser(riserPar);
@@ -1924,8 +1924,9 @@ function drawMarshTreads2(par) {
             }
         }
         if (par.stairAmt == 1) {
-            lastTread.position.x = par.endPos.x - par.b + par.a + 30;
-            if (params.model == "ко") lastTread.position.x += 10 + params.riserThickness;
+            //lastTread.position.x = par.endPos.x - par.b + par.a + 30;
+            lastTread.position.x = par.endPos.x + 80;
+            if (params.model == "ко") lastTread.position.x += params.riserThickness + params.nose - 40;
         }
         lastTread.position.y = par.endPos.y;
         lastTread.position.z = - plateParams.len / 2;
@@ -1963,196 +1964,3 @@ function drawMarshTreads2(par) {
     return par;
 
 } //end of 	drawMarshTreads2
-
-
-function drawRectRiser(par) {
-	/*
-	par = {
-		len
-		width
-		thk
-		dxfArr
-		dxfBasePoint
-		}
-	*/
-    var shape = new THREE.Shape();
-
-    //корректируем высоту подступенка
-    par.width = Math.round(par.width - 1);
-
-    /*внешний контур*/
-
-    var cutWndIn = 0;
-
-    if (par.cutWndIn) {
-        cutWndIn = par.cutWndIn;
-        par.len -= cutWndIn;
-    }
-
-    //подпись под фигурой
-    var text = par.description;
-    var textHeight = 30;
-    var textBasePoint = newPoint_xy(par.dxfBasePoint, par.width / 2 - 200, -100)
-    addText(text + " " + par.count + "шт.", textHeight, par.dxfArr, textBasePoint);
-
-    if (!par.ang) {
-        var p1 = { x: 0.01, y: 0.01 + cutWndIn }
-        var p2 = newPoint_xy(p1, par.width, 0)
-        addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-        p1 = copyPoint(p2);
-        p2 = newPoint_xy(p1, 0, par.len - 0.02);
-        addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-        p1 = copyPoint(p2);
-        p2 = newPoint_xy(p1, -par.width, 0);
-        addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-        p1 = copyPoint(p2);
-        p2 = newPoint_xy(p1, 0, -(par.len - 0.02));
-        addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-
-
-        var extrudeOptions = {
-            amount: par.thk - 0.02,
-            bevelEnabled: false,
-            curveSegments: 12,
-            steps: 1
-        };
-        var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-        par.mesh = new THREE.Mesh(geometry, params.materials.riser);
-    }
-
-    //подступенок со срезанными углами - забежной
-    if (par.ang) {
-        var outDelta = par.thk * Math.tan(par.ang);
-
-        var inDelta = 0;
-
-        var p1 = { x: 0, y: 0 }
-        var p2 = newPoint_xy(p1, -outDelta, par.thk);
-        var p3 = newPoint_xy(p2, par.len, 0);
-        var p4 = newPoint_xy(p3, outDelta, -par.thk);
-
-        var points = [p1, p2, p3, p4]
-
-        //создаем шейп
-        var shapePar = {
-            points: points,
-            dxfArr: dxfPrimitivesArr,
-            dxfBasePoint: par.dxfBasePoint,
-            markPoints: false, //пометить точки в dxf для отладки
-        };
-        var shape = drawShapeByPoints2(shapePar).shape;
-		/*
-		// addLine(shape, par.dxfArr, p1_ang, p1, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p4, p5, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p5, p1, par.dxfBasePoint);
-		*/
-
-        var extrudeOptions = {
-            amount: par.width - 0.02,
-            bevelEnabled: false,
-            curveSegments: 12,
-            steps: 1
-        };
-        var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-        var mesh = new THREE.Object3D();
-        var riser = new THREE.Mesh(geometry, params.materials.riser);
-        //riser.position.y += cutWndIn;
-        riser.rotation.y = Math.PI / 2;
-        riser.rotation.z = Math.PI / 2;
-        mesh.add(riser);
-        par.mesh = mesh;
-
-        //размеры для спецификации
-        var minX = 0;
-        var maxX = 0;
-        $.each(points, function () {
-            if (this.x < minX) minX = this.x;
-            if (this.x > maxX) maxX = this.x;
-        })
-        par.len = Math.round(Math.abs(maxX - minX));
-    }
-
-    //сохраняем данные для спецификации
-    var treadPar = getTreadParams(); //функция в файле calcSpecGeneral.js
-    var partName = "riser";
-
-    if (typeof specObj != 'undefined' && params.stairType != "нет") {
-        if (!specObj[partName]) {
-            specObj[partName] = {
-                types: {},
-                amt: 0,
-                name: "Подступенок",
-                area: 0,
-                paintedArea: 0,
-                metalPaint: treadPar.metalPaint,
-                timberPaint: treadPar.timberPaint,
-                division: treadPar.division,
-                workUnitName: "amt",
-                group: "risers",
-            }
-        }
-        var area = par.len * par.width / 1000000;
-        var paintedArea = area * 2 + (par.len + par.width) * 2 * par.thk / 1000000;
-
-        var name = Math.round(par.len) + "x" + par.width + "x" + par.thk;
-        if (par.ang) name += " забежн."
-        if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-        if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-        specObj[partName]["amt"] += 1;
-        specObj[partName]["area"] += area;
-        specObj[partName]["paintedArea"] += paintedArea;
-    }
-
-    return par;
-
-} //end of drawRectRiser
-
-
-function calcLastRackDeltaY(unit, marshId) {
-    if (!marshId) marshId = 3;
-    if (params.stairModel == 'Прямая') marshId = 1;
-
-    var marshParams = getMarshParams(marshId);
-
-    var dyLastRack = 0;
-    if (params.platformTop == "нет") {
-        if (params.model == "лт") {
-            if (params.topAnglePosition == "под ступенью" ||
-                params.topAnglePosition == "рамка верхней ступени") {
-                dyLastRack = 65;
-                if (params.stairType == "дпк") {
-                    dyLastRack = (marshParams.a - 80 - marshParams.b / 2) * Math.tan(marshParams.ang);
-                }
-            }
-            if (params.topAnglePosition == "над ступенью") {
-                if ((marshParams.a - marshParams.b) > 50)
-                    dyLastRack = (marshParams.a - marshParams.b - 20) * Math.tan(marshParams.ang);
-            }
-        }
-        if (params.model == "ко") {
-            var dyLastRack = 50;
-            if (params.topAnglePosition == "вертикальная рамка") dyLastRack = 100;
-        }
-    }
-    if (params.calcType == 'mono') {
-        dyLastRack = (marshParams.a - 50 - 95) * Math.tan(marshParams.ang);
-    }
-
-    if (params.stairModel == 'Прямая горка' && params.calcType == 'vhod') dyLastRack = 0;
-
-    if (unit == "wnd_ko") {
-        var offsetX = params.nose - 5 + 0.1;
-        if (params.riserType == "есть") offsetX += params.riserThickness;
-
-        dyLastRack = marshParams.h * (0.5 - offsetX / marshParams.b);
-    }
-
-    if (params.rackBottom == "сверху с крышкой") dyLastRack = 0;
-
-    return dyLastRack;
-}

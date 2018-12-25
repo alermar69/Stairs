@@ -409,6 +409,20 @@ function drawBotStepLt_pltG(par) {
 		//par.pointsHole.push(center3);
 		//par.pointsHole.push(center4);
 	}
+	
+	//крепление к стенам
+	if(par.key == "out" && par.marshParams.wallFix.out){
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(pt3, 100, -100);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHoleBot.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(pt4, -100, -100);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHoleBot.push(center1);		
+	}
 
 	//базовые точки для стыковки с другими частями косоура
 	//http://6692035.ru/dev/mayorov/metal/imageLt/drawBotStepLt_pltG_Lom.jpg - для ломанной
@@ -1368,6 +1382,20 @@ function drawBotStepLt_wndOut(par) {
 			par.railingHoles.push(center1);
 			par.railingHoles.push(center2);
 		}
+	}
+	
+	//крепление к стенам
+	if(par.marshParams.wallFix.out){
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p4, -150, -200);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p1, 150, -200);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);		
 	}
 
 
@@ -2375,6 +2403,20 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 			}
 		}
 	}
+	
+	//крепление к стенам
+	if(par.key == "out" && par.marshParams.wallFix.out){
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -100);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(topLineP1, -100, -100);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);		
+	}
 
 	//сохраняем точку для колонны 
 	if (params.stairModel == "Прямая с промежуточной площадкой" && par.marshId == 1) {
@@ -3328,8 +3370,20 @@ function drawTopStepLt_wndOut(par) {
 			par.railingHoles.push(center1);
 			par.railingHoles.push(center2);
 		}
-
-
+	}
+	
+	//крепление к стенам
+	if(par.marshParams.wallFix.out){
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p5, -150, -200);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -200);
+		center1.rad = 10;
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);		
 	}
 
 	//сохраняем координаты угла тетивы для самонесущего стекла

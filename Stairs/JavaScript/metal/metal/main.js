@@ -24,6 +24,7 @@ var partsAmt_bal = {}; //глобальный массив количеств э
 var specObj = partsAmt; //ссылка на массив данных для спецификации (лестница или балюстрада)
 var poleList = {}; //ведомость резки профилей и поручней
 var layers = {};
+var materials = {}; //потребность в материалах
 var anglesHasBolts = true; //отрисовывать болты уголков
 var drawLongBolts = true; //отрисовывать длинные болты, соединяющие два уголка через тетиву насквозь
 var shapesList = [];
@@ -75,10 +76,6 @@ $(function () {
 	$("#wageInfo").lightTabs();
 	
 
-	$("#showPass").click(function(){
-		alert("Логин: demo Пароль: demo_pass Как посмотреть модель: https://youtu.be/8zySuZ2spzg ")		
-		});
-
     recalculate = function() {
         getAllInputsValues(params);
         changeAllForms();
@@ -95,17 +92,7 @@ $(function () {
 		checkSpec();
 		}
 
-    changeAllForms = function () {		
-		getAllInputsValues(params);
-		changeFormsGeneral();
-        changeFormCarcas();
-        changeFormRailing();
-		changeFormBanisterConstruct();
-		changeFormAssembling();
-		changeFormWr();
-		changeFormStartTreads();
-		$('.installation_man').show();
-		}
+   
 		
     //пересчитываем лестницу
     recalculate();
@@ -117,18 +104,8 @@ $(function () {
 		drawCustomDimensions('vl_1');
 		}
 	);
-	$('.form_table,.tabs').delegate('input,select,textarea', 'change', changeAllForms);
-	
-	//вешаем пересчет на все заголовки разделов
-	$('.raschet').click(function(){
-		recalculate();
-		});
+
 		
-	//перерисовка пользовательских размеров
-	$('#dimParamsTable').delegate('input,select,textarea', 'change', function(){
-		changeFormDim();
-		drawCustomDimensions('vl_1');
-		});
 
 
     //скрываем ненужные блоки
@@ -141,16 +118,7 @@ $(function () {
 	
 	
 
-	configDinamicInputs = function() {
-		changeFormBanister();
-		changeFormTopFloor();
-		changeFormLedges();
-		changeAllForms();
-		//setHandrailParams_bal();
-		configSectInputs();
-		configBoxInputs();
-		addDimRows();
-		}
+	
 		
 
 		
@@ -164,3 +132,26 @@ $(function () {
 	
 });
 
+
+function changeAllForms() {		
+	getAllInputsValues(params);
+	changeFormsGeneral();
+	changeFormCarcas();
+	changeFormRailing();
+	changeFormBanisterConstruct();
+	changeFormAssembling();
+	changeFormWr();
+	changeFormStartTreads();
+	$('.installation_man').show();
+}
+
+function configDinamicInputs() {
+	changeFormBanister();
+	changeFormTopFloor();
+	changeFormLedges();
+	changeAllForms();
+	//setHandrailParams_bal();
+	configSectInputs();
+	configBoxInputs();
+	addDimRows();
+}
