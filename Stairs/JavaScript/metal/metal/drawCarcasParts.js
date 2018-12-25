@@ -239,7 +239,10 @@ function drawPltStringer(par) {
 	if (par.key == "front" && params.model == "ко" && params.stringerDivision == "нет")
 		center1.x -= params.stringerThickness;
 	var center2 = newPoint_xy(center1, 0.0, -60.0);
-	center1.hasAngle = center2.hasAngle = false;
+    center1.hasAngle = center2.hasAngle = false;
+    if (par.key == "front") {
+        center1.noZenk = center2.noZenk = true;
+    }
 	par.pointsHole.push(center1);
 	par.pointsHole.push(center2);
 
@@ -249,6 +252,9 @@ function drawPltStringer(par) {
 		center1.x += params.stringerThickness;
 	var center2 = newPoint_xy(center1, 0.0, -60.0);
 	center1.hasAngle = center2.hasAngle = false;
+    if (par.key == "front") {
+        center1.noZenk = center2.noZenk = true;
+    }
 	par.pointsHole.push(center1);
 	par.pointsHole.push(center2);
 
@@ -257,15 +263,21 @@ function drawPltStringer(par) {
 	if (par.key == "front" && params.model == "ко" && params.stringerDivision == "нет")
 		center1.x -= params.stringerThickness;
 	var center2 = newPoint_xy(center1, 0.0, -60.0);
-	center1.hasAngle = center2.hasAngle = false;
-	par.pointsHole.push(center1);
+    center1.hasAngle = center2.hasAngle = false;
+    if (par.key == "front") {
+        center1.noZenk = center2.noZenk = true;
+    }
+    par.pointsHole.push(center1);
 	par.pointsHole.push(center2);
 
 	var center1 = newPoint_xy(p3, -offsetHole1, shiftHoleY);
 	if (par.key == "front" && params.model == "ко" && params.stringerDivision2 == "нет")
 		center1.x += params.stringerThickness;
 	var center2 = newPoint_xy(center1, 0.0, -60.0);
-	center1.hasAngle = center2.hasAngle = false;
+    center1.hasAngle = center2.hasAngle = false;
+    if (par.key == "front") {
+        center1.noZenk = center2.noZenk = true;
+    }
 	par.pointsHole.push(center1);
 	par.pointsHole.push(center2);	
 
@@ -1868,7 +1880,6 @@ function setStairAngles(par) {
 
 	//делаем верхний уголок точно таким же, как остальные
 	par.angleTopType = par.angleBottomType;
-	par.holeDist2 = par.holeDist;
 	par.angle2Len = par.angleLen;
 
 

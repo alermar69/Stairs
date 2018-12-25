@@ -524,6 +524,20 @@ function addMetiz(){};
 	if(item.amt > 0) partsList.addItem(item);
 	partsList["shim_M10"].comment = "Рассчитано по болтам";
 	
+	if(params.isPlasticCaps == "есть"){
+		item = {
+			id: "plasticCap_M10",
+			amt: getPartAmt("bolt"),
+			discription: "Колпачки",
+			unit: "Метизы",
+			itemGroup: "Каркас",
+			comment: "Рассчитано по болтам",
+			};
+		if(item.amt > 0) partsList.addItem(item);
+		partsList["plasticCap_M10"].comment = "Рассчитано по болтам";
+	
+	}
+	
 
 function addWorks(){}
 

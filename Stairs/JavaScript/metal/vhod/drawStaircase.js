@@ -163,8 +163,8 @@ drawStaircase = function(viewportId, isVisible) {
 
 	var railingPar = {
 		dxfBasePoint: {
-			x: 15000,
-			y: 2000
+			x: 0,
+			y: 20000
 		},
 		treadsObj: treadsObj,
 		stringerParams: carcasPar.stringerParams,

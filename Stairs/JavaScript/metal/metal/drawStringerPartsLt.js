@@ -6,7 +6,7 @@
  */
 
 function drawBotStepLt_floor(par) {
-console.log(par.dxfBasePoint)
+
 	/*ТОЧКИ КОНТУРА*/
 
 	var h_1 = calcFirstRise(); //подъем первой ступени
@@ -37,8 +37,8 @@ console.log(par.dxfBasePoint)
 		if(botLineP1.x - p4.x < 100) {
 			botLineP1.x = p4.x + 100;
 			//дополнительная наклонная линия внизу
-			var botLineP00 = itercection(botLineP1, polar(botLineP1, Math.PI * 0.4, 100), p20, p21);
-			par.pointsShape.push(botLineP00);
+			//var botLineP00 = itercection(botLineP1, polar(botLineP1, Math.PI * 0.4, 100), p20, p21);
+			//par.pointsShape.push(botLineP00);
 			isShortBotLine = true;
 			}
 
@@ -82,6 +82,7 @@ console.log(par.dxfBasePoint)
 		par.keyPoints.botPoint = copyPoint(p0);
 		}
 
+	
 	/*ОТВЕРСТИЯ*/
 
 	// отверстия под нижний крепежный уголок
@@ -114,7 +115,6 @@ console.log(par.dxfBasePoint)
 
 	//увеличиваем нижнюю часть тетивы если уголки крепления к полу выступают за край тетивы
 	if (params.stringerType == "пилообразная" && par.stairAmt > 0) {
-		console.log(center2, p20, p21)
 		var pt = itercection(center2, polar(center2, Math.PI / 2 + par.marshAng, 100), p20, p21);
 		if (center2.x + 20 > pt.x) {
 			par.pointsShape.shift();
@@ -293,6 +293,10 @@ function drawBotStepLt_pltG(par) {
 			if (par.key == 'in' && !hasCustomMidPlt(par) || 
 			(par.key == 'in' && params.middlePltWidth <= params.M + 200 && hasCustomMidPlt(par))) {
 				center1 = newPoint_xy(p4, par.b * 0.5, par.rackTopHoleY);
+				//смещаем стойку ближе к верхнему маршу
+				var mooveY = params.treadThickness;
+				if(params.stairType !== "лотки" || params.stairType !== "рифленая сталь" ) mooveY = 40;
+				center1 = newPoint_y(center1, -mooveY, par.marshAng)
 				par.railingHoles.push(center1);
 			}
 
@@ -513,7 +517,7 @@ function drawBotStepLt_pltPIn(par) {
 		// отверстия под 1 уголок площадки
 		//var stepHoleXside1 = (par.botEndLength / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
 		//center1 = newPoint_xy(p3, stepHoleXside1 - par.botEndLength - 30, par.stepHoleY + 45);
-		center1 = newPoint_xy(pt2, 120, par.stepHoleY + 45);
+        center1 = newPoint_xy(pt2, 120, par.stepHoleY + 5 + params.treadThickness);
 		center2 = newPoint_xy(center1, holeDist, 0.0);
 		par.pointsHoleBot.push(center1);
 		par.pointsHoleBot.push(center2);
@@ -529,7 +533,7 @@ function drawBotStepLt_pltPIn(par) {
 		// отверстия под 2 уголок площадки
 		var stepHoleXside2 = (par.botEndLength / 2 - 64) / 2 + par.botEndLength / 2 - holeDist / 2;
 		if (stepHoleXside2 > 0.0) {
-			center1 = newPoint_xy(p3, stepHoleXside2 - par.botEndLength - 30, par.stepHoleY + 45);
+            center1 = newPoint_xy(p3, stepHoleXside2 - par.botEndLength - 30, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, holeDist, 0.0);
 			par.pointsHoleBot.push(center1);
 			par.pointsHoleBot.push(center2);
@@ -1481,6 +1485,7 @@ function drawMiddleStepsLt(par) {
 			if (par.isMiddleStringer) {
 				center1.isPltPFrame = center2.isPltPFrame = true;
 				center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
+                center1.noZenk = center2.noZenk = true;
 				par.elmIns[par.key].longBolts.push(center1);
 				par.elmIns[par.key].longBolts.push(center2);
 			}
@@ -1513,7 +1518,6 @@ function drawMiddleStepsLt(par) {
 			par.pointsHole.push(center4);
 			par.pointsHole.push(center3);
 			
-			console.log(center1)
 		}
 
 		// стыковка деталей тетивы
@@ -1604,7 +1608,6 @@ function drawMiddleStepsLt(par) {
 
 
 	}//end of cycle
-
 
 	//базовые точки для стыковки с другими частями косоура
 	//http://6692035.ru/dev/mayorov/metal/imageLt/drawMiddleStepsLt.jpg - для ломанной и пилообразной
@@ -1766,7 +1769,11 @@ function drawTopStepLt_floor(par) {
 							mooveX += 10;
 					}
 					center1 = newPoint_x1(center1, mooveX, par.marshAng);
-				}
+                }
+			    if (params.topAnglePosition == "под ступенью") {
+			        var mooveX = topLineP1.x - center1.x - 20;
+			        center1 = newPoint_x1(center1, mooveX, par.marshAng);
+			    }
 			}
 
 			//если отверстие под ограждение пересекается с другим отверстием
@@ -1836,7 +1843,7 @@ function drawTopStepLt_floor(par) {
  */
 
 function drawTopStepLt_pltG(par) {
-
+console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 	if (par.isMiddleStringer) {
 		par.stringerWidthPlatform -= params.treadThickness + par.stringerLedge;
 		par.stringerWidth -= params.treadThickness + par.stringerLedge;
@@ -1866,7 +1873,7 @@ function drawTopStepLt_pltG(par) {
 
 	// подъем ступени
 	var p2 = newPoint_xy(p1, 0.0, par.h);
-	if (params.stairModel == "П-образная трехмаршевая" &&params.stairAmt2 == 0 &&par.marshId == 2 &&params.turnType_1 == "площадка") {
+	if (params.stairModel == "П-образная трехмаршевая" && params.stairAmt2 == 0 && par.marshId == 2 && params.turnType_1 == "площадка") {
 		if (par.key == "in") {
 			var pt = newPoint_xy(par.pointsShape[par.pointsShape.length - 2], 0, par.h + params.treadThickness);
 			p2 = itercection(pt, polar(pt, 0, 100), p1, polar(p1, Math.PI/2, 100));
@@ -1886,7 +1893,7 @@ function drawTopStepLt_pltG(par) {
 		par.pointsShape.push(p1);
 	}
 	else {
-		if (!(params.stairModel == "П-образная трехмаршевая" && par.stairAmt == 0 && par.botEnd == "winder" && par.key == "out"))
+		if (par.stairAmt == 0 && !(params.stairModel == "П-образная трехмаршевая" && par.botEnd == "winder" && par.key == "out"))
 			par.pointsShape.pop();
 	}
 
@@ -2050,6 +2057,7 @@ function drawTopStepLt_pltG(par) {
 			//длинные болты на среднем косоуре
 			if (par.isMiddleStringer) {
 				center1.isPltPFrame = center2.isPltPFrame = true;
+                center1.noZenk = center2.noZenk = true;
 				par.elmIns[par.key].longBolts.push(center1);
 				par.elmIns[par.key].longBolts.push(center2);
 				}
@@ -2183,10 +2191,13 @@ function drawTopStepLt_pltG(par) {
 					}
 					if (par.key == 'out' && hasCustomMidPlt(par)) {
 						platformLength = params.middlePltLength;
-					}
-					if (params.calcType == 'vhod' && par.marshParams.lastMarsh) {
-						platformLength = par.platformLength1;
-					}
+                    }
+				    if (par.marshParams.lastMarsh) {
+				        platformLength = par.platformLength1;
+				    }
+					//if (params.calcType == 'vhod' && par.marshParams.lastMarsh) {
+					//	platformLength = par.platformLength1;
+					//}
 
 
 					if (platformLength > 1300) {
@@ -2218,7 +2229,12 @@ function drawTopStepLt_pltG(par) {
 			//стойка ограждения ставится на последней ступени марша. На площадке на этой стороне нет ограждения
 			if (!hasFirstPltRack) {
 				center1 = newPoint_xy(p0, par.b * 0.5, par.rackTopHoleY);
+				//смещаем стойку ближе к верхнему маршу
+				var mooveY = params.treadThickness;
+				if(params.stairType !== "лотки" || params.stairType !== "рифленая сталь" ) mooveY = 40;
+				center1 = newPoint_y(center1, mooveY, par.marshAng)
 				par.railingHoles.push(center1);
+				//console.log(center1)
 				}
 			}
 
@@ -2501,7 +2517,7 @@ function drawTopStepLt_pltPIn(par) {
 
 		// отверстия под 1 уголок площадки (ближе к маршу)
 		var stepHoleXside1 = (par.topEndLength / 2 - 110 - 64) / 2 + 140 - holeDist3 / 2;		
-		center1 = newPoint_xy(ph, stepHoleXside1, par.stepHoleY + 45);		
+        center1 = newPoint_xy(ph, stepHoleXside1, par.stepHoleY + 5 + params.treadThickness);		
 		var center2 = newPoint_xy(center1, holeDist3, 0.0);
 		par.pointsHoleTop.push(center1);
 		par.pointsHoleTop.push(center2);
@@ -2517,7 +2533,7 @@ function drawTopStepLt_pltPIn(par) {
 		var stepHoleXside2 = (par.topEndLength / 2 - 64) / 2 + par.topEndLength / 2 - holeDist3 / 2;
 		if (stepHoleXside2 > 0.0) {
 			//center1 = newPoint_xy(ph, stepHoleXside2, par.stepHoleY + 45);
-			var center1 = newPoint_xy(pt, -120, par.stepHoleY + 45);
+            var center1 = newPoint_xy(pt, -120, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, -holeDist3, 0.0);
 			par.pointsHoleTop.push(center2);
 			par.pointsHoleTop.push(center1);
@@ -2553,11 +2569,13 @@ function drawTopStepLt_pltPIn(par) {
 			if(params.stairType == "пресснастил") center1.y += 5; //костыль
 			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX - par.platformFramesParams.sideHolePosX, 0.0);
 			begX += frameWidth + 5.0;
-			center1.isPltFrame = center2.isPltFrame = true;
-			par.pointsHole.push(center1);
-			par.pointsHole.push(center2);
-			par.elmIns[par.key].longBolts.push(center1);
-			par.elmIns[par.key].longBolts.push(center2);
+            center1.isPltFrame = center2.isPltFrame = true;
+		    par.pointsHole.push(center1);
+            par.pointsHole.push(center2);
+		    if (!(params.calcType == 'vhod' && params.platformTop == 'увеличенная')) {
+		        par.elmIns[par.key].longBolts.push(center1);
+		        par.elmIns[par.key].longBolts.push(center2);
+		    }
 		}
 	}
 

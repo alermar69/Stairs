@@ -25,7 +25,7 @@ function drawFrames(par){
 			}
 
 			//для средней тетивы входной лестницы убираем болты
-			if (params.M > 1100 && params.calcType == "vhod") {
+            if (params.calcType == "vhod" && params.M > 1100) {
 				if (framePar.isPltPFrame) {
 					framePar.isFrameSideNoBolts2 = true;
 					framePar.isPltPFrame = false;
@@ -33,7 +33,7 @@ function drawFrames(par){
 				else {
 					framePar.isFrameSideNoBolts1 = true;
 				}
-			}
+            }
 			if (par.holes[i].noBolts) {
 				framePar.isFrameSideNoBolts1 = true;
 				framePar.isFrameSideNoBolts2 = true;
@@ -1170,6 +1170,8 @@ function drawWndTreadFlan(par){
 		flanPar.roundHoleCenters.push(center1, center2);
 	}
 	
+	flanPar.mirrowBolts = true;
+	
 	var flan = drawRectFlan2(flanPar).mesh;
 	flan.rotation.y = - Math.PI / 2 + calcAngleX1(par.line.p1, par.line.p2);
 	flan.position.x = par.line.p1.y;
@@ -2109,7 +2111,7 @@ function calcFrameParams(par){
 	holeDist либо width
 	isPltFrame - является ли рамкой площадки	
 	*/
-	
+
 	var marshParams = getMarshParams(par.marshId);
 
 	//длина рамки
@@ -2143,7 +2145,7 @@ function calcFrameParams(par){
 		par.profHeight = 60;
 		}
 	if(params.stairType == "рифленая сталь" || params.stairType == "лотки"){
-		par.profWidth = 4;
+		par.profWidth = 5;
 		par.profHeight = 50;
 		if(par.length > 1020) par.profHeight = 60;
 		};
@@ -2176,15 +2178,27 @@ function calcFrameParams(par){
 		}
 	//eсли не задано расстояние между отверстиями - расчет для построения тетив/косоуров
 	if(!par.holeDist){
-		if (params.model == "лт") par.width = par.a - par.overhang * 2;
-		if (params.model == "ко") par.width = par.b;
+		if (params.model == "лт") par.width = marshParams.a - par.overhang * 2;
+		if (params.model == "ко") par.width = marshParams.b;
 		
+		//округляем ширину рамок с заданной точностью. Для лотков и рифленки округляется сам размер ступени в функции calcTreadWidth
+		if(params.stairType != "рифленая сталь" && params.stairType != "лотки"){
+			var frameWidthStep = 20; //точность округления ширины рамок
+			par.width = Math.floor(par.width / frameWidthStep) * frameWidthStep;
+		}
 	}
 	
-
+	//координаты отверстий
+	if(params.model == "лт"){
+		par.stepHoleX1 = par.sideHolePosX + 5.0 + par.overhang;
+		par.stepHoleX2 = par.stepHoleX1 + par.width - par.sideHolePosX * 2;
+	}
 	
+	if(params.model == "ко"){
+		par.stepHoleX1 = par.sideHolePosX;
+		par.stepHoleX2 = par.width - par.sideHolePosX;
+	}
 
-	
 	//кол-во перемычек
 	par.bridgeAmt = 2;
 	par.profBridgeAmt = 0;

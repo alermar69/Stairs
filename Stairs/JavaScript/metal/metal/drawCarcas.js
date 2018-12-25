@@ -277,7 +277,8 @@ function drawMiddleStringers(par, marshId){
 	}
 	
 	for (var i = 0; i < midStringers.length; i++) {
-		if(hasTreadFrames()){
+        if (hasTreadFrames()) {
+            par.dxfBasePoint.x += stringerParams.lenX;
 			par.dxfBasePoint.x += 2000;
 			var framePar = {
 				holes: stringerParams.carcasHoles,

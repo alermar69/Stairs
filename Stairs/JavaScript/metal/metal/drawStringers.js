@@ -68,7 +68,6 @@ function drawStringer(par){
 	if(params.model == "ко"){
 		
 		// уголки и рамки
-		par.stepHoleX2 = par.b - par.marshFramesParams.sideHolePosX;
 		par.stepHoleY = -20.0;           // координата Y отверстий крепления рамки
 		par.rutelPosY = -60;
 
@@ -149,22 +148,13 @@ function drawStringer(par){
 	//лотки
 	if (params.stairType == "лотки") {
 		// рассчитываем параметры рамки
-		var parFrame = {}
+		var parFrame = {marshId: par.marshId}
 		calcFrameParams(parFrame); //функция в файле drawCarcasParts.js
 		par.stepHoleY = -par.stringerLedge - parFrame.profHeight / 2 + 0.01;
 		}
 	
 	par.rackTopHoleY = -60; //координта верхнего отверстия крепления стойки
 	par.rutelPosY = -115;
-
-
-	// уголки и рамки
-	if (hasTreadFrames()) {
-		par.stepHoleX1 = par.marshFramesParams.sideHolePosX + 5.0 + par.marshFramesParams.overhang;
-		par.holeDist = par.a - (par.marshFramesParams.overhang + par.marshFramesParams.overhang + par.marshFramesParams.sideHolePosX + par.marshFramesParams.sideHolePosX);
-		par.holeDist2 = par.holeDist;
-		if(params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
-		}
 
 	var isException = false; //является ли текущий случай исключением
 
@@ -682,7 +672,7 @@ function calcStringerPar(par){
 		};
 	calcFrameParams(par.platformFramesParams); 
 	
-	par.marshFramesParams = {};
+	par.marshFramesParams = {marshId: par.marshId};
 	calcFrameParams(par.marshFramesParams);
 	
 	//зазор от торца ступени до тетивы для ЛТ
@@ -765,15 +755,18 @@ function calcStringerPar(par){
 	// установки размеров под уголки
 	setStairAngles(par);
 
-	par.stepHoleX1 = par.marshFramesParams.sideHolePosX;                 // координата Х первого отверстия крепления уголка ступени относительно угла косоура
+	//координаты отверстий для рамки
+	par.stepHoleX1 = par.marshFramesParams.stepHoleX1
+	par.stepHoleX2 = par.marshFramesParams.stepHoleX2	
+	if (hasTreadFrames()) par.holeDist = par.stepHoleX2 - par.stepHoleX1;
+	if(params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
+
 	par.rutelPosX = par.b / 2;
 	par.rutelDist = 100;
 	
 	
 	//отступ рамки от переднего ребра тетивы - используется для расчета точек среднего косоура
-	var framePar = {
-		marshId: par.marshId,
-		}
+	var framePar = {marshId: par.marshId}
 	par.treadFrontOverhang = calcFrameParams(framePar).overhang + par.stringerLedge;
 
 	

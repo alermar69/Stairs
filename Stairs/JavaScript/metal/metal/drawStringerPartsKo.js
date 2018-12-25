@@ -290,7 +290,7 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 			pointsHoleBot.push(center1);	
 
 			var po3 = copyPoint(pt3);
-			center1 = newPoint_xy(po3, 130, -20);
+			center1 = newPoint_xy(po3, 140, -20);
 			center2 = newPoint_xy(center1, 50.0, 0);
 			center1.hasAngle = center2.hasAngle = true;
 			pointsHoleBot.push(center1);
@@ -960,7 +960,11 @@ function drawMiddleStepsKo(par){
 			var center1 = newPoint_xy(p1, par.stepHoleX1, par.stepHoleY);
 			var center2 = newPoint_xy(p1, par.stepHoleX2, par.stepHoleY);
 			//на лестнице с подступенками делаем рамки короче, чтобы последняя не отличалась
-			if(params.riserType == "есть") center2.x -= params.riserThickness;
+			if(params.riserType == "есть") {
+				var frameWidthStep = 20; //точность округления ширины рамок
+				var offset = Math.ceil(params.riserThickness / frameWidthStep) * frameWidthStep;
+				center2.x -= offset;				
+			}
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			}
