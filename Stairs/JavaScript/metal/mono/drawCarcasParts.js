@@ -3746,9 +3746,9 @@ function drawTurn1TreadPlateCabriole(par) {
 		var dist = setDistHoleTurn("1", turnParams);
 		center3 = newPoint_xy(p1, dist.in, -20);
 
-		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, false);
+		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
+        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
 
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -3816,9 +3816,9 @@ function drawTurn1TreadPlateCabriole(par) {
 		center2 = newPoint_xy(p1, 20, -20);
 		center3 = newPoint_xy(p1, dist.out, -20);
 
-		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, false);
+		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
+        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
 
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -3943,10 +3943,11 @@ function drawTurn2TreadPlateCabriole(par) {
 	var p3 = newPoint_xy(p5, 0, turnParams.innerOffsetY);
 	var p4 = newPoint_xy(p5, -turnParams.innerOffsetX, 0);
 
-	var lin = parallel(p2, p3, (stringerPlateThickness + 0.1));
+	//var lin = parallel(p2, p3, (stringerPlateThickness + 0.1));
+	var lin = parallel(p2, p3, (-stringerPlateThickness - 0.2));
 
 	p2 = itercection(p1, polar(p1, 0, 100), lin.p1, lin.p2);
-	p3 = itercection(p4, polar(p4, Math.PI / 2, 100), lin.p1, lin.p2);
+	p3 = itercection(p5, polar(p5, Math.PI / 2, 100), lin.p1, lin.p2);
 
 
 	var pc = newPoint_xy(p0, turnParams.treadWidthX / 2, turnParams.stepWidthY - (turnParams.treadWidthY - 45) / 2);
@@ -4252,9 +4253,9 @@ function drawTurn2TreadPlateCabriole(par) {
 		var dist = setDistHoleTurn("2", turnParams);
 		center3 = newPoint_xy(p1, dist.out + 0.4, -20);
 
-		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, false);
+		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
+        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
 
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -4318,7 +4319,7 @@ function drawTurn2TreadPlateCabriole(par) {
 		dxfBasePoint.x += distance(p2, p1) + 100;
 
 		//добавляем отверстия под фланец крепления косоуров
-		center1 = newPoint_xy(p2, -30 + 1, -20);
+		center1 = newPoint_xy(p2, -30 - params.flanThickness, -20);
 		center2 = newPoint_xy(center1, -(profileWidth + 60) - 2, 0);
 		center3 = newPoint_xy(center2, 0, -120);//120 расстояние между отверстиями
 
@@ -4377,8 +4378,8 @@ function drawTurn2TreadPlateCabriole(par) {
 		center1 = newPoint_xy(p1, 20 - 1.9, -(par.h - 45));
 		center2 = newPoint_xy(p1, 20 - 1.9, -20);
 
-		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, false);
+		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
 		//------------------------
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -4762,9 +4763,9 @@ function drawTurn3TreadPlateCabriole(par) {
 		var dist = setDistHoleTurn("3", turnParams);
 		center3 = newPoint_xy(p1, dist.in + par.strapThickness / 2, -20);
 
-		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, false);
+		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
+        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
@@ -4834,9 +4835,9 @@ function drawTurn3TreadPlateCabriole(par) {
 		center2 = newPoint_xy(p1, 20 - 1.5, -20);
 		center3 = newPoint_xy(p1, dist.out - 1.5, -20);
 
-		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, false);
-		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, false);
+		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
+        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));

@@ -581,13 +581,16 @@ function drawCarcasPart(par, len) {
 			center1.isLargePlt = center2.isLargePlt = par.largePlt;
 			//center1.isPltFrame = center2.isPltFrame = par.largePlt;
 			center1.isPltFrame = center2.isPltFrame = true;
-			if (par.isMiddleStringer) {
+            if (par.isMiddleStringer) {
 				par.elmIns[par.key] = {};
-				par.elmIns[par.key].longBolts = [];
 				center1.isPltPFrame = center2.isPltPFrame = true;
-				par.elmIns[par.key].longBolts.push(center1);
-				par.elmIns[par.key].longBolts.push(center2);
-			}
+			    center1.noZenk = center2.noZenk = true;
+            }
+            if (params.platformTop == 'увеличенная') {
+                if (params.calcType == "vhod" && params.M > 1100)
+                    center1.isPltPFrame = center2.isPltPFrame = true;
+                center1.noBoltsOut = center2.noBoltsOut = true;
+            }
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			begX += frameWidth + 5.0;
@@ -2246,9 +2249,9 @@ function drawColumn2(par) {
 		}
 		
 		var bolt = drawBolt(boltPar).mesh;
-        bolt.rotation.x = Math.PI / 2 * turnFactor;
+        bolt.rotation.x = -Math.PI / 2 * turnFactor;
 		bolt.position.x = - par.profWidth / 2;
-		bolt.position.z = (boltPar.len / 2 - boltBulge - par.profHeight / 2) * turnFactor;
+		bolt.position.z = -(boltPar.len / 2 - boltBulge - par.profHeight / 2) * turnFactor;
         if (par.key == "in") {
             bolt.rotation.x *= -1;
             bolt.position.z *= -1;

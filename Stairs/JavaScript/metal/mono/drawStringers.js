@@ -627,7 +627,7 @@ function drawComplexStringer(par) {
 									isPlate = false;
 								}
 								else {
-									platePar.basePointShiftX = params.stringerThickness / 2 + params.flanThickness - (params.M / 2) / 2  - 5 - 30;
+									platePar.basePointShiftX = params.stringerThickness / 2 - (params.M / 2) / 2  - 5 - 30;
 								}
 							}
 							

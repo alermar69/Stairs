@@ -32,8 +32,16 @@ function drawFrames(par){
 				}
 				else {
 					framePar.isFrameSideNoBolts1 = true;
-				}
+                }
             }
+		    if (par.holes[i].noBoltsIn) {
+		        if(turnFactor == 1) framePar.isFrameSideNoBolts2 = true;
+		        if(turnFactor == -1) framePar.isFrameSideNoBolts1 = true;
+            }
+		    if (par.holes[i].noBoltsOut) {
+		        if (turnFactor == 1) framePar.isFrameSideNoBolts1 = true;
+		        if (turnFactor == -1) framePar.isFrameSideNoBolts2 = true;
+		    }
 			if (par.holes[i].noBolts) {
 				framePar.isFrameSideNoBolts1 = true;
 				framePar.isFrameSideNoBolts2 = true;

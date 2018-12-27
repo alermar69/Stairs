@@ -2086,10 +2086,10 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 			if (par.isMiddleStringer) {
 				center1.isPltPFrame = center2.isPltPFrame = true;
                 center1.noZenk = center2.noZenk = true;
-				par.elmIns[par.key].longBolts.push(center1);
-				par.elmIns[par.key].longBolts.push(center2);
-				}
-			
+            }
+		    if (params.calcType == 'vhod' && params.platformTop == 'увеличенная') {
+		        center1.noBoltsIn = center2.noBoltsIn = true;
+		    }
 		}
 	}
 
@@ -2612,12 +2612,10 @@ function drawTopStepLt_pltPIn(par) {
 			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX - par.platformFramesParams.sideHolePosX, 0.0);
 			begX += frameWidth + 5.0;
             center1.isPltFrame = center2.isPltFrame = true;
+            center1.noBoltsIn = center2.noBoltsIn = true;
 		    par.pointsHole.push(center1);
             par.pointsHole.push(center2);
-		    if (!(params.calcType == 'vhod' && params.platformTop == 'увеличенная')) {
-		        par.elmIns[par.key].longBolts.push(center1);
-		        par.elmIns[par.key].longBolts.push(center2);
-		    }
+		    center1.noZenk = center2.noZenk = true;
 		}
 	}
 

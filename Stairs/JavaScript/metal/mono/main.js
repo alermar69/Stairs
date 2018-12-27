@@ -113,28 +113,6 @@ var angles = [];
 		//calculateBanisterSpec(); //функция в файле calcSpecBanister.js
 	}
 
-	changeAllForms = function () {
-		getAllInputsValues(params);
-		changeFormsGeneral();
-		changeFormCarcas();
-		changeFormRailing();
-		changeFormBanisterConstruct();
-		//changeOffer();
-		//complectDescription();
-		changeFormAssembling();
-		changeFormWr();
-		$('.installation_man').show();
-	}
-
-	configDinamicInputs = function() {
-		changeFormBanister();
-		changeFormTopFloor();
-		changeFormLedges();
-		changeAllForms();
-		configSectInputs();
-		configBoxInputs();
-		addDimRows();
-		}
 
 	//пересчитываем лестницу
 	recalculate();
@@ -144,26 +122,9 @@ var angles = [];
 	//вешаем перерисовку стен на измененние инпутов формы параметров стен
 	$('.tabs').delegate('input,select,textarea', 'click', redrawWalls);
 
-	$('.form_table,.tabs').delegate('input,select,textarea', 'change', changeAllForms);
 
-	//вешаем пересчет на все заголовки разделов
-	$('.raschet').click(function(){
-		recalculate();
-		});
-	//перерисовка пользовательских размеров
-	$('#dimParamsTable').delegate('input,select,textarea', 'change', function(){
-		changeFormDim();
-		drawCustomDimensions('vl_1');
-		});
-/*
-	//ссылка для монтажников
-	$("#viewLink").click(function(){
-		if(params.orderName){
-			var link = "http://6692035.ru/installation/mono/?orderName=" + params.orderName;
-			var result = prompt("Ссылка для просмотра 3D модели. Логин demo, пароль demo_pass", link);
-			};
-		});
-*/
+
+
 
 	//скрываем ненужные блоки
 	$("#mainImages").hide();
@@ -180,3 +141,27 @@ var angles = [];
 	initToggleDivs();
 
 });
+
+function changeAllForms() {
+	getAllInputsValues(params);
+	changeFormsGeneral();
+	changeFormCarcas();
+	changeFormRailing();
+	changeFormBanisterConstruct();
+	//changeOffer();
+	//complectDescription();
+	changeFormAssembling();
+	changeFormWr();
+	$('.installation_man').show();
+}
+
+function configDinamicInputs() {
+	changeFormBanister();
+	changeFormTopFloor();
+	changeFormLedges();
+	changeAllForms();
+	configSectInputs();
+	configBoxInputs();
+	addDimRows();
+}
+
