@@ -300,9 +300,8 @@ function drawStringer(par){
 	if (par.divide && par.divide !== 0) {
 		// divides = [par.divide];
 		divides = [{p1: par.keyPoints.divideP1, p2: par.keyPoints.divideP2}]
-		console.log(par)
 	}
-	console.log(par)
+
 	if (divides.length == 0) {
 		//параметры для рабочего чертежа
 		shapePar.drawing = {

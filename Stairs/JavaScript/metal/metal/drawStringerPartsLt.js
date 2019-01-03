@@ -411,7 +411,7 @@ function drawBotStepLt_pltG(par) {
 	}
 	
 	//крепление к стенам
-	if(par.key == "out" && par.marshParams.wallFix.out){
+	if(par.key == "out" && par.marshParams.wallFix.out && pt3){
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(pt3, 100, -100);
 		center1.rad = 10;

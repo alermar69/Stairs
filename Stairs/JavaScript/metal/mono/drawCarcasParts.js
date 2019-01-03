@@ -3733,12 +3733,27 @@ function drawTurn1TreadPlateCabriole(par) {
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
+		var points = [p0, p1, p2, p3, p4]
+		points = points.reverse();
+
+		/*
 		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
 		addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint);
 		addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
 		addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
 		addLine(shape, dxfPrimitivesArr, p4, p0, dxfBasePoint);
+		*/
 
+		//создаем шейп
+		var shapePar = {
+			points: points,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: dxfBasePoint,
+			radOut: 0, //радиус скругления внешних углов
+        }       
+
+		var shape = drawShapeByPoints2(shapePar).shape;
+		
 		// отрисовка двух центральных отверстий под болты
 		center1 = newPoint_xy(p0, 20, 20 - stringerPlateThickness);
 		center2 = newPoint_xy(p1, 20, -20);
@@ -3748,7 +3763,7 @@ function drawTurn1TreadPlateCabriole(par) {
 
 		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
 		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
-        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
 
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -3805,11 +3820,17 @@ function drawTurn1TreadPlateCabriole(par) {
 
 		dxfBasePoint.x += distance(p2, p1) + 100;
 
-		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p4, p0, dxfBasePoint);
+	    var points = [p4, p3, p2, p1, p0]
+
+	    //создаем шейп
+	    var shapePar = {
+	        points: points,
+	        dxfArr: dxfPrimitivesArr,
+	        dxfBasePoint: dxfBasePoint,
+	        radOut: 0, //радиус скругления внешних углов
+	    }
+
+	    var shape = drawShapeByPoints2(shapePar).shape;
 
 		// отрисовка двух центральных отверстий под болты
 		center1 = newPoint_xy(p0, 20, 20 - stringerPlateThickness);
@@ -4232,19 +4253,26 @@ function drawTurn2TreadPlateCabriole(par) {
 		var p3 = newPoint_xy(p2, 0, -60 + 12);
 		var p31 = itercection(p3, polar(p3, Math.PI, 100), p4, polar(p4, par.angleIn1, 100));
 
-		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint);
+
+	    var points = [p0, p1, p2]
 
 		if (p3.x < p31.x) {
 			var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), p4, polar(p4, par.angleIn1, 100));
-			addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-			addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+		    points.push(p3, p4);
 		} else {
-			addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-			addLine(shape, dxfPrimitivesArr, p3, p31, dxfBasePoint);
-			addLine(shape, dxfPrimitivesArr, p31, p4, dxfBasePoint);
-		}
-		addLine(shape, dxfPrimitivesArr, p4, p0, dxfBasePoint);
+		    points.push(p3, p31, p4);
+        }
+        points.reverse();
+
+	    //создаем шейп
+	    var shapePar = {
+	        points: points,
+	        dxfArr: dxfPrimitivesArr,
+	        dxfBasePoint: dxfBasePoint,
+	        radOut: 0, //радиус скругления внешних углов
+	    }
+
+	    var shape = drawShapeByPoints2(shapePar).shape;
 
 		// отрисовка двух центральных отверстий под болты
 		center1 = newPoint_xy(p1, 20 + 0.4, -(par.h - 45));
@@ -4333,23 +4361,28 @@ function drawTurn2TreadPlateCabriole(par) {
 		//}
 
 
-		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint);
+		var points = [p0, p1, p2]
 
 		var pn = copyPoint(p31);
 
 		if (p3.x < p31.x) {
 			var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), p4, polar(p4, par.angleIn1, 100));
-			addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-			addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+		    points.push(p3, p4);
 			pn = copyPoint(p3);
 		} else {
-			addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-			addLine(shape, dxfPrimitivesArr, p3, p31, dxfBasePoint);
-			addLine(shape, dxfPrimitivesArr, p31, p4, dxfBasePoint);
+		    points.push(p3, p31, p4);
 		}
-		addLine(shape, dxfPrimitivesArr, p4, p0, dxfBasePoint);
+	    points.reverse();
 
+	    //создаем шейп
+	    var shapePar = {
+	        points: points,
+	        dxfArr: dxfPrimitivesArr,
+	        dxfBasePoint: dxfBasePoint,
+	        radOut: 0, //радиус скругления внешних углов
+	    }
+
+	    var shape = drawShapeByPoints2(shapePar).shape;
 		
 		//сдвигаем 3 отверстие чтобы болт не пересекался с трубой
 		var pn1 = newPoint_xy(p1, 0, -par.h);
@@ -4750,11 +4783,17 @@ function drawTurn3TreadPlateCabriole(par) {
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
-		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p4, p0, dxfBasePoint);
+	    var points = [p4, p3, p2, p1, p0]
+
+	    //создаем шейп
+	    var shapePar = {
+	        points: points,
+	        dxfArr: dxfPrimitivesArr,
+	        dxfBasePoint: dxfBasePoint,
+	        radOut: 0, //радиус скругления внешних углов
+	    }
+
+	    var shape = drawShapeByPoints2(shapePar).shape;
 
 		// отрисовка отверстий под болты
 		center1 = newPoint_xy(p1, 20 + par.strapThickness/2, -(par.h - 45));
@@ -4824,11 +4863,17 @@ function drawTurn3TreadPlateCabriole(par) {
 
 		dxfBasePoint.x += distance(p2, p1) + 100;
 
-		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
-		addLine(shape, dxfPrimitivesArr, p4, p0, dxfBasePoint);
+	    var points = [p4, p3, p2, p1, p0]
+
+	    //создаем шейп
+	    var shapePar = {
+	        points: points,
+	        dxfArr: dxfPrimitivesArr,
+	        dxfBasePoint: dxfBasePoint,
+	        radOut: 0, //радиус скругления внешних углов
+	    }
+
+	    var shape = drawShapeByPoints2(shapePar).shape;
 
 		// отрисовка отверстий под болты
 		center1 = newPoint_xy(p1, 20 - 1.5, -(par.h - 45));
