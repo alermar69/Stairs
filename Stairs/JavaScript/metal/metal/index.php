@@ -69,8 +69,9 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 	<script type="text/javascript" src="drawStringerPartsLt.js"></script>
 	<script type="text/javascript" src="drawStringerPartsKo.js"></script>
 	<script type="text/javascript" src="/manufacturing/metal/ladderRailing.js"></script>
+		<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
 	<script type="text/javascript" src="drawCarcas.js"></script>
-	<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
+
 	<script type="text/javascript" src="drawFrames.js"></script>
 	<script type="text/javascript" src="drawStringers.js"></script>
 	<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
