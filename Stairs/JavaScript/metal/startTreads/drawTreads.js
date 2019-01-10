@@ -120,19 +120,29 @@ function drawStartTread(par) {
 	var p3 = newPoint_xy(p2, par.len, 0.0);
 	var p4 = newPoint_xy(p1, par.len, 0.0);
 
+	if (!par.lastStartTread && params.riserType == "есть") {
+		p2.y += params.riserThickness;
+		p3.y += params.riserThickness;
+		//par.width += params.riserThickness;
+	}
+
+	
+
 	//параметры боковых дуг
 
-	var rad = par.width / 2;
+	var sideWidth = p2.y - p0.y;
+
+	var rad = sideWidth / 2;
 
 	var sideArcs = {
 		right: {
-			center: newPoint_xy(p4, 0, par.width / 2),
+			center: newPoint_xy(p4, 0, sideWidth / 2),
 			angStart: Math.PI * 0.5,
 			angEnd: -Math.PI * 0.5,
 			rad: rad,
 		},
 		left: {
-			center: newPoint_xy(p0, 0, par.width / 2),
+			center: newPoint_xy(p0, 0, sideWidth / 2),
 			angStart: Math.PI * 1.5,
 			angEnd: Math.PI * 0.5,
 			rad: rad,
@@ -392,6 +402,10 @@ function drawStartTread(par) {
 			par.dim.stepOff = p4In.y;
 		}
 
+	}
+	if (!par.lastStartTread && params.riserType == "есть") {
+		par.dim.stepLeft -= params.riserThickness;
+		par.dim.stepRight -= params.riserThickness;
 	}
 	return par;
 } //end of drawStartTreads
