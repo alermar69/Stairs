@@ -1,22 +1,22 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
+$APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1");
 ?>
 
-<h1 id = "mainTitle">Расчет лестниц лт и ко</h1>
+<h1 id = "mainTitle">Проектирование деревянных лестниц</h1>
 
 <!--служебные поля-->
 
 <div id="calcInfo" style="display: none">
-    <select size="1" id="calcType">
-        <option value="lt-ko" selected >lt-ko</option>
-        <option value="timber"  >timber</option>
-        <option value="vint">vint</option>
-        <option value="vhod">vhod</option>
-        <option value="mono"  >mono</option>
-        <option value="geometry">geometry</option>
-    </select>
-    <input type="text" value="4.1" id = "calcVersion">
+	<select size="1" id="calcType">
+		<option value="lt-ko"  >lt-ko</option>
+		<option value="timber" selected >timber</option>
+		<option value="vint">vint</option>
+		<option value="vhod">vhod</option>
+		<option value="mono">mono</option>
+		<option value="geometry">geometry</option>
+	</select>
+	<input type="text" value="4.1" id = "calcVersion"></li>
 </div>
 
 <!-- Форма параметров заказа-->
@@ -26,10 +26,11 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <?php include $_SERVER['DOCUMENT_ROOT']."/manufacturing/general/include_areas/output.php" ?>
 
 <!-- форма параметров проемов каркаса-->
-<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/metal/forms/carcas_form.php" ?>
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/timber/forms/carcas_form.php" ?>
 
 <!-- форма параметров ограждений-->
-<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/metal/forms/railing_form.php" ?>
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/timber/forms/railing_form.php" ?>
+
 
 <!-- форма параметров конструкции балюстрады-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/banister/forms/banister_construct_form.php" ?>
@@ -58,36 +59,26 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
-<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
-
 <!--визуализация-->
+
+	<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
+	
 	<script type="text/javascript" src="drawStaircase.js"></script>
 	<script type="text/javascript" src="drawCarcasParts.js"></script>
-	<script type="text/javascript" src="drawCarcasPartsLib_2.0.js"></script>
-	<script type="text/javascript" src="drawRailing_3.0.js"></script>
-	<script type="text/javascript" src="drawStringerPartsLt.js"></script>
-	<script type="text/javascript" src="drawStringerPartsKo.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/ladderRailing.js"></script>
-		<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
+	<script type="text/javascript" src="drawRailing.js"></script>
+	<script type="text/javascript" src="drawStringerParts.js"></script>
+	<script type="text/javascript" src="drawNewell.js"></script>
 	<script type="text/javascript" src="drawCarcas.js"></script>
-
-	<script type="text/javascript" src="drawFrames.js"></script>
-	<script type="text/javascript" src="drawStringers.js"></script>
-	<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 
 	<script type="text/javascript" src="/dev/mayorov/startTreads/drawTreads.js"></script>
 	
-	<script type="text/javascript" src="drawSvg.js"></script>
 
-<!--файлы с едиными функциями (сейчас в работе)-->
-	
+	<script type="text/javascript" src="/calculator/geometry/calcGeomParams2.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
-	<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
-	
-	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
-    
+
 	<!-- автотесты -->
 	<script type="text/javascript" src="testing.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/baseTest.js"></script>
@@ -97,12 +88,11 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
     <script type="text/javascript" src="/manufacturing/general/testing/debug/testHelper.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/debug/testReport.js"></script>
     <script type="text/javascript" src="/manufacturing/general/testing/debug/testSamples.js"></script>
-
+	
 <!--расчет спецификации-->
-<script type="text/javascript" src="calcSpec_3.0.js"></script>
+<script type="text/javascript" src="calcSpec_2.0.js"></script>
 
 <!--оболочки-->
 <script type="text/javascript" src="main.js"></script>
-
 
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

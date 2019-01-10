@@ -151,6 +151,9 @@
     <Content Include="JavaScript\metal\railing_old\drawStaircase.js" />
     <Content Include="JavaScript\metal\railing_old\drawStringerPartsKo.js" />
     <Content Include="JavaScript\metal\railing_old\drawStringerPartsLt.js" />
+    <Content Include="JavaScript\metal\startTreads\drawTreads.js" />
+    <Content Include="JavaScript\metal\timber\drawCarcas.js" />
+    <Content Include="JavaScript\metal\timber\index.php" />
     <Content Include="JavaScript\metal\vhod\drawCarcasParts.js" />
     <Content Include="JavaScript\metal\vhod\drawStaircase.js" />
     <Content Include="JavaScript\metal\vhod\drawStringerPartsLt.js" />
