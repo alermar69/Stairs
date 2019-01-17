@@ -9,7 +9,7 @@ function drawCarcas(par) {
 	par.flans = new THREE.Object3D();
 	par.treadPlates = new THREE.Object3D();
 	var dxfX0 = par.dxfBasePoint.x;
-
+	
 	//нижний марш
 	var stringerParams1 = {
 		marshId: 1,
@@ -141,6 +141,7 @@ function drawCarcas(par) {
 			}
 			stringerParams2.isNotHoles = true;
 			stringerParams2.isTreadPlate = true;
+			stringerParams2.marshId1 = 21;
 
 			drawPltStringer(stringerParams2);
 
@@ -170,6 +171,7 @@ function drawCarcas(par) {
 				stringerParams2.isColonPlatformBackTop = false;
 				stringerParams2.isColonPlatformMiddleTop = false;
 				if (params.isColumn1) stringerParams2.isColonPlatformBackTop1 = true;
+				stringerParams2.marshId1 = 22;
 
 				drawPltStringer(stringerParams2);
 

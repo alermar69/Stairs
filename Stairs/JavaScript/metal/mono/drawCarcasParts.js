@@ -62,7 +62,7 @@ function drawColumn(par){
 		};
 
 		var flan = drawMonoFlan(flanPar).mesh;
-		flan.position.y = -dy;
+		flan.position.y = -dy - 3; // 3 - зазор от нижнего края фланца до опоры
 
 		var text = "Фланец колонны";
 		var textHeight = 30;
@@ -727,7 +727,7 @@ function calcColumnParams(par){
 			if (par.marshId !== 1 && marshParams.botTurn == 'площадка') {
 				botCarcasDeltaY = 0;
 			}
-			bot1.length = -botCarcasDeltaY + bot1.position.y + marshPosY - 0.02; //2 зазора: от фланца до колонны и от фланца до косоура
+			bot1.length = -botCarcasDeltaY + bot1.position.y + marshPosY - 0.02 - 3; //2 зазора: от фланца до колонны и от фланца до косоура
 		}
 	}
 	/**
@@ -753,7 +753,7 @@ function calcColumnParams(par){
 			if (par.marshId !== 1 && marshParams.botTurn == 'площадка') {
 				botCarcasDeltaY = 0;
 			}
-			bot2.length = -botCarcasDeltaY + bot2.position.y + marshPosY - 0.02; //2 зазора: от фланца до колонны и от фланца до косоура
+			bot2.length = -botCarcasDeltaY + bot2.position.y + marshPosY - 0.02 - 3; //2 зазора: от фланца до колонны и от фланца до косоура
 		}
 	}
 	/**
@@ -768,7 +768,7 @@ function calcColumnParams(par){
 			var pEnd = par.pointsShape[par.pointsShape.length - 1];
 			middle.topAngle = calcAngleX1(pStart, pEnd);
 			middle.position = newPoint_xy(pStart, (pEnd.x - pStart.x) / 2, (pEnd.y - pStart.y) / 2 - midLengthDelta / Math.cos(middle.topAngle));
-			middle.length = middle.position.y - 0.02; //2 зазора: от фланца до колонны и от фланца до косоура
+			middle.length = middle.position.y - 0.02 - 3; //2 зазора: от фланца до колонны и от фланца до косоура
 			middle.position.y -= 0.01;
 
 			if (middle.type == 'колонна') {
@@ -814,7 +814,7 @@ function calcColumnParams(par){
 			var localPos = localPosX * Math.cos(top1.topAngle);
 			top1.position = newPoint_xy(pStart, localPos, localPos * Math.tan(top1.topAngle) - topLengthDelta / Math.cos(top1.topAngle) - 0.02);//Не уверен в этом рещении, обдумать
 			
-			top1.length = top1.position.y + marshPosY - 0.02; //2 зазора: от фланца до колонны и от фланца до косоура
+			top1.length = top1.position.y + marshPosY - 0.02 - 3; //2 зазора: от фланца до колонны и от фланца до косоура
 			
 			if (!columnLogicParams.topConnection && params.stairModel == 'П-образная с площадкой' && params.model == 'труба') {
 				top1.rotation = Math.PI / 2;
@@ -862,7 +862,7 @@ function calcColumnParams(par){
 				top2.position.z = (params.M / 2 + params.stringerLedge2 - 220/2)*turnFactor;
 				top2.rotation = Math.PI / 2;
 			}
-			top2.length = top2.position.y + marshPosY - 0.02; //2 зазора: от фланца до колонны и от фланца до косоура
+			top2.length = top2.position.y + marshPosY - 0.02 - 3; //2 зазора: от фланца до колонны и от фланца до косоура
 		}
 	}
 
@@ -995,7 +995,13 @@ function drawHorPlate(par) {
 		var center2 = newPoint_xy(p2, holeOffset, -holeOffset);
 		var center3 = newPoint_xy(p3, -holeOffset, -holeOffset);
 		var center4 = newPoint_xy(p4, -holeOffset, holeOffset);
-
+		
+		//Отмечаем тип зенковки, для свг
+		center1.holeData = {zenk: 'no'};
+		center2.holeData = {zenk: 'no'};
+		center3.holeData = {zenk: 'no'};
+		center4.holeData = {zenk: 'no'};
+		
 		par.holes = [center1, center2, center3, center4];
 		par.holeRad = 5;
 
@@ -1128,7 +1134,14 @@ function drawHorPlates(par) {
                 dxfBasePoint: dxfBasePoint,
 				radOut: par.cornerRad, //радиус скругления внешних углов
 
-            }
+			}
+			if (par.type == "carcasPlate" && par.drawing) {
+				shapePar.drawing = par.drawing;
+				var shiftXY = par.height / 2 - par.width / 2;//корректировка положения после поворота
+				shapePar.drawing.baseLine = {p1: p1, p2: p2};
+				shapePar.drawing.basePoint = { x: shiftXY, y: shiftXY };
+			}
+			
 		    if (par.type == "treadPlate") {
 		        if (j == 0) {
 		            shapePar.drawing = {
@@ -1713,7 +1726,13 @@ function drawTurnPlate1(par) {
 	var line = parallel(p2, p3, -holeOffset);
 	var center2 = itercection(center1, polar(center1, Math.PI / 2, 100), line.p1, line.p2);
 	var center3 = itercection(center4, polar(center4, Math.PI / 2, 100), line.p1, line.p2);
-
+	
+	//Отмечаем тип зенковки, для свг
+	center1.holeData = {zenk: 'no'};
+	center2.holeData = {zenk: 'no'};
+	center3.holeData = {zenk: 'no'};
+	center4.holeData = {zenk: 'no'};
+	
 	par.holes = [center1, center2, center3, center4];
 	if (turnFactor == -1)
 		par.holes = mirrowPointsMiddleX(par.holes);
@@ -1851,7 +1870,13 @@ function drawTurnPlate3(par){
 	var line = parallel(p1, p4, holeOffset);
 	var center1 = itercection(center2, polar(center2, Math.PI / 2, 100), line.p1, line.p2);
 	var center4 = itercection(center3, polar(center3, Math.PI / 2, 100), line.p1, line.p2);
-
+	
+	//Отмечаем тип зенковки, для свг
+	center1.holeData = {zenk: 'no'};
+	center2.holeData = {zenk: 'no'};
+	center3.holeData = {zenk: 'no'};
+	center4.holeData = {zenk: 'no'};
+	
 	par.holes = [center1, center2, center3, center4];
 	if (turnFactor == -1)
 		par.holes = mirrowPointsMiddleX(par.holes);
@@ -2036,6 +2061,14 @@ function drawTurnPlate2(par) {
 	var center3 = itercection(line_p21_p31.p1, line_p21_p31.p2, line_p3_p4.p1, line_p3_p4.p2);
 	var center4 = itercection(line_p3_p4.p1, line_p3_p4.p2, line_p4_p5.p1, line_p4_p5.p2);
 	var center5 = itercection(line_p4_p5.p1, line_p4_p5.p2, line_p1_p5.p1, line_p1_p5.p2);
+	
+	
+	//Отмечаем тип зенковки, для свг
+	center1.holeData = {zenk: 'no'};
+	center2.holeData = {zenk: 'no'};
+	center3.holeData = {zenk: 'no'};
+	center4.holeData = {zenk: 'no'};
+	center5.holeData = {zenk: 'no'};
 
 	par.holes = [center1, center2, center3, center4, center5];
 	if (turnFactor == -1)
@@ -2214,7 +2247,6 @@ function drawTurn2TreadPlateHoles(par) {
 	var line = parallel(pt3, pt4, -(50 + params.metalThickness) / 2);
 	var center2 = itercection(center1, polar(center1, Math.PI / 2, 100), line.p1, line.p2);
 	var center3 = itercection(center4, polar(center4, Math.PI / 2, 100), line.p1, line.p2);
-
 
 	par.holesCenter = [center2, center3];
 
@@ -2821,13 +2853,21 @@ function drawMonoFlan(par) {
 		par.width = flanPar.width;
 		if (par.noBolts) flanPar.noBolts = par.noBolts; //болты не добавляются
 
-		if (par.pointCurrentSvg) {
+		if (par.pointCurrentSvg || par.isSvg) {
 			flanPar.drawing = {
 				name: "Внутренний фланец-заглушка",
                 group: "carcasFlans_In",
 				marshId: par.marshId,
-				basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y),
 			}
+			if (par.pointCurrentSvg) {
+				flanPar.drawing.basePoint =
+					newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y);
+			}
+			else {
+				flanPar.drawing.group = "carcasFlans";
+			}
+			if (par.name) flanPar.drawing.name = par.name;
+			if (par.isCount) flanPar.drawing.isCount = par.isCount;
 		}
 
 		flanPar.roundHoleCenters = [];
@@ -3091,16 +3131,16 @@ function drawMonoFlan(par) {
 
 	par.mesh = flan;
 
-    function addHolesMonoFlan(par) {
-        var hole1Y = par.holeY;
-        var hole2Y = par.holeY;
-        if (par.hole1Y) hole1Y = par.hole1Y;
-        if (par.hole2Y) hole2Y = par.hole2Y;
+	function addHolesMonoFlan(par) {
+		var hole1Y = par.holeY;
+		var hole2Y = par.holeY;
+		if (par.hole1Y) hole1Y = par.hole1Y;
+		if (par.hole2Y) hole2Y = par.hole2Y;
 		//функция добавляет координаты отверстий по краям фланца
-		par.roundHoleCenters.push({ x: par.holeX, y: hole1Y });
-		par.roundHoleCenters.push({ x: par.holeX, y: par.height - hole2Y});
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - hole2Y});
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y});
+		par.roundHoleCenters.push({ x: par.holeX, y: hole1Y, holeData: {zenk: 'no'} });
+		par.roundHoleCenters.push({ x: par.holeX, y: par.height - hole2Y, holeData: {zenk: 'no'}});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - hole2Y, holeData: {zenk: 'no'}});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y, holeData: {zenk: 'no'}});
 	}
 	function flanCentralHoles(length) {
 		//функция возвращает координаты центральных отверстий от центра фланца (для нижнего и верхнего фланцев)
@@ -3467,6 +3507,9 @@ function drawTurn1TreadPlateCabriole(par) {
 	par.isBot = true
 	par.isIn = true
 
+	var dxfArr = dxfPrimitivesArr;
+	if (turnFactor == 1) dxfArr = {};
+
 	var basePointSvg = { x: 0, y: 0 };
 
 	par.stringerTreadPlateExtrudeOptions = {
@@ -3509,77 +3552,150 @@ function drawTurn1TreadPlateCabriole(par) {
 	var pi2 = itercection(pv1, pv3, pi00, polar(pi00, Math.PI / 2, 100));
 	var angle1 = Math.atan(h1 / distance(pi1, pi0));
 
-	var shape = new THREE.Shape();
+	// создаем shape для Object3D
+	{
+		var shape = new THREE.Shape();
 
-	addLine(shape, dxfPrimitivesArr, pv0, pv2, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv2, pv3, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv3, pv1, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv1, pv0, dxfBasePoint);
+		addLine(shape, dxfArr, pv0, pv2, dxfBasePoint);
+		addLine(shape, dxfArr, pv2, pv3, dxfBasePoint);
+		addLine(shape, dxfArr, pv3, pv1, dxfBasePoint);
+		addLine(shape, dxfArr, pv1, pv0, dxfBasePoint);
 
-	//размеры для спецификации
-	var sizeA = Math.round(distance(pv0, pv2))
-	var sizeB = Math.round(distance(pv2, pv3))
+		//размеры для спецификации
+		var sizeA = Math.round(distance(pv0, pv2))
+		var sizeB = Math.round(distance(pv2, pv3))
 
-	hole1 = new THREE.Path();
-	hole2 = new THREE.Path();
-	hole3 = new THREE.Path();
-	hole4 = new THREE.Path();
+		hole1 = new THREE.Path();
+		hole2 = new THREE.Path();
+		hole3 = new THREE.Path();
+		hole4 = new THREE.Path();
 
-	var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
-	center1 = newPoint_xy(pv0, firstboultoffsert, firstboultoffsert);
-	center2 = newPoint_xy(pv1, firstboultoffsert, -firstboultoffsert + dy);
-	center3 = newPoint_xy(pv3, -firstboultoffsert, -firstboultoffsert - dy);
-	center4 = newPoint_xy(pv2, -firstboultoffsert, firstboultoffsert);
+		var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
+		center1 = newPoint_xy(pv0, firstboultoffsert, firstboultoffsert);
+		center2 = newPoint_xy(pv1, firstboultoffsert, -firstboultoffsert + dy);
+		center3 = newPoint_xy(pv3, -firstboultoffsert, -firstboultoffsert - dy);
+		center4 = newPoint_xy(pv2, -firstboultoffsert, firstboultoffsert);
 
-	addCircle(hole1, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
-	addCircle(hole2, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
-	addCircle(hole3, dxfPrimitivesArr, center3, holeRad, par.dxfBasePoint);
-	addCircle(hole4, dxfPrimitivesArr, center4, holeRad, par.dxfBasePoint);
+		addCircle(hole1, dxfArr, center1, holeRad, par.dxfBasePoint);
+		addCircle(hole2, dxfArr, center2, holeRad, par.dxfBasePoint);
+		addCircle(hole3, dxfArr, center3, holeRad, par.dxfBasePoint);
+		addCircle(hole4, dxfArr, center4, holeRad, par.dxfBasePoint);
 
-	shape.holes.push(hole1);
-	shape.holes.push(hole2);
-	shape.holes.push(hole3);
-	shape.holes.push(hole4);
+		shape.holes.push(hole1);
+		shape.holes.push(hole2);
+		shape.holes.push(hole3);
+		shape.holes.push(hole4);
 
-	// отрисовка центрального отверстия
+		// отрисовка центрального отверстия
 
-	//углы треугольника без учета скруглений
-	var p0 = { x: 0, y: 0 };
-	var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
-	var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, (distance(pi2, pi00) - 33));
-	var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, (distance(pi2, pi00) - 33));
-	var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
+		//углы треугольника без учета скруглений
+		var p0 = { x: 0, y: 0 };
+		var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
+		var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, (distance(pi2, pi00) - 33));
+		var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, (distance(pi2, pi00) - 33));
+		var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
 
 
-	var hole = new THREE.Path();
-	var vertexes = []; //массив вершин
+		var hole = new THREE.Path();
+		var vertexes = []; //массив вершин
 
-	vertexes[0] = p1;
-	vertexes[1] = p2;
-	vertexes[2] = p3;
-	vertexes[3] = p4;
+		vertexes[0] = p1;
+		vertexes[1] = p2;
+		vertexes[2] = p3;
+		vertexes[3] = p4;
 
-	var filletParams = {
-		vertexes: vertexes,
-		cornerRad: 10,
-		dxfBasePoint: dxfBasePoint,
-		dxfPrimitivesArr: dxfPrimitivesArr,
-		type: "path"
+		var filletParams = {
+			vertexes: vertexes,
+			cornerRad: 10,
+			dxfBasePoint: dxfBasePoint,
+			dxfPrimitivesArr: dxfArr,
+			type: "path"
+		}
+
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var tread1 = new THREE.Mesh(geom, par.stringerMaterial);
+		tread1.position.x = stringerPlateThickness;
+		tread1.rotation.x = toRadians(90);
+		tread1.rotation.y = toRadians(0);
+		tread1.rotation.z = toRadians(270);
+
+		treadPlate.add(tread1);
 	}
 
-	hole = fiiletPathCorners(filletParams);
-	shape.holes.push(hole);
+	//для правой лестницы зеркалим чертеж для svg и dxf
+	if (turnFactor == 1) {
+		var shape = new THREE.Shape();
+		dxfArr = dxfPrimitivesArr;
+		var dxfPoint = newPoint_xy(dxfBasePoint, pv3.x, 0);
+		var pvm0 = copyPoint(pv0);
+		var pvm1 = copyPoint(pv1);
+		var pvm2 = copyPoint(pv2);
+		var pvm3 = copyPoint(pv3);
+		pvm0.x *= -1;
+		pvm1.x *= -1;
+		pvm2.x *= -1;
+		pvm3.x *= -1;
+		addLine(shape, dxfArr, pvm0, pvm2, dxfPoint);
+		addLine(shape, dxfArr, pvm2, pvm3, dxfPoint);
+		addLine(shape, dxfArr, pvm3, pvm1, dxfPoint);
+		addLine(shape, dxfArr, pvm1, pvm0, dxfPoint);
 
-	var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		
+		hole1 = new THREE.Path();
+		hole2 = new THREE.Path();
+		hole3 = new THREE.Path();
+		hole4 = new THREE.Path();
 
-	var tread1 = new THREE.Mesh(geom, par.stringerMaterial);
-	tread1.position.x = stringerPlateThickness;
-	tread1.rotation.x = toRadians(90);
-	tread1.rotation.y = toRadians(0);
-	tread1.rotation.z = toRadians(270);
+		var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
+		center1 = newPoint_xy(pvm0, -firstboultoffsert, firstboultoffsert);
+		center2 = newPoint_xy(pvm1, -firstboultoffsert, -firstboultoffsert + dy);
+		center3 = newPoint_xy(pvm3, firstboultoffsert, -firstboultoffsert - dy);
+		center4 = newPoint_xy(pvm2, firstboultoffsert, firstboultoffsert);
 
-	treadPlate.add(tread1);
+		addCircle(hole1, dxfArr, center1, holeRad, dxfPoint);
+		addCircle(hole2, dxfArr, center2, holeRad, dxfPoint);
+		addCircle(hole3, dxfArr, center3, holeRad, dxfPoint);
+		addCircle(hole4, dxfArr, center4, holeRad, dxfPoint);
+
+		shape.holes.push(hole1);
+		shape.holes.push(hole2);
+		shape.holes.push(hole3);
+		shape.holes.push(hole4);
+
+		// отрисовка центрального отверстия
+
+		//углы треугольника без учета скруглений
+		var p0 = { x: 0, y: 0 };
+		var p1 = newPoint_xy(p0, -treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
+		var p2 = newPoint_xy(p0, -treadPlateWidth / 2 + profileWidth / 2 - 10, (distance(pi2, pi00) - 33));
+		var p3 = newPoint_xy(p0, -treadPlateWidth / 2 - profileWidth / 2 + 10, (distance(pi2, pi00) - 33));
+		var p4 = newPoint_xy(p0, -treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
+
+
+		var hole = new THREE.Path();
+		var vertexes = []; //массив вершин
+
+		vertexes[0] = p4;
+		vertexes[1] = p3;
+		vertexes[2] = p2;
+		vertexes[3] = p1;
+
+		var filletParams = {
+			vertexes: vertexes,
+			cornerRad: 10,
+			dxfBasePoint: dxfPoint,
+			dxfPrimitivesArr: dxfArr,
+			type: "path"
+		}
+
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
+	}
 
 	shape.drawing = {
 		name: "Подложка",
@@ -3942,6 +4058,9 @@ function drawTurn2TreadPlateCabriole(par) {
 	par.isBot = true
 	par.isIn = true
 
+	var dxfArr = dxfPrimitivesArr;
+	if (turnFactor == -1) dxfArr = {};
+
 	var basePointSvg = { x: 0, y: 0 };
 
 	par.stringerTreadPlateExtrudeOptions = {
@@ -4019,83 +4138,160 @@ function drawTurn2TreadPlateCabriole(par) {
 	var py2 = itercection(pk11, pk22, py0, polar(py0, 0, 100));
 
 
+	// создаем shape для Object3D
+	{
+		var shape = new THREE.Shape();
 
-	var shape = new THREE.Shape();
+		addLine(shape, dxfArr, pv0, pv4, dxfBasePoint);
+		addLine(shape, dxfArr, pv4, pv3, dxfBasePoint);
+		addLine(shape, dxfArr, pv3, pv2, dxfBasePoint);
+		addLine(shape, dxfArr, pv2, pv1, dxfBasePoint);
+		addLine(shape, dxfArr, pv1, pv0, dxfBasePoint);
 
-	addLine(shape, dxfPrimitivesArr, pv0, pv4, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv4, pv3, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv3, pv2, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv2, pv1, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv1, pv0, dxfBasePoint);
+		//размеры для спецификации
+		var sizeA = Math.round(distance(pv0, pv2))
+		var sizeB = Math.round(distance(pv1, pv3))
 
-	//размеры для спецификации
-	var sizeA = Math.round(distance(pv0, pv2))
-	var sizeB = Math.round(distance(pv1, pv3))
+		hole1 = new THREE.Path();
+		hole2 = new THREE.Path();
+		hole3 = new THREE.Path();
+		hole4 = new THREE.Path();
+		hole5 = new THREE.Path();
 
-	hole1 = new THREE.Path();
-	hole2 = new THREE.Path();
-	hole3 = new THREE.Path();
-	hole4 = new THREE.Path();
-	hole5 = new THREE.Path();
+		center1 = newPoint_xy(pv0, firstboultoffsert, firstboultoffsert);
+		center2 = newPoint_xy(pv1, firstboultoffsert, -firstboultoffsert);
+		center3 = newPoint_xy(pv3, -firstboultoffsert * 3, 0);
+		center4 = newPoint_xy(pv2, -firstboultoffsert, -firstboultoffsert);
+		center5 = newPoint_xy(pv4, 0, firstboultoffsert * 3 / 2);
 
-	center1 = newPoint_xy(pv0, firstboultoffsert, firstboultoffsert);
-	center2 = newPoint_xy(pv1, firstboultoffsert, -firstboultoffsert);
-	center3 = newPoint_xy(pv3, -firstboultoffsert * 3, 0);
-	center4 = newPoint_xy(pv2, -firstboultoffsert, -firstboultoffsert);
-	center5 = newPoint_xy(pv4, 0, firstboultoffsert * 3 / 2);
+		addCircle(hole1, dxfArr, center1, holeRad, par.dxfBasePoint);
+		addCircle(hole2, dxfArr, center2, holeRad, par.dxfBasePoint);
+		addCircle(hole3, dxfArr, center3, holeRad, par.dxfBasePoint);
+		addCircle(hole4, dxfArr, center4, holeRad, par.dxfBasePoint);
+		addCircle(hole5, dxfArr, center5, holeRad, par.dxfBasePoint);
 
-	addCircle(hole1, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
-	addCircle(hole2, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
-	addCircle(hole3, dxfPrimitivesArr, center3, holeRad, par.dxfBasePoint);
-	addCircle(hole4, dxfPrimitivesArr, center4, holeRad, par.dxfBasePoint);
-	addCircle(hole5, dxfPrimitivesArr, center5, holeRad, par.dxfBasePoint);
+		shape.holes.push(hole1);
+		shape.holes.push(hole2);
+		shape.holes.push(hole3);
+		shape.holes.push(hole4);
+		shape.holes.push(hole5);
 
-	shape.holes.push(hole1);
-	shape.holes.push(hole2);
-	shape.holes.push(hole3);
-	shape.holes.push(hole4);
-	shape.holes.push(hole5);
+		// отрисовка центрального отверстия
 
-	// отрисовка центрального отверстия
-
-	//углы треугольника без учета скруглений
-	var p0 = { x: 0, y: -distance(pi1, pi0) };
-	var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
-	var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, distance(py1, pk1) - 33);
-	var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, distance(py1, pk1) - 33);
-	var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
+		//углы треугольника без учета скруглений
+		var p0 = { x: 0, y: -distance(pi1, pi0) };
+		var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
+		var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, distance(py1, pk1) - 33);
+		var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, distance(py1, pk1) - 33);
+		var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
 
 
-	var hole = new THREE.Path();
-	var vertexes = []; //массив вершин
+		var hole = new THREE.Path();
+		var vertexes = []; //массив вершин
 
-	vertexes[0] = p1;
-	vertexes[1] = p2;
-	vertexes[2] = p3;
-	vertexes[3] = p4;
+		vertexes[0] = p1;
+		vertexes[1] = p2;
+		vertexes[2] = p3;
+		vertexes[3] = p4;
 
-	var filletParams = {
-		vertexes: vertexes,
-		cornerRad: 10,
-		dxfBasePoint: dxfBasePoint,
-		dxfPrimitivesArr: dxfPrimitivesArr,
-		type: "path"
+		var filletParams = {
+			vertexes: vertexes,
+			cornerRad: 10,
+			dxfBasePoint: dxfBasePoint,
+			dxfPrimitivesArr: dxfArr,
+			type: "path"
+		}
+
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
+		//---------------------------------------------------------------------------------------
+
+
+		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var tread1 = new THREE.Mesh(geom, par.stringerMaterial);
+		tread1.rotation.x = toRadians(90);
+		tread1.rotation.y = toRadians(180);
+		tread1.rotation.z = toRadians(90);
+
+		treadPlate.add(tread1);
 	}
 
-	hole = fiiletPathCorners(filletParams);
-	shape.holes.push(hole);
-	//---------------------------------------------------------------------------------------
+	//для левой лестницы зеркалим чертеж для svg и dxf
+	if (turnFactor == -1) {
+		var shape = new THREE.Shape();
+		dxfArr = dxfPrimitivesArr;
+		var dxfPoint = newPoint_xy(dxfBasePoint, pv3.x, 0);
+		var pvm0 = copyPoint(pv0);
+		var pvm1 = copyPoint(pv1);
+		var pvm2 = copyPoint(pv2);
+		var pvm3 = copyPoint(pv3);
+		var pvm4 = copyPoint(pv4);
+		pvm0.x *= -1;
+		pvm1.x *= -1;
+		pvm2.x *= -1;
+		pvm3.x *= -1;
+		pvm4.x *= -1;
+		addLine(shape, dxfArr, pvm0, pvm4, dxfPoint);
+		addLine(shape, dxfArr, pvm4, pvm3, dxfPoint);
+		addLine(shape, dxfArr, pvm3, pvm2, dxfPoint);
+		addLine(shape, dxfArr, pvm2, pvm1, dxfPoint);
+		addLine(shape, dxfArr, pvm1, pvm0, dxfPoint);
+
+		hole1 = new THREE.Path();
+		hole2 = new THREE.Path();
+		hole3 = new THREE.Path();
+		hole4 = new THREE.Path();
+		hole5 = new THREE.Path();
+
+		center1 = newPoint_xy(pvm0, -firstboultoffsert, firstboultoffsert);
+		center2 = newPoint_xy(pvm1, -firstboultoffsert, -firstboultoffsert);
+		center3 = newPoint_xy(pvm3, firstboultoffsert * 3, 0);
+		center4 = newPoint_xy(pvm2, firstboultoffsert, -firstboultoffsert);
+		center5 = newPoint_xy(pvm4, 0, firstboultoffsert * 3 / 2);
+
+		addCircle(hole1, dxfArr, center1, holeRad, dxfPoint);
+		addCircle(hole2, dxfArr, center2, holeRad, dxfPoint);
+		addCircle(hole3, dxfArr, center3, holeRad, dxfPoint);
+		addCircle(hole4, dxfArr, center4, holeRad, dxfPoint);
+		addCircle(hole5, dxfArr, center5, holeRad, dxfPoint);
+
+		shape.holes.push(hole1);
+		shape.holes.push(hole2);
+		shape.holes.push(hole3);
+		shape.holes.push(hole4);
+		shape.holes.push(hole5);
+
+		// отрисовка центрального отверстия
+
+		//углы треугольника без учета скруглений
+		var p0 = { x: 0, y: -distance(pi1, pi0) };
+		var p1 = newPoint_xy(p0, -treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
+		var p2 = newPoint_xy(p0, -treadPlateWidth / 2 + profileWidth / 2 - 10, distance(py1, pk1) - 33);
+		var p3 = newPoint_xy(p0, -treadPlateWidth / 2 - profileWidth / 2 + 10, distance(py1, pk1) - 33);
+		var p4 = newPoint_xy(p0, -treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
 
 
-	var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var hole = new THREE.Path();
+		var vertexes = []; //массив вершин
 
-	var tread1 = new THREE.Mesh(geom, par.stringerMaterial);
-	tread1.rotation.x = toRadians(90);
-	tread1.rotation.y = toRadians(180);
-	tread1.rotation.z = toRadians(90);
+		vertexes[0] = p4;
+		vertexes[1] = p3;
+		vertexes[2] = p2;
+		vertexes[3] = p1;
 
-	treadPlate.add(tread1);
+		var filletParams = {
+			vertexes: vertexes,
+			cornerRad: 10,
+			dxfBasePoint: dxfPoint,
+			dxfPrimitivesArr: dxfArr,
+			type: "path"
+		}
+
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
+	}
 
 	shape.drawing = {
 		name: "Подложка",
@@ -4105,7 +4301,9 @@ function drawTurn2TreadPlateCabriole(par) {
 		plateId: par.plateId,
 		basePoint: copyPoint(basePointSvg),
 	}
+
 	shapesList.push(shape);
+	
 	basePointSvg.x += (pv3.x - pv0.x) + 100;
 
 
@@ -4519,6 +4717,8 @@ function drawTurn3TreadPlateCabriole(par) {
 	par.isBot = true
 	par.isIn = true
 
+	var dxfArr = {};
+
 	var basePointSvg = { x: 0, y: 0 };
 
 	if (par.isTopNot) par.isTop = false;
@@ -4568,78 +4768,225 @@ function drawTurn3TreadPlateCabriole(par) {
 	var pi1 = itercection(pv1, pv3, pi0, polar(pi0, Math.PI / 2, 100));
 	var pi2 = itercection(pv1, pv3, pi00, polar(pi00, Math.PI / 2, 100));
 	var angle1 = Math.atan(h1 / distance(pi1, pi0));
+	if (par.angleIn3) angle1 = par.angleIn3;
 
-	var shape = new THREE.Shape();
+	// создаем shape для Object3D
+	{
+		var shape = new THREE.Shape();
 
-	addLine(shape, dxfPrimitivesArr, pv0, pv2, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv2, pv3, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv3, pv1, dxfBasePoint);
-	addLine(shape, dxfPrimitivesArr, pv1, pv0, dxfBasePoint);
+		addLine(shape, dxfArr, pv0, pv2, dxfBasePoint);
+		addLine(shape, dxfArr, pv2, pv3, dxfBasePoint);
+		addLine(shape, dxfArr, pv3, pv1, dxfBasePoint);
+		addLine(shape, dxfArr, pv1, pv0, dxfBasePoint);
 
-	//размеры для спецификации
-	var sizeA = Math.round(distance(pv0, pv2))
-	var sizeB = Math.round(distance(pv2, pv3))
+		//размеры для спецификации
+		var sizeA = Math.round(distance(pv0, pv2))
+		var sizeB = Math.round(distance(pv2, pv3))
 
-	hole1 = new THREE.Path();
-	hole2 = new THREE.Path();
-	hole3 = new THREE.Path();
-	hole4 = new THREE.Path();
+		hole1 = new THREE.Path();
+		hole2 = new THREE.Path();
+		hole3 = new THREE.Path();
+		hole4 = new THREE.Path();
 
-	var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
-	center1 = newPoint_xy(pv0, firstboultoffsert, firstboultoffsert);
-	center2 = newPoint_xy(pv1, firstboultoffsert, -firstboultoffsert + dy);
-	center3 = newPoint_xy(pv3, -firstboultoffsert, -firstboultoffsert - dy);
-	center4 = newPoint_xy(pv2, -firstboultoffsert, firstboultoffsert);
+		var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
+		center1 = newPoint_xy(pv0, firstboultoffsert, firstboultoffsert);
+		center2 = newPoint_xy(pv1, firstboultoffsert, -firstboultoffsert + dy);
+		center3 = newPoint_xy(pv3, -firstboultoffsert, -firstboultoffsert - dy);
+		center4 = newPoint_xy(pv2, -firstboultoffsert, firstboultoffsert);
 
-	addCircle(hole1, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
-	addCircle(hole2, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
-	addCircle(hole3, dxfPrimitivesArr, center3, holeRad, par.dxfBasePoint);
-	addCircle(hole4, dxfPrimitivesArr, center4, holeRad, par.dxfBasePoint);
+		addCircle(hole1, dxfArr, center1, holeRad, par.dxfBasePoint);
+		addCircle(hole2, dxfArr, center2, holeRad, par.dxfBasePoint);
+		addCircle(hole3, dxfArr, center3, holeRad, par.dxfBasePoint);
+		addCircle(hole4, dxfArr, center4, holeRad, par.dxfBasePoint);
 
-	shape.holes.push(hole1);
-	shape.holes.push(hole2);
-	shape.holes.push(hole3);
-	shape.holes.push(hole4);
+		shape.holes.push(hole1);
+		shape.holes.push(hole2);
+		shape.holes.push(hole3);
+		shape.holes.push(hole4);
 
-	// отрисовка центрального отверстия
+		// отрисовка центрального отверстия
 
-	//углы треугольника без учета скруглений
-	var p0 = { x: 0, y: distance(pi1, pi0) };
-	var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, -15);
-	var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, -(distance(pi1, pi0) - 33));
-	var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, -(distance(pi1, pi0) - 33));
-	var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, -15);
+		//углы треугольника без учета скруглений
+		var p0 = { x: 0, y: distance(pi1, pi0) };
+		var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, -15);
+		var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, -(distance(pi1, pi0) - 33));
+		var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, -(distance(pi1, pi0) - 33));
+		var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, -15);
 
-	var hole = new THREE.Path();
-	var vertexes = []; //массив вершин
+		var hole = new THREE.Path();
+		var vertexes = []; //массив вершин
 
-	vertexes[0] = p1;
-	vertexes[1] = p4;
-	vertexes[2] = p3;
-	vertexes[3] = p2;
+		vertexes[0] = p1;
+		vertexes[1] = p4;
+		vertexes[2] = p3;
+		vertexes[3] = p2;
 
-	var filletParams = {
-		vertexes: vertexes,
-		cornerRad: 10,
-		dxfBasePoint: dxfBasePoint,
-		dxfPrimitivesArr: dxfPrimitivesArr,
-		type: "path"
+		var filletParams = {
+			vertexes: vertexes,
+			cornerRad: 10,
+			dxfBasePoint: dxfBasePoint,
+			dxfPrimitivesArr: dxfArr,
+			type: "path"
+		}
+
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
+		//---------------------------------------------------------------------------------------
+
+
+		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var tread1 = new THREE.Mesh(geom, par.stringerMaterial);
+		tread1.rotation.x = toRadians(270);
+		//tread1.rotation.y = toRadians(180);
+		tread1.rotation.z = toRadians(90);
+
+		treadPlate.add(tread1);
 	}
 
-	hole = fiiletPathCorners(filletParams);
-	shape.holes.push(hole);
-	//---------------------------------------------------------------------------------------
+	// создаем shape для dxf и svg
+	{
+		// делаем симметрию по оси Y для dxf и svg
+		var dxfArr = dxfPrimitivesArr;
+		if (turnFactor == 1) dxfArr = {};
+
+		var shape = new THREE.Shape();
+		dxfArr = dxfPrimitivesArr;
+		var dxfPoint = newPoint_xy(dxfBasePoint, 0, pv3.y);
+		var pvb0 = copyPoint(pv0);
+		var pvb1 = copyPoint(pv1);
+		var pvb2 = copyPoint(pv2);
+		var pvb3 = copyPoint(pv3);
+		pvb0.y *= -1;
+		pvb1.y *= -1;
+		pvb2.y *= -1;
+		pvb3.y *= -1;
+		addLine(shape, dxfArr, pvb0, pvb2, dxfPoint);
+		addLine(shape, dxfArr, pvb2, pvb3, dxfPoint);
+		addLine(shape, dxfArr, pvb3, pvb1, dxfPoint);
+		addLine(shape, dxfArr, pvb1, pvb0, dxfPoint);
+
+		hole1 = new THREE.Path();
+		hole2 = new THREE.Path();
+		hole3 = new THREE.Path();
+		hole4 = new THREE.Path();
+
+		var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
+		center1 = newPoint_xy(pvb0, firstboultoffsert, -firstboultoffsert);
+		center2 = newPoint_xy(pvb1, firstboultoffsert, firstboultoffsert - dy);
+		center3 = newPoint_xy(pvb3, -firstboultoffsert, firstboultoffsert + dy);
+		center4 = newPoint_xy(pvb2, -firstboultoffsert, -firstboultoffsert);
+
+		addCircle(hole1, dxfArr, center1, holeRad, dxfPoint);
+		addCircle(hole2, dxfArr, center2, holeRad, dxfPoint);
+		addCircle(hole3, dxfArr, center3, holeRad, dxfPoint);
+		addCircle(hole4, dxfArr, center4, holeRad, dxfPoint);
+
+		shape.holes.push(hole1);
+		shape.holes.push(hole2);
+		shape.holes.push(hole3);
+		shape.holes.push(hole4);
+
+		// отрисовка центрального отверстия
+
+		//углы треугольника без учета скруглений
+		var p0 = { x: 0, y: -distance(pi1, pi0) };
+		var p1 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
+		var p2 = newPoint_xy(p0, treadPlateWidth / 2 - profileWidth / 2 + 10, (distance(pi1, pi0) - 33));
+		var p3 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, (distance(pi1, pi0) - 33));
+		var p4 = newPoint_xy(p0, treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
+
+		var hole = new THREE.Path();
+		var vertexes = []; //массив вершин
+
+		vertexes[0] = p1;
+		vertexes[1] = p2;
+		vertexes[2] = p3;
+		vertexes[3] = p4;
+
+		var filletParams = {
+			vertexes: vertexes,
+			cornerRad: 10,
+			dxfBasePoint: dxfPoint,
+			dxfPrimitivesArr: dxfArr,
+			type: "path"
+		}
+
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
 
 
-	var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		//для правой лестницы зеркалим чертеж для svg и dxf
+		if (turnFactor == 1) {
+			var shape = new THREE.Shape();
+			dxfArr = dxfPrimitivesArr;
+			var dxfPoint = newPoint_xy(dxfBasePoint, pv3.x, 0);
+			var pvm0 = copyPoint(pvb0);
+			var pvm1 = copyPoint(pvb1);
+			var pvm2 = copyPoint(pvb2);
+			var pvm3 = copyPoint(pvb3);
+			pvm0.x *= -1;
+			pvm1.x *= -1;
+			pvm2.x *= -1;
+			pvm3.x *= -1;
+			addLine(shape, dxfArr, pvm0, pvm2, dxfPoint);
+			addLine(shape, dxfArr, pvm2, pvm3, dxfPoint);
+			addLine(shape, dxfArr, pvm3, pvm1, dxfPoint);
+			addLine(shape, dxfArr, pvm1, pvm0, dxfPoint);
 
-	var tread1 = new THREE.Mesh(geom, par.stringerMaterial);
-	tread1.rotation.x = toRadians(270);
-	//tread1.rotation.y = toRadians(180);
-	tread1.rotation.z = toRadians(90);
 
-	treadPlate.add(tread1);
+			hole1 = new THREE.Path();
+			hole2 = new THREE.Path();
+			hole3 = new THREE.Path();
+			hole4 = new THREE.Path();
+
+			var dy = firstboultoffsert * Math.tan(turnParams.edgeAngle);
+			center1 = newPoint_xy(pvm0, -firstboultoffsert, -firstboultoffsert);
+			center2 = newPoint_xy(pvm1, -firstboultoffsert, firstboultoffsert - dy);
+			center3 = newPoint_xy(pvm3, firstboultoffsert, firstboultoffsert + dy);
+			center4 = newPoint_xy(pvm2, firstboultoffsert, -firstboultoffsert);
+
+			addCircle(hole1, dxfArr, center1, holeRad, dxfPoint);
+			addCircle(hole2, dxfArr, center2, holeRad, dxfPoint);
+			addCircle(hole3, dxfArr, center3, holeRad, dxfPoint);
+			addCircle(hole4, dxfArr, center4, holeRad, dxfPoint);
+
+			shape.holes.push(hole1);
+			shape.holes.push(hole2);
+			shape.holes.push(hole3);
+			shape.holes.push(hole4);
+
+			// отрисовка центрального отверстия
+
+			//углы треугольника без учета скруглений
+			var p0 = { x: 0, y: -distance(pi1, pi0) };
+			var p1 = newPoint_xy(p0, -treadPlateWidth / 2 + profileWidth / 2 - 10, 15);
+			var p2 = newPoint_xy(p0, -treadPlateWidth / 2 + profileWidth / 2 - 10, (distance(pi1, pi0) - 33));
+			var p3 = newPoint_xy(p0, -treadPlateWidth / 2 - profileWidth / 2 + 10, (distance(pi1, pi0) - 33));
+			var p4 = newPoint_xy(p0, -treadPlateWidth / 2 - profileWidth / 2 + 10, 15);
+
+
+			var hole = new THREE.Path();
+			var vertexes = []; //массив вершин
+
+			vertexes[0] = p1;
+			vertexes[1] = p4;
+			vertexes[2] = p3;
+			vertexes[3] = p2;
+
+			var filletParams = {
+				vertexes: vertexes,
+				cornerRad: 10,
+				dxfBasePoint: dxfPoint,
+				dxfPrimitivesArr: dxfArr,
+				type: "path"
+			}
+
+			hole = fiiletPathCorners(filletParams);
+			shape.holes.push(hole);
+		}
+	}
 
 	var marshId = par.marshId * 1 - 1;
 	if (params.stairModel == "Г-образная с забегом") marshId -= 1;
@@ -4980,7 +5327,7 @@ function getFlanParams(type){
 			flanParams.widthPipe = params.profileWidth + 2;
 			flanParams.width = flanParams.widthPipe + flanParams.holeX * 4;
 			flanParams.height = 60 + params.profileHeight;
-			flanParams.heightPipe = params.profileHeight + 1;
+			flanParams.heightPipe = params.profileHeight + 1 - params.sidePlateOverlay + 6;
 			flanParams.holesDist = flanParams.widthPipe + flanParams.holeX * 2;
 			return flanParams;
 			break;
@@ -5116,8 +5463,9 @@ function drawFlanPipeTop(par) {
 	var holeY = 20;
 	par.widthPipe = params.profileWidth + 2;
 	par.width = par.widthPipe + holeX * 4;
+	if (params.topAnglePosition === "над ступенью") par.width = 300;
 
-	var dy = params.topHolePos + 20 * 2 + 20;
+	var dy = params.topHolePos + params.treadThickness + 20;
 	if (params.topAnglePosition === "под ступенью")
 		dy = 20 + 20 - params.treadThickness;
 	par.heightPipe = params.profileHeight / Math.cos(par.marshAngle) + 2 + (params.flanThickness - 3) * Math.tan(par.marshAngle);
@@ -5128,25 +5476,40 @@ function drawFlanPipeTop(par) {
 
 
 	//рисуем контур фланца
-	var p0 = { x: 0, y: -20 };
-	var p1 = newPoint_xy(p0, 0, height);
-	var p2 = newPoint_xy(p1, width, 0);
-	var p3 = newPoint_xy(p2, 0, -height);
-	var p4 = newPoint_xy(p3, -holeX + holeRad, 0);
-	var p5 = newPoint_xy(p4, 0, holeY);
-	var p6 = newPoint_xy(p5, -holeRad * 2, 0);
-	var p7 = newPoint_xy(p6, 0, -holeY);
-	var p8 = newPoint_xy(p0, holeX + holeRad, 0);
-	var p9 = newPoint_xy(p8, 0, holeY);
-	var p10 = newPoint_xy(p9, -holeRad * 2, 0);
-	var p11 = newPoint_xy(p10, 0, -holeY);
+	if (params.topAnglePosition === "под ступенью") {
+		var p0 = { x: 0, y: -20 };
+		var p1 = newPoint_xy(p0, 0, height);
+		var p2 = newPoint_xy(p1, width, 0);
+		var p3 = newPoint_xy(p2, 0, -height);
+		var p4 = newPoint_xy(p3, -holeX + holeRad, 0);
+		var p5 = newPoint_xy(p4, 0, holeY);
+		var p6 = newPoint_xy(p5, -holeRad * 2, 0);
+		var p7 = newPoint_xy(p6, 0, -holeY);
+		var p8 = newPoint_xy(p0, holeX + holeRad, 0);
+		var p9 = newPoint_xy(p8, 0, holeY);
+		var p10 = newPoint_xy(p9, -holeRad * 2, 0);
+		var p11 = newPoint_xy(p10, 0, -holeY);
 
-	p4.filletRad = 0; //угол не скругляется
-	p7.filletRad = 0; //угол не скругляется
-	p8.filletRad = 0; //угол не скругляется
-	p11.filletRad = 0; //угол не скругляется
+		p4.filletRad = 0; //угол не скругляется
+		p7.filletRad = 0; //угол не скругляется
+		p8.filletRad = 0; //угол не скругляется
+		p11.filletRad = 0; //угол не скругляется
 
-	var points = [p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11];
+		var points = [p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11];
+	}
+
+	if (params.topAnglePosition === "над ступенью") {
+		var p0 = { x: 0, y: -20 };
+		var p1 = newPoint_xy(p0, 0, height);
+		var p11 = newPoint_xy(p1, 0, - dy);
+		var p2 = newPoint_xy(p1, width, 0);
+		var p3 = newPoint_xy(p2, 0, -height);
+		var p22 = newPoint_xy(p2, 0, -dy);
+		var p4 = newPoint_xy(p3, -width / 2 + par.widthPipe / 2 + holeX, 0);
+		var p5 = newPoint_xy(p0, width / 2 - par.widthPipe / 2 - holeX, 0);
+
+		var points = [p11, p1, p2, p22, p4, p5];
+	}
 
 	//создаем шейп
 	var shapePar = {
@@ -5169,6 +5532,17 @@ function drawFlanPipeTop(par) {
 	var center2 = newPoint_xy(p2, -holeX, -holeY);
 
 	var holeCenters = [center1, center2];
+
+	if (params.topAnglePosition === "над ступенью") {
+		var center3 = newPoint_xy(p1, holeX, -dy + params.treadThickness + holeY);
+		var center4 = newPoint_xy(p2, -holeX, -dy + params.treadThickness + holeY);
+		var center5 = newPoint_xy(p1, width / 2, - dy / 2 + params.treadThickness - holeY);
+		holeCenters.push(center3);
+		holeCenters.push(center4);
+		holeCenters.push(center5);
+	}
+
+	
 
 	var holesPar = {
 		holeArr: holeCenters,
@@ -5274,6 +5648,12 @@ function drawFlanTop(par) {
 	var center3 = newPoint_xy(p1, holeX, -(par.height - par.heightBot) / 2);
 	var center4 = newPoint_xy(p2, -holeX, -(par.height - par.heightBot) / 2);
 
+	//Отмечаем тип зенковки, для свг
+	center1.holeData = {zenk: 'no'};
+	center2.holeData = {zenk: 'no'};
+	center3.holeData = {zenk: 'no'};
+	center4.holeData = {zenk: 'no'};
+	
 	var holeCenters = [center1, center2, center3, center4];
 
 	var holesPar = {

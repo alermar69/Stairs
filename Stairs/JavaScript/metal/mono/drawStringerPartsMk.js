@@ -386,12 +386,13 @@ function drawBotStepMk_wnd(par) {
 		}
 
 		//if (params.stairModel == "П-образная трехмаршевая") lengthB2 += 5;
-		//if (params.stairModel == "П-образная трехмаршевая" && par.turnSteps.marshDist !== 0)
-		//	lengthB2 += params.marshDist - 45;
+		
 
 		if (!(par.botEnd == "забег" && par.topEnd == "забег" && par.stairAmt <= 2))
 			lengthB2 = lengthB1_2 - lengthB1;
-		if (par.stairAmt == 1) lengthB2 += params.lastWinderTreadWidth - 50;
+		if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0)
+			lengthB2 += params.marshDist - 40;
+		if (par.stairAmt == 1 && par.lastMarsh) lengthB2 += params.lastWinderTreadWidth - 50;
 	}
 	if (params.model == "труба") {
 		//Вычислем длину проступи под вторую забежную ступень

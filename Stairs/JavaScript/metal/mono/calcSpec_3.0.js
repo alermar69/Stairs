@@ -111,6 +111,20 @@ function floorsMountingItemsAdd(){}; //пустая функция для нав
 		}
 	if(params.isAssembling == "есть") addFixParts(fixParams);
 	
+	//крепление первой стойки
+	var fixParams = {
+		partsList: partsList,
+		fixPart: "саморезы",
+		fixSurfaceType: params.fixType1,
+		discription: "Крепление первой стойки к перекрытию",
+		unit: "Низ лестницы",
+		itemGroup: "Крепление к обстановке",
+		amt: 4,
+		extraStudLength: 0,
+		studDiam: 10,
+		}
+	if(params.isAssembling == "есть") addFixParts(fixParams);
+	
 	//крепление к верхнему перекрытию
 	var fixParams = {
 		partsList: partsList,

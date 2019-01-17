@@ -86,9 +86,14 @@ function calculateGlassPoints(par){
 		y: marshPar.h * (marshPar.stairAmt + 1),
 	};
 	//сдвигаем точку на внешней стороне
+	//if (par.key == 'in' && marshPar.topTurn !== 'нет' && !marshPar.lastMarsh) {
+	//	var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
+	//	lastMarshPoint = newPoint_xy(lastMarshPoint, deltaX, marshPar.ang * deltaX);
+	//}
 	if (par.key == 'in' && marshPar.topTurn !== 'нет' && !marshPar.lastMarsh) {
 		var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
-		lastMarshPoint = newPoint_xy(lastMarshPoint, deltaX, marshPar.ang * deltaX);
+		if (nextMarshPar.hasRailing.in) deltaX = 60 - marshTurnParams.pltExtraLen;
+		lastMarshPoint = newPoint_xy(lastMarshPoint, deltaX, Math.tan(marshPar.ang) * deltaX);
 	}
 
 	if((par.key == "out" || (par.key == 'in' && marshPar.lastMarsh)) && marshPar.topTurn !== 'пол'){
@@ -104,11 +109,24 @@ function calculateGlassPoints(par){
 	}
 	if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
 		var isShiftLastMarshPoint = false;
-		if (params.stairModel == "П-образная с забегом" && marshPar.topTurn == 'забег' && par.key == 'in') isShiftLastMarshPoint = true;
+		if (par.key == 'in') {
+			if (!marshPar.lastMarsh) {
+				if (params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой") {
+					isShiftLastMarshPoint = true;
+				}
+				else if (!nextMarshPar.hasRailing.in) {
+					isShiftLastMarshPoint = true;
+				}
+			}
+		}
 		if (marshPar.topTurn == 'пол') isShiftLastMarshPoint = true;
 
-		if (isShiftLastMarshPoint)
+		if (isShiftLastMarshPoint) {
 			handrailPoint = newPoint_xy(lastMarshPoint, -29, -29 * Math.tan(marshPar.ang));
+			if (params.stairModel == "П-образная с площадкой" && !marshPar.lastMarsh) {
+				handrailPoint = newPoint_xy(handrailPoint, -50, -50 * Math.tan(marshPar.ang));
+			}
+		}
 	}
 	handrailPoints.push(handrailPoint);
 	glassPoints.push(lastMarshPoint);
@@ -449,7 +467,7 @@ function drawGlassSection(par){
 			thk: glassThickness,
 			holeCenters: filteredHoles
 		}
-		if(i == 0 && par.marshPar.botTurn == 'пол'){
+		if (i == 0 && par.marshPar.botTurn == 'пол' && params.railingStart === "0"){
 			glassPar.botCutHeight = glassOffsetY - par.marshPar.h;
 		}
 		glassPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.glassPoints[i].x, par.glassPoints[i].y);
@@ -541,7 +559,17 @@ function drawGlassSection(par){
 
 		if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
 			var isDrawHandrail = false;
-			if (params.stairModel == "П-образная с забегом" && par.marshPar.topTurn == 'забег' && par.key == 'in') isDrawHandrail = true;
+			if (par.key == 'in') {
+				if (!par.marshPar.lastMarsh) {
+					if (params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой") {
+						isDrawHandrail = true;
+					}
+					else if (!par.nextMarshPar.hasRailing.in) {
+						isDrawHandrail = true;
+					}
+				}
+			}
+			
 			if (par.marshPar.topTurn == 'пол') isDrawHandrail = true;
 			if (isDrawHandrail) {
 				var endPoint = newPoint_xy(handrailParams.points[handrailParams.points.length - 1], 0, -(sectionHeight + glassOffsetY));
@@ -2049,6 +2077,12 @@ function drawLastRackFlan(par){
 	var center2 = newPoint_xy(p2, -holeOffset, -holeOffset)
 	var center3 = newPoint_xy(p3, -holeOffset, holeOffset)
 	var center4 = newPoint_xy(p4, holeOffset, holeOffset)
+	//Отмечаем тип зенковки, для свг
+	center1.holeData = {zenk: 'no'};
+	center2.holeData = {zenk: 'no'};
+	center3.holeData = {zenk: 'no'};
+	center4.holeData = {zenk: 'no'};
+	
 	var holeCenters = [center1, center2, center3, center4];
 	
 	//центральные отверстия
@@ -2160,3 +2194,104 @@ function addRackAngles(par){
 
 }//end of addRackAngles
 
+function drawRectFlan2(par) {
+
+	par.mesh = new THREE.Object3D();
+
+	var dxfArr = dxfPrimitivesArr;
+	//если не задана базовая точка, в dxf контур не выводим
+	if (!par.dxfBasePoint) {
+		dxfArr = [];
+		par.dxfBasePoint = { x: 0, y: 0, }
+	}
+	if (!par.thk) par.thk = 8;
+	if (!par.material) par.material = params.materials.metal2
+
+	var p1 = { x: 0, y: 0, };
+	var p2 = newPoint_xy(p1, 0, par.height);
+	var p3 = newPoint_xy(p2, par.width, 0);
+	var p4 = newPoint_xy(p1, par.width, 0);
+
+	var points = [p1, p2, p3, p4];
+
+	//срезанный задний угол для пресснастила
+	if (par.cutAngle) {
+		var p5 = newPoint_xy(p1, 0, 30);
+		points[0].x += 30;
+		points.splice(1, 0, p5)
+	}
+
+	//создаем шейп
+	var shapePar = {
+		points: points,
+		dxfArr: dxfArr,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+	if (par.cornerRad) {
+		shapePar.radOut = par.cornerRad;
+		shapePar.radIn = par.cornerRad;
+	}
+	if (par.drawing) {
+		shapePar.drawing = {
+			name: par.drawing.name,
+			group: par.drawing.group,
+			marshId: par.drawing.marshId,
+			basePoint: par.drawing.basePoint,
+			location: par.drawing.location,
+		}
+		if (par.drawing.isRotate) shapePar.drawing.baseLine = { p1: p1, p2: p2 }
+		if (par.drawing.isCount) shapePar.drawing.isCount = par.drawing.isCount;
+	}
+
+	par.shape = drawShapeByPoints2(shapePar).shape;
+
+	if (par.pathHoles) par.shape.holes.push(...par.pathHoles);
+
+	if (par.roundHoleCenters) {
+		var holesPar = {
+			holeArr: par.roundHoleCenters,
+			dxfBasePoint: par.dxfBasePoint,
+			shape: par.shape,
+		}
+		if (par.holeRad) holesPar.holeRad = par.holeRad;
+		addHolesToShape(holesPar);
+	}
+
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(par.shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var flan = new THREE.Mesh(geom, par.material);
+	par.mesh.add(flan);
+
+	//болты в отверстиях
+
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //anglesHasBolts - глобальная переменная
+		var boltPar = {
+			diam: boltDiam,
+			len: boltLen,
+		};
+		if (par.roundHoleCenters) {
+			for (var i = 0; i < par.roundHoleCenters.length; i++) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2;
+				bolt.position.x = par.roundHoleCenters[i].x;
+				bolt.position.y = par.roundHoleCenters[i].y;
+				bolt.position.z = boltPar.len / 2 - boltBulge;
+				if (par.mirrowBolts) {
+					bolt.rotation.x = -Math.PI / 2;
+					bolt.position.z = -boltPar.len / 2 + boltBulge + par.thk;
+				}
+				par.mesh.add(bolt);
+			}
+		}
+	}
+
+	return par;
+
+}//end of drawRectFlan2

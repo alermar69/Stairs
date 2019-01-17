@@ -148,6 +148,7 @@ function addTreadItems(){}; //пустая функция для навигац�
 	if(treadPar.fixPart == "boltMeb") fixPartAmt = getPartAmt("tread") * 6;
 	if(treadPar.fixPart == "scotch") fixPartAmt = getPartAmt("tread") * 2 * params.M / 1000;
 	
+	
 	item = {
 		id: treadPar.fixPartId,
 		amt: fixPartAmt,
@@ -155,7 +156,7 @@ function addTreadItems(){}; //пустая функция для навигац�
 		unit: "Крепление ступеней",
 		itemGroup: "Ступени",
 		};
-	if(item.amt > 0) partsList.addItem(item);
+	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 
 	if(treadPar.fixPart == "boltMeb"){
 		item = {
@@ -186,7 +187,7 @@ function addTreadItems(){}; //пустая функция для навигац�
 		unit: "Крепление ступеней",
 		itemGroup: "Ступени",
 		};
-	if(item.amt > 0) partsList.addItem(item);
+	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 
 	item = {
 		id: treadPar.fixPartId,
@@ -195,7 +196,7 @@ function addTreadItems(){}; //пустая функция для навигац�
 		unit: "Крепление ступеней",
 		itemGroup: "Ступени",
 		};
-	if(item.amt > 0) partsList.addItem(item);
+	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 	
 //пригласительные ступени
 
@@ -206,7 +207,7 @@ function addTreadItems(){}; //пустая функция для навигац�
 		unit: "Крепление ступеней",
 		itemGroup: "Ступени",
 		};
-	if(item.amt > 0) partsList.addItem(item);
+	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 	
 	
 //подступенки

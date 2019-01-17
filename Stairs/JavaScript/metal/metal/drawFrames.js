@@ -9,7 +9,8 @@ function drawFrames(par){
 	}
 	for(var i=0; i<par.holes.length-1; i++){
 		if(isFrameHole(par.holes[i])){
-			var holeDist = par.holes[i+1].x - par.holes[i].x;
+			var holeDist = par.holes[i + 1].x - par.holes[i].x;			
+
 			var framePar = {
 				holeDist: holeDist,
 				dxfBasePoint: par.dxfBasePoint,
@@ -23,6 +24,10 @@ function drawFrames(par){
 			if(params.stairType == "лотки" || params.stairType == "рифленая сталь"){
 				isFlanFrame = false;
 			}
+
+			//для дпк на площадке добавляем два отверстия в середине
+			if (params.stairType == "дпк" && par.holes[i].isPltFrame)
+				framePar.holeDistDpk = par.holes[i + 2].x - par.holes[i].x; // расстояние между отверстиями
 
 			//для средней тетивы входной лестницы убираем болты
             if (params.calcType == "vhod" && params.M > 1100) {
@@ -118,6 +123,7 @@ function drawFrames(par){
 			
 			par.dxfBasePoint.x += 150;
 			i++; //пропускаем следующее отверстие
+			if (params.stairType == "дпк" && framePar.isPltFrame) i += 2;
 		}
 	}
 	
@@ -1673,10 +1679,24 @@ function drawTreadFrame2(par){
 		flanPar.material = params.materials.inox;
 		flanPar.cutAngle = true;
 	}
-	
+
 	// добавляем параметры отверстий в свойства фланца
-	flanPar.roundHoleCenters.push(hole1, hole2);
-	
+	flanPar.roundHoleCenters.push(hole1, hole2);	
+
+	//для дпк на площадке добавляем два отверстия в середине
+	if (params.stairType == "дпк" && par.isPltFrame) {
+		// определяем параметры средних отверстий фланца
+		var hole3 = {
+			x: flanPar.width / 2,
+			y: flanPar.holeOffset + par.holeDistDpk
+		};
+		var hole4 = {
+			x: flanPar.width / 2,
+			y: flanPar.holeOffset + par.holeDistDpk * 2
+		};
+		// добавляем параметры отверстий в свойства фланца
+		flanPar.roundHoleCenters.push(hole3, hole4);
+	}
 	
 
 	// создаем левый боковой фланец

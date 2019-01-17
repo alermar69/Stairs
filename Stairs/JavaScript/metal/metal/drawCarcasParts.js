@@ -1458,7 +1458,10 @@ function drawStringerFlan(par) {
 				bolt.position.x = par.holeCenters[i].x;
 				bolt.position.y = par.holeCenters[i].y;
 				bolt.position.z = (boltPar.len / 2 - params.stringerThickness) * turnFactor + params.stringerThickness*(1-turnFactor)*0.5;
-				if (side == "right") bolt.position.z = (params.stringerThickness * 2 - boltPar.len / 2) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
+				if (side == "right") {				
+					bolt.position.z = (params.stringerThickness * 2 - boltPar.len / 2) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
+					bolt.rotation.x = -Math.PI / 2;
+				}
 				par.mesh.add(bolt)
 			}
 		}
@@ -1999,10 +2002,12 @@ function drawTopFixFlans(par){
 	}
 
 	var sideOffset = params.stringerThickness;
-	if(params.model == "ко") sideOffset += params.sideOverHang;
+	if (params.model == "ко") sideOffset += params.sideOverHang;
+
+	var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 200, -500);
 	
 	//левый фланец
-	var flan1 = drawTopFixFlan(par.flanLen, par.dxfBasePoint).mesh;
+	var flan1 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
 	flan1.position.x = -params.M / 2 + sideOffset;
 	flan1.position.y = -lastRise - botLedge; 
 	if (params.stairType == "дпк") flan1.position.z = 8;
@@ -2012,9 +2017,11 @@ function drawTopFixFlans(par){
 	}
 	flan1.position.z += 0.01;
 	par.mesh.add(flan1);
+
+	dxfBasePoint.x += 300;
 	
 	//правый фланец
-	var flan2 = drawTopFixFlan(par.flanLen, par.dxfBasePoint).mesh;
+	var flan2 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
 	flan2.position.x = params.M / 2 - 100 - sideOffset;
 	flan2.position.y = flan1.position.y; 
 	if (params.stairType == "дпк") flan2.position.z = 8;
@@ -2076,7 +2083,7 @@ function drawTopFixFlan(length, dxfBasePoint) {
 
 	var text = "Фланец верхний";
 	var textHeight = 30;
-	var textBasePoint = newPoint_xy(dxfBasePoint, -50, -250);
+	var textBasePoint = newPoint_xy(dxfBasePoint, -50, -50);
 	addText(text, textHeight, dxfArr, textBasePoint);
 
 	var thickness = 8;
@@ -2635,6 +2642,8 @@ function drawRailingHoles(par) {
 			layer = "parts"
 			var rad = 6.5;
 			var center2 = newPoint_xy(center, 0.0, -60.0);
+			center.holeData = {zenk: 'back'};
+			center2.holeData = {zenk: 'back'};
 			addRoundHoleRail(par.shape, dxfPrimitivesArr, center, rad, par.dxfBasePoint, layer);
 			addRoundHoleRail(par.shape, dxfPrimitivesArr, center2, rad, par.dxfBasePoint, layer);
 
@@ -2647,8 +2656,9 @@ function drawRailingHoles(par) {
 		if (params.railingModel == "Самонесущее стекло") {
 			layer = "parts";
 			var rad = 9;
+			center.holeData = {zenk: 'no'};
 			addRoundHoleRail(par.shape, dxfPrimitivesArr, center, rad, par.dxfBasePoint, layer);
-
+			
 			//отсутствие зенковки отверстий рутелей если другие отверстия зенкуются
 			if (params.boltHead == "countersunk") {
 				layer = "comments";

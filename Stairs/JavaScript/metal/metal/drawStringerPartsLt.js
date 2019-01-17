@@ -360,7 +360,8 @@ function drawBotStepLt_pltG(par) {
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
 		center1.rotated = center2.rotated = true;
-		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
+		if (!(par.key == "in" && hasTreadFrames()))
+			center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
 
@@ -2081,14 +2082,30 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			begX += frameWidth + 5.0;
+
+			if (params.stairType == "дпк") {
+				var x = (frameWidth - par.platformFramesParams.sideHolePosX * 2) / 3;
+				var center3 = newPoint_xy(center1, x, 0.0);
+				var center4 = newPoint_xy(center3, x, 0.0);
+				center3.isPltFrame = center4.isPltFrame = true;
+				par.pointsHole.push(center3);
+				par.pointsHole.push(center4);
+			}
 			
 			//длинные болты на среднем косоуре
 			if (par.isMiddleStringer) {
 				center1.isPltPFrame = center2.isPltPFrame = true;
-                center1.noZenk = center2.noZenk = true;
+				center1.noZenk = center2.noZenk = true;
+				if (params.stairType == "дпк") {
+					center3.isPltPFrame = center4.isPltPFrame = true;
+					center3.noZenk = center4.noZenk = true;
+				}
             }
 		    if (params.calcType == 'vhod' && params.platformTop == 'увеличенная') {
-		        center1.noBoltsIn = center2.noBoltsIn = true;
+				center1.noBoltsIn = center2.noBoltsIn = true;
+			    if (params.stairType == "дпк") {
+				    center3.noBoltsIn = center4.noBoltsIn = true;
+			    }
 		    }
 		}
 	}
@@ -2982,9 +2999,20 @@ function drawTopStepLt_wndIn(par) {
 			if(par.stairAmt > 1) botLinePoints.push(botLineP1);
 			//корректируем нижнюю точку, чтобы задняя линия была вертикальной
             if ((par.pointsShape[0].x > (topLineP1.x + 10)) && par.stairAmt !== 0) {
-                par.pointsShape.shift();
-                par.pointsShape.shift();
-                par.pointsShape.unshift(itercection(par.pointsShape[0], polar(par.pointsShape[0], 0, 100), topLineP1, polar(topLineP1, Math.PI / 2, 100)));
+	            if (par.botEnd !== "floor") {
+		            par.pointsShape.shift();
+		            par.pointsShape.shift();
+		            par.pointsShape.unshift(itercection(par.pointsShape[0],
+			            polar(par.pointsShape[0], 0, 100),
+			            topLineP1,
+			            polar(topLineP1, Math.PI / 2, 100)));
+				}
+				if (par.botEnd == "floor") {
+					var botLineP1 = itercection(p0, polar(p0, 0, 100), topLineP1, polar(topLineP1, Math.PI / 2, 100));
+					var botLineP2 = itercection(botLineP1, polar(botLineP1, 0, 100), par.pointsShape[0], polar(par.pointsShape[0], Math.PI / 2, 100));
+					botLinePoints.push(botLineP1);
+					botLinePoints.push(botLineP2);
+	            }
             }
 			//внутренний промежуточный косоур П-образной с забегом
 			if(par.stairAmt == 0){

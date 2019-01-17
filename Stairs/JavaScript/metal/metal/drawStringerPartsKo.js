@@ -184,18 +184,21 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 			par.pointsShapeBot.push(pt2);
 			par.pointsShapeBot.push(pt3);
 			par.pointsShapeBot.push(pt4);
+			//сохраняем длину для спецификации
+			par.partsLen.push(distance(pt1, pt2))
 		}
 		if (!par.stringerDivisionBot) {
 			par.pointsShape.push(pt2);
 			par.pointsShape.push(pt3);
+			//сохраняем точку для расчета длины
+			par.keyPoints.botPoint = copyPoint(pt2);
 		}
 
 		//сохраняем точки для колонн
 		par.keyPoints[par.key].botEnd = pt3;	// для первой колонны
 		par.keyPoints[par.key].botEnd2 = pt4;	// для второй колонны
 		
-		//сохраняем длину для спецификации
-		par.partsLen.push(distance(pt1, pt2))
+		
 	}
 
 	par.pointsShape.push(p2);
@@ -365,6 +368,9 @@ function drawBotStepKo_pltP(par){
 	}
 	
 
+	//сохраняем точку для расчета длины
+	par.keyPoints.botPoint = copyPoint(p0);
+	
 	//удлинение внешнего косоура площадки
     var pltStringerLen = params.platformLength_1 - par.botEndLength - params.stringerThickness * 2 + params.nose;	
 	if (params.sideOverHang <= 75) pltStringerLen -= params.sideOverHang;
@@ -380,17 +386,19 @@ function drawBotStepKo_pltP(par){
 		par.pointsShapeBot.push(pt2);
 		par.pointsShapeBot.push(pt3);
 		par.pointsShapeBot.push(pt4);
+		//сохраняем длину для спецификации
+		par.partsLen.push(distance(pt1, pt2))
 	}
 	if (!par.stringerDivisionBot) {
 		par.pointsShape.push(pt2);
 		par.pointsShape.push(pt3);
+		//сохраняем точку для расчета длины
+		par.keyPoints.botPoint = copyPoint(pt2);
 	}
 	
-	//сохраняем длину для спецификации
-	par.partsLen.push(distance(pt1, pt2))
+	
 
-	//сохраняем точку для расчета длины
-	par.keyPoints.botPoint = copyPoint(p0);
+	
 
 	par.pointsShape.push(p2);
 	par.pointsShape.push(p3);
@@ -1300,10 +1308,14 @@ function drawTopStepKo_pltG(par){
 		par.pointsShapeTop.push(pt2);
 		par.pointsShapeTop.push(pt3);
 		par.pointsShapeTop.push(pt4);
+		//сохраняем длину для спецификации
+		par.partsLen.push(distance(pt1, pt2))
 	}
 	if (!par.stringerDivision) {
 		par.pointsShape.push(pt2);
 		par.pointsShape.push(pt3);
+		//сохраняем точку для расчета длины
+		par.keyPoints.topPoint = copyPoint(pt2);
 	}
 
 
@@ -1337,8 +1349,7 @@ function drawTopStepKo_pltG(par){
 
 	par.pointsShape.push(...botLinePoints);
 
-	//сохраняем длину для спецификации
-	par.partsLen.push(distance(pt1, pt2))
+	
 
 	/*ОТВЕРСТИЯ*/
 	var pointsHoleTop = par.pointsHoleTop;
@@ -1585,14 +1596,17 @@ function drawTopStepKo_pltP(par){
 		par.pointsShapeTop.push(pt2);
 		par.pointsShapeTop.push(pt3);
 		par.pointsShapeTop.push(pt4);
+		//сохраняем длину для спецификации
+		par.partsLen.push(distance(pt1, pt2))
 	}
 	if (!par.stringerDivision) {
 		par.pointsShape.push(pt2);
 		par.pointsShape.push(pt3);
+		//сохраняем точку для расчета длины
+		par.keyPoints.topPoint = copyPoint(pt2);
 	}
 	
-	//сохраняем длину для спецификации
-	par.partsLen.push(distance(pt1, pt2))
+	
 
 	// нижняя линия
 	var botLinePoints = [];

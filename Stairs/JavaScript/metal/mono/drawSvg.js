@@ -17,8 +17,10 @@ function makeSvg() {
 	// выводим только уникальные шейпы. Для повторяющихся считаем кол-во
 	var shapesAmtList = [];
 	var shapesMarsh = {};
+	var shapesPlatform = {};
 	var shapesTreadPlateCabriole = {};
 	var shapesFlans = {};
+	var isShapesPlatform = false;
     var isTreadPlateCabriole = false;
     var isFlans = false;
 	$.each(shapesList, function () {
@@ -43,14 +45,15 @@ function makeSvg() {
 
 		if (!shape.drawing) shape.drawing = {};
 
+		//выбираем shapes для сборочных чертежей
 		if (shape.drawing.marshId) {
 			var marshId = shape.drawing.marshId;
-			if (!shapesMarsh[marshId]) {
-				shapesMarsh[marshId] = {shapes:[]};
-				shapesTreadPlateCabriole[marshId] = {shapes:[]};
-			    shapesFlans[marshId] = {shapes:[]};
-			}
-
+			if (!shapesMarsh[marshId]) shapesMarsh[marshId] = { shapes: [] };
+			if (!shapesPlatform[marshId]) shapesPlatform[marshId] = { shapes: [] };
+			if (!shapesTreadPlateCabriole[marshId]) shapesTreadPlateCabriole[marshId] = { shapes: [] };
+			if (!shapesFlans[marshId]) shapesFlans[marshId] = { shapes: [] };
+			
+			//выбираем shapes для сборочного чертежа косоура на сварном коробе
 			if (shape.drawing.group == "stringers") {
 				if (shape.drawing.key == "in") shapesMarsh[marshId].shapes.push(shape);
 			}
@@ -61,11 +64,19 @@ function makeSvg() {
 				shapesMarsh[marshId].shapes.push(shape);
 			}
 
+			//выбираем shapes для сборочного чертежа косоура площадки
+			if (shape.drawing.group == "stringersPlatform") {
+				shapesPlatform[marshId].shapes.push(shape);
+				isShapesPlatform = true;
+			}
 
+			//выбираем shapes для сборочного чертежа подложек для трубы
 			if (shape.drawing.group == "treadPlate") {
 				shapesTreadPlateCabriole[marshId].shapes.push(shape);
 				isTreadPlateCabriole = true;
-            }
+			}
+
+			//выбираем shapes для сборочного чертежа фланцев
             if (shape.drawing.group == "carcasFlans") {
                 var isPush = true;
                 //если надо подсчитываем общее кол-во одинаковых элементов
@@ -128,6 +139,65 @@ function makeSvg() {
 			basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
 			if (params.model == "сварной") basePoint.y -= 500;
 		}
+	}
+
+	//создаем сборочный чертеж косоура площадки
+	if (isShapesPlatform) {
+		var svgPar = {
+			draw: draw,
+			basePoint: basePoint,
+			basePointOffY: 0,
+			borderFrame:
+				{ botLeft: copyPoint(basePoint), topRigth: copyPoint(basePoint) }, //объект для точек границ сборочного чертежа
+		}
+		for (var key in shapesPlatform) {
+			var shapes = shapesPlatform[key].shapes;
+
+			if (shapes.length > 0) {
+				//рисуем сборочный чертеж фланцев
+				var basePointTmp = copyPoint(svgPar.basePoint);
+				for (var j = 0; j < shapes.length; j++) {
+					svgPar.shape = shapes[j];
+					drawShapeSvg(svgPar);
+					svgPar.basePoint.y -= svgPar.rect.height + 150;
+
+					//подпись
+					var textHeight = 15 * dimScale; //высота текста
+					var textPos = { x: svgPar.rect.x - 30, y: -svgPar.rect.y2 - 30 }
+					var str = svgPar.shape.drawing.name;
+					var text = drawText(str, textPos, textHeight, draw)
+					text.attr({ "font-size": textHeight, })
+					var b = text.getBBox();
+					text.attr({ x: textPos.x + b.width / 2, });
+				}
+
+				//подпись
+				var textHeight = 30 * dimScale; //высота текста
+				var textPos = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 50)
+				var str = "Сборочный чертеж косоура площадки";
+				if (key == "21") str = "Сборочный чертеж дополнительного косоура площадки"
+				if (key == "22") str = ""
+				var text = drawText(str, textPos, textHeight, draw)
+				text.attr({ "font-size": textHeight, })
+				var b = text.getBBox();
+				text.attr({ x: textPos.x + b.width / 2, });
+
+				svgPar.basePoint = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 200);
+				if (key == "21") svgPar.basePoint = newPoint_xy(basePointTmp, svgPar.rect.width + 200, 0);
+			}
+		}
+
+		//определяем масштаб и координаты листа
+		scaleBorderDraw(svgPar);
+		//создаем рамку листа
+		var rect = drawRect(svgPar.borderFrame.botLeft, svgPar.formatX * svgPar.formatScale, -svgPar.formatY * svgPar.formatScale, draw).attr({
+			fill: "none",
+			stroke: "#555",
+			"stroke-width": 1,
+		})
+		rect.setClass("other");
+
+		basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
 	}
 
 	//создаем сборочный чертеж подложек для трубы

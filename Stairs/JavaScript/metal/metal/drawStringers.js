@@ -391,18 +391,9 @@ function drawStringer(par){
 			var shape = drawShapeByPoints2(shapePar).shape;
 			marshShapes.push(shape);
 		
-		var holes = par.pointsHole.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
-		// var holes = par.pointsHole.filter(function(p){
-			// 	if (i == 0 && p.y < divideP1.y) {
-			// 		return true;
-			// 	}else if (i !== 0 && p.y < divideP1.y && p.y > previousDivideP1.y) {
-			// 		return true;
-			// 	}else if(i == divides.length && p.y > previousDivideP1.y){
-			// 		return true
-			// 	}else{
-			// 		return false;
-			// 	}
-			// });
+		var holes = par.pointsHole.filter(function(p){
+				return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)
+			});
 		
 			var stringerHolesParams = {
 				dxfBasePoint: par.dxfBasePoint,
@@ -416,18 +407,10 @@ function drawStringer(par){
 			drawStringerHoles(stringerHolesParams);
 		
 			//добавляем отверстия под ограждения
-			var holes = par.railingHoles.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
-			// var holes = par.railingHoles.filter(function(p){
-			// 	if (i == 0 && p.y < divideP1.y) {
-			// 		return true;
-			// 	}else if (i !== 0 && p.y < divideP1.y && p.y > previousDivideP1.y) {
-			// 		return true;
-			// 	}else if(i == divides.length && p.y > previousDivideP1.y){
-			// 		return true
-			// 	}else{
-			// 		return false;
-			// 	}
-			// });
+			var holes = par.railingHoles.filter(function(p){
+					return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)
+				});
+
 			var railingHolesPar = {
 				shape: shape,
 				holeCenters: holes,
@@ -436,87 +419,7 @@ function drawStringer(par){
 			drawRailingHoles(railingHolesPar);
 			
 		}
-		// var previousSplit1 = {};//Точки предыдущего разреза
-		// var previousSplit2 = {};
-		// var lastPoint = par.pointsShape[par.pointsShape.length - 1];//Крайняя точка каркаса(для поиска пересечения)
-		// for (var i = 0; i <= divides.length; i++) {
-		// 	var points = [];
-		// 	var splitPoint1 = {};
-		// 	var splitPoint2 = {};
-		// 	if (i < divides.length) {
-		// 		splitPoint1 = {x: 0, y: par.marshParams.h * (divides[i]) - par.marshParams.h / 2};
-		// 		splitPoint1 = itercection(splitPoint1, newPoint_xy(splitPoint1, 100, 0), par.keyPoints[par.key].botUnitStart, lastPoint);
-		// 	}
-		// 	points = par.pointsShape.filter(function(p){
-		// 		if (i == 0 && p.y < splitPoint1.y) {
-		// 			return true;
-		// 		}else if (i !== 0 && p.y < splitPoint1.y && p.y > previousSplit1.y) {
-		// 			return true;
-		// 		}else if(i == divides.length && p.y > previousSplit1.y){
-		// 			return true
-		// 		}else{
-		// 			return false;
-		// 		}
-		// 	});
-		// 
-		// 	if (i > 0) points.unshift(previousSplit1, previousSplit2);
-		// 	if (i < divides.length) {
-		// 		var lastFilteredPoint = points[points.length - 1];
-		// 		splitPoint2 = itercection(lastFilteredPoint, newPoint_xy(lastFilteredPoint, 0, 100), splitPoint1, newPoint_xy(splitPoint1, 100, 0));
-		// 		points.push(splitPoint2, splitPoint1);
-		// 		previousSplit1 = splitPoint1;
-		// 		previousSplit2 = splitPoint2;
-		// 	}
-		// 
-		// 	shapePar.points = points;
-		// 
-		// 	var shape = drawShapeByPoints2(shapePar).shape;
-		// 	marshShapes.push(shape);
-		// 
-		// 	var holes = par.pointsHole.filter(function(p){
-		// 		if (i == 0 && p.y < splitPoint1.y) {
-		// 			return true;
-		// 		}else if (i !== 0 && p.y < splitPoint1.y && p.y > previousSplit1.y) {
-		// 			return true;
-		// 		}else if(i == divides.length && p.y > previousSplit1.y){
-		// 			return true
-		// 		}else{
-		// 			return false;
-		// 		}
-		// 	});
-		// 
-		// 	var stringerHolesParams = {
-		// 		dxfBasePoint: par.dxfBasePoint,
-		// 		elmIns: par.elmIns,
-		// 		stringerShape: shape,
-		// 		key: par.key,
-		// 		pointsHole: holes,
-		// 	}
-		// 
-		// 	//рисуем отверстия
-		// 	drawStringerHoles(stringerHolesParams);
-		// 
-		// 	//добавляем отверстия под ограждения
-		// 	var holes = par.railingHoles.filter(function(p){
-		// 		if (i == 0 && p.y < splitPoint1.y) {
-		// 			return true;
-		// 		}else if (i !== 0 && p.y < splitPoint1.y && p.y > previousSplit1.y) {
-		// 			return true;
-		// 		}else if(i == divides.length && p.y > previousSplit1.y){
-		// 			return true
-		// 		}else{
-		// 			return false;
-		// 		}
-		// 	});
-		// 	var railingHolesPar = {
-		// 		shape: shape,
-		// 		holeCenters: holes,
-		// 		dxfBasePoint: par.dxfBasePoint,
-		// 	}
-		// 	drawRailingHoles(railingHolesPar);
-		// }
-		// 
-		// 
+
 	}
 	
 
@@ -607,7 +510,8 @@ function drawStringer(par){
 			var mesh = new THREE.Mesh(geom, params.materials.metal);
 			par.mesh.add(mesh);
 		}
-	}else{	
+	}
+	else{	
 		//косоур на марше
 		var geom = new THREE.ExtrudeGeometry(par.stringerShape, stringerExtrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
@@ -675,8 +579,7 @@ function drawStringer(par){
 			}
 		}
 		var stringerNname = (par.key === 'out' ? 'внешн. ' : 'внутр. ') + par.marshId + " марш";
-		
-		
+
 		for(var i=0; i<par.partsLen.length; i++){
 			var name = stringerNname + " L=" + Math.round(par.partsLen[i]);
 			var area = 300 * par.partsLen[i] / 1000000;
