@@ -3100,6 +3100,7 @@ function drawMonoFlan(par) {
 			holeX: 20,
 			holeY: 20,
 			dxfBasePoint: par.dxfBasePoint,
+			marshId: par.marshId,
         };
 	    if (par.isSvg) {
 	        flanPar.drawing = {
@@ -3110,18 +3111,22 @@ function drawMonoFlan(par) {
                 basePoint: { x: flanPar.height / 2 - flanPar.width / 2, y: flanPar.height / 2 - flanPar.width / 2},//коррекция положения после поворота
             }
 	    }
-		if (params.model == "труба") flanPar.noBolts = true; //болты не добавляются
-
-
-		//добавляем  отверстия по краям
-		flanPar.roundHoleCenters = [];
-		addHolesMonoFlan(flanPar);
+		
 
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
 
+		if (params.model == "сварной") {
+			//добавляем  отверстия по краям
+			flanPar.roundHoleCenters = [];
+			addHolesMonoFlan(flanPar);
 
+			var flan = drawRectFlan2(flanPar).mesh;
+		}
 
-		var flan = drawRectFlan2(flanPar).mesh;
+		if (params.model == "труба") {
+			var flan = drawFlanPipColumnTop(flanPar).mesh;
+		}
+
 		flan.rotation.x = -Math.PI / 2;
 		flan.rotation.y = -par.topAngle;
 		flan.position.x = -flanPar.width / 2 * Math.cos(par.topAngle);
@@ -5680,6 +5685,87 @@ function drawFlanTop(par) {
 
 	return par;
 } //end of drawFlanTop
+
+/*
+ * ПОСТРОЕНИЕ ВЕРХНЕГО ФЛАНЦА КОЛОННЫ лестницы на проф трубе
+ */
+function drawFlanPipColumnTop(par) {
+	par.mesh = new THREE.Object3D();
+
+	var dxfArr = dxfPrimitivesArr;
+	par.thk = 8;
+	par.material = params.materials.metal2
+
+	var p1 = { x: 0, y: 0, };
+	var p2 = newPoint_xy(p1, 0, par.height);
+	var p3 = newPoint_xy(p2, par.width, 0);
+	var p4 = newPoint_xy(p1, par.width, 0);
+
+	var pt1 = newPoint_xy(p1, 0, par.holeY - par.holeRad);
+	var pt2 = newPoint_xy(pt1, par.holeX + par.holeRad, 0);
+	var pt4 = newPoint_xy(p1, 0, par.holeY + par.holeRad);
+	var pt3 = newPoint_xy(pt4, par.holeX + par.holeRad, 0);
+
+	var pt8 = newPoint_xy(p2, 0, -par.holeY + par.holeRad);
+	var pt7 = newPoint_xy(pt8, par.holeX + par.holeRad, 0);
+	var pt5 = newPoint_xy(p2, 0, -par.holeY - par.holeRad);
+	var pt6 = newPoint_xy(pt5, par.holeX + par.holeRad, 0);
+
+	pt1.filletRad = pt4.filletRad = pt5.filletRad = pt8.filletRad = 0;
+	pt2.filletRad = pt3.filletRad = pt6.filletRad = pt7.filletRad = par.holeRad;
+
+	var points = [p1, pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8, p2, p3, p4];
+
+	//создаем шейп
+	var shapePar = {
+		points: points,
+		dxfArr: dxfArr,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+
+	shapePar.radOut = par.cornerRad;
+	shapePar.radIn = par.cornerRad;
+
+	if (par.drawing) {
+		shapePar.drawing = {
+			name: "Фланец колонны верхний",
+			group: "carcasFlans",
+			marshId: par.marshId,
+			isRotate: true,
+			basePoint: { x: par.height / 2 - par.width / 2, y: par.height / 2 - par.width / 2 },//коррекция положения после поворота
+		}
+		shapePar.drawing.baseLine = { p1: p1, p2: p2 }
+	}
+
+	par.shape = drawShapeByPoints2(shapePar).shape;
+
+
+	//добавляем  отверстия по краям
+	par.roundHoleCenters = [];
+	par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - par.holeY, holeData: { zenk: 'no' } });
+	par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.holeY, holeData: { zenk: 'no' } });
+	var holesPar = {
+		holeArr: par.roundHoleCenters,
+		dxfBasePoint: par.dxfBasePoint,
+		shape: par.shape,
+		holeRad: par.holeRad,
+	}
+	addHolesToShape(holesPar);
+
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(par.shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var flan = new THREE.Mesh(geom, par.material);
+	par.mesh.add(flan);
+
+	return par;
+} //end of drawFlanPipColumnTop
 
 /** функция отрисовывает рамку под площадкой на лестнице на профиле
 */
