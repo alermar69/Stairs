@@ -488,8 +488,11 @@ function calcHandrailPoints(par, parRacks){
 				}
 	
 			//срез низа первого стекла первого марша
-				if (i == 0 && par.marshId == 1 && params.railingStart === "0") {
-				glassPar.botCutHeight = par.keyPoints.botLineP0.y - marshStart.y + glassDist;
+				if (i == 0 && par.marshId == 1) {
+					if (marshStart.y - glassDist < 0) {
+						glassPar.botCutHeight = par.keyPoints.botLineP0.y - marshStart.y + glassDist;
+						glassPar.botCutHeight -= par.h * params.railingStart;
+					}
 			}
 			else glassPar.botCutHeight = 0;
 			if (params.startTreadAmt > 0 && par.marshId == 1 && i == 0) {

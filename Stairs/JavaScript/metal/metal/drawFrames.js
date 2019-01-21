@@ -25,9 +25,6 @@ function drawFrames(par){
 				isFlanFrame = false;
 			}
 
-			//для дпк на площадке добавляем два отверстия в середине
-			if (params.stairType == "дпк" && par.holes[i].isPltFrame)
-				framePar.holeDistDpk = par.holes[i + 2].x - par.holes[i].x; // расстояние между отверстиями
 
 			//для средней тетивы входной лестницы убираем болты
             if (params.calcType == "vhod" && params.M > 1100) {
@@ -123,7 +120,6 @@ function drawFrames(par){
 			
 			par.dxfBasePoint.x += 150;
 			i++; //пропускаем следующее отверстие
-			if (params.stairType == "дпк" && framePar.isPltFrame) i += 2;
 		}
 	}
 	
@@ -1682,21 +1678,6 @@ function drawTreadFrame2(par){
 
 	// добавляем параметры отверстий в свойства фланца
 	flanPar.roundHoleCenters.push(hole1, hole2);	
-
-	//для дпк на площадке добавляем два отверстия в середине
-	if (params.stairType == "дпк" && par.isPltFrame) {
-		// определяем параметры средних отверстий фланца
-		var hole3 = {
-			x: flanPar.width / 2,
-			y: flanPar.holeOffset + par.holeDistDpk
-		};
-		var hole4 = {
-			x: flanPar.width / 2,
-			y: flanPar.holeOffset + par.holeDistDpk * 2
-		};
-		// добавляем параметры отверстий в свойства фланца
-		flanPar.roundHoleCenters.push(hole3, hole4);
-	}
 	
 
 	// создаем левый боковой фланец
@@ -1759,6 +1740,16 @@ function drawTreadFrame2(par){
 
 	// добавляем параметры отверстий в свойства фланца
 	flanPar.roundHoleCenters.push(hole1, hole2);
+
+	//для дпк на площадке добавляем два отверстия в середине
+	if (params.stairType == "дпк" && par.isPltFrame) {
+		var holeDist = par.holeDist / 3;
+		// определяем параметры средних отверстий фланца
+		var hole3 = newPoint_xy(hole1, 0, holeDist);
+		var hole4 = newPoint_xy(hole3, 0, holeDist);
+		// добавляем параметры отверстий в свойства фланца
+		flanPar.roundHoleCenters.push(hole3, hole4);
+	}
 
 	if(params.stairType == "пресснастил") par.bridgeAmt = 0;
 	

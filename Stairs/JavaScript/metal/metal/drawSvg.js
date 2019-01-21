@@ -314,6 +314,18 @@ function makeSvg(){
 		
 		var dim = drawDim(dimPar);
 		dim.setClass("dimensions");
+
+		if (this.userData) {
+			if (this.userData.dimPoints) {
+				var dimPar = {
+					dimPoints: this.userData.dimPoints,
+					draw: draw,
+					basePoint: newPoint_xy(basePoint, 0, -b.height),
+				};
+				var dim = drawDimensionsByPoints(dimPar);
+				dim.setClass("dimensions");
+			}
+		}
 		
 		//подпись
 		var textHeight = 30 * dimScale; //высота текста
@@ -326,64 +338,6 @@ function makeSvg(){
 
 		basePoint.y -= b.height + objDst;
 	});
-	
-	/**
-		Отрисовывает баллюстраду
-	*/
-	
-	function drawBalustrade(shapeArr){
-		console.log(shapeArr)
-		if (shapeArr.length > 0) {
-			var sets = [];
-			$.each(shapeArr, function(){
-				var shape = this;
-				var par = this.userData;
-				var set = sets.find(s => s.marshId == par.marshId);
-				if (!set){
-					set = draw.set();
-					set.marshId = par.marshId;
-					sets.push(set);
-				}
-
-				var elementBasePoint = {x:0, y:0};
-				if (par.elemType == 'banister') {
-					var svgPath = $("#forgeModal .modalItem[data-itemName=" + par.banisterType + "]").find("path").eq(0).attr("d");
-					if (svgPath) {
-						var obj = draw.path(svgPath);
-					}else{
-						var src = `/dev/egorov/bal/${par.banisterType}.png`;
-						var obj = draw.image(src, 0,-400, 300, 800);
-					}
-				}else{
-					var obj = makeSvgFromShape(shape, draw);
-				}
-				obj.setClass('balustrade');
-				
-				if(par.elemType == 'banister') {//Тк центр смещен в середину стойки
-					var b = obj.getBBox();
-					elementBasePoint = newPoint_xy(elementBasePoint, par.pos.x - b.width / 2 + 12, par.pos.y + b.height / 2);
-					
-					moove(obj, elementBasePoint, 'left_bot');
-				}
-				
-				set.push(obj);
-			});
-			
-			return sets;
-		}
-	};
-		
-	// //кованые секции
-	// function addForgedSections(arr, obj){
-	// 	if(obj.children){
-	// 		$.each(obj.children, function(){
-	// 			if(this.drawing && this.drawing.group == "forgedSections"){
-	// 				arr.push(this);
-	// 			}
-	// 			addForgedSections(arr, this)
-	// 		})
-	// 	}
-	// }
 	
 	// var sections = [];
 	// addForgedSections(sections, view.scene);

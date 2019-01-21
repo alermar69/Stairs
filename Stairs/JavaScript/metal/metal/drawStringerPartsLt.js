@@ -2082,30 +2082,14 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			begX += frameWidth + 5.0;
-
-			if (params.stairType == "дпк") {
-				var x = (frameWidth - par.platformFramesParams.sideHolePosX * 2) / 3;
-				var center3 = newPoint_xy(center1, x, 0.0);
-				var center4 = newPoint_xy(center3, x, 0.0);
-				center3.isPltFrame = center4.isPltFrame = true;
-				par.pointsHole.push(center3);
-				par.pointsHole.push(center4);
-			}
 			
 			//длинные болты на среднем косоуре
 			if (par.isMiddleStringer) {
 				center1.isPltPFrame = center2.isPltPFrame = true;
 				center1.noZenk = center2.noZenk = true;
-				if (params.stairType == "дпк") {
-					center3.isPltPFrame = center4.isPltPFrame = true;
-					center3.noZenk = center4.noZenk = true;
-				}
             }
 		    if (params.calcType == 'vhod' && params.platformTop == 'увеличенная') {
 				center1.noBoltsIn = center2.noBoltsIn = true;
-			    if (params.stairType == "дпк") {
-				    center3.noBoltsIn = center4.noBoltsIn = true;
-			    }
 		    }
 		}
 	}
