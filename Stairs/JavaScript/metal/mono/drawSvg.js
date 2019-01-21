@@ -16,6 +16,9 @@ function makeSvg() {
 
 	// выводим только уникальные шейпы. Для повторяющихся считаем кол-во
 	var shapesAmtList = [];
+	var shapesTurnRack = [];
+	var railingShapes = [];
+	var glassShapes = [];
 	var shapesMarsh = {};
 	var shapesPlatform = {};
 	var shapesTreadPlateCabriole = {};
@@ -34,16 +37,28 @@ function makeSvg() {
 			}			
 		}
 
+		if (shape.userData) {
+			if (shape.userData.type == 'railing') {
+				railingShapes.push(shape);
+			}
+			if (shape.userData.type == 'glass') {
+				glassShapes.push(shape);
+			}
+		}
+
 		if (isUnique) {
 			shape.amt = 1;
 			shapesAmtList.push(shape);
-		}
-		else {
+		}else {
 			shapesAmtList[index].amt += 1;
 		}
 
 
 		if (!shape.drawing) shape.drawing = {};
+
+		if (shape.drawing.group == "turnRack") {
+			shapesTurnRack.push(shape)
+		}
 
 		//выбираем shapes для сборочных чертежей
 		if (shape.drawing.marshId) {
@@ -93,14 +108,12 @@ function makeSvg() {
 
                 if (isPush) shapesFlans[marshId].shapes.push(shape);
 		        isFlans = true;
-		    }
+			}
 		}
-
-		
 	});
-
+	
 	//создаем сборочный чертеж монокосоура
-    basePoint = { x: 0, y: 0 };
+	basePoint = { x: 0, y: 0 };
 	for (var key in shapesMarsh) {
 		var shapes = shapesMarsh[key].shapes;
 
@@ -313,8 +326,59 @@ function makeSvg() {
         rect.setClass("other");
 
         basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
-    }
+		}
+		
+	if(shapesTurnRack.length > 0){
+		//Отрисовываем поворотные столбы
+		var racksPar = {
+			draw: draw,
+			shapes: shapesTurnRack,
+			basePoint: {x: 0, y: 0},
+		};
+		var racksSet = drawSVGTurnRacks(racksPar);
+	
+		var a4Params = {
+			elements: [racksSet],
+			basePoint: {x:0, y:basePoint.y},
+			orientation: 'vert',
+			posOrientation: 'vert',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
+	}
+	if (railingShapes.length > 0) {
+		var railingPar = {
+			draw: draw, 
+			shapes: railingShapes,
+		}
+		var railing = drawSVGRailing(railingPar);
+		var a4Params = {
+			elements: railing,
+			basePoint: {x:0, y:basePoint.y},
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
+	}
+	if (glassShapes.length > 0) {
+		var glassPar = {
+			draw: draw, 
+			shapes: glassShapes,
+		}
+		var glasses = drawGlass(glassPar);
 
+		var a4Params = {
+			elements: glasses,
+			basePoint: {x:0, y:basePoint.y},
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
+	}
 	//зум и сдвиг мышкой
 	var panZoom = svgPanZoom('#svgOutputDiv svg', {
 		zoomScaleSensitivity: 0.5,
@@ -334,10 +398,7 @@ function makeSvg() {
 
 }
 
-
-
-
-
+/***** FUNCTIONS *****/
 
 function drawShapeSvg(par) {
 	var shape = par.shape;
@@ -530,3 +591,67 @@ function scaleBorderDraw(par) {
 	return par;
 }
 
+/** 
+	* Функция отрисовывает стойки с размерами до отверстий
+	* @param par 
+	* Поля объекта:
+	*- par.draw - paper Raphael'a
+	*- par.shapes - шейпы поворотных столбов
+	*- par.basePoint - базовая точка отрисовки
+
+	@returns сет со всеми стойками
+
+*/
+
+function drawSVGTurnRacks(par){
+	var draw = par.draw;
+	var shapesTurnRack = par.shapes;
+	var basePointTurn = {x:0, y:0};
+	var turnRacksSet = draw.set();
+	var dimScale = parseInt(params.dimScale) || 1;
+	
+	//создаем чертеж поворотного столба
+	for (var i = 0; i < shapesTurnRack.length; i++) {
+		var set = draw.set();
+		var shape = shapesTurnRack[i];
+
+		var obj = makeSvgFromShape(shape, draw);
+		obj.setClass("turnRack");
+
+		set.push(obj);
+
+		var dimPar = {
+			draw: draw,
+			obj: obj,
+		}
+		var dim = drawDimensions(dimPar);
+		set.push(dim.set);
+
+		var rackPar = {
+			draw: draw,
+			shape: shape,
+			obj: obj,
+			drawHoleSide: true,
+		}
+		var rackSet = drawSVGRackHoles(rackPar);
+		set.push(rackSet);
+		//подпись
+		var textHeight = 30 * dimScale; //высота текста
+		var str = shape.drawing.name || 'Поворотный столб';
+		var textPos = {x: textHeight * str.length / 4, y: -textHeight - rackPar.rackLengthDelta};
+		var text = drawText(str, textPos, textHeight, draw)
+		text.attr({ "font-size": textHeight, });
+		set.push(text);
+		
+		var setBbox = set.getBBox();
+		moove(set, newPoint_xy(basePointTurn, 0, setBbox.height));
+		basePointTurn.x += setBbox.width + 10;
+
+		turnRacksSet.push(set);
+	}
+
+	var setsBbox = turnRacksSet.getBBox();
+	moove(turnRacksSet, newPoint_xy(par.basePoint, 0, 0));
+
+	return turnRacksSet;
+}

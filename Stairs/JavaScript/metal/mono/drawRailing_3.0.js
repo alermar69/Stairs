@@ -124,16 +124,18 @@ function calculateGlassPoints(par){
 		lastMarshPoint.y += marshPar.h * 0.5;
 	}
 	var handrailPoint = copyPoint(lastMarshPoint);
-	if (par.key == 'out' && marshPar.topTurn !== 'пол'){
-		handrailPoint = polar(handrailPoint, marshPar.ang, -10);
-	}
-	if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
-		handrailPoint = polar(handrailPoint, marshPar.ang, meterHandrailPar.profY * Math.tan(marshPar.ang));
-	}
+	if(marshPar.stairAmt > 0){
+		if (par.key == 'out' && marshPar.topTurn !== 'пол'){
+			handrailPoint = polar(handrailPoint, marshPar.ang, -10);
+		}
+		if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
+			handrailPoint = polar(handrailPoint, marshPar.ang, meterHandrailPar.profY * Math.tan(marshPar.ang));
+		}
 
-	if (params.handrailEndType == 'под углом' && !(par.key == 'out' && marshPar.topTurn !== 'пол')) {
-		if (params.handrailFixType !== "паз") {
-			handrailPoint = polar(handrailPoint, marshPar.ang, 40);	
+		if (params.handrailEndType == 'под углом' && !(par.key == 'out' && marshPar.topTurn !== 'пол')) {
+			if (params.handrailFixType !== "паз") {
+				handrailPoint = polar(handrailPoint, marshPar.ang, 40);	
+			}
 		}
 	}
 
@@ -278,6 +280,11 @@ function calculateGlassPoints(par){
 
 	if(params.handrail != "нет"){
 		par.handrailPoints = handrailPoints;
+	}
+
+	//удаляем некорректные точки из массива - костыль
+	for (var i = 0; i < finalGlassPoints.length; i++) {
+		if (finalGlassPoints[i].len < 100) finalGlassPoints.splice(i, 1)
 	}
 
 	par.marshPar = marshPar;
@@ -1172,13 +1179,21 @@ function drawRackMono(par){
 	}
 	
 	addHolesToShape(holesPar);
+
+	if (par.type == 'turnRackStart' || par.type == 'turnRackEnd') {
+		shape.drawing = {};
+		shape.drawing.group = 'turnRack';
+		shape.drawing.name = 'Поворотный столб марш: ' + par.marshId;
+		shape.drawing.yDelta = botLen;
+		shapesList.push(shape);
+	}
 	
 	var extrudeOptions = {
 		amount: rackProfile,
 		bevelEnabled: false,
 		curveSegments: 12,
 		steps: 1
-		};
+	};
 		
 	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));

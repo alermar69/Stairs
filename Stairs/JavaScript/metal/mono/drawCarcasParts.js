@@ -1727,16 +1727,13 @@ function drawTurnPlate1(par) {
 	var center2 = itercection(center1, polar(center1, Math.PI / 2, 100), line.p1, line.p2);
 	var center3 = itercection(center4, polar(center4, Math.PI / 2, 100), line.p1, line.p2);
 	
-	//Отмечаем тип зенковки, для свг
-	center1.holeData = {zenk: 'no'};
-	center2.holeData = {zenk: 'no'};
-	center3.holeData = {zenk: 'no'};
-	center4.holeData = {zenk: 'no'};
-	
 	par.holes = [center1, center2, center3, center4];
 	if (turnFactor == -1)
 		par.holes = mirrowPointsMiddleX(par.holes);
 	par.holeRad = 5;
+
+	//Отмечаем тип зенковки, для свг
+	par.holes.forEach(function(element) {element.holeData = {zenk: 'no'}});
 
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
@@ -1871,16 +1868,14 @@ function drawTurnPlate3(par){
 	var center1 = itercection(center2, polar(center2, Math.PI / 2, 100), line.p1, line.p2);
 	var center4 = itercection(center3, polar(center3, Math.PI / 2, 100), line.p1, line.p2);
 	
-	//Отмечаем тип зенковки, для свг
-	center1.holeData = {zenk: 'no'};
-	center2.holeData = {zenk: 'no'};
-	center3.holeData = {zenk: 'no'};
-	center4.holeData = {zenk: 'no'};
-	
 	par.holes = [center1, center2, center3, center4];
 	if (turnFactor == -1)
 		par.holes = mirrowPointsMiddleX(par.holes);
+
 	par.holeRad = 5;
+
+	//Отмечаем тип зенковки, для свг
+	par.holes.forEach(function(element) {element.holeData = {zenk: 'no'}});
 
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
@@ -2062,19 +2057,14 @@ function drawTurnPlate2(par) {
 	var center4 = itercection(line_p3_p4.p1, line_p3_p4.p2, line_p4_p5.p1, line_p4_p5.p2);
 	var center5 = itercection(line_p4_p5.p1, line_p4_p5.p2, line_p1_p5.p1, line_p1_p5.p2);
 	
-	
-	//Отмечаем тип зенковки, для свг
-	center1.holeData = {zenk: 'no'};
-	center2.holeData = {zenk: 'no'};
-	center3.holeData = {zenk: 'no'};
-	center4.holeData = {zenk: 'no'};
-	center5.holeData = {zenk: 'no'};
-
 	par.holes = [center1, center2, center3, center4, center5];
 	if (turnFactor == -1)
 		par.holes = mirrowPointsMiddleX(par.holes);
 
 	par.holeRad = 5;
+		
+	//Отмечаем тип зенковки, для свг
+	par.holes.forEach(function(element) {element.holeData = {zenk: 'no'}});
 
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
