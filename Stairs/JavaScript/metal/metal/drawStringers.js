@@ -2,8 +2,9 @@ function drawStringer(par){
 
 	//рассчитываем параметры косоура по номеру марша
 	calcStringerPar(par); //функция в этом файле ниже
-	par.turnParams = calcTurnParams(par.marshId);
 	par.partsLen = []; //массив длин кусков косоура для спецификации
+
+	getMarshAllParams(par);
 	
 	//рассчитываем проступи на забеге. Берутся параметры верхнего или нижнего забега
 	if(par.treadsObj.wndPar) par.wndSteps = calcWndSteps(par.treadsObj.wndPar);
@@ -540,7 +541,14 @@ function drawStringer(par){
 	
 	//формируем единый массив центров отверстий для ограждений
 	stringerParams.elmIns[stringerParams.key].racks.push(...par.railingHolesBot, ...par.railingHoles, ...par.railingHolesTop)
-	
+	//удаляем из массива центров отверстий для ограждений отверстия которые не нужно учитывать в ограждениях
+	var racks = [];
+	for (var k = 0; k < stringerParams.elmIns[stringerParams.key].racks.length; k++) {
+		if (!stringerParams.elmIns[stringerParams.key].racks[k].noRack)
+			racks.push(stringerParams.elmIns[stringerParams.key].racks[k]);
+	}
+	stringerParams.elmIns[stringerParams.key].racks = racks;
+
 	//рассчитываем размер косоура по X для расчета dxfBasePoint для следующего косоура
 	par.lenX = par.b * par.stairAmt + par.turnParams.turnLengthTop;
 	

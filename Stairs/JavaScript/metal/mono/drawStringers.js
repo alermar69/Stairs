@@ -472,8 +472,9 @@ function drawComplexStringer(par) {
 				}
 
 				//для последней подложки верхнего марша убираем верхний выступ
-				if (params.model == "труба") {
-					if (par.topEnd == "пол" && i == par.stepPoints.length - 2) {
+
+				if (par.topEnd == "пол" && i == par.stepPoints.length - 2) {
+					if (params.model == "труба") {
 						platePar.step += params.treadPlateThickness;
 						if (params.topAnglePosition == "под ступенью") {
 							platePar.isTopNot = true;
@@ -481,7 +482,11 @@ function drawComplexStringer(par) {
 							platePar.step -= params.treadPlateThickness;
 						}
 					}
-					
+
+					if (params.model == "сварной") {
+						platePar.isTopLast = true;
+						platePar.isSvg = true;
+					}
 				}
 
 				//подложка прямой ступени

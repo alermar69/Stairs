@@ -15,7 +15,7 @@ function calculateGlassPoints(par){
 		prof: params.handrailProf,
 		sideSlots: params.handrailSlots,
 		handrailType: params.handrail,
-		metalPaint: params.metalPaint_perila,
+		metalPaint: params.metalPaint_railing,
 		timberPaint: params.timberPaint_perila,
 	}
 	meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
@@ -612,23 +612,6 @@ function drawGlassSection(par){
 		handrails.add(handrail);
 
 	} //конец поручней
-	
-	//сохраняем данные для спецификации
-	if (typeof railingParams != 'undefined') {
-		if (!railingParams.sections) {
-			railingParams.sections = {
-				types: [],
-				sumLen: 0,
-			}
-		}
-		for(var i=1; i<handrailPoints0.length; i++){
-			var sectLen = distance(handrailPoints0[i-1], handrailPoints0[i]);
-			railingParams.sections.types.push(sectLen);
-			railingParams.sections.sumLen += sectLen / 1000;
-			}
-		}
-
-
 
 	var result = {
 		mesh: section,
@@ -1704,7 +1687,7 @@ function calculateRacks(par){
             prof: params.handrailProf,
             sideSlots: params.handrailSlots,
             handrailType: params.handrail,
-            metalPaint: params.metalPaint_perila,
+            metalPaint: params.metalPaint_railing,
             timberPaint: params.timberPaint_perila,
         }
         meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
@@ -1835,7 +1818,7 @@ function calcHandrailPoints(par, parRacks){
 			//		prof: params.handrailProf,
 			//		sideSlots: params.handrailSlots,
 			//		handrailType: params.handrail,
-			//		metalPaint: params.metalPaint_perila,
+			//		metalPaint: params.metalPaint_railing,
 			//		timberPaint: params.timberPaint_perila,
 			//	}
 			//	meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);

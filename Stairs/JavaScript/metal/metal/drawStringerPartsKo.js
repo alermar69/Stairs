@@ -234,7 +234,17 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 				if (par.key == 'in'){
 					center1 = newPoint_xy(p3, par.rutelPosX, par.stepHoleY);
 					//смещаем точку ближе к низу марша
-					if(params.rackBottom != "сверху с крышкой") center1 = newPoint_x(center1, -par.b * 0.5 + 50, -par.marshAng)
+					if (params.rackBottom != "сверху с крышкой") {
+						center1 = newPoint_x(center1, -par.b * 0.5 + 50, -par.marshAng)
+
+						//если повортная стойка, сдвигаем стойку до края предыдущего марша
+						if (par.prevMarshPar.hasRailing.in) {
+							var pt = setTurnRacksParams(par.marshId, par.key).stringerShiftPoint;
+							center1 = newPoint_xy(p3, pt.x, par.stepHoleY + pt.y);
+							center1.isTurnRack = true;
+							center1.noDrawHoles = true;
+						}
+					}
 					par.railingHoles.push(center1);
 					}
 				if (par.key == 'out'){
@@ -479,7 +489,14 @@ function drawBotStepKo_pltP(par){
 			if (par.key == 'in') {
 				center1 = newPoint_xy(p3, par.rutelPosX, par.stepHoleY);
 				//смещяем стойку чтобы она была вровень со стойкой нижнего марша
-				if (params.rackBottom != "сверху с крышкой") center1 = newPoint_x1(center1, -40, par.marshAng)
+				if (params.rackBottom != "сверху с крышкой") {
+					center1 = newPoint_x1(center1, -40, par.marshAng)
+
+					//var pt = setTurnRacksParams(par.marshId, par.key).stringerShiftPoint;
+					//center1 = newPoint_xy(p3, pt.x, par.stepHoleY + pt.y);
+					//center1.isTurnRack = true;
+					//center1.noDrawHoles = true;
+				}
 				par.railingHoles.push(center1);
 			}
 			if (par.key == 'out') {
@@ -688,7 +705,19 @@ function drawBotStepKo_wndIn(par){
 		if (params.railingModel != "Самонесущее стекло"){
 			center1 = newPoint_xy(p7, par.b * 0.5, par.stepHoleY + par.h);
 			//смещаем первую стойку ближе к краю ступени
-			if(params.rackBottom != "сверху с крышкой") center1 = newPoint_x1(center1, -par.b * 0.5 + 50, par.marshAng)
+			if (params.rackBottom != "сверху с крышкой") {
+				center1 = newPoint_x1(center1, -par.b * 0.5 + 50, par.marshAng)
+
+				//если длиная стойка, сдвигаем стойку до края предыдущего марша
+				if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 3 && params.stairAmt2 == 0)
+					par.prevMarshPar.hasRailing.in = true;
+				if (par.prevMarshPar.hasRailing.in) {
+					var pt = setTurnRacksParams(par.marshId, par.key).stringerShiftPoint;
+					center1 = newPoint_xy(p7, pt.x, par.stepHoleY + pt.y);
+					center1.isTurnRack = true;
+					center1.noDrawHoles = true;
+				}
+			}
 			par.railingHoles.push(center1);
 		}
 
@@ -1407,6 +1436,20 @@ function drawTopStepKo_pltG(par){
 				}
 			if (par.key == "in" && !par.stringerLast) {
 				center1 = newPoint_xy(p0, par.b / 2, par.stepHoleY);
+
+				//если на следующем марше повортная стойка, стойку не рисуем и сохраняем сдвиг отверстия до края следующего марша
+				if (par.nextMarshPar.hasRailing.in) {
+					center1.noDraw = true;
+					//сохраняем сдвиг отверстия до края следующего марша (для расчета поручня и ригелей)
+					center1.dxToMarshNext = -(center1.x - p0.x) + par.b - params.nose + par.turnBotParams.topMarshOffsetX;
+
+					//отверстия для крепления поворотной стойки следущего марша
+					var center2 = newPoint_xy(p0, par.b - params.nose + par.turnBotParams.topMarshOffsetX - 40 / 2, par.stepHoleY);
+					center2.y -= setTurnRacksParams(par.marshId + 1, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
+					center2.noRack = true; // отверстие не учитывается при построении заграждения
+					par.railingHoles.push(center2);
+				}
+
 				par.railingHoles.push(center1);
 				}
 		}
@@ -1870,6 +1913,21 @@ function drawTopStepKo_wndIn(par) {
 			    center1.x += dyLastRack / Math.tan(par.marshAng);
 			    //смещаем отверстие чуть назад, чтобы не было пересечения с отверстием рамки
 				if(Math.abs(lastFrameHole2.x - center1.x) < 30) center1 = newPoint_x1(center1, -(30 - (lastFrameHole2.x - center1.x)), par.marshAng)
+
+				//если на следующем марше повортная стойка, стойку не рисуем и сохраняем сдвиг отверстия до края следующего марша
+				if (params.stairModel == "П-образная с забегом" && par.marshId == 1)
+					par.nextMarshPar.hasRailing.in = false;
+				if (par.nextMarshPar.hasRailing.in) {
+					center1.noDraw = true;
+					//сохраняем сдвиг отверстия до края следующего марша (для расчета поручня и ригелей)
+					center1.dxToMarshNext = -(center1.x - p0.x) + par.b - params.nose + par.turnBotParams.topMarshOffsetX;
+
+					//отверстия для крепления поворотной стойки следущего марша
+					var center2 = newPoint_xy(p0, par.b - params.nose + par.turnBotParams.topMarshOffsetX - 40 / 2, par.stepHoleY);
+					center2.y -= setTurnRacksParams(par.marshId + 1, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
+					center2.noRack = true;// отверстие не учитывается при построении заграждения
+					par.railingHoles.push(center2);
+				}
 			}
 			
 			//center1 = newPoint_xy(p1, -33 - 0.1, par.stepHoleY);
@@ -1882,6 +1940,17 @@ function drawTopStepKo_wndIn(par) {
 			center1 = newPoint_xy(p0, par.b / 2, par.rutelPosY);
 			center2 = newPoint_xy(center1, 0.0, -par.rutelDist);
 			par.railingHoles.push(center1);
+			par.railingHoles.push(center2);
+		}
+	}
+
+	//добавляем отверстия для крепления поворотной стойки следущего марша
+	if ((params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0) ||
+		(params.stairModel == "П-образная с забегом" && par.marshId == 2)) {
+		if (par.nextMarshPar.hasRailing.in) {
+			var center2 = newPoint_xy(p0, - params.nose + par.turnBotParams.topMarshOffsetX - 40 / 2,par.stepHoleY);
+			center2.y -= setTurnRacksParams(3, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
+			center2.noRack = true;
 			par.railingHoles.push(center2);
 		}
 	}

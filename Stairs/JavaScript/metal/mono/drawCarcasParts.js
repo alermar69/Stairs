@@ -932,16 +932,18 @@ function drawHorPlate(par) {
 			marshId: par.marshId,
 			basePoint: newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x + shiftXY - 100, -par.pointStartSvg.y + shiftXY + par.width + 50),
 		}
-    }
+	}
     if (par.type == "treadPlate" && par.isSvg) {
         var marshParams = getMarshParams(par.marshId);
-        var count = marshParams.stairAmt;
+		var count = marshParams.stairAmt;
+		if (marshParams.topTurn == "пол") count -= 1;
         shapePar.drawing = {
             name: "Подложка марша: кол-во " + count + " шт.",
             group: "carcasFlans",
             marshId: par.marshId,
         }
         if (par.isBotPlatform) shapePar.drawing.name = "Подложка площадки: кол-во 1шт.";
+		if (par.isTopLast) shapePar.drawing.name = "Последняя подложка верхнего марша: кол-во 1шт.";
     }
 
 	var shape = drawShapeByPoints2(shapePar).shape;

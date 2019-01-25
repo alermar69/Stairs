@@ -102,6 +102,7 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <script type="text/javascript" src="calcSpec_3.0.js"></script>
 
 <!--оболочки-->
+<script type="text/javascript" src="personalScripts.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 

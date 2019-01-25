@@ -2638,19 +2638,20 @@ function drawRailingHoles(par) {
 	for (var i = 0; i < par.holeCenters.length; i++) {
 		var center = par.holeCenters[i];
 
-		if (params.railingModel != "Самонесущее стекло") {
+		if (params.railingModel != "Самонесущее стекло" && !center.noDraw && !center.noDrawHoles) {
 			layer = "parts"
 			var rad = 6.5;
+			if (center.rad) rad = center.rad;
 			var center2 = newPoint_xy(center, 0.0, -60.0);
 			center.holeData = {zenk: 'back'};
 			center2.holeData = {zenk: 'back'};
-			addRoundHoleRail(par.shape, dxfPrimitivesArr, center, rad, par.dxfBasePoint, layer);
-			addRoundHoleRail(par.shape, dxfPrimitivesArr, center2, rad, par.dxfBasePoint, layer);
+			if (!center.noHole1) addRoundHoleRail(par.shape, dxfPrimitivesArr, center, rad, par.dxfBasePoint, layer);
+			if (!center.noHole2) addRoundHoleRail(par.shape, dxfPrimitivesArr, center2, rad, par.dxfBasePoint, layer);
 
 			//зенковка с обратной стороны
 			layer = "comments";
-			addRoundHoleRail(trashShape, dxfPrimitivesArr, center, zencDiam, par.dxfBasePoint, layer);
-			addRoundHoleRail(trashShape, dxfPrimitivesArr, center2, zencDiam, par.dxfBasePoint, layer);
+			if (!center.noHole1) addRoundHoleRail(trashShape, dxfPrimitivesArr, center, zencDiam, par.dxfBasePoint, layer);
+			if (!center.noHole2) addRoundHoleRail(trashShape, dxfPrimitivesArr, center2, zencDiam, par.dxfBasePoint, layer);
 		}
 
 		if (params.railingModel == "Самонесущее стекло") {
