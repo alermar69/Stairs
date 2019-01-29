@@ -1233,8 +1233,6 @@ function calcHandrailPoints(par, parRacks){
 			//if (marshPar.botTurn != "пол" && i == 0 && par.key == "in" && prevMarshPar.hasRailing.in) {
 			if (racks[i].isTurnRack) {
 				racks[i].len += setTurnRacksParams(par.marshId, par.key).rackLenAdd;
-				//racks[i].isTurnMonoRack = true;
-				if (params.model == "ко") racks[i].isTurnMonoRack = true;
 			}
 		}
 	
@@ -1362,14 +1360,6 @@ function calcHandrailPoints(par, parRacks){
 	}
 
 
-/** функция задает смещение и удлинение поворотной стойки для lt-ko:
- *
-	*stringerShiftPoint: { x: 0, y: 0 }: смещение поворотной стойки
-	*rackLenAdd: удлинение стойки
-	*shiftBotFrame: сдвиг кронштейна крепления к косоуру  вниз чтобы не попадал на крепление рамки
-	*shiftYtoP0: сдвиг вниз от начальной точки
-	*shiftYforShiftX: сдвиг вниз по Y из-за сдвига по Х
-*/
 
 function setTurnRacksParams(marshId, key) {
 	var marshPar = getMarshParams(marshId);
@@ -1380,13 +1370,8 @@ function setTurnRacksParams(marshId, key) {
 
 	var turnParams = calcTurnParams(marshPar.prevMarshId)
 
-	if ((params.stairModel == "П-образная с забегом" && marshId == 3) ||
-		(params.stairModel == "П-образная трехмаршевая" && marshId == 3 && params.stairAmt2 == 0 && marshPar.botTurn == "забег")) {
-		prevMarshPar.hasRailing.in = true;
-	}
-	if (params.stairModel == "П-образная с площадкой" && marshId == 3) {
+	if (params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой")
 		prevMarshPar.hasRailing.in = false;
-	}
 
 	var par = {
 		stringerShiftPoint: { x: 0, y: 0 }, // смещение поворотной стойки
@@ -1395,27 +1380,35 @@ function setTurnRacksParams(marshId, key) {
 		shiftYtoP0: 0, //сдвиг вниз от начальной точки
 		shiftYforShiftX: 0,//сдвиг вниз по Y из-за сдвига по Х
 	}
-	if (marshPar.botTurn != "пол" && key == "in" && prevMarshPar.hasRailing.in) {	
+	if (marshPar.botTurn != "пол" && key == "in" && prevMarshPar.hasRailing.in) {
 
 		par.shiftYforShiftX = (marshPar.b * 0.5 - rackProfile / 2) * Math.tan(marshPar.ang);
 
 		if (params.model == "ко") {
-			par.shiftBotFrame = 30; 
+			par.shiftBotFrame = 30;
 			if (marshPar.botTurn == "забег") {
 				par.shiftYtoP0 = marshPar.h * 2 + prevMarshPar.h + par.shiftBotFrame;
-				par.stringerShiftPoint.x = -(turnParams.topMarshOffsetZ + params.nose) + rackProfile / 2;
+				par.stringerShiftPoint.x = -(turnParams.topMarshOffsetZ + params.nose) + rackProfile / 2;				
 				par.stringerShiftPoint.y = - par.shiftYtoP0;
 				par.rackLenAdd = par.shiftYtoP0 + marshPar.h - par.shiftYforShiftX - (turnParams.topMarshOffsetZ + params.nose) * Math.tan(marshPar.ang);
+				if (params.riserType == "есть") {
+					par.stringerShiftPoint.x -= params.riserThickness;
+					par.rackLenAdd -= params.riserThickness * Math.tan(marshPar.ang);
+				}
 			}
 			if (marshPar.botTurn == "площадка") {
-				par.shiftYtoP0 = marshPar.h + prevMarshPar.h + par.shiftBotFrame; 
+				par.shiftYtoP0 = marshPar.h + prevMarshPar.h + par.shiftBotFrame;
 				par.stringerShiftPoint.x = rackProfile / 2;
 				par.stringerShiftPoint.y = - par.shiftYtoP0;
 				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX;
+				if (params.riserType == "есть") {
+					par.stringerShiftPoint.x -= params.riserThickness;
+					par.rackLenAdd -= params.riserThickness * Math.tan(marshPar.ang);
+				}
 			}
 		}
 
-		if (params.model == "лт") {			
+		if (params.model == "лт") {
 			if (marshPar.botTurn == "забег") {
 				par.shiftYtoP0 = marshPar.h * 3 + prevMarshPar.h;
 				par.stringerShiftPoint.x = rackProfile / 2;
@@ -1423,11 +1416,15 @@ function setTurnRacksParams(marshId, key) {
 				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX;
 			}
 			if (marshPar.botTurn == "площадка") {
-				par.shiftYforShiftX -= (40 + 5) * Math.tan(marshPar.ang);
+				par.shiftYforShiftX -= (40) * Math.tan(marshPar.ang);
 				par.shiftYtoP0 = marshPar.h + prevMarshPar.h;
 				par.stringerShiftPoint.x = rackProfile / 2 + 40;
 				par.stringerShiftPoint.y = - par.shiftYtoP0;
-				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX;
+				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX + 5;
+				if (params.stairType == "лотки" || params.stairType == "рифленая сталь")
+					par.rackLenAdd -= 40 - 5;
+				if (params.stairType == "дпк")
+					par.rackLenAdd -= 20;
 			}
 		}
 	}
@@ -1435,9 +1432,6 @@ function setTurnRacksParams(marshId, key) {
 	return par;
 }
 
-
-
-// Функция рисует стойки в зависимости от типа
 function drawRackMono(par) {
 
 	par.mesh = new THREE.Object3D();
@@ -1572,7 +1566,7 @@ function drawRackMono(par) {
 		if (par.type == 'middle') {
 			var center2 = newPoint_xy(center1, 0, -marshPar.h);
 			//уголок первой стойки к пригласительной ступени
-			if (isFirstMove) center2.anglePos = 'слева';
+			if (par.isFirstMove) center2.anglePos = 'слева';
 
 			holeCenters.push(center2);
 		}
@@ -1610,7 +1604,7 @@ function drawRackMono(par) {
 	if (params.model == "ко") {
 		var rad = 6.5;
 		var holeDist = 60;
-		
+
 		var center = copyPoint(p0);
 		addRoundHole(shape, par.dxfArr, center, rad, par.dxfBasePoint);
 
@@ -1648,8 +1642,8 @@ function drawRackMono(par) {
 	rack.position.z += 0.01 * sideFactor;
 	if (params.model == "ко") {
 		rack.rotation.y += Math.PI / 2;
-		rack.position.z += rackProfile /2;
-		rack.position.x -= rackProfile /2;
+		rack.position.z += rackProfile / 2;
+		rack.position.x -= rackProfile / 2;
 	}
 	par.mesh.add(rack);
 
@@ -1765,7 +1759,7 @@ function drawRackMono(par) {
 		}
 		var holder = drawRackHolder(holderPar).mesh;
 		holder.position.y = -70;
-		if (par.railingSide == "right") holder.position.z = 40;		
+		if (par.railingSide == "right") holder.position.z = 40;
 		meshHolder.add(holder);
 
 		//болты
@@ -1804,7 +1798,7 @@ function drawRackMono(par) {
 
 		meshHolder.rotation.y += Math.PI / 2 * turnFactor;
 		meshHolder.position.z += rackProfile / 2;
-		meshHolder.position.x -= rackProfile / 2 * turnFactor;
+		meshHolder.position.x -= (rackProfile / 2 + 0.01) * turnFactor;
 		par.mesh.add(meshHolder)
 	}
 
@@ -1820,7 +1814,7 @@ function drawRackMono(par) {
 	holder.position.y = topPoint.y;
 	holder.position.z = rackProfile / 2;
 
-	par.mesh.add(holder);	
+	par.mesh.add(holder);
 
 	//сохраняем данные для спецификации
 	var rackLen = topPoint.y - p3.y;
@@ -1926,1097 +1920,7 @@ function drawRackMono(par) {
 	}
 
 	return par;
-}	
-
-/** функция добавляет уголки стоек по массиву координат отверстий
-*@param holeCenters
-*@param railingSide
-
-
-*/
-
-function addRackAngles(par) {
-
-	par.mesh = new THREE.Object3D();
-	var rackProfile = 40;
-	//к-т, учитывающий сторону ограждения
-	var sideFactor = 1;
-	if (par.railingSide === "left") sideFactor = -1;
-
-	for (var i = 0; i < par.holeCenters.length; i++) {
-		var angleParams = drawBanisterAngle();
-		var angle = angleParams.mesh;
-		angle.position.y = par.holeCenters[i].y - angleParams.holeOffset;
-		angle.position.z = rackProfile;
-
-		if (par.railingSide === "right") {
-			angle.position.z = 0;
-			angle.rotation.y = Math.PI;
-		}
-
-		if (par.holeCenters[i].anglePos == 'справа') {
-			angle.rotation.y = Math.PI / 2;
-			angle.position.x += rackProfile / 2;
-			angle.position.z += rackProfile / 2 * turnFactor;
-
-			addLeader("Справа", 30, 70, 60, dxfPrimitivesArr, par.holeCenters[i], par.dxfBasePoint);
-		}
-
-		if (par.holeCenters[i].anglePos == 'слева') {
-			angle.rotation.y = -Math.PI / 2
-
-			angle.position.x += -rackProfile / 2;
-			angle.position.z += rackProfile / 2 * turnFactor;
-
-			addLeader("Слева", 30, 70, 60, dxfPrimitivesArr, par.holeCenters[i], par.dxfBasePoint);
-		}
-
-		if (par.holeCenters[i].anglePos == 'спереди') {
-			angle.rotation.y += -Math.PI;
-			angle.position.z += rackProfile * turnFactor;
-		}
-		par.mesh.add(angle);
-	}
-	return par;
-
-}//end of addRackAngles
-
-/** функция задает расположение и ориентацию отверстий под уголки в поворотных столбах
-	*массив хранит следующие данные о каждом отверстии:
-	*offset: отступ от нижней части стойки
-	*anglePos: на какой грани расположен уголок. Сторона спрва-слева определяется если смотреть на марш сбоку
-	*@param marshId
-	*@param type - является ли первой стойкой секции
-*/
-
-function setTurnRackHoles(par) {
-	var holes = [];
-	var p0 = { x: 0, y: 0, }; //базовая точка на оси стойки на уровне верхней плоскости ступени
-	//параметры марша
-	var marshPar = getMarshParams(par.marshId);
-	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
-	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
-
-	var angleHoleOffset = 16; //отступ отверстия уголка от нижней поверхности ступени
-
-	//костыль для совместимости со старым кодом - удалить
-	var rackParams = {}
-	rackParams.nextStepH = marshPar.h;
-	rackParams.holderAng = prevMarshPar.ang;
-	rackParams.nextMarshAng = marshPar.ang;
-	rackParams.additionalHolder = prevMarshPar.hasRailing.in;
-
-	if (params.model == "ко") {
-		var dy = setTurnRacksParams(par.marshId, "in").shiftYtoP0;
-		p0.y += dy + 4;
-	}
-
-	//верхний уголок
-	var center1 = newPoint_xy(p0, 0, -params.treadThickness - angleHoleOffset);
-	var center1 = newPoint_xy(p0, 0, 0);
-	if (params.stairModel == "П-образная с площадкой" && par.type == 'turnRackEnd') center1.anglePos = 'справа';
-
-	holes.push(center1);
-
-	if (params.stairModel == "П-образная с забегом" && params.model !== "ко") {
-		//поворотный столб в начале секции
-
-		if (par.type == 'turnRackStart') {
-			//6 забежная ступень
-			var center = newPoint_xy(center1, 0, -marshPar.h);
-			center.anglePos = 'сзади';
-			holes.push(center);
-			//5 забежная ступень
-			var center = newPoint_xy(center, 0, -marshPar.h);
-			center.anglePos = 'слева';
-			holes.push(center);
-			//4 забежная ступень
-			var center = newPoint_xy(center, 0, -marshPar.h);
-			center.anglePos = 'слева';
-			holes.push(center);
-			//3 забежная ступень
-			var center = newPoint_xy(center, 0, -marshPar.h);
-			center.anglePos = 'слева';
-			holes.push(center);
-
-			if (params.marshDist == 40) {
-				//2 забежная ступень
-				var center = newPoint_xy(center, 0, -marshPar.h);
-				center.anglePos = 'спереди';
-				holes.push(center);
-				//1 забежная ступень
-				var center = newPoint_xy(center, 0, -marshPar.h);
-				center.anglePos = 'спереди';
-				holes.push(center);
-			}
-		}
-
-		//поворотный столб в конце секции
-		if (par.type == 'turnRackEnd') {
-			//последняя прямая ступень марша
-			var center = newPoint_xy(center1, 0, -marshPar.h);
-			center.anglePos = 'сзади';
-			holes.push(center);
-			//вторая забежная ступень
-			var center = newPoint_xy(center1, 0, marshPar.h_topWnd);
-			center.anglePos = 'сзади';
-			holes.push(center);
-			//третья забежная ступень
-			var center = newPoint_xy(center, 0, marshPar.h_topWnd);
-			center.anglePos = 'справа';
-			holes.push(center);
-		}
-	}
-	if (params.stairModel == "П-образная с забегом" && params.model == "ко") {
-		//5 забежная ступень
-		var center = newPoint_xy(center1, 0, -marshPar.h);
-		holes.push(center);
-	}
-
-
-	if (params.stairModel == "П-образная с площадкой" && params.model !== "ко") {
-
-		//поворотный столб в начале секции
-		if (par.type == 'turnRackStart') {
-			var center = newPoint_xy(center1, 0, -marshPar.h);
-			center.anglePos = 'слева';
-			holes.push(center);
-		}
-
-		//поворотный столб в конце секции
-		if (par.type == 'turnRackEnd') {
-			var center = newPoint_xy(center1, 0, -marshPar.h);
-			holes.push(center);
-		}
-	}
-
-
-
-
-
-
-
-
-	//Г-образный поворот
-
-	if (params.stairModel != "П-образная с площадкой" && params.stairModel != "П-образная с забегом") {
-
-		if (marshPar.botTurn == "забег") {
-			var center = newPoint_xy(center1, 0, -marshPar.h);
-			center.anglePos = 'сзади';
-			holes.push(center);
-
-			if (params.model !== "ко") {
-				var center = newPoint_xy(center, 0, -marshPar.h);
-				center.anglePos = 'слева';
-				holes.push(center);
-
-
-				if (!par.isFirstFlan) {
-					var center = newPoint_xy(center, 0, -marshPar.h);
-					center.anglePos = 'слева';
-					holes.push(center);
-				}
-			}
-		}
-
-		if (marshPar.botTurn == "площадка" && params.model !== "ко") {
-			if (!par.isFirstFlan) {
-				var center = newPoint_xy(center1, 0, -marshPar.h);
-				center.anglePos = 'слева';
-				holes.push(center);
-			}
-		}
-
-		if (!(params.stairModel == "П-образная трехмаршевая" && par.marshId == 3 && params.stairAmt2 == 0 && params.turnType_1 !== "забег")) {
-			if (params.model !== "ко") {
-				if (!par.isFirstFlan) var center = newPoint_xy(center, 0, -prevMarshPar.h);
-				if (par.isFirstFlan) var center = newPoint_xy(center, 0, -marshPar.h);
-				center.anglePos = 'слева';
-				holes.push(center);
-			}
-		}
-	}	
-
-	/*	
-		//для левой лестницы бокоые уголки ставятся на другой стороне
-		if(turnFactor == -1){
-			for(var i=0; i < holes.length; i++){
-				if (holes[i].anglePos == 'справа') holes[i].anglePos = 'слева';
-				else if(holes[i].anglePos == 'слева') holes[i].anglePos = 'справа';
-				}
-			}
-	*/
-	par.holes = holes;
-	return par;
-
-}//end of setTurnRackHoles
-
-
-function drawRailingSectionNewel2(par) {
-
-	var section = new THREE.Object3D();
-	var handrails = new THREE.Object3D();
-
-	var rackLength = 950;
-	par.rackLength = rackLength;
-	var rackProfile = 40;
-	par.rackProfile = rackProfile;
-	var railingPositionZ = 0;
-	if (turnFactor === -1) railingPositionZ = -40;
-	var turnRacksParams = setTurnRacksParams(par.marshId, par.key);//параметры поворотной стойки
-
-	if (params.calcType === 'lt-ko' || params.calcType === 'vhod') {
-		//адаптация к единой функции drawMarshRailing
-
-		par.racks = [];
-		if (par.stringerParams && par.stringerParams[par.marshId].elmIns[par.key]) par.racks = par.stringerParams[par.marshId].elmIns[par.key].racks
-		//объединяем массивы первого и третьего марша
-		if ((params.stairModel == "Прямая с промежуточной площадкой" || params.stairModel == 'Прямая горка') && par.marshId !== 'topPlt') {
-			par.racks = [];
-			// par.racks.push(...par.stringerParams[1].elmIns[par.key].racks);
-			par.racks.push.apply(par.racks, par.stringerParams[1].elmIns[par.key].racks);
-			//пересчитываем координаты стоек второго марша с учетом позиции марша
-			for (var i = 0; i < par.stringerParams[3].elmIns[par.key].racks.length; i++) {
-				var point = copyPoint(par.stringerParams[3].elmIns[par.key].racks[i]);
-				point.x += par.stringerParams[3].treadsObj.unitsPos.marsh3.x;
-				point.y += par.stringerParams[3].treadsObj.unitsPos.marsh3.y;
-				par.racks.push(point)
-			}
-		}
-		if (params.stairModel == 'Прямая горка' && par.marshId !== 'topPlt') {
-			par.racks = [];
-			// par.racks.push(...par.stringerParams[1].elmIns[par.key].racks);
-			par.racks.push.apply(par.racks, par.stringerParams[1].elmIns[par.key].racks);
-			//пересчитываем координаты стоек второго марша с учетом позиции марша
-			for (var i = 0; i < par.stringerParams[3].elmIns[par.key].racks.length; i++) {
-				var point = copyPoint(par.stringerParams[3].elmIns[par.key].racks[i]);
-				point.x = par.stringerParams[3].treadsObj.unitsPos.marsh3.x - point.x;
-				point.y = par.stringerParams[3].treadsObj.unitsPos.marsh3.y + point.y;
-				par.racks.push(point)
-			}
-		}
-		//рассчитываем необходимые параметры и добавляем в объект par
-		setRailingParams(par) //функция в файле calcRailingParams.js
-		if (par.racks.length == 0) return section;
-
-		//задаем параметры
-		{
-			if (par.key == "front") par.railingSide = "left";
-			var railingSide = par.railingSide;
-			if (!par.railingSide && params.model == "ко" && par.marshId == 'topPlt')
-				railingSide = "right";
-			var dxfBasePoint = par.dxfBasePoint;
-			var racks = par.racks;
-			var model = params.model;
-
-			//параметры марша
-			var marshPar = getMarshParams(par.marshId);
-			var prevMarshPar = getMarshParams(marshPar.prevMarshId);
-
-			par.a = marshPar.a;
-			par.b = marshPar.b;
-			par.h = marshPar.h;
-			par.stairAmt = marshPar.stairAmt;
-			par.lastMarsh = marshPar.lastMarsh;
-
-			//задаем длину стоек
-			var rackLength = 950;
-			par.rackLength = rackLength;
-			var rackProfile = 40;
-
-			var dxfText = {
-				side: railingSide === "left" ? " - наружный" : " - внутренний",
-				marsh: " нижнего марша "
-			}
-		}
-
-
-		/*Стойки*/
-
-		//выделяем из массива racks первые и последние стойки поворотов и марша, рассчтываем длины и углы
-		var parRacks = setRacksParams(par).parRacks; //функция в metal/drawRailing.js
-
-		for (var i = 0; i < racks.length; i++) {
-			if (!racks[i]) continue;
-			var rackParams = {
-				len: racks[i].len,
-				railingSide: railingSide,
-				stringerSideOffset: params.sideOverHang,
-				showPins: true,
-				showHoles: true,
-				isBotFlan: false,
-				material: params.materials.metal,
-				dxfBasePoint: newPoint_xy(par.dxfBasePoint, racks[i].x, racks[i].y),
-				dxfArr: dxfPrimitivesArr,
-				realHolder: true, //точно отрисовываем кронштейн поручня
-				holderAng: racks[i].holderAng,
-				sectText: par.text,
-				marshId: par.marshId, 
-				key: par.key,
-			}
-			if (params.rackBottom == "сверху с крышкой") {
-				rackParams.showPins = false;
-				rackParams.showHoles = false;
-				rackParams.isBotFlan = true;
-			}
-			if (params.banisterMaterial != "40х40 черн.") rackParams.material = params.materials.inox;
-
-			if (!racks[i].noDraw) {
-				if (racks[i].isTurnMonoRack) {
-					rackParams.type = 'turnRackStart';
-					rackParams = drawRackMono(rackParams);
-				}
-				else {
-					if (racks[i].isTurnRack) rackParams.holeYTurnRack = turnRacksParams.shiftYtoP0;
-					rackParams = drawRack3d_4(rackParams);
-				}
-				var rack = rackParams.mesh;
-				rack.position.x = racks[i].x;
-				rack.position.y = racks[i].y;
-				rack.position.z = railingPositionZ;
-				section.add(rack);
-			}
-		} //конец стоек
-	}
-
-	if (params.calcType === 'mono') {
-		var racks_mesh = drawRacksMono(par);
-		section.add(racks_mesh.mesh);
-		var parRacks = par.parRacks;
-		var racks = par.racks;
-	}
-
-	/* ригели */
-
-	if (params.railingModel === "Ригели") {
-
-		//Задаем позицию ригелей по Z
-		var rigelPosZ = 0
-		var rigelProfZ = 20;
-		if (params.rigelMaterial == "Ф12 нерж.") rigelProfZ = 12;
-		if (par.railingSide == "left") rigelPosZ = (railingPositionZ + rackProfile) * turnFactor + 0.01;
-		if (par.railingSide == "right") rigelPosZ = (railingPositionZ - rigelProfZ - 0.01);
-		if (par.marshId == "topPlt") {
-			rigelPosZ = -rigelProfZ - 0.01;
-			if (turnFactor == -1) rigelPosZ -= rackProfile - 0.01;
-		}
-		if (par.marshId == "topPlt" && par.key == "front") {
-			rigelPosZ = rackProfile * (1 + turnFactor) * 0.5;
-		}
-		if (par.rigelMoveZ) rigelPosZ += par.rigelMoveZ;
-
-		//шаг ригелей по вертикали
-		var rigelAmt = Number(params.rigelAmt);
-		//устраняем пересечение нижнего ригеля и нижней забежной ступени на монокосоарах
-		var rigelMooveY = 0;
-		if (params.calcType === 'mono') {
-			if (rigelAmt == 2) rigelMooveY = -40;
-			if (rigelAmt == 3) rigelMooveY = 50;
-			if (rigelAmt == 4) rigelMooveY = -120;
-		};
-		if (params.calcType === 'lt-ko' || params.calcType === 'vhod') rigelMooveY = par.b / 2 * Math.tan(parRacks.angMarsh);
-		if (isNaN(rigelMooveY)) rigelMooveY = 0;
-		var rigelDist = (rackLength - 50 - rigelMooveY) / (rigelAmt + 1);
-
-
-		//формируем массив базовых точек для ригелей
-		if (params.calcType === 'lt-ko' || params.calcType === 'vhod') {
-			var rigelBasePoints = [];
-
-			if (parRacks.marsh1First) rigelBasePoints.push(copyPoint(parRacks.marsh1First));
-			if (parRacks.botFirst) rigelBasePoints.push(copyPoint(parRacks.botFirst));
-			if (parRacks.marshFirst) {
-				rigelBasePoints.push(copyPoint(parRacks.marshFirst));
-				if (params.model == "лт")
-					rigelBasePoints[rigelBasePoints.length - 1].y += turnRacksParams.rackLenAdd - turnRacksParams.shiftYforShiftX;
-
-			}
-			
-			if (parRacks.marshLast) {
-				rigelBasePoints.push(copyPoint(parRacks.marshLast));
-				if (params.model == "ко" && par.lastMarsh && params.platformTop == "нет") {
-					rigelBasePoints[rigelBasePoints.length - 1].y += calcLastRackDeltaY();
-				}
-				if (params.model == "ко" && parRacks.marshLast.len != parRacks.marshFirst.len) {
-					rigelBasePoints[rigelBasePoints.length - 1].y += parRacks.marshLast.len - parRacks.marshFirst.len;
-				}
-				//если на следующем марше поворотная стойка сохраняем сдвиг отверстия до края следующего марша
-				if (parRacks.marshLast.noDraw && parRacks.marshLast.dxToMarshNext) {
-					rigelBasePoints[rigelBasePoints.length - 1].dxToMarshNext = parRacks.marshLast.dxToMarshNext;
-				}
-			}
-			if (parRacks.topLast) rigelBasePoints.push(copyPoint(parRacks.topLast));
-			if (parRacks.marsh2Last) rigelBasePoints.push(copyPoint(parRacks.marsh2Last));
-		}
-		if (params.calcType === 'mono') {
-			var rigelBasePoints = calcRigelPoints(par, parRacks);
-		}
-
-		var side = "out";
-		if (railingSide === "right") side = "in";
-		var rigelPar = {
-			points: rigelBasePoints,
-			botEnd: par.botEnd,
-			dxfBasePoint: copyPoint(par.dxfBasePoint),
-			sectText: par.text,
-			topConnection: par.topConnection,
-		}
-
-		if (params.model == "ко") rigelMooveY += turnRacksParams.rackLenAdd;
-		
-		for (var i = 0; i < rigelAmt; i++) {
-			rigelPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, rigelDist * (i + 1) + rigelMooveY);
-			var rigel = drawPolylineRigel(rigelPar).mesh;
-			rigel.position.y = rigelDist * (i + 1) + rigelMooveY;
-			rigel.position.z = rigelPosZ;
-			section.add(rigel);
-		}
-
-	} //конец ригелей
-
-	/* стекло на стойках */
-	if (params.railingModel == "Стекло на стойках" || params.railingModel == "Экраны лазер") {
-
-		var glassDist = rackProfile / 2 + 22;
-		var glassHeight = 800;
-
-		glassParams = {
-			p1: 0,
-			p2: 0,
-			angle: parRacks.angMarsh,
-			glassDist: glassDist,
-			glassHeight: glassHeight,
-			glassMaterial: params.materials.glass,
-			glassHolderMaterial: params.materials.inox,
-			dxfBasePoint: par.dxfBasePoint,
-		}
-		if (params.railingModel == "Экраны лазер") glassParams.glassMaterial = params.materials.metal;
-
-		//номинальная длина стойки
-		var nominalLen = rackLength;
-		if (params.calcType === 'mono') nominalLen = 800;
-		var pltDeltaY = 0;//Нужна для корректировки положения стоек на площадках
-
-		for (var i = 0; i < racks.length - 1; i++) {
-			//выравниваем стекло на площадке
-			if (par.topTurn == "площадка" && par.key == "out" && Math.abs(racks[i].y - racks[i + 1].y) < 0.01 && i > 1) {
-				// 20 зазор стекла от площадки
-				if (racks[i].y - racks[i - 1].y > 0.01) pltDeltaY = -20 + par.rackProfile + params.flanThickness + params.treadThickness + glassDist;
-			}
-			//выравниваем стекло на площадке
-			if (par.botTurn == "площадка" && par.key == "out" && racks[i].y - racks[i + 1].y < 0.01) {
-				pltDeltaY = -20 + par.rackProfile + params.flanThickness + params.treadThickness + glassDist;
-			}
-		
-			glassParams.p1 = copyPoint(racks[i]);
-			glassParams.p2 = copyPoint(racks[i + 1]);
-			//если на следующем марше поворотная стойка сдвигаем стойку до края следующего марша
-			if (parRacks.marshLast.noDraw && racks[i + 1].dxToMarshNext) {
-				glassParams.p2.x += racks[i + 1].dxToMarshNext - rackProfile / 2;
-			}
-			glassParams.p1.y += racks[i].len - nominalLen + 80 - pltDeltaY;
-			glassParams.p2.y += racks[i + 1].len - nominalLen + 80 - pltDeltaY;
-			if (Math.abs(racks[i].y - racks[i + 1].y) < 0.01) glassParams.p1.y = glassParams.p2.y;
-			if (par.botTurn == "площадка" && par.key == "out" && i == 0) glassParams.p2.y = glassParams.p1.y;
-
-			glassParams.glassHeight = rackLength - 170;
-			//уменьшаем высоту стекла чтобы оно не касалось ступеней
-			if (params.rackBottom == "сверху с крышкой" && (glassParams.p1.y !== glassParams.p2.y)) {
-				var dy = par.h - (par.b / 2 - (par.a - par.b) - glassDist) * Math.tan(parRacks.angMarsh);
-				glassParams.glassHeight = rackLength - dy - 100;
-				glassParams.p1.y += dy - 70;
-				glassParams.p2.y += dy - 70;
-			}
-
-			if (params.calcType === 'mono') {
-				glassParams.glassHeight = 700;
-			}
-
-			var glassParams = drawGlassNewell(glassParams);
-			var glass = glassParams.mesh;
-
-			glass.position.z = railingPositionZ + 16;
-			glass.castShadow = true;
-			section.add(glass);
-
-			//сохраняем данные для спецификации
-			staircasePartsParams.glassAmt += 1;
-		}
-	} //конец стекол на стойках
-
-	/* Поручни */
-
-	if (params.handrail != "нет") {
-		if (params.stairModel == "Прямая с промежуточной площадкой") par.topConnection = false;
-
-		var handrailPoints = calcHandrailPoints(par, parRacks);
-
-		
-
-		var side = "out";
-		if (railingSide === "right") side = "in";
-
-		handrailParams = {
-			points: handrailPoints,
-			side: side,
-			offset: 0,
-			extraLengthStart: 0,
-			extraLengthEnd: 0,
-			connection: params.handrailConnectionType,
-			dxfBasePoint: par.dxfBasePoint,
-			fixType: "нет",
-			topConnection: par.topConnection,
-			sectText: par.text,
-			marshId: par.marshId,
-			key: par.key,
-			topPoint: parRacks.marshLast,
-		}
-
-		//удлиннение поручня последнего марша
-		if (params.stairModel == "Прямая" || par.marshId == 3) {
-			handrailParams.extraLengthEnd += params.topHandrailExtraLength;
-		}
-
-		handrailParams = drawPolylineHandrail(handrailParams);
-
-		var handrail = handrailParams.mesh;
-		var posZ = -handrailParams.wallOffset + rackProfile / 2 * turnFactor;
-		if (side == "in") posZ = handrailParams.wallOffset + rackProfile / 2 * turnFactor;
-
-		handrail.position.z = posZ;
-		handrails.add(handrail);
-	} //конец поручней
-
-
-	//сохраняем данные для спецификации
-	var handrailPoints = calcHandrailPoints(par, parRacks);
-	if (typeof railingParams != 'undefined') {
-		if (!railingParams.sections) {
-			railingParams.sections = {
-				types: [],
-				sumLen: 0,
-			}
-		}		
-
-		for (var i = 1; i < handrailPoints.length; i++) {
-			var sectLen = distance(handrailPoints[i - 1], handrailPoints[i]);
-			railingParams.sections.types.push(sectLen);
-			railingParams.sections.sumLen += sectLen / 1000;
-		}
-	}
-
-
-
-	if (params.model == 'лт') {
-		section.position.x = -5;
-	}
-
-	var result = {
-		mesh: section,
-		handrails: handrails,
-	}
-	return result;
-
-} //end of drawRailingSectionNewel
-
-function drawPolylineRigel(par) {
-
-	var dxfBasePoint = par.dxfBasePoint;
-	var side = par.side;
-
-	par.mesh = new THREE.Object3D();
-
-	if (!par.points) return par;
-
-	var points = par.points;
-	var offset = par.offset;
-
-	//зазор между торцами ригелей при соединении шарниром
-	var endOffset = 0;
-	if (par.connection != "без зазора") endOffset = 7;
-
-	//задаем параметры ригелей
-	rigelParams = {
-		type: "rect",
-		poleProfileY: 20,
-		poleProfileZ: 20,
-		length: 0, //пересчитывается в цикле
-		poleAngle: 0, //пересчитывается в цикле
-		material: params.materials.metal,
-		dxfArr: dxfPrimitivesArr,
-		partName: "rigels",
-		dxfBasePoint: par.dxfBasePoint,
-		angDxf: true,
-		sectText: par.sectText,
-	};
-
-	if (params.rigelMaterial === "Ф12 нерж.") {
-		rigelParams.type = "round";
-		rigelParams.poleProfileY = 12;
-		rigelParams.poleProfileZ = 12;
-		rigelParams.material = params.materials.inox;
-	}
-	if (params.rigelMaterial === "Ф16 нерж.") {
-		rigelParams.type = "round";
-		rigelParams.poleProfileY = 16;
-		rigelParams.poleProfileZ = 16;
-		rigelParams.material = params.materials.inox;
-	}
-
-	//выпуск ригеля за ось стойки по X
-	var extraLenEnd = 50;
-	var extraLenMid = 20;
-	if (rigelParams.type == "round") extraLenMid = 70; //отступ чтобы шарнир не попал на стойку
-	if (testingMode) extraLenEnd = 20;
-
-	//сортируем массив points в порядке возрастания координаты x
-	par.points.sort(function (a, b) {
-		return a.x - b.x;
-	});
-
-	var lastPoint = copyPoint(par.points[0])
-	for (var i = 0; i < par.points.length - 1; i++) {
-		var p1 = copyPoint(lastPoint);
-		var p2 = copyPoint(par.points[i + 1]);
-		var ang = angle(p1, p2);
-		if (p1.ang) ang = p1.ang;
-
-		if (rigelParams.type != "round") {
-			//продлеваем ригель в обе стороны
-			if (i == 0) p1 = polar(p1, ang, -extraLenEnd);
-			else p1 = polar(p1, ang, -extraLenMid);
-			if (i < par.points.length - 2) p2 = polar(p2, ang, extraLenMid);
-			else p2 = polar(p2, ang, extraLenEnd);
-
-			//пересчитываем базовые точки для нечетных участков чтобы избежать пересечения
-			if (i % 2 == 1) {
-				var deltaY = par.points[i].y - p1.y + rigelParams.poleProfileY / Math.cos(ang);
-				deltaY += rigelParams.poleProfileY / Math.cos(angle(par.points[i - 1], par.points[i]));
-				p1.y += deltaY;
-				p2.y += deltaY;
-
-			}
-			lastPoint = copyPoint(par.points[i + 1])
-		}
-		if (rigelParams.type == "round") {
-
-			if (i == 0) p1 = polar(p1, ang, -extraLenEnd);
-			//переносим конечную точку так, чтобы шарнир не попал на стойку
-			if (i < par.points.length - 2) {
-				p2 = polar(p2, ang, -extraLenMid);
-				p2.y = par.points[i + 1].y; //если следующий участок горизонтальный, он должен таким и остаться
-			}
-			else p2 = polar(p2, ang, extraLenEnd);
-
-			lastPoint = copyPoint(p2);
-
-			var radJoint = 6 + 0.2;
-			var angBot = angle(p1, p2);
-			var pcJoint = polar(p2, angBot + Math.PI / 2, rigelParams.poleProfileY / 2);
-			pcJoint = polar(pcJoint, angBot, -radJoint);
-
-			if (par.points[i + 2]) {
-				var p3 = copyPoint(par.points[i + 2]);
-				var angTop = angle(p2, p3);
-				var pt1 = polar(pcJoint, angTop, radJoint);
-				var pt2 = itercection(p2, polar(p2, angTop + Math.PI / 2, 100), pcJoint, polar(pcJoint, angTop, 100));
-				var lengthOff = distance(pt1, pt2);
-				if (pt2.x > pt1.x) lengthOff *= -1;
-
-				lastPoint = polar(p2, angTop, lengthOff);
-			}
-		}
-
-		
-
-		rigelParams.length = distance(p1, p2) - 10; //10 - размер шарнира
-		if (rigelParams.type == "round") rigelParams.length = distance(p1, p2) - radJoint * 2;
-		rigelParams.poleAngle = angle(p1, p2);
-		rigelParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, p1.x, p1.y);
-
-		//если на следующем марше поворотная стойка, удлиняем ригели до неё
-		if (par.points[i + 1].dxToMarshNext) {
-			p2 = newPoint_xy(par.points[i + 1], par.points[i + 1].dxToMarshNext, 0);
-			rigelParams.length = (p2.x - p1.x) / Math.cos(rigelParams.poleAngle);
-		}
-
-		var rigel = drawPole3D_4(rigelParams).mesh;
-		rigel.position.x = p1.x;
-		rigel.position.y = p1.y;
-		par.mesh.add(rigel);
-
-		//шарниры ригелей
-		if (rigelParams.type == "round") {
-			//if (par.points[i + 2] || (par.topConnection && i == points.length - 2)) {
-			if (par.points[i + 2]) {
-				var jointParams = {
-					rad: 6,
-					dxfBasePoint: newPoint_xy(par.dxfBasePoint, pcJoint.x, pcJoint.y),
-					type: "rigelJoint",
-				}
-
-				var sphere = drawHandrailJoint(jointParams);
-				sphere.position.x = pcJoint.x;
-				sphere.position.y = pcJoint.y;
-				sphere.position.z = jointParams.rad;
-				par.mesh.add(sphere);
-			}
-		}
-
-
-	}
-
-	// par.meterHandrailPar = meterHandrailPar;
-
-	return par;
-} //end of drawPolylineRigel
-
-function drawPolylineHandrail(par) {
-
-	var marshPar = getMarshParams(par.marshId);
-
-	var dxfBasePoint = par.dxfBasePoint;
-	var side = par.side;
-
-	//адаптация
-	if (side == "left") side = "out";
-	if (side == "right") side = "in";
-
-	par.mesh = new THREE.Object3D();
-
-	if (!par.points) return par;
-
-	var points = par.points;
-	var offset = par.offset;
-
-	//сортируем массив points в порядке возрастания координаты x
-	par.points.sort(function (a, b) {
-		return a.x - b.x;
-	});
-
-	//удаляем ошибочные точки чтобы поручень отрисовывался в любом случае
-	$.each(par.points, function (i) {
-		if (!isFinite(this.x) || !isFinite(this.y)) {
-			par.points.splice(i, 1);
-		}
-	})
-	//костыль чтобы поручень отрисовывался если не осталось точек
-	if (points.length < 2) {
-		points = [];
-		var p1 = { x: -params.M / 2, y: 0 }
-		var p2 = { x: params.M / 2, y: 0 }
-		points.push(p1, p2)
-	}
-
-	var meterHandrailPar = {
-		prof: params.handrailProf,
-		sideSlots: params.handrailSlots,
-		handrailType: params.handrail,
-		metalPaint: params.metalPaint_perila,
-		timberPaint: params.timberPaint_perila,
-	}
-	meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
-
-	//для круглого поручня базовые точки находятся на оси поручня
-	if (meterHandrailPar.handrailModel == "round") offset -= meterHandrailPar.profY / 2;
-
-	//пересчет базовых точек чтобы сместить поручень на величину offset
-
-	var points1 = []; //массив точек с отступом
-	var points2 = []; //массив центров шарниров
-	for (var i = 0; i < points.length; i++) {
-		//первая точка
-		if (i == 0) {
-			//если первый участок вертикальный
-			if (points[i].x == points[i + 1].x) {
-				var point = newPoint_xy(points[i], offset, 0)
-			}
-			//если первый участок наклонный
-			if (points[i].x != points[i + 1].x) {
-				var handrailAngle = angle(points[i], points[i + 1])
-				var point = newPoint_xy(points[i], 0, -offset / Math.cos(handrailAngle))
-				//удлиннение поручня за начальную точку
-				point = polar(point, handrailAngle, -par.extraLengthStart)
-			}
-			points1.push(point);
-		}
-
-		//промежуточные точки
-		if (i > 0 && i < points.length - 1) {
-			var line1 = parallel(points[i - 1], points[i], -offset);
-			var line2 = parallel(points[i], points[i + 1], -offset);
-			var point = itercection(line1.p1, line1.p2, line2.p1, line2.p2)
-			points1.push(point);
-		}
-
-		//последняя точка
-		if (i == points.length - 1) {
-
-			//если последний участок вертикальный
-			if (points[i - 1].x == points[i].x) {
-				//var point = newPoint_xy(points[i], -offset, 0)
-				var point = newPoint_xy(points[i], offset, 0);
-			}
-			//если последний участок наклонный
-			if (points[i - 1].x != points[i].x) {
-				var handrailAngle = angle(points[i - 1], points[i])
-				//var point = newPoint_xy(points[i], 0, -offset / Math.cos(handrailAngle))
-				//var point = newPoint_xy(points[i], 0, -offset * Math.tan(handrailAngle))
-				var line1 = parallel(points[i - 1], points[i], -offset);
-				var point = itercection(line1.p1, line1.p2, points[i], polar(points[i], Math.PI / 2, 100))
-				//var point = itercection(points[i - 1], polar(points[i - 1], handrailAngle, 100), points[i], polar(points[i], Math.PI / 2, 100))
-
-				if (params.handrailEndHor == "нет" || !marshPar.lastMarsh) {
-					//удлиннение поручня за конечную точку
-					point = polar(point, handrailAngle, par.extraLengthEnd)
-					point = polar(point, handrailAngle, -10 / Math.cos(handrailAngle))
-					//if (params.handrailEndType == "под углом") point = polar(point, handrailAngle, meterHandrailPar.profY)
-					if (params.calcType == "mono") point = polar(point, handrailAngle, -0.1)
-				}
-
-				if (params.handrailEndHor == "да" && marshPar.lastMarsh) {
-					point = newPoint_y(point, params.handrailEndHeight, handrailAngle);
-					points1.push(point);
-					var point = newPoint_xy(point, params.handrailEndLen, 0)
-				}
-
-			}
-			points1.push(point);
-		}
-	}
-
-	points = points1;
-
-	//расчет длин и углов всех участков поручня
-
-	var startOffset = 0; //смещение начала текущего куска поручня от базовой точки
-	var startAngle = Math.PI / 2; //угол начала текущего куска поручня
-
-	for (var i = 0; i < points.length - 1; i++) {
-		if (points[i] && points[i + 1]) {
-			//расчет угла поручня
-			var p1 = copyPoint(points[i]); //первая точка текущего куска
-			var p2 = copyPoint(points[i + 1]); //вторая точка текущего куска
-			var p3 = copyPoint(points[i + 2]); //вторая точка следующего куска
-
-			var handrailAngle = Math.atan((p2.y - p1.y) / (p2.x - p1.x));
-
-			//расчет начального угла поручня для первого куска
-			if (i == 0 && params.handrailEndType == "под углом" && p2.x != p1.x) {
-				startAngle = Math.PI / 2 - handrailAngle;
-			}
-			//для остальных кусков стартовый угол рассчитан на предыдущей итерации цикла
-
-
-			//расчет конечного угла и длины куска (кроме последнего)
-			if (p3) var handrailAngle2 = Math.atan((p3.y - p2.y) / (p3.x - p2.x));
-
-			if (par.connection == "без зазора" && p3) {
-				var endAngle = Math.PI / 2 - (handrailAngle - handrailAngle2) / 2;
-				//вертикальный участок
-				if (p2.x - p1.x == 0) {
-					var length = distance(p1, p2) + meterHandrailPar.profY * Math.tan(Math.PI / 2 - endAngle);
-				}
-				//горизонтальный или наклонный участок
-				if (p2.x - p1.x != 0) {
-					var length = distance(p1, p2) + meterHandrailPar.profY * Math.tan(Math.PI / 2 - endAngle) - meterHandrailPar.profY * Math.tan(Math.PI / 2 - startAngle);
-				}
-			}
-
-			//прямые торцы
-			if (par.connection != "без зазора") {
-				endAngle = Math.PI / 2;
-				var length = distance(p1, p2) - meterHandrailPar.profY * Math.tan(Math.PI / 2 - startAngle);
-			}
-
-			//последний кусок
-			if (i == points.length - 2) {
-				endAngle = Math.PI / 2;
-				if (params.handrailEndType == "под углом" && p2.x != p1.x) {
-					endAngle = Math.PI / 2 - handrailAngle;
-				}
-				var length = distance(p1, p2);
-				//if (par.connection == "без зазора") length += meterHandrailPar.profY * Math.tan((Math.PI / 2 - handrailAngle)/2)
-				if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
-					length -= meterHandrailPar.profY * Math.tan(Math.PI / 2 - startAngle)
-				}
-			}
-
-
-			if (meterHandrailPar.handrailModel == "round") {
-				length = distance(p1, p2);
-				//укорачиваем поручень чтобы он не врезался в стойку верхнего марша
-				var key = par.key;
-				if (params.stairModel == "Прямая" || params.stairModel == "Прямая с промежуточной площадкой") {
-					if (par.key == "in") key = "out";
-					if (par.key == "out") key = "in";
-				}
-
-				//if (!marshPar.lastMarsh && key == "in") length -= meterHandrailPar.profY * Math.tan(handrailAngle)
-			}
-
-
-
-			//расчет позиции шарниров
-			if (i < points.length - 2 && par.connection == "шарнир") {
-				var axis1 = parallel(p1, p2, meterHandrailPar.profY / 2);
-				var axis2 = parallel(p2, p3, meterHandrailPar.profY / 2);
-				var spherePos = itercection(axis1.p1, axis1.p2, axis2.p1, axis2.p2)
-			}
-
-			//корректировка длины и позиции в зависимости от типа стыковки кусков
-			var basePoint = copyPoint(p1);
-
-			if (par.connection == "без зазора") endOffset = 0;
-
-			if (par.connection == "шарнир") {
-				endOffset = 26;
-				//если есть шарнир
-				if (i <= points.length - 2) {
-					length -= endOffset * 2;
-					basePoint = polar(basePoint, handrailAngle, endOffset)
-				}
-			}
-			if (par.connection == "прямые") {
-				length -= startOffset; //вычитаем отступ, рассчитанный на предыдущей итерации
-				basePoint = polar(basePoint, handrailAngle, startOffset)
-				endOffset = 0;
-				if (p3 && handrailAngle < handrailAngle2) endOffset = meterHandrailPar.profY * Math.tan((handrailAngle2 - handrailAngle) / 2);
-				//круглый поручень базируется по оси, поэтому нужны зазоры и при загибе вниз
-				if (meterHandrailPar.handrailModel == "round" && p3 && handrailAngle > handrailAngle2)
-					endOffset = meterHandrailPar.profY * Math.tan((handrailAngle - handrailAngle2) / 2);
-				length -= endOffset;
-			}
-
-
-
-			//построение поручня
-			var handrailParams = {
-				model: params.handrail,
-				length: length - 0.01, // костыль чтобы не было пересечений
-				dxfArr: dxfPrimitivesArr,
-				dxfBasePoint: par.dxfBasePoint,
-				startAngle: startAngle,
-				endAngle: endAngle,
-				fixType: par.fixType,
-				side: side,
-				poleAngle: handrailAngle,
-				sectText: par.sectText,
-			}
-			if (params.railingModel == "Самонесущее стекло") handrailParams.isGlassHandrail = true;
-
-			handrailParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, basePoint.x, basePoint.y)			
-
-			handrailParams = drawHandrail_4(handrailParams);
-			var handrail = handrailParams.mesh;
-			handrail.position.x = basePoint.x;
-			handrail.position.y = basePoint.y;
-
-			par.wallOffset = handrailParams.wallOffset;
-			par.mesh.add(handrail);
-
-
-			//шарнир
-			if (i < points.length - 2 && par.connection == "шарнир") {
-
-				var jointParams = {
-					rad: 25,
-					dxfBasePoint: newPoint_xy(par.dxfBasePoint, p2.x, p2.y)
-				}
-				var posZ = jointParams.rad * 2;
-				if (side == "in") posZ = -jointParams.rad * 2;
-
-				var sphere = drawHandrailJoint(jointParams);
-				sphere.position.x = p2.x;
-				sphere.position.y = p2.y;
-				sphere.position.z = posZ;
-				par.mesh.add(sphere);
-
-				//Шарнир на конце если есть соединение со следующим участком
-				if (par.topConnection && i == points.length - 3) {
-					jointParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, p3.x, p3.y)
-					var sphere = drawHandrailJoint(jointParams);
-					sphere.position.x = p3.x;
-					sphere.position.y = p3.y;
-					sphere.position.z = posZ;
-					par.mesh.add(sphere);
-
-				}
-			}
-
-
-			//добавляем кронштейн поручня к поворотному столбу
-			if (par.topPoint) {
-				//если нет последней стойки
-				if (par.topPoint.noDraw) {
-					var holderPar = {
-						topPoint: polar(basePoint, handrailAngle, handrailParams.length),//точка верхнего края поручня
-						holderAng: par.topPoint.holderAng,
-						dxfBasePoint: handrailParams.dxfBasePoint,
-					}
-					holderPar.dxfBasePoint = newPoint_xy(handrailParams.dxfBasePoint, -basePoint.x, -basePoint.y);
-
-					var holder = drawHandrailHolderTurnRack(holderPar).mesh;
-					holder.position.z += -30 * turnFactor;
-					par.mesh.add(holder);
-				}
-			}
-
-			//сохраняем начальный параметры для следующего участка
-			startAngle = -endAngle;
-			startOffset = endOffset;
-		}
-	}
-
-	par.meterHandrailPar = meterHandrailPar;
-
-	return par;
-} //end of drawPolylineHandrail
-
-function drawHandrailHolderTurnRack(par) {
-	//кронштейн поручня к поворотному столбу
-
-
-	var topPoint = par.topPoint;//точка верхнего края поручня
-	var handrailAng = Math.abs(par.holderAng);
-	rackProfile = 40;
-
-	var holderParams = {
-		angTop: (Math.PI / 2 - handrailAng) * turnFactor,
-		dxfBasePoint: newPoint_xy(par.dxfBasePoint, topPoint.x, topPoint.y),
-		isForge: false,
-		isHor: true,
-	}
-	var dy = (19 / Math.sin(handrailAng) + 53) * Math.tan(handrailAng);//расстояние сдвига кронштейна вниз от верхнего края поручня
-	holderParams.dxfBasePoint.y -= dy;
-
-	var holder = drawHandrailHolder(holderParams).mesh;
-
-	holder.position.y = topPoint.y - 0.5;
-	holder.position.y -= dy;
-	holder.position.x = topPoint.x;
-	holder.position.z = -rackProfile / 2 * turnFactor;
-	holder.rotation.z = -Math.PI / 2 * turnFactor;
-	if (turnFactor == 1) holder.rotation.y = Math.PI;
-
-	par.mesh = holder;
-
-	return par;
 }
-
-
-function getMarshAllParams(par) {
-	if (par.marshId) {
-		if(!par.marshPar) par.marshPar = getMarshParams(par.marshId);
-		if(!par.prevMarshPar) par.prevMarshPar = getMarshParams(par.marshPar.prevMarshId);
-		if(!par.nextMarshPar) par.nextMarshPar = getMarshParams(par.marshPar.nextMarshId);
-		if (!par.turnBotParams) par.turnBotParams = calcTurnParams(par.marshPar.prevMarshId);
-		if (!par.turnParams) par.turnParams = calcTurnParams(par.marshId);
-	}
-}
-
-
 
 function drawRack3d_4(par) {
 	/*
@@ -3071,10 +1975,10 @@ function drawRack3d_4(par) {
 		var center = { x: 0, y: -holeDist }
 		addRoundHole(shape, par.dxfArr, center, rad, par.dxfBasePoint);
 
-		//на поворотной стойке для лт добавляем дополнительное отверстие крепления
-		if (par.holeYTurnRack) {
-			var center = { x: 0, y: par.holeYTurnRack - holeDist}
-			addRoundHole(shape, par.dxfArr, center, 3, par.dxfBasePoint);
+		//на поворотной стойке добавляем дополнительное отверстие крепления
+		if (par.isTurnRack && par.holeYTurnRack) {
+			var center = { x: 0, y: par.holeYTurnRack}
+			addRoundHole(shape, par.dxfArr, center, 3.5, par.dxfBasePoint);
 		}
 	}
 
@@ -3090,10 +1994,10 @@ function drawRack3d_4(par) {
 	var rack = new THREE.Mesh(geom, par.material);
 
 	//если поворотная стойка, тогда ее надо повернуть
-	if (par.holeYTurnRack) {
+	if (par.isTurnRack) {
 		rack.rotation.y += Math.PI / 2 * turnFactor;
-		rack.position.z += rackProfile / 2;
-		rack.position.x -= rackProfile / 2 * turnFactor;
+		rack.position.z += profSize / 2;
+		rack.position.x -= profSize / 2 * turnFactor;
 	}
 	par.mesh.add(rack);
 
@@ -3173,10 +2077,25 @@ function drawRack3d_4(par) {
 		par.mesh.add(holder)
 	}
 
-	//болты
+	var meshHolder = new THREE.Object3D();
 
+	//кронштейн из пластин для КО
+	if (params.model == "ко" && params.rackBottom == "боковое" && !par.isBotFlan) {
+		var holderPar = {
+			railingSide: par.railingSide,
+			dxfBasePoint: par.dxfBasePoint,
+			material: par.material
+		}
+		var holder = drawRackHolder(holderPar).mesh;
+		holder.position.y = -70;
+		if (par.railingSide == "right") holder.position.z = 40;
+		meshHolder.add(holder);
+
+	}
+
+	//болты
 	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && par.showPins) { //anglesHasBolts - глобальная переменная
-		var bolts = new THREE.Object3D();
+		
 		var boltPar = {
 			diam: boltDiam,
 			len: 20,
@@ -3208,7 +2127,7 @@ function drawRack3d_4(par) {
 				bolt.position.z = profSize - 2 - 4// - boltLen / 2 - boltBulge + 4;
 			}
 		}
-		bolts.add(bolt)
+		meshHolder.add(bolt)
 
 
 		var bolt2 = drawBolt(boltPar).mesh;
@@ -3216,40 +2135,32 @@ function drawRack3d_4(par) {
 		bolt2.position.x = 0;
 		bolt2.position.y = -holeDist;
 		bolt2.position.z = bolt.position.z;
-		bolts.add(bolt2)
+		meshHolder.add(bolt2)
 
-		//на поворотной стойке для лт добавляем дополнительный болт крепления и поворачиваем болты
-		if (par.holeYTurnRack) {
-			boltPar.diam = 6;
+		//на поворотной стойке добавляем дополнительный болт крепления
+		//if (par.isTurnRack && par.holeYTurnRack) {
+		//	boltPar.diam = 6;
 
-			var bolt2 = drawBolt(boltPar).mesh;
-			bolt2.rotation.x = bolt.rotation.x;
-			bolt2.position.x = 0;
-			bolt2.position.y = par.holeYTurnRack - holeDist;
-			bolt2.position.z = bolt.position.z;
-			bolts.add(bolt2)
-
-			bolts.rotation.y += Math.PI / 2 * turnFactor;
-			bolts.position.z += rackProfile / 2;
-			bolts.position.x -= rackProfile / 2 * turnFactor;
-		}
-
-		par.mesh.add(bolts)
+		//	var bolt2 = drawBolt(boltPar).mesh;			
+		//	bolt2.rotation.x = bolt.rotation.x;
+		//	bolt2.position.x = 0;
+		//	bolt2.position.y = par.holeYTurnRack;
+		//	bolt2.position.z = profSize - boltPar.len / 2;
+		//	if (par.railingSide == "left") bolt2.position.z = boltPar.len / 2;
+		//	bolt2.rotation.z += Math.PI * turnFactor;
+		//	meshHolder.add(bolt2)
+		//}		
 	}
 
-	//кронштейн из пластин для КО
-	if (params.model == "ко" && params.rackBottom == "боковое" && !par.isBotFlan) {
-		var holderPar = {
-			railingSide: par.railingSide,
-			dxfBasePoint: par.dxfBasePoint,
-			material: par.material
-		}
-		var holder = drawRackHolder(holderPar).mesh;
-		holder.position.y = -70;
-		if (par.railingSide == "right") holder.position.z = 40;
-		par.mesh.add(holder);
-
+	//на поворотной стойке поворачиваем кронштейн
+	if (par.isTurnRack) {
+		meshHolder.rotation.y += Math.PI / 2 * turnFactor;
+		meshHolder.position.z += profSize / 2;
+		meshHolder.position.x -= profSize / 2 * turnFactor;
 	}
+
+	par.mesh.add(meshHolder)
+
 
 	//нижний фланец
 	if (par.isBotFlan) {
@@ -3412,3 +2323,374 @@ function drawRack3d_4(par) {
 
 	return par;
 }//end of drawRack3d_4
+
+function drawRailingSectionNewel2(par) {
+
+	var section = new THREE.Object3D();
+	var handrails = new THREE.Object3D();
+
+	var rackLength = 950;
+	par.rackLength = rackLength;
+	var rackProfile = 40;
+	par.rackProfile = rackProfile;
+	var railingPositionZ = 0;
+	if (turnFactor === -1) railingPositionZ = -40;
+	var turnRacksParams = setTurnRacksParams(par.marshId, par.key);//параметры поворотной стойки
+
+	if (params.calcType === 'lt-ko' || params.calcType === 'vhod') {
+		//адаптация к единой функции drawMarshRailing
+
+		par.racks = [];
+		if (par.stringerParams && par.stringerParams[par.marshId].elmIns[par.key]) par.racks = par.stringerParams[par.marshId].elmIns[par.key].racks
+		//объединяем массивы первого и третьего марша
+		if ((params.stairModel == "Прямая с промежуточной площадкой" || params.stairModel == 'Прямая горка') && par.marshId !== 'topPlt') {
+			par.racks = [];
+			// par.racks.push(...par.stringerParams[1].elmIns[par.key].racks);
+			par.racks.push.apply(par.racks, par.stringerParams[1].elmIns[par.key].racks);
+			//пересчитываем координаты стоек второго марша с учетом позиции марша
+			for (var i = 0; i < par.stringerParams[3].elmIns[par.key].racks.length; i++) {
+				var point = copyPoint(par.stringerParams[3].elmIns[par.key].racks[i]);
+				point.x += par.stringerParams[3].treadsObj.unitsPos.marsh3.x;
+				point.y += par.stringerParams[3].treadsObj.unitsPos.marsh3.y;
+				par.racks.push(point)
+			}
+		}
+		if (params.stairModel == 'Прямая горка' && par.marshId !== 'topPlt') {
+			par.racks = [];
+			// par.racks.push(...par.stringerParams[1].elmIns[par.key].racks);
+			par.racks.push.apply(par.racks, par.stringerParams[1].elmIns[par.key].racks);
+			//пересчитываем координаты стоек второго марша с учетом позиции марша
+			for (var i = 0; i < par.stringerParams[3].elmIns[par.key].racks.length; i++) {
+				var point = copyPoint(par.stringerParams[3].elmIns[par.key].racks[i]);
+				point.x = par.stringerParams[3].treadsObj.unitsPos.marsh3.x - point.x;
+				point.y = par.stringerParams[3].treadsObj.unitsPos.marsh3.y + point.y;
+				par.racks.push(point)
+			}
+		}
+		//рассчитываем необходимые параметры и добавляем в объект par
+		setRailingParams(par) //функция в файле calcRailingParams.js
+		if (par.racks.length == 0) return section;
+
+		//задаем параметры
+		{
+			if (par.key == "front") par.railingSide = "left";
+			var railingSide = par.railingSide;
+			if (!par.railingSide && params.model == "ко" && par.marshId == 'topPlt')
+				railingSide = "right";
+			var dxfBasePoint = par.dxfBasePoint;
+			var racks = par.racks;
+			var model = params.model;
+
+			//параметры марша
+			var marshPar = getMarshParams(par.marshId);
+			var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+
+			par.a = marshPar.a;
+			par.b = marshPar.b;
+			par.h = marshPar.h;
+			par.stairAmt = marshPar.stairAmt;
+			par.lastMarsh = marshPar.lastMarsh;
+
+			//задаем длину стоек
+			var rackLength = 950;
+			par.rackLength = rackLength;
+			var rackProfile = 40;
+
+			var dxfText = {
+				side: railingSide === "left" ? " - наружный" : " - внутренний",
+				marsh: " нижнего марша "
+			}
+		}
+
+
+		/*Стойки*/
+
+		//выделяем из массива racks первые и последние стойки поворотов и марша, рассчтываем длины и углы
+		var parRacks = setRacksParams(par).parRacks; //функция в metal/drawRailing.js
+
+		for (var i = 0; i < racks.length; i++) {
+			if (!racks[i]) continue;
+			var rackParams = {
+				len: racks[i].len,
+				railingSide: railingSide,
+				stringerSideOffset: params.sideOverHang,
+				showPins: true,
+				showHoles: true,
+				isBotFlan: false,
+				material: params.materials.metal_railing,
+				dxfBasePoint: newPoint_xy(par.dxfBasePoint, racks[i].x, racks[i].y),
+				dxfArr: dxfPrimitivesArr,
+				realHolder: true, //точно отрисовываем кронштейн поручня
+				holderAng: racks[i].holderAng,
+				sectText: par.text,
+				marshId: par.marshId,
+				key: par.key,
+			}
+			if (params.rackBottom == "сверху с крышкой") {
+				rackParams.showPins = false;
+				rackParams.showHoles = false;
+				rackParams.isBotFlan = true;
+			}
+			if (params.banisterMaterial != "40х40 черн.") rackParams.material = params.materials.inox;
+
+			if (!racks[i].noDraw) {
+				//если поворотная стойка
+				if (racks[i].isTurnRack) {
+					rackParams.isTurnRack = racks[i].isTurnRack;
+					//rackParams.holeYTurnRack - расстояние по Y для дополнительного отверстия крепления на поворотной стойке
+					rackParams.holeYTurnRack = turnRacksParams.shiftYtoP0 - 60; //60 - расстояние между отверстиями
+					if (params.model == "ко") {
+						rackParams.holeYTurnRack = turnRacksParams.shiftYtoP0 + 20 + params.treadThickness / 2; // 20 - отступ до первого отверстия
+						if (marshPar.botTurn == "забег") rackParams.holeYTurnRack -= marshPar.h;
+					}
+				}
+				rackParams = drawRack3d_4(rackParams);
+				var rack = rackParams.mesh;
+				rack.position.x = racks[i].x;
+				rack.position.y = racks[i].y;
+				rack.position.z = railingPositionZ;
+				section.add(rack);
+			}
+		} //конец стоек
+	}
+
+	if (params.calcType === 'mono') {
+		var racks_mesh = drawRacksMono(par);
+		section.add(racks_mesh.mesh);
+		var parRacks = par.parRacks;
+		var racks = par.racks;
+	}
+
+	/* ригели */
+
+	if (params.railingModel === "Ригели") {
+
+		//Задаем позицию ригелей по Z
+		var rigelPosZ = 0
+		var rigelProfZ = 20;
+		if (params.rigelMaterial == "Ф12 нерж.") rigelProfZ = 12;
+		if (par.railingSide == "left") rigelPosZ = (railingPositionZ + rackProfile) * turnFactor + 0.01;
+		if (par.railingSide == "right") rigelPosZ = (railingPositionZ - rigelProfZ - 0.01);
+		if (par.marshId == "topPlt") {
+			rigelPosZ = -rigelProfZ - 0.01;
+			if (turnFactor == -1) rigelPosZ -= rackProfile - 0.01;
+		}
+		if (par.marshId == "topPlt" && par.key == "front") {
+			rigelPosZ = rackProfile * (1 + turnFactor) * 0.5;
+		}
+		if (par.rigelMoveZ) rigelPosZ += par.rigelMoveZ;
+
+		//шаг ригелей по вертикали
+		var rigelAmt = Number(params.rigelAmt);
+		//устраняем пересечение нижнего ригеля и нижней забежной ступени на монокосоарах
+		var rigelMooveY = 0;
+		if (params.calcType === 'mono') {
+			if (rigelAmt == 2) rigelMooveY = -40;
+			if (rigelAmt == 3) rigelMooveY = 50;
+			if (rigelAmt == 4) rigelMooveY = -120;
+		};
+		if (params.calcType === 'lt-ko' || params.calcType === 'vhod') rigelMooveY = par.b / 2 * Math.tan(parRacks.angMarsh);
+		if (isNaN(rigelMooveY)) rigelMooveY = 0;
+		var rigelDist = (rackLength - 50 - rigelMooveY) / (rigelAmt + 1);
+
+
+		//формируем массив базовых точек для ригелей
+		if (params.calcType === 'lt-ko' || params.calcType === 'vhod') {
+			var rigelBasePoints = [];
+
+			if (parRacks.marsh1First) rigelBasePoints.push(copyPoint(parRacks.marsh1First));
+			if (parRacks.botFirst) rigelBasePoints.push(copyPoint(parRacks.botFirst));
+			if (parRacks.marshFirst) {
+				rigelBasePoints.push(copyPoint(parRacks.marshFirst));
+				if (params.model == "лт")
+					rigelBasePoints[rigelBasePoints.length - 1].y += turnRacksParams.rackLenAdd - turnRacksParams.shiftYforShiftX;
+
+			}
+
+			if (parRacks.marshLast) {
+				rigelBasePoints.push(copyPoint(parRacks.marshLast));
+				if (params.model == "ко" && par.lastMarsh && params.platformTop == "нет") {
+					rigelBasePoints[rigelBasePoints.length - 1].y += calcLastRackDeltaY();
+				}
+				if (params.model == "ко" && parRacks.marshLast.len != parRacks.marshFirst.len) {
+					rigelBasePoints[rigelBasePoints.length - 1].y += parRacks.marshLast.len - parRacks.marshFirst.len;
+				}
+				//если на следующем марше поворотная стойка сохраняем сдвиг отверстия до края следующего марша
+				if (parRacks.marshLast.noDraw && parRacks.marshLast.dxToMarshNext) {
+					rigelBasePoints[rigelBasePoints.length - 1].dxToMarshNext = parRacks.marshLast.dxToMarshNext;
+				}
+			}
+			if (parRacks.topLast) rigelBasePoints.push(copyPoint(parRacks.topLast));
+			if (parRacks.marsh2Last) rigelBasePoints.push(copyPoint(parRacks.marsh2Last));
+		}
+		if (params.calcType === 'mono') {
+			var rigelBasePoints = calcRigelPoints(par, parRacks);
+		}
+
+		var side = "out";
+		if (railingSide === "right") side = "in";
+		var rigelPar = {
+			points: rigelBasePoints,
+			botEnd: par.botEnd,
+			dxfBasePoint: copyPoint(par.dxfBasePoint),
+			sectText: par.text,
+			topConnection: par.topConnection,
+		}
+
+		if (params.model == "ко") rigelMooveY += turnRacksParams.rackLenAdd;
+
+		for (var i = 0; i < rigelAmt; i++) {
+			rigelPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, rigelDist * (i + 1) + rigelMooveY);
+			var rigel = drawPolylineRigel(rigelPar).mesh;
+			rigel.position.y = rigelDist * (i + 1) + rigelMooveY;
+			rigel.position.z = rigelPosZ;
+			section.add(rigel);
+		}
+
+	} //конец ригелей
+
+	/* стекло на стойках */
+	if (params.railingModel == "Стекло на стойках" || params.railingModel == "Экраны лазер") {
+
+		var glassDist = rackProfile / 2 + 22;
+		var glassHeight = 800;
+
+		glassParams = {
+			p1: 0,
+			p2: 0,
+			angle: parRacks.angMarsh,
+			glassDist: glassDist,
+			glassHeight: glassHeight,
+			glassMaterial: params.materials.glass,
+			glassHolderMaterial: params.materials.inox,
+			dxfBasePoint: par.dxfBasePoint,
+		}
+		if (params.railingModel == "Экраны лазер") glassParams.glassMaterial = params.materials.metal;
+
+		//номинальная длина стойки
+		var nominalLen = rackLength;
+		if (params.calcType === 'mono') nominalLen = 800;
+		var pltDeltaY = 0;//Нужна для корректировки положения стоек на площадках
+
+		for (var i = 0; i < racks.length - 1; i++) {
+			//выравниваем стекло на площадке
+			if (par.topTurn == "площадка" && par.key == "out" && Math.abs(racks[i].y - racks[i + 1].y) < 0.01 && i > 1) {
+				// 20 зазор стекла от площадки
+				if (racks[i].y - racks[i - 1].y > 0.01) pltDeltaY = -20 + par.rackProfile + params.flanThickness + params.treadThickness + glassDist;
+			}
+			//выравниваем стекло на площадке
+			if (par.botTurn == "площадка" && par.key == "out" && racks[i].y - racks[i + 1].y < 0.01) {
+				pltDeltaY = -20 + par.rackProfile + params.flanThickness + params.treadThickness + glassDist;
+			}
+
+			glassParams.p1 = copyPoint(racks[i]);
+			glassParams.p2 = copyPoint(racks[i + 1]);
+			//если на следующем марше поворотная стойка сдвигаем стойку до края следующего марша
+			if (parRacks.marshLast.noDraw && racks[i + 1].dxToMarshNext) {
+				glassParams.p2.x += racks[i + 1].dxToMarshNext - rackProfile / 2;
+				glassParams.isHandrailAngle = parRacks.angMarsh;
+			}
+			glassParams.p1.y += racks[i].len - nominalLen + 80 - pltDeltaY;
+			glassParams.p2.y += racks[i + 1].len - nominalLen + 80 - pltDeltaY;
+			if (Math.abs(racks[i].y - racks[i + 1].y) < 0.01) glassParams.p1.y = glassParams.p2.y;
+			if (par.botTurn == "площадка" && par.key == "out" && i == 0) glassParams.p2.y = glassParams.p1.y;
+
+			glassParams.glassHeight = rackLength - 170;
+			//уменьшаем высоту стекла чтобы оно не касалось ступеней
+			if (params.rackBottom == "сверху с крышкой" && (glassParams.p1.y !== glassParams.p2.y)) {
+				var dy = par.h - (par.b / 2 - (par.a - par.b) - glassDist) * Math.tan(parRacks.angMarsh);
+				glassParams.glassHeight = rackLength - dy - 100;
+				glassParams.p1.y += dy - 70;
+				glassParams.p2.y += dy - 70;
+			}
+
+			if (params.calcType === 'mono') {
+				glassParams.glassHeight = 700;
+			}
+
+			var glassParams = drawGlassNewell(glassParams);
+			var glass = glassParams.mesh;
+
+			glass.position.z = railingPositionZ + 16;
+			glass.castShadow = true;
+			section.add(glass);
+
+			//сохраняем данные для спецификации
+			staircasePartsParams.glassAmt += 1;
+		}
+	} //конец стекол на стойках
+
+	/* Поручни */
+
+	if (params.handrail != "нет") {
+		if (params.stairModel == "Прямая с промежуточной площадкой") par.topConnection = false;
+
+		var handrailPoints = calcHandrailPoints(par, parRacks);
+
+
+
+		var side = "out";
+		if (railingSide === "right") side = "in";
+
+		handrailParams = {
+			points: handrailPoints,
+			side: side,
+			offset: 0,
+			extraLengthStart: 0,
+			extraLengthEnd: 0,
+			connection: params.handrailConnectionType,
+			dxfBasePoint: par.dxfBasePoint,
+			fixType: "нет",
+			topConnection: par.topConnection,
+			sectText: par.text,
+			marshId: par.marshId,
+			key: par.key,
+			topPoint: parRacks.marshLast,
+		}
+
+		//удлиннение поручня последнего марша
+		if (params.stairModel == "Прямая" || par.marshId == 3) {
+			handrailParams.extraLengthEnd += params.topHandrailExtraLength;
+		}
+
+		handrailParams = drawPolylineHandrail(handrailParams);
+
+		var handrail = handrailParams.mesh;
+		var posZ = -handrailParams.wallOffset + rackProfile / 2 * turnFactor;
+		if (side == "in") posZ = handrailParams.wallOffset + rackProfile / 2 * turnFactor;
+
+		handrail.position.z = posZ;
+		handrails.add(handrail);
+	} //конец поручней
+
+
+	//сохраняем данные для спецификации
+	var handrailPoints = calcHandrailPoints(par, parRacks);
+	if (typeof railingParams != 'undefined') {
+		if (!railingParams.sections) {
+			railingParams.sections = {
+				types: [],
+				sumLen: 0,
+			}
+		}
+
+		for (var i = 1; i < handrailPoints.length; i++) {
+			var sectLen = distance(handrailPoints[i - 1], handrailPoints[i]);
+			railingParams.sections.types.push(sectLen);
+			railingParams.sections.sumLen += sectLen / 1000;
+		}
+	}
+
+
+
+	if (params.model == 'лт') {
+		section.position.x = -5;
+	}
+
+	var result = {
+		mesh: section,
+		handrails: handrails,
+	}
+	return result;
+
+} //end of drawRailingSectionNewel

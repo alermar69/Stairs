@@ -1397,6 +1397,7 @@ function drawTopFixFrame2(par){
 
 
 	// левый фланец
+	flanParams.side = "left"
 	flanParams = drawTopFrameFlan(flanParams);
 	topLeftFrameFlan = flanParams.mesh;
 	topLeftFrameFlan.position.x = firstPosition_x;
@@ -1405,6 +1406,7 @@ function drawTopFixFrame2(par){
 	par.mesh.add(topLeftFrameFlan);
 
 	// правый фланец
+	flanParams.side = "right"
 	flanParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 150, 0);
 	flanParams.noText = true;
 	flanParams = drawTopFrameFlan(flanParams);
@@ -1904,44 +1906,6 @@ function drawTopFrameFlan(par){
 	addLine(shape, par.dxfArr, p7, p8, dxfBasePoint);
 	addLine(shape, par.dxfArr, p8, p1, dxfBasePoint);
 
-
-	/*первое овальное отверстие*
-	var hole1 = new THREE.Path();
-	var holeWidth = 13;
-	var offsetY = 30 - notchWidth;
-	var holeLength = 40;
-	if (par.height < 160) holeLength -= 10;//уменьшаем длину овального отверстия при малой высоте фланца, чтобы небыло пересечения отверстий		
-	var center1 = { x: 20, y: offsetY };
-	var center2 = newPoint_xy(center1, 0, holeLength);
-	var p1 = newPoint_xy(center1, holeWidth / 2, 0);
-	var p2 = newPoint_xy(center2, holeWidth / 2, 0);
-	var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
-	var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
-	addLine(hole1, par.dxfArr, p1, p2, dxfBasePoint)
-	addArc(hole1, par.dxfArr, center2, holeWidth / 2, 0, Math.PI, dxfBasePoint)
-	addLine(hole1, par.dxfArr, p3, p4, dxfBasePoint)
-	addArc(hole1, par.dxfArr, center1, holeWidth / 2, Math.PI, Math.PI * 2, dxfBasePoint)
-	shape.holes.push(hole1);
-
-	/*второе овальное отверстие*
-	var hole1 = new THREE.Path();
-	var holeWidth = 13;
-	var offsetY = 30 - notchWidth;
-	var holeLength = 40;
-	if (par.height < 160) holeLength -= 10;//уменьшаем длину овального отверстия при малой высоте фланца, чтобы небыло пересечения отверстий		
-	var center1 = { x: 20, y: flanLength - offsetY - holeLength };
-	var center2 = newPoint_xy(center1, 0, holeLength);
-	var p1 = newPoint_xy(center1, holeWidth / 2, 0);
-	var p2 = newPoint_xy(center2, holeWidth / 2, 0);
-	var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
-	var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
-	addLine(hole1, par.dxfArr, p1, p2, dxfBasePoint)
-	addArc(hole1, par.dxfArr, center2, holeWidth / 2, 0, Math.PI, dxfBasePoint)
-	addLine(hole1, par.dxfArr, p3, p4, dxfBasePoint)
-	addArc(hole1, par.dxfArr, center1, holeWidth / 2, Math.PI, Math.PI * 2, dxfBasePoint)
-	shape.holes.push(hole1);
-	*/
-	
 	var rad = 6.5;
 	var clockwise = true;
 	var offsetY = 30 - notchWidth;
@@ -1981,14 +1945,16 @@ function drawTopFrameFlan(par){
 			}
 		var bolt = drawBolt(boltPar).mesh;
 		bolt.rotation.x = Math.PI / 2;
+		if(par.side == "right") bolt.rotation.x = -Math.PI / 2;
 		bolt.position.x = flanWidth / 2;
 		bolt.position.y = 50 - 5;
-		bolt.position.z = boltPar.len / 2 - boltBulge; 
+		bolt.position.z = boltPar.len / 2 - boltBulge;
+		if(par.side == "right") bolt.position.z = -boltPar.len / 2 + boltBulge + 8
 		par.mesh.add(bolt)
 		
 		var bolt2 = drawBolt(boltPar).mesh;
-		bolt2.rotation.x = Math.PI / 2;
-		bolt2.position.x = flanWidth / 2;
+		bolt2.rotation.x = bolt.rotation.x;
+		bolt2.position.x = bolt.position.x;
 		bolt2.position.y = flanLength - 50 + 5; 
 		bolt2.position.z = bolt.position.z;
 		par.mesh.add(bolt2)

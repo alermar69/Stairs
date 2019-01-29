@@ -876,10 +876,11 @@ function calcStringerPar(par){
 	// установки размеров под уголки
 	setStairAngles(par);
 
-    par.stepHoleX1 = par.marshFramesParams.stepHoleX1
+    
 	//координаты отверстий для рамки
     if (hasTreadFrames()) {       
-        par.stepHoleX2 = par.marshFramesParams.stepHoleX2
+        par.stepHoleX1 = par.marshFramesParams.stepHoleX1
+		par.stepHoleX2 = par.marshFramesParams.stepHoleX2
         par.holeDist = par.stepHoleX2 - par.stepHoleX1;
         if (params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
     }

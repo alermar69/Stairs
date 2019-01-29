@@ -1894,6 +1894,7 @@ function setStairAngles(par) {
 	par.angleHolePosY = 20.0;
 	
 	par.holeDistU2_200 = 150;     // расстояние между отверстиями для уголка У2-200
+	par.stepHoleX1 = par.angleHolePosX + params.nose;
 	
 } //end of setStairAngles
 
