@@ -2198,7 +2198,7 @@ function addLine1(startPoint, endPoint, par) {
 function drawColumn2(par) {
 	
 	par.mesh = new THREE.Object3D();
-	var shape = new THREE.Shape();
+	//var shape = new THREE.Shape();
 	
 	var holeOffset = 20;
 	var colLength = par.colLength + holeOffset;
@@ -2215,10 +2215,15 @@ function drawColumn2(par) {
 	var p3 = newPoint_xy(p2, par.profWidth, 0)
 	var p4 = newPoint_xy(p1, par.profWidth, 0)
 
-	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-	addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
-	addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
-	addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint);
+	var pointsShape = [p1, p2, p3, p4];
+
+	//создаем шейп
+	var shapePar = {
+		points: pointsShape,
+		dxfArr: dxfPrimitivesArr,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+	shape = drawShapeByPoints2(shapePar).shape;
 
 	//круглое отверстие 1
 

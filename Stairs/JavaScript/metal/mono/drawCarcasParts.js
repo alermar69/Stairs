@@ -884,7 +884,7 @@ function drawHorPlate(par) {
 	//задаем параметры детали
 	if (par.type == "carcasPlate") {
 		par.cornerRad = 0;
-		par.frontOffset = params.metalThickness + gap;
+		if (par.frontOffset !== 0) par.frontOffset = params.metalThickness + gap;
 		if (par.isTurn2) par.frontOffset = gap; //если передняя пластина это фланец соединения косоуров
 		par.width = params.stringerThickness - params.metalThickness * 2;
 		par.thk = params.metalThickness - 0.01;
@@ -898,7 +898,8 @@ function drawHorPlate(par) {
 		par.thk = params.treadPlateThickness;
 	}
 
-	par.height = par.step - par.frontOffset - gap;
+	par.height = par.step;
+	if (par.frontOffset !== 0) par.height += - par.frontOffset - gap;
 
 	par.mesh = new THREE.Object3D();
 
@@ -2559,7 +2560,19 @@ function drawTreadPlateCabriole2(par) {
 			var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
 			var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
-			addLine(shape, dxfPrimitivesArr, p0, p4, par.dxfBasePoint);
+			if (par.isBotPipeHor) {
+				var p5 = newPoint_xy(p1, 100 - params.sidePlateOverlay - 5, -params.h1 + params.profileHeight + 5);
+				var p6 = itercection(p0, polar(p0, 0, 100), p5, polar(p5, Math.PI / 2, 100));
+				p4 = itercection(p5, polar(p5, 0, 100), pt2, pt3);
+
+				addLine(shape, dxfPrimitivesArr, p0, p6, par.dxfBasePoint);
+				addLine(shape, dxfPrimitivesArr, p6, p5, par.dxfBasePoint);
+				addLine(shape, dxfPrimitivesArr, p5, p4, par.dxfBasePoint);
+			}
+			else {
+				addLine(shape, dxfPrimitivesArr, p0, p4, par.dxfBasePoint);
+			}
+			
 			addLine(shape, dxfPrimitivesArr, p4, p3, par.dxfBasePoint);
 			addLine(shape, dxfPrimitivesArr, p3, p2, par.dxfBasePoint);
 			addLine(shape, dxfPrimitivesArr, p2, p1, par.dxfBasePoint);
@@ -3846,7 +3859,22 @@ function drawTurn1TreadPlateCabriole(par) {
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
-		var points = [p0, p1, p2, p3, p4]
+		var points = [p0, p1, p2, p3];
+
+		if (par.isBotPipeHor) {
+			var p5 = newPoint_xy(p1, 100 - params.sidePlateOverlay - 5, -params.h1 + params.profileHeight + 5);
+			var p6 = itercection(p0, polar(p0, 0, 100), p5, polar(p5, Math.PI / 2, 100));
+			p4 = itercection(p5, polar(p5, 0, 100), pt2, pt3);
+
+			points.push(p4);
+			points.push(p5);
+			points.push(p6);
+		}
+		else {
+			points.push(p4);
+		}
+
+		
 		points = points.reverse();
 
 		/*
@@ -3933,7 +3961,20 @@ function drawTurn1TreadPlateCabriole(par) {
 
 		dxfBasePoint.x += distance(p2, p1) + 100;
 
-	    var points = [p4, p3, p2, p1, p0]
+		var points = [p3, p2, p1, p0]
+
+		if (par.isBotPipeHor) {
+			var p5 = newPoint_xy(p1, 100 - params.sidePlateOverlay - 5, -params.h1 + params.profileHeight + 5);
+			var p6 = itercection(p0, polar(p0, 0, 100), p5, polar(p5, Math.PI / 2, 100));
+			p4 = itercection(p5, polar(p5, 0, 100), pt2, pt3);
+
+			points.push(p6);
+			points.push(p5);
+			points.push(p4);
+		}
+		else {
+			points.push(p4);
+		}
 
 	    //создаем шейп
 	    var shapePar = {
@@ -5400,7 +5441,8 @@ function drawFlanPipeBot(par) {
 	var center3 = newPoint_xy(p1, holeX, -holeY);
 	var center4 = newPoint_xy(p6, -holeX, -holeY);
 	if (par.isWndTurn && par.offsetTopWndHoleY3) {
-		center4.y -= par.offsetTopWndHoleY3;
+		if(turnFactor == 1) center4.y -= par.offsetTopWndHoleY3;
+		if(turnFactor == -1) center3.y -= par.offsetTopWndHoleY3;
 	}
 
 	var holeCenters = [center1, center2, center3, center4];

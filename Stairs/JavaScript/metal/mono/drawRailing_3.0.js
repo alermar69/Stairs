@@ -43,7 +43,7 @@ function calculateGlassPoints(par){
 	if(marshPar.botTurn == "площадка" && par.key == "in"){
 		marshFirstDelta = marshTurnParams.topStepDelta;
 		if(params.handrail != "нет"){
-			marshFirstDelta += 60 - par.handrailSlotDepth;
+			marshFirstDelta += 60 - par.handrailSlotDepth + 5;
 		}
 	}
 
@@ -89,7 +89,7 @@ function calculateGlassPoints(par){
 	handrailPoints.push(handrailPoint);
 
 	if (marshPar.botTurn == 'пол') {
-		marshFirst.y += 20;
+		marshFirst.y += 20;		
 	}
 	glassPoints.push(marshFirst)
 
@@ -108,11 +108,13 @@ function calculateGlassPoints(par){
 		x: marshPar.stairAmt * marshPar.b,
 		y: marshPar.h * (marshPar.stairAmt + 1),
 	};
+	lastMarshPoint = itercection(marshFirst, polar(marshFirst, marshPar.ang, 100), lastMarshPoint, polar(lastMarshPoint, Math.PI/2, 100))
 	//сдвигаем точку на внешней стороне
 	//if (par.key == 'in' && marshPar.topTurn !== 'нет' && !marshPar.lastMarsh) {
 	//	var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
 	//	lastMarshPoint = newPoint_xy(lastMarshPoint, deltaX, marshPar.ang * deltaX);
 	//}
+	
 	if (par.key == 'in' && marshPar.topTurn !== 'нет' && !marshPar.lastMarsh) {
 		var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
 		if (nextMarshPar.hasRailing.in) deltaX = 60 - marshTurnParams.pltExtraLen;
@@ -124,12 +126,13 @@ function calculateGlassPoints(par){
 		lastMarshPoint.y += marshPar.h * 0.5;
 	}
 	var handrailPoint = copyPoint(lastMarshPoint);
-	if(marshPar.stairAmt > 0){
+	if (marshPar.stairAmt > 0) {
+		var ang = calcAngleX1(marshFirst, lastMarshPoint);
 		if (par.key == 'out' && marshPar.topTurn !== 'пол'){
 			handrailPoint = polar(handrailPoint, marshPar.ang, -10);
 		}
-		if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
-			handrailPoint = polar(handrailPoint, marshPar.ang, meterHandrailPar.profY * Math.tan(marshPar.ang));
+		if (params.startVertHandrail == "есть" && params.handrailFixType == "паз" && params.handrailEndType == 'под углом') {
+			handrailPoint = polar(handrailPoint, marshPar.ang, (meterHandrailPar.profY) * Math.tan(marshPar.ang));
 		}
 
 		if (params.handrailEndType == 'под углом' && !(par.key == 'out' && marshPar.topTurn !== 'пол')) {
@@ -612,6 +615,22 @@ function drawGlassSection(par){
 		handrails.add(handrail);
 
 	} //конец поручней
+	
+	//сохраняем данные для расчета цены монтажа (испольуются в calcAssemblingWage)
+	if (typeof railingParams != 'undefined' && typeof handrailPoints0 != 'undefined') {
+		if (!railingParams.sections) {
+			railingParams.sections = {
+				types: [],
+				sumLen: 0,
+			}
+		}
+		for(var i=1; i<handrailPoints0.length; i++){
+			var sectLen = distance(handrailPoints0[i-1], handrailPoints0[i]);
+			railingParams.sections.types.push(sectLen);
+			railingParams.sections.sumLen += sectLen / 1000;
+			}
+		}
+
 
 	var result = {
 		mesh: section,
@@ -1167,7 +1186,8 @@ function drawRackMono(par){
 		shape.drawing = {};
 		shape.drawing.group = 'turnRack';
 		shape.drawing.name = 'Поворотный столб марш: ' + par.marshId;
-		shape.drawing.yDelta = botLen;
+		if(!shape.userData) shape.userData = {};
+		shape.userData.yDelta = botLen;
 		shapesList.push(shape);
 	}
 	
@@ -1317,42 +1337,42 @@ function drawRackMono(par){
 		params.stairModel != "Прямая"
 		) {
 
-		//определяем точку вставки кронштейна
-		var handrailAng = Math.abs(par.holderAng)
-		var dist = 53 + 17 / Math.cos(handrailAng);//расстояние по вертикали от верха стойки до поручня
-		var pt = newPoint_xy(topPoint, rackProfile / 2, dist);
-		var pt1 = newPoint_xy(pt, marshPar.b * marshPar.stairAmt - rackProfile / 2, 0);
-		pt1.x -= 0.05;
+		////определяем точку вставки кронштейна
+		//var handrailAng = Math.abs(par.holderAng)
+		//var dist = 53 + 17 / Math.cos(handrailAng);//расстояние по вертикали от верха стойки до поручня
+		//var pt = newPoint_xy(topPoint, rackProfile / 2, dist);
+		//var pt1 = newPoint_xy(pt, marshPar.b * marshPar.stairAmt - rackProfile / 2, 0);
+		//pt1.x -= 0.05;
 		
-		//учитываем что на среднем марше если поворот - площадка, длина марша отличается на nose
-		if(par.marshId == 2 && params.turnType_1 == "площадка"){
-			pt1.x -= params.nose;
-			}
+		////учитываем что на среднем марше если поворот - площадка, длина марша отличается на nose
+		//if(par.marshId == 2 && params.turnType_1 == "площадка"){
+		//	pt1.x -= params.nose;
+		//	}
 
-		if (params.railingStart != 0) {
-			pt1.x -= marshPar.b * params.railingStart;
-			if (isFirstMove) pt1.x -= rackProfile + 5 + 0.02;
-		}
-		var pt2 = itercection(pt, polar(pt, handrailAng, 100), pt1, polar(pt1, Math.PI / 2, 100));
-		var dist1 = 53 + 17 / Math.sin(handrailAng); //расстояние по горизонтали от поворотного столба до поручня
-		pt2.y -= dist1 * Math.tan(handrailAng);
+		//if (params.railingStart != 0) {
+		//	pt1.x -= marshPar.b * params.railingStart;
+		//	if (isFirstMove) pt1.x -= rackProfile + 5 + 0.02;
+		//}
+		//var pt2 = itercection(pt, polar(pt, handrailAng, 100), pt1, polar(pt1, Math.PI / 2, 100));
+		//var dist1 = 53 + 17 / Math.sin(handrailAng); //расстояние по горизонтали от поворотного столба до поручня
+		//pt2.y -= dist1 * Math.tan(handrailAng);
 		
-		var holderParams = {
-			angTop: (Math.PI / 2 - handrailAng) * turnFactor,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, pt2.x, pt2.y),
-			isForge: false,
-			isHor: true,
-		}
-		//if(turnFactor == -1) holderParams.angTop = handrailAng - Math.PI / 2;
-		var holder = drawHandrailHolder(holderParams).mesh;
+		//var holderParams = {
+		//	angTop: (Math.PI / 2 - handrailAng) * turnFactor,
+		//	dxfBasePoint: newPoint_xy(par.dxfBasePoint, pt2.x, pt2.y),
+		//	isForge: false,
+		//	isHor: true,
+		//}
+		////if(turnFactor == -1) holderParams.angTop = handrailAng - Math.PI / 2;
+		//var holder = drawHandrailHolder(holderParams).mesh;
 
-		holder.position.y = pt2.y;
-		holder.position.x = pt2.x //* turnFactor;
-		holder.position.z = rackProfile/2;
-		holder.rotation.z = -Math.PI / 2 * turnFactor;
-		if(turnFactor == 1) holder.rotation.y = Math.PI;
+		//holder.position.y = pt2.y;
+		//holder.position.x = pt2.x //* turnFactor;
+		//holder.position.z = rackProfile/2;
+		//holder.rotation.z = -Math.PI / 2 * turnFactor;
+		//if(turnFactor == 1) holder.rotation.y = Math.PI;
 
-		par.mesh.add(holder)
+		//par.mesh.add(holder)
 	}
 	
 	//сохраняем данные для спецификации
@@ -1733,8 +1753,16 @@ function calculateRacks(par){
                 racksRearPlatform.push(rackRearPlatform);
             }
         }
-    }
-	
+	}
+
+	if (parRacks.marshLast.noDraw) {
+		if (params.railingModel !== "Кованые балясины") {
+			parRacks.marshLast.dxToMarshNext = 10;
+			parRacks.marshLast.x += 10;
+			parRacks.marshLast.y += 10 * Math.tan(parRacks.marshLast.holderAng);
+		}
+	}
+
 	//формируем массив racks
 	par.racks = [];
 	if(parRacks.botFirst) par.racks.push(parRacks.botFirst);
@@ -1853,7 +1881,9 @@ function calcRigelPoints(par, parRacks){
 		
 	if(parRacks.marshLast){
 		basePoint = newPoint_xy(parRacks.marshLast, 0, parRacks.marshLast.len - nominalLen);
-		basePoint = polar(basePoint, parRacks.marshLast.holderAng, -15);		
+		basePoint = polar(basePoint, parRacks.marshLast.holderAng, -15);
+		if (parRacks.marshLast.noDraw && parRacks.marshLast.dxToMarshNext)
+			basePoint = newPoint_x1(basePoint, -parRacks.marshLast.dxToMarshNext, parRacks.marshLast.holderAng);
 		points.push(basePoint);
 		};
 		
@@ -2199,3 +2229,37 @@ function addRackAngles(par){
 }//end of addRackAngles
 
 
+function drawHandrailHolderTurnRack(par) {
+	//кронштейн поручня к поворотному столбу
+
+
+	var topPoint = par.topPoint;//точка верхнего края поручня
+	var handrailAng = Math.abs(par.holderAng);
+	rackProfile = 40;
+
+	var holderParams = {
+		angTop: (Math.PI / 2 - handrailAng) * turnFactor,
+		dxfBasePoint: newPoint_xy(par.dxfBasePoint, topPoint.x, topPoint.y),
+		isForge: false,
+		isHor: true,
+	}
+	var dy = (19 / Math.sin(handrailAng) + 53) * Math.tan(handrailAng);//расстояние сдвига кронштейна вниз от верхнего края поручня
+	holderParams.dxfBasePoint.y -= dy;
+
+	var holder = drawHandrailHolder(holderParams).mesh;
+
+	holder.position.y = topPoint.y - 0.5;
+	holder.position.y -= dy;
+	holder.position.x = topPoint.x;
+	holder.position.z = -rackProfile / 2 * turnFactor;
+	if (params.calcType === 'mono') {
+		if (turnFactor == 1) holder.position.z = rackProfile * 2;
+		if (turnFactor == -1) holder.position.z = rackProfile / 2;
+	}
+	holder.rotation.z = -Math.PI / 2 * turnFactor;
+	if (turnFactor == 1) holder.rotation.y = Math.PI;
+
+	par.mesh = holder;
+
+	return par;
+}

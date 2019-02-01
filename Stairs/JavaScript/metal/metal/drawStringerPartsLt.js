@@ -376,7 +376,7 @@ function drawBotStepLt_pltG(par) {
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
 		center1.rotated = center2.rotated = true;
-		if (!(par.key == "in" && hasTreadFrames()))
+		if (!(par.key == "in" && hasTreadFrames()) && !par.isMiddleStringer)
 			center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
@@ -577,6 +577,7 @@ function drawBotStepLt_pltPIn(par) {
 		center1 = newPoint_xy(p3, -73 + 30, -20.0);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		center1.rotated = center2.rotated = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
@@ -585,6 +586,7 @@ function drawBotStepLt_pltPIn(par) {
 		center1 = newPoint_xy(center1, -par.holeDistU4 - params.stringerThickness, 0.0);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHoleBot.push(center2);
 		par.pointsHoleBot.push(center1);
 	}
@@ -615,8 +617,11 @@ function drawBotStepLt_pltPIn(par) {
 			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX - par.platformFramesParams.sideHolePosX, 0.0);
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
-			par.elmIns[par.key].longBolts.push(center1);
-			par.elmIns[par.key].longBolts.push(center2);
+			center1.noZenk = center2.noZenk = true;
+			center1.isPltFrame = center2.isPltFrame = true;
+			center1.noBoltsIn = center2.noBoltsIn = true;
+			//par.elmIns[par.key].longBolts.push(center1);
+			//par.elmIns[par.key].longBolts.push(center2);
 
 			begX -= frameWidth + 5.0;
 		}
@@ -766,6 +771,7 @@ function drawBotStepLt_pltPOut(par) {
 		//передний
 		center1 = newPoint_xy(ph, -8 - 5 + (params.nose - 20), -25.0 - params.treadThickness);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		center1.rotated = center2.rotated = true
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
@@ -773,6 +779,7 @@ function drawBotStepLt_pltPOut(par) {
 		//задний
 		center1 = newPoint_xy(center1, -par.holeDistU4 - params.stringerThickness, 0.0);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
 
@@ -1618,6 +1625,13 @@ function drawMiddleStepsLt(par) {
 				center1.y -= params.treadThickness - par.stringerLedge;
 			}
 			var center2 = newPoint_xy(center1, par.holeDist, 0.0);
+			
+			if (hasTreadFrames()) {
+				center1.noBolts = center2.noBolts = true;
+			}
+			else {
+				center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
+			}
 
 			var franPar = {
 				divideP1: divideP1,
@@ -2152,7 +2166,17 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 		if (!hasTreadFrames()) center1.noZenk = center2.noZenk = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
+
+		if (params.M > 1100 && params.calcType == "vhod") {
+			center1 = newPoint_xy(p2, -turnParams.topMarshOffsetZ + (params.M + params.stringerThickness) / 2 + 30, par.carcasAnglePosY);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = false;
+			if (hasTreadFrames()) center1.backZenk = center2.backZenk = true;
+			if (!hasTreadFrames()) center1.noZenk = center2.noZenk = true;
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
 		}
+	}
 
 	//if (params.M > 1100 && par.key == 'in') {
 	//	center1 = newPoint_xy(p2, calcTreadLen() / 2 + 80, par.carcasAnglePosY);
@@ -2651,6 +2675,7 @@ function drawTopStepLt_pltPIn(par) {
 		center1 = newPoint_xy(ph, 43, -20.0);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
 
@@ -2659,6 +2684,7 @@ function drawTopStepLt_pltPIn(par) {
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
 		center1.rotated = center2.rotated = true;
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHoleTop.push(center2);
 		par.pointsHoleTop.push(center1);
 	}
@@ -2676,8 +2702,6 @@ function drawTopStepLt_pltPIn(par) {
 			if(params.stairType == "пресснастил") center1.y += 5; //костыль
 			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX - par.platformFramesParams.sideHolePosX, 0.0);
 			begX += frameWidth + 5.0;
-            center1.isPltFrame = center2.isPltFrame = true;
-            center1.noBoltsIn = center2.noBoltsIn = true;
 		    par.pointsHole.push(center1);
             par.pointsHole.push(center2);
 		    center1.noZenk = center2.noZenk = true;
@@ -2851,6 +2875,7 @@ function drawTopStepLt_pltPOut(par) {
 		center1 = newPoint_xy(ph, 43.0, -25.0 - params.treadThickness);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
+		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
 

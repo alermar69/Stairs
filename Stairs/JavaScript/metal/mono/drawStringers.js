@@ -109,6 +109,12 @@ function drawComplexStringer(par) {
 				var pt0 = newPoint_xy(par.pointsShape[1], -params.sidePlateOverlay, - offset);
 				pt = newPoint_xy(pt0, params.profileHeight, 0);
 				pt1 = itercection(pt, polar(pt, Math.PI / 2, 100), line1.p1, line1.p2);
+				if (pt1.y < pt.y) {
+					pt1 = itercection(pt, polar(pt, 0, 100), line1.p1, line1.p2);
+					pt = copyPoint(pt0)
+					botEndAng = Math.PI / 2;
+					par.isBotPipeHor = true;
+				}
 				pt.x -= 0.01;
 				stringerPoints.push(pt);
 			}
@@ -359,6 +365,8 @@ function drawComplexStringer(par) {
 					platePar.isFirst = true;
 					if (params.botFloorType === "черновой")
 						platePar.h -= params.botFloorsDist - params.flanThickness;
+					if (params.model == "труба" && par.isBotPipeHor)
+						platePar.isBotPipeHor = par.isBotPipeHor;
 				}
 				////подложка промежуточной площадки(нижнего марша)
 				if (par.topEnd == "площадка" && i >= par.stepPoints.length - 2) {
@@ -408,9 +416,12 @@ function drawComplexStringer(par) {
 						platePar.turnSteps = par.turnSteps.params[1];
 						platePar.hasTrapHole = true;
 						if (params.model == "труба") {
-							if (par.stairAmt <= 1)
-                                platePar.angleIn1 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
-							if (par.stairAmt == 0) platePar.stairAmt = 0;
+							if (par.stairAmt <= 1) {
+								platePar.angleIn1 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
+								if (par.isBotPipeHor) platePar.isBotPipeHor = par.isBotPipeHor;
+							}
+							if (par.stairAmt == 0) platePar.stairAmt = 0;						
+
 							var plate = drawTurn1TreadPlateCabriole(platePar).mesh;
 						}
 						else
@@ -427,8 +438,10 @@ function drawComplexStringer(par) {
 						if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0)
 							platePar.turnSteps = par.turnSteps.params[3];
 						if (params.model == "труба") {
-							//if (par.stairAmt == 0)
+							if (par.stairAmt == 0)
 								platePar.angleIn3 = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
+							if (par.stairAmt > 0)
+								platePar.angleIn3 = calcAngleX1(par.pointsShape[1], par.pointsShape[0]);
 							if (par.topEnd == "пол" && par.stairAmt == 1) { //если ступень последняя
 								platePar.dStep = params.lastWinderTreadWidth - 50;
 								if (params.topAnglePosition == "под ступенью") {
@@ -510,7 +523,7 @@ function drawComplexStringer(par) {
 		Фланцы и пластины
 	*/
 	{
-        if (params.model == "сварной") {
+		if (params.model == "сварной") {
 			//вертикальные пластины
 			var platePar = {
 				isLong: false,
@@ -613,6 +626,48 @@ function drawComplexStringer(par) {
 										platePar.isTurn2Top = true;//наличие второго прямогуольного выреза для закрепления фланца
 									}
 									if (!par.topConnection) platePar.backOffHoles = -params.M / 4 + params.flanThickness;
+									if (par.topConnection) {
+										// var addPlateParams = Object.assign({}, platePar);
+										// addPlateParams.isTurn2Top = false;
+										// console.log(addPlateParams);
+										// var plate = drawHorPlate(addPlateParams).mesh; //функция в drawCarcasParts.js			
+										// plate.position.x = sidePlate2.position.x + par.stepPoints[i].x;
+										// plate.position.y = sidePlate2.position.y + par.stepPoints[i].y - params.metalThickness - offsetY + 5;
+										// par.mesh2.add(plate);
+
+										var len = -platePar.dStep + 10;
+										var width = params.stringerThickness - 4 * 2;
+										console.log(platePar)
+										// тело стойки
+										var p0 = {x: 0, y: 0}
+										var p1 = newPoint_xy(p0, width, 0);
+										var p2 = newPoint_xy(p1, 0, len)
+										var p3 = newPoint_xy(p2, -width, 0)
+
+										var shape = new THREE.Shape();
+
+										addLine(shape, dxfPrimitivesArr, p0, p1, platePar.dxfBasePoint, 'carcas');
+										addLine(shape, dxfPrimitivesArr, p1, p2, platePar.dxfBasePoint, 'carcas');
+										addLine(shape, dxfPrimitivesArr, p2, p3, platePar.dxfBasePoint, 'carcas');
+										addLine(shape, dxfPrimitivesArr, p3, p0, platePar.dxfBasePoint, 'carcas');
+
+										var thickness = 5;
+										var extrudeOptions = {
+											amount: thickness,
+											bevelEnabled: false,
+											curveSegments: 12,
+											steps: 1
+										};
+										var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+										geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+										var flan = new THREE.Mesh(geometry, params.materials.metal2);
+										flan.position.x = sidePlate2.position.x + par.stepPoints[i].x + platePar.step - len;
+										flan.position.y = sidePlate2.position.y + par.stepPoints[i].y;
+										flan.position.z = width / 2;
+										flan.rotation.x = Math.PI / 2;
+										flan.rotation.z = -Math.PI / 2;
+										par.mesh2.add(flan);
+									}
 								}
 								//пластина первой забежной ступени
 								if (i == par.stepPoints.length - 4) {
@@ -638,7 +693,8 @@ function drawComplexStringer(par) {
 									isPlate = false;
 								}
 								else {
-									platePar.basePointShiftX = params.stringerThickness / 2 - (params.M / 2) / 2  - 5 - 30;
+									platePar.basePointShiftX = params.stringerThickness / 2 - (params.M / 2) / 2 - 5 - 30;
+									platePar.frontOffset = 0;
 								}
 							}
 							
@@ -696,7 +752,25 @@ function drawComplexStringer(par) {
                     par.mesh2.add(plate);
                     platePar.dxfBasePoint.x += distance(platePar.pEnd, platePar.pStart) + 100;
 
-                }
+				}
+
+	            // Пластина, при большой разнице чистового и чернового пола
+				if (par.botEnd == "пол") {
+					if (par.pointsShape[0].x == par.pointsShape[1].x && par.pointsShape[0].y > par.pointsShape[1].y) {
+						platePar.pStart = copyPoint(par.pointsShape[1]);
+						//var ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
+						platePar.pEnd = copyPoint(par.pointsShape[0]);
+
+						platePar.dxfBasePoint = newPoint_xy(dxfPoint, - distance(platePar.pEnd, platePar.pStart) - 100, 0);
+						platePar.pointCurrentSvg = copyPoint(platePar.pEnd);
+						platePar.pointStartSvg = copyPoint(platePar.pStart);
+
+						var plate = drawBackPlate(platePar).mesh;
+						plate.position.x = sidePlate2.position.x + platePar.pStart.x;
+						plate.position.y = sidePlate2.position.y + platePar.pStart.y;
+						par.mesh2.add(plate);
+					}
+	            }
 
 
                 // Пластина на прямой части каркаса если поворот снизу(снизу каркаса)
@@ -827,7 +901,7 @@ function drawComplexStringer(par) {
                 if (!par.botConnection || params.stairModel == "П-образная с площадкой") {
                     flanPar.type = "joinStub";
                     flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
-                    flanPar.holeY = 25;
+                    //flanPar.holeY = 25;
                     flanPar.name = "Фланец площадки соединения косоуров";
                     flanPar.noBolts = true; //болты в первом фланце не добавляются
                     flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
@@ -861,7 +935,7 @@ function drawComplexStringer(par) {
 						height: 215 - params.metalThickness * 2 - 5,
 						pointsShape: par.pointsShape, 
 						dxfBasePoint: par.dxfBasePoint,
-						};
+					};
 
 					flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[1], -params.stringerThickness - 100, 0);
 					flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
@@ -882,11 +956,11 @@ function drawComplexStringer(par) {
 					flanPar.isBolts = false; //болты во втором фланце не добавляются
 					flanPar.dxfBasePoint.y += flanPar.height + 50;
 					//flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[1], -params.stringerThickness*2 - 100*2, 0);
-     //           flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
+					//flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
 
-                flanPar.marshId = getMarshParams(par.marshId).prevMarshId;
-                flanPar.pointCurrentSvg = newPoint_xy(pointCurrentSvgTmp, params.stringerThickness * 2 + 100, 0);
-                flanPar.pointStartSvg = copyPoint(pointStartSvgTmp);
+					flanPar.marshId = getMarshParams(par.marshId).prevMarshId;
+					flanPar.pointCurrentSvg = newPoint_xy(pointCurrentSvgTmp, params.stringerThickness * 2 + 100, 0);
+					flanPar.pointStartSvg = copyPoint(pointStartSvgTmp);
 
 					var plate1 = drawMonoFlan(flanPar).mesh;
 					plate1.position.x = plate.position.x - params.flanThickness - params.metalThickness;
@@ -900,18 +974,18 @@ function drawComplexStringer(par) {
 				}
 			
 			//Верхние фланцы
-            if (par.topEnd !== "пол") {
-                dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.keyPoints.topPoint.x + 100, par.keyPoints.topPoint.y)
+			if (par.topEnd !== "пол") {
+					dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.keyPoints.topPoint.x + 100, par.keyPoints.topPoint.y)
 
-                if (par.topConnection || params.stairModel == "П-образная с площадкой") {
+					if (par.topConnection || params.stairModel == "П-образная с площадкой") {
 					//dxfBasePoint.y -= dxfStep;
 					var flanPar = {
 						marshId: par.marshId,
 						type: "join", 
 						pointsShape: par.pointsShape, 
-                        dxfBasePoint: dxfBasePoint,
-                        name: "Фланец площадки крепления к стене",
-                    };
+						dxfBasePoint: dxfBasePoint,
+						name: "Фланец площадки крепления к стене",
+					};
 					//если соединение к стене
 					if (par.topConnection ) {
 						if (par.topEnd === "забег") flanPar.height = 215.0;
@@ -950,7 +1024,7 @@ function drawComplexStringer(par) {
                         flanPar.type = "joinStub";
                         flanPar.name = "Фланец площадки соединения косоуров";
                         flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
-                        flanPar.holeY = 25;
+                        //flanPar.holeY = 25;
                         flanPar.noBolts = true; //болты в первом фланце не добавляются
                         flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
                         flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[par.stepPoints.length - 1], 100, 0);
@@ -1002,7 +1076,7 @@ function drawComplexStringer(par) {
                             name: "Фланец площадки соединения косоуров",
                         };
 					    flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
-                        flanPar.holeY = 25;
+                        //flanPar.holeY = 25;
 					    flanPar.noBolts = true; //болты в первом фланце не добавляются
                         flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
 					    flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[par.stepPoints.length - 1], 100, 0);
@@ -1170,6 +1244,7 @@ function drawComplexStringer(par) {
 				};
 					flanPar.isWndTurn = false; //является ли поворот забежным
 					if (par.botEnd == "забег") {
+						flanPar.heightPipe = params.profileHeight + 1;
 						flanPar.isWndTurn = true;
 						//сдвигаем 3 отверстие чтобы болт не пересекался с трубой
 						flanPar.offsetTopWndHoleY3 = 0;
@@ -1475,10 +1550,10 @@ function drawPltStringer(par) {
 		//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -params.stringerThickness / 2 + 25);
 		//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, params.stringerThickness / 2 - 25);
         //var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -params.stringerThickness / 2 + 25);
-	    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
-	    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
-	    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
-	    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
+	    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
+	    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
+	    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
+	    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
 
 		par.pointsHole = [];
 		par.pointsHole.push(center1);
@@ -1687,7 +1762,7 @@ function drawPltStringer(par) {
 
 	    flanPar.type = "joinStub";
 	    flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
-	    flanPar.holeY = 25;
+	    //flanPar.holeY = 25;
 	    flanPar.noBolts = true; //болты в первом фланце не добавляются
 		flanPar.isBolts = true; //болты в первом фланце добавляются с шестигрн.
 		flanPar.isSvg = true; 

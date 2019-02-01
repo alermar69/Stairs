@@ -1699,6 +1699,7 @@ function drawTreadFrame2(par){
 	if (par.isPltPFrame && turnFactor == 1) flanPar.noBolts = true;
 	if (par.isFrameSideNoBolts2) flanPar.noBolts = true;
 	if (par.isPltPFrame && turnFactor == -1 && !par.isPltFrameMarshDist) flanPar.noBolts = false;
+	if (par.isPltFrameMarshDist) flanPar.noBolts = true;
 	flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.height - 50);
 	flanPar.mirrowBolts = true;
 	

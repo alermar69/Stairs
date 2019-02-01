@@ -26,7 +26,7 @@ function makeSvg(){
 		var shape = this;
 		var index = 0;
 		for(var i=0; i < shapesAmtList.length; i++){
-			if(isShapesEqual(shape, shapesAmtList[i])) {
+			if(isShapesEqual1(shape, shapesAmtList[i])) {
 				isUnique = false;
 				index = i;
 			}
@@ -357,4 +357,45 @@ function makeSvg(){
 	}
 
 	printLayersControls(svgLayers)
+}
+
+
+
+/** функция проверяет эквивалентность шейпов
+*/
+
+function isShapesEqual1(shape1, shape2) {
+	if (typeof shape1.drawing != typeof shape2.drawing) return false;
+	if (typeof shape1.drawing != "undefined") {
+		if (shape1.drawing.mirrow != shape2.drawing.mirrow) return false;
+	}
+
+	if (shape1.curves.length != shape2.curves.length) return false;
+	for (var i = 0; i < shape1.curves.length; i++) {
+		if (shape1.curves[i].type != shape2.curves[i].type) return false;
+		if (!isEq1(shape1.curves[i], shape2.curves[i])) return false;
+	}
+	return true;
+}
+
+/** функция проверки простых полей объектами
+*/
+function isEq1(a, b) {
+
+	if (a == b) return true;
+
+	for (var i in a) {
+		//if(typeof a[i] == "Object" && (a[i].x && a[i].y) && (a[i].x != b[i].x || a[i].y != b[i].y)) return false;
+		if (typeof (a[i]) != "function" && !isEq1(a[i], b[i])) return false;
+	}
+	for (var i in b) {
+		//if(typeof b[i] == "Object" && (a[i].x && a[i].y) && (a[i].x != b[i].x || a[i].y != b[i].y)) return false;
+		if (typeof (a[i]) != "function" && !isEq1(a[i], b[i])) return false;
+	}
+
+	if (!isNaN(parseFloat(a)) && isFinite(a)) {
+		if (a.toFixed(3) !== b.toFixed(3)) return false;
+	}
+
+	return true;
 }

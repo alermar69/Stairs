@@ -435,11 +435,10 @@ function drawBotStepKo_pltP(par){
 
 
 	// отверстия под рамку площадки
-
-	var center1 = newPoint_xy(p1, par.stepHoleX1, par.stepHoleY);
-    var center2 = newPoint_xy(p1, par.stepHoleX2, par.stepHoleY);
+	var center2 = newPoint_xy(p2, -par.stepHoleX1 - params.nose, par.stepHoleY);
+	var center1 = newPoint_xy(p2, -par.stepHoleX2 - params.nose, par.stepHoleY);
     //для П-образная с площадкой делаем рамки на площадке одинаковой ширины (ширина как на первом марше)
-    if (params.stairModel == "П-образная с площадкой") center2.x -= params.b3 - params.b1;
+    if (params.stairModel == "П-образная с площадкой") center1.x += params.b3 - params.b1;
     //на лестнице с подступенками делаем рамки короче, чтобы последняя не отличалась
     if (params.riserType == "есть") center2.x -= params.riserThickness;
 	par.pointsHole.push(center1);
@@ -468,15 +467,15 @@ function drawBotStepKo_pltP(par){
 	
 	var pltPar = {len: params.platformLength_1 + params.nose,}
 	calcPltPartsParams(pltPar);
-	var xPo = pltPar.partLen - par.botEndLength - params.stringerThickness + 96;
+	var xPo = pltPar.partLen - par.botEndLength - params.stringerThickness - 96 + params.nose;
     po1 = newPoint_xy(pt4, -xPo, -20);
 	var dX = 0;
 	for (var i = 0; i < pltPar.partsAmt - 1; i++){
-		center1 = newPoint_xy(po1, dX, 0);
+		center2 = newPoint_xy(po1, dX, 0);
 		//не допускаем пересечения рамок
-        var minDist = 45 * 2 + 5 + params.stringerThickness + frameHoleDist + 15;
-		if(frame1Hole.x - center1.x < minDist) center1.x = frame1Hole.x - minDist;
-        center2 = newPoint_xy(center1, frameHoleDist, 0);
+        var minDist = 45 * 2 + 5 + params.stringerThickness + 15;
+		if(frame1Hole.x - center2.x < minDist) center2.x = frame1Hole.x - minDist;
+        center1 = newPoint_xy(center2, -frameHoleDist, 0);
 		pointsHoleBot.push(center1);
 		pointsHoleBot.push(center2);
 		

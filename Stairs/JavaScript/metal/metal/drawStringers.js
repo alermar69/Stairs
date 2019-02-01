@@ -328,6 +328,7 @@ function drawStringer(par){
 		}
 		drawRailingHoles(railingHolesPar);
 	}
+
 	if (divides.length > 0) {
 		//параметры для рабочего чертежа
 		shapePar.drawing = {
@@ -366,33 +367,48 @@ function drawStringer(par){
 				divideP1.filletRad = divideP2.filletRad = 0;
 			}
 			points = par.pointsShape.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
-			// points = par.pointsShape.filter(function(p){
-			// 	if (i == 0 && p.y < divideP1.y) {
-			// 		return true;
-			// 	}else if (i !== 0 && p.y < divideP1.y && p.y > previousDivideP1.y) {
-			// 		return true;
-			// 	}else if(i == divides.length && p.y > previousDivideP1.y){
-			// 		return true
-			// 	}else{
-			// 		return false;
-			// 	}
-			// });
-				
-			if (i > 0) points.unshift(previousDivideP2, previousDivideP1);
+			
+			if (params.stringerType == 'пилообразная' || params.stringerType == 'прямая') {
+				if (i > 0) points.unshift(previousDivideP2, previousDivideP1);
+			}
+			if (params.stringerType == 'ломаная') {
+				if (i > 0){
+					var minVal = null;
+					var minIndex = null;
+
+					//Определяем минимальную точку в шейпе
+					points.forEach(function(elem, index) {
+						if ((elem.y < minVal || elem.y == minVal) || minVal == null) {
+							minVal = elem.y
+							minIndex = index;
+						};
+					});
+					//После минимальной точки вставляем свои
+					var startIndex = minIndex + 1;
+					points.splice(startIndex, 1, previousDivideP2);
+					points.splice(startIndex + 1, 0, previousDivideP1);
+					var point = newPoint_xy(previousDivideP1, 0, 50);
+					point.filletRad = 0;
+					points.splice(startIndex + 2, 0, point);
+				} 
+			}
 			if (i < divides.length) {
-				var lastFilteredPoint = points[points.length - 1];
-				points.push(divideP1, divideP2);
+				if (params.stringerType == 'пилообразная' || params.stringerType == 'прямая') points.push(divideP1, divideP2);
+				if (params.stringerType == 'ломаная') {
+					points.push(divideP1);
+					points.unshift(divideP2);
+				}
 				previousDivideP1 = divideP1;
 				previousDivideP2 = divideP2;
 				previousDivideP1.filletRad = previousDivideP2.filletRad = 0;
 			}
 			
 			shapePar.points = points;
-		
+
 			var shape = drawShapeByPoints2(shapePar).shape;
 			marshShapes.push(shape);
 		
-		var holes = par.pointsHole.filter(function(p){
+			var holes = par.pointsHole.filter(function(p){
 				return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)
 			});
 		
@@ -418,7 +434,6 @@ function drawStringer(par){
 				dxfBasePoint: par.dxfBasePoint,
 			}
 			drawRailingHoles(railingHolesPar);
-			
 		}
 
 	}
@@ -878,12 +893,12 @@ function calcStringerPar(par){
 
     
 	//координаты отверстий для рамки
-    if (hasTreadFrames()) {       
-        par.stepHoleX1 = par.marshFramesParams.stepHoleX1
+	if (hasTreadFrames()) {       
+		par.stepHoleX1 = par.marshFramesParams.stepHoleX1
 		par.stepHoleX2 = par.marshFramesParams.stepHoleX2
-        par.holeDist = par.stepHoleX2 - par.stepHoleX1;
-        if (params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
-    }
+		par.holeDist = par.stepHoleX2 - par.stepHoleX1;
+		if (params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
+	}
 
     par.rutelPosX = par.b / 2;
 	par.rutelDist = 100;

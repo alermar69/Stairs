@@ -154,9 +154,12 @@ function drawBotStepMk_floor(par) {
 	if ((bottomLineP1.x - 200) < p0.x && params.botFloorType === "черновой") {
 		pt = newPoint_xy(p0, 100, 0);
 		if (params.model == "сварной") pt.x += 90;
-		var bottomLineP1 = itercectionBackLineMarsh(p2, pt, Math.PI / 2, par);
-		var bottomLineP2 = copyPoint(pt);
-		par.isBotFloorsDist = true;
+		var pt1 = itercectionBackLineMarsh(p2, pt, Math.PI / 2, par);
+		if ((pt1.y - 5) > pt.y) {
+			var bottomLineP1 = itercectionBackLineMarsh(p2, pt, Math.PI / 2, par);
+			var bottomLineP2 = copyPoint(pt);
+			par.isBotFloorsDist = true;
+		}
 	}
 
 	//сохраняем точки контура
@@ -295,10 +298,10 @@ function drawBotStepMk_pltG(par) {
 			//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
 			//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
             //var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
-		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
-            var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
-            var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
-            var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
+		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
+            var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
+            var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
+            var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
 
 
 			par.pointsHole.push(center1);
@@ -761,10 +764,10 @@ function drawTopStepMk_pltG(par) {
 			//var center2 = newPoint_xy(p, params.stringerThickness / 2 + 35.0, -stringerWidth / 2 + 25);
 			//var center3 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, stringerWidth / 2 - 25);
 			//var center4 = newPoint_xy(p, -params.stringerThickness / 2 - 35.0, -stringerWidth / 2 + 25);
-		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
-		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
-		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 25 - params.metalThickness - 5);
-		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 25 + params.metalThickness);
+		    var center1 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
+		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
+		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
+		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
 
 
 			par.pointsHole.push(center1);
