@@ -1416,7 +1416,7 @@ function drawRack3d_4(par) {
 
 		//на поворотной стойке добавляем дополнительное отверстие крепления
 		if (par.isTurnRack && par.holeYTurnRack) {
-			var center = { x: 0, y: par.holeYTurnRack}
+			var center = { x: 0, y: par.holeYTurnRack }
 			addRoundHole(shape, par.dxfArr, center, 3.5, par.dxfBasePoint);
 		}
 	}
@@ -1534,7 +1534,7 @@ function drawRack3d_4(par) {
 
 	//болты
 	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && par.showPins) { //anglesHasBolts - глобальная переменная
-		
+
 		var boltPar = {
 			diam: boltDiam,
 			len: 20,
