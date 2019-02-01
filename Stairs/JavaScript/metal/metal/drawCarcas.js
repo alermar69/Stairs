@@ -1129,8 +1129,8 @@ function drawStringerHoles(par, typeDop){
 			var zenk = 'front';
 			if (center.noZenk) zenk = 'no';
 			if (center.backZenk) zenk = 'back';
-			hole1.userData = {};
-			hole1.userData.zenk = zenk;
+			hole1.drawing = {};
+			hole1.drawing.zenk = zenk;
 			
 			stringerShape.holes.push(hole1);
 

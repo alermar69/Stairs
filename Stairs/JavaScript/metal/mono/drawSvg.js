@@ -37,15 +37,6 @@ function makeSvg() {
 			}			
 		}
 
-		if (shape.userData) {
-			if (shape.userData.type == 'railing') {
-				railingShapes.push(shape);
-			}
-			if (shape.userData.type == 'glass') {
-				glassShapes.push(shape);
-			}
-		}
-
 		if (isUnique) {
 			shape.amt = 1;
 			shapesAmtList.push(shape);
@@ -58,6 +49,13 @@ function makeSvg() {
 
 		if (shape.drawing.group == "turnRack") {
 			shapesTurnRack.push(shape)
+		}
+
+		if (shape.drawing.group == 'forged_railing') {
+			railingShapes.push(shape);
+		}
+		if (shape.drawing.group == 'glass') {
+			glassShapes.push(shape);
 		}
 
 		//выбираем shapes для сборочных чертежей

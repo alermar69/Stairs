@@ -100,6 +100,7 @@
     <Content Include="JavaScript\metal\metal\drawCarcasParts.js" />
     <Content Include="JavaScript\metal\metal\drawCarcasPartsLib_2.0.js" />
     <Content Include="JavaScript\metal\metal\drawFrames.js" />
+    <Content Include="JavaScript\metal\metal\drawRailingPartsLib_4.0.js" />
     <Content Include="JavaScript\metal\metal\drawRailingParts_2.0.js" />
     <Content Include="JavaScript\metal\metal\drawRailing_3.0.js" />
     <Content Include="JavaScript\metal\metal\drawSkirting.js" />

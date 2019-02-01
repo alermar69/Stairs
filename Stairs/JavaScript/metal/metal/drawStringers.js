@@ -865,6 +865,9 @@ function calcStringerPar(par){
 			if (params.stringerDivision2 == "нет") par.stringerDivisionBot = false;
 		}
 	}
+	if (params.stairModel == "П-образная трехмаршевая" && params.stairAmt2 == 0 && par.marshId == 2) 
+		par.stringerDivisionBot = false;
+
 
 	
 	// константы

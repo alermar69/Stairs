@@ -43,7 +43,7 @@ function calculateGlassPoints(par){
 	if(marshPar.botTurn == "площадка" && par.key == "in"){
 		marshFirstDelta = marshTurnParams.topStepDelta;
 		if(params.handrail != "нет"){
-			marshFirstDelta += 60 - par.handrailSlotDepth + 5;
+			marshFirstDelta += 60 - par.handrailSlotDepth;
 		}
 	}
 
@@ -109,6 +109,7 @@ function calculateGlassPoints(par){
 		y: marshPar.h * (marshPar.stairAmt + 1),
 	};
 	lastMarshPoint = itercection(marshFirst, polar(marshFirst, marshPar.ang, 100), lastMarshPoint, polar(lastMarshPoint, Math.PI/2, 100))
+
 	//сдвигаем точку на внешней стороне
 	//if (par.key == 'in' && marshPar.topTurn !== 'нет' && !marshPar.lastMarsh) {
 	//	var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
@@ -127,17 +128,18 @@ function calculateGlassPoints(par){
 	}
 	var handrailPoint = copyPoint(lastMarshPoint);
 	if (marshPar.stairAmt > 0) {
-		var ang = calcAngleX1(marshFirst, lastMarshPoint);
+		var ang = calcAngleX1(handrailPoints[handrailPoints.length - 1], handrailPoint);
 		if (par.key == 'out' && marshPar.topTurn !== 'пол'){
-			handrailPoint = polar(handrailPoint, marshPar.ang, -10);
+			handrailPoint = polar(handrailPoint, ang, -10);
 		}
 		if (params.startVertHandrail == "есть" && params.handrailFixType == "паз" && params.handrailEndType == 'под углом') {
-			handrailPoint = polar(handrailPoint, marshPar.ang, (meterHandrailPar.profY) * Math.tan(marshPar.ang));
+			
+			handrailPoint = polar(handrailPoint, ang, (meterHandrailPar.profY) * Math.tan(ang));
 		}
 
 		if (params.handrailEndType == 'под углом' && !(par.key == 'out' && marshPar.topTurn !== 'пол')) {
 			if (params.handrailFixType !== "паз") {
-				handrailPoint = polar(handrailPoint, marshPar.ang, 40);	
+				handrailPoint = polar(handrailPoint, ang, 40);	
 			}
 		}
 	}
@@ -1186,8 +1188,7 @@ function drawRackMono(par){
 		shape.drawing = {};
 		shape.drawing.group = 'turnRack';
 		shape.drawing.name = 'Поворотный столб марш: ' + par.marshId;
-		if(!shape.userData) shape.userData = {};
-		shape.userData.yDelta = botLen;
+		shape.drawing.yDelta = botLen;
 		shapesList.push(shape);
 	}
 	
@@ -2228,38 +2229,3 @@ function addRackAngles(par){
 
 }//end of addRackAngles
 
-
-function drawHandrailHolderTurnRack(par) {
-	//кронштейн поручня к поворотному столбу
-
-
-	var topPoint = par.topPoint;//точка верхнего края поручня
-	var handrailAng = Math.abs(par.holderAng);
-	rackProfile = 40;
-
-	var holderParams = {
-		angTop: (Math.PI / 2 - handrailAng) * turnFactor,
-		dxfBasePoint: newPoint_xy(par.dxfBasePoint, topPoint.x, topPoint.y),
-		isForge: false,
-		isHor: true,
-	}
-	var dy = (19 / Math.sin(handrailAng) + 53) * Math.tan(handrailAng);//расстояние сдвига кронштейна вниз от верхнего края поручня
-	holderParams.dxfBasePoint.y -= dy;
-
-	var holder = drawHandrailHolder(holderParams).mesh;
-
-	holder.position.y = topPoint.y - 0.5;
-	holder.position.y -= dy;
-	holder.position.x = topPoint.x;
-	holder.position.z = -rackProfile / 2 * turnFactor;
-	if (params.calcType === 'mono') {
-		if (turnFactor == 1) holder.position.z = rackProfile * 2;
-		if (turnFactor == -1) holder.position.z = rackProfile / 2;
-	}
-	holder.rotation.z = -Math.PI / 2 * turnFactor;
-	if (turnFactor == 1) holder.rotation.y = Math.PI;
-
-	par.mesh = holder;
-
-	return par;
-}

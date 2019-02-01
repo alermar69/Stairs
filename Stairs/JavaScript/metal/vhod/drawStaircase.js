@@ -47,6 +47,7 @@ drawStaircase = function(viewportId, isVisible) {
 	specObj = partsAmt; //задаем объект, куда будут сохраняться данные для спецификации
 	poleList = {};
 	railingParams = {};
+	shapesList = [];
 
 
 	/*удаляем контуры*/
