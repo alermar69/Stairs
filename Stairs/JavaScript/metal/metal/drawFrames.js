@@ -1181,7 +1181,15 @@ function drawWndTreadFlan(par){
 	}
 	
 	flanPar.mirrowBolts = true;
-	
+
+	//параметры для рабочего чертежа
+	if (!par.drawing) {
+		flanPar.drawing = {
+			name: "Фланец",
+			group: "Flans",
+		}
+	}
+
 	var flan = drawRectFlan2(flanPar).mesh;
 	flan.rotation.y = - Math.PI / 2 + calcAngleX1(par.line.p1, par.line.p2);
 	flan.position.x = par.line.p1.y;

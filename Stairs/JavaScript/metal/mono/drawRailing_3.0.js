@@ -43,7 +43,7 @@ function calculateGlassPoints(par){
 	if(marshPar.botTurn == "площадка" && par.key == "in"){
 		marshFirstDelta = marshTurnParams.topStepDelta;
 		if(params.handrail != "нет"){
-			marshFirstDelta += 60 - par.handrailSlotDepth;
+			marshFirstDelta += 60 - par.handrailSlotDepth + 5;
 		}
 	}
 

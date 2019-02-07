@@ -105,34 +105,38 @@ function drawAdjustableLeg(isAngle) {
 }
 
 
-/*общая функция отрисовки квадратного фланца с отверстиями*/
-
+/** общая функция отрисовки квадратного фланца с отверстиями
+	*- исходные данные:
+	*- чертеж фланца здесь: 6692035.ru/drawings/carcasPartsLib/flans/scheme_RectFlan.pdf
+	*- par.width - ширина фланца
+	*- par.height - длина фланца (высота при вертикальном расположении)
+	*- par.holeDiam - диаметр отверстий с 1 по 4
+	*- par.holeDiam5 - диаметр пятого (условно центрального) отверстия
+	*- par.angleRadUp - радиус скругления верхних углов фланца
+	*- par.angleRadDn - радиус скругления нижних углов фланца
+	*- par.hole1X - координаты первого отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole1Y - координаты первого отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole1Zenk - тип зенковки отверстия
+	*- par.hole2X - координаты второго отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole2Y - координаты второго отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole2Zenk - тип зенковки отверстия
+	*- par.hole3X - координаты третьего отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole3Y - координаты третьего отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole3Zenk - тип зенковки отверстия
+	*- par.hole4X - координаты четвертого отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole4Y - координаты четвертого отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
+	*- par.hole4Zenk - тип зенковки отверстия
+	*- par.hole5X - координаты пятого отверстия по оси Х (отсчитываются от начальной точки фланца - левый нижний угол)
+	*- par.hole5Y - координаты пятого отверстия по оси Y (отсчитываются от начальной точки фланца - левый нижний угол)
+	*- par.hole5Zenk - тип зенковки отверстия
+	*- par.dxfBasePoint - базовая точка для вставки контуров в dxf файл
+	*- par.dxfPrimitivesArr - массив для вставки контуров в dxf файл
+	*- 
+	*- !!! Для отрисовки отверстия необходимо наличие всех трех параметров (позиции по х,у и диаметра).
+	*- !!! Нумерация отверстий идет по часовой стрелке, начиная с левого нижнего.
+*/
 function drawRectFlan(par) {
 
-    /*исходные данные:
-	чертеж фланца здесь: 6692035.ru/drawings/carcasPartsLib/flans/scheme_RectFlan.pdf
-	par.width - ширина фланца
-	par.height - длина фланца (высота при вертикальном расположении)
-	par.holeDiam - диаметр отверстий с 1 по 4
-	par.holeDiam5 - диаметр пятого (условно центрального) отверстия
-	par.angleRadUp - радиус скругления верхних углов фланца
-	par.angleRadDn - радиус скругления нижних углов фланца
-	par.hole1X - координаты первого отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
-	par.hole1Y - координаты первого отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
-	par.hole2X - координаты второго отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
-	par.hole2Y - координаты второго отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
-	par.hole3X - координаты третьего отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
-	par.hole3Y - координаты третьего отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
-	par.hole4X - координаты четвертого отверстия по оси Х (отсчитываются от соответствующего внешного угла фланца)
-	par.hole4Y - координаты четвертого отверстия по оси Y (отсчитываются от соответствующего внешного угла фланца)
-	par.hole5X - координаты пятого отверстия по оси Х (отсчитываются от начальной точки фланца - левый нижний угол)
-	par.hole5Y - координаты пятого отверстия по оси Y (отсчитываются от начальной точки фланца - левый нижний угол)
-	par.dxfBasePoint - базовая точка для вставки контуров в dxf файл
-	par.dxfPrimitivesArr - массив для вставки контуров в dxf файл
-
-	!!! Для отрисовки отверстия необходимо наличие всех трех параметров (позиции по х,у и диаметра).
-	!!! Нумерация отверстий идет по часовой стрелке, начиная с левого нижнего.
-	*/
 	
 	//необязательные параметры
 	if(!par.angleRadUp) par.angleRadUp = 0;
@@ -215,6 +219,7 @@ function drawRectFlan(par) {
 		hole1Pos.x = hole1Pos.x + par.hole1X;
 		hole1Pos.y = hole1Pos.y + par.hole1Y;
 		addCircle(hole1, dxfPrimitivesArr, hole1Pos, par.holeDiam / 2, dxfBasePoint)
+		if (par.hole1Zenk) hole1.drawing = {zenk: par.hole1Zenk};
 		shape.holes.push(hole1);
 	}
 
@@ -225,6 +230,7 @@ function drawRectFlan(par) {
 		hole2Pos.x = hole2Pos.x + par.hole2X;
 		hole2Pos.y = hole2Pos.y + par.height - par.hole2Y;
 		addCircle(hole2, dxfPrimitivesArr, hole2Pos, par.holeDiam / 2, dxfBasePoint)
+		if (par.hole2Zenk) hole2.drawing = {zenk: par.hole2Zenk};
 		shape.holes.push(hole2);
 	}
 
@@ -235,6 +241,7 @@ function drawRectFlan(par) {
 		hole3Pos.x = hole0Pos.x + par.width - par.hole3X;
 		hole3Pos.y = hole0Pos.y + par.height - par.hole3Y;
 		addCircle(hole3, dxfPrimitivesArr, hole3Pos, par.holeDiam / 2, dxfBasePoint)
+		if (par.hole3Zenk) hole3.drawing = {zenk: par.hole4Zenk};
 		shape.holes.push(hole3);
 	}
 
@@ -245,6 +252,7 @@ function drawRectFlan(par) {
 		hole4Pos.x = hole0Pos.x + par.width - par.hole4X;
 		hole4Pos.y = hole0Pos.y + par.hole4Y;
 		addCircle(hole4, dxfPrimitivesArr, hole4Pos, par.holeDiam / 2, dxfBasePoint)
+		if (par.hole4Zenk) hole4.drawing = {zenk: par.hole4Zenk};
 		shape.holes.push(hole4);
 	}
 
@@ -255,6 +263,7 @@ function drawRectFlan(par) {
 		hole5Pos.x = hole5Pos.x + par.hole5X;
 		hole5Pos.y = hole5Pos.y + par.hole5Y;
 		addCircle(hole5, dxfPrimitivesArr, hole5Pos, par.holeDiam5 / 2, dxfBasePoint)
+		if (par.hole5Zenk) hole5.drawing = {zenk: par.hole5Zenk};
 		shape.holes.push(hole5);
 	}
 	par.shape = shape;

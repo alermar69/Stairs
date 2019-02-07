@@ -627,17 +627,11 @@ function drawComplexStringer(par) {
 									}
 									if (!par.topConnection) platePar.backOffHoles = -params.M / 4 + params.flanThickness;
 									if (par.topConnection) {
-										// var addPlateParams = Object.assign({}, platePar);
-										// addPlateParams.isTurn2Top = false;
-										// console.log(addPlateParams);
-										// var plate = drawHorPlate(addPlateParams).mesh; //функция в drawCarcasParts.js			
-										// plate.position.x = sidePlate2.position.x + par.stepPoints[i].x;
-										// plate.position.y = sidePlate2.position.y + par.stepPoints[i].y - params.metalThickness - offsetY + 5;
-										// par.mesh2.add(plate);
+										
+										var deltaLen = 8;//Сдвиг к стене, чтобы закрыть фланец.
+										var len = -platePar.dStep + 10 + deltaLen;
+										var width = params.stringerThickness;
 
-										var len = -platePar.dStep + 10;
-										var width = params.stringerThickness - 4 * 2;
-										console.log(platePar)
 										// тело стойки
 										var p0 = {x: 0, y: 0}
 										var p1 = newPoint_xy(p0, width, 0);
@@ -651,7 +645,7 @@ function drawComplexStringer(par) {
 										addLine(shape, dxfPrimitivesArr, p2, p3, platePar.dxfBasePoint, 'carcas');
 										addLine(shape, dxfPrimitivesArr, p3, p0, platePar.dxfBasePoint, 'carcas');
 
-										var thickness = 5;
+										var thickness = 8;
 										var extrudeOptions = {
 											amount: thickness,
 											bevelEnabled: false,
@@ -661,8 +655,8 @@ function drawComplexStringer(par) {
 										var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 										geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 										var flan = new THREE.Mesh(geometry, params.materials.metal2);
-										flan.position.x = sidePlate2.position.x + par.stepPoints[i].x + platePar.step - len;
-										flan.position.y = sidePlate2.position.y + par.stepPoints[i].y;
+										flan.position.x = sidePlate2.position.x + par.stepPoints[i].x + platePar.step - len + deltaLen;
+										flan.position.y = sidePlate2.position.y + par.stepPoints[i].y + thickness;
 										flan.position.z = width / 2;
 										flan.rotation.x = Math.PI / 2;
 										flan.rotation.z = -Math.PI / 2;

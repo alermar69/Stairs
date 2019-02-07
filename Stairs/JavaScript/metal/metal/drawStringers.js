@@ -365,6 +365,12 @@ function drawStringer(par){
 				divideP1 = divides[i].p1;
 				divideP2 = divides[i].p2;
 				divideP1.filletRad = divideP2.filletRad = 0;
+				// console.log(divideP1, divideP2)
+				if (par.pointsShape.find(function(elem){return elem.y == divideP1.y})) {
+					divideP1.y -= 1;
+					divideP2.y -= 1;
+					// divideP1.divideFix = true;//В зависимости от этого поля выбирается корректный индекс куда вставлять точки разреза
+				}
 			}
 			points = par.pointsShape.filter(function(p){return shapeHasPoint(p, i, divideP1, previousDivideP1, divides.length)});
 			
@@ -373,23 +379,30 @@ function drawStringer(par){
 			}
 			if (params.stringerType == 'ломаная') {
 				if (i > 0){
-					var minVal = null;
-					var minIndex = null;
+					// var minVal = null;
+					// var minIndex = null;
 
 					//Определяем минимальную точку в шейпе
-					points.forEach(function(elem, index) {
-						if ((elem.y < minVal || elem.y == minVal) || minVal == null) {
-							minVal = elem.y
-							minIndex = index;
-						};
-					});
+					// points.forEach(function(elem, index) {
+					// 	if ((elem.y < minVal) || minVal == null) {
+					// 		minVal = elem.y
+					// 		minIndex = index;
+					// 	};
+					// });
 					//После минимальной точки вставляем свои
-					var startIndex = minIndex + 1;
-					points.splice(startIndex, 1, previousDivideP2);
-					points.splice(startIndex + 1, 0, previousDivideP1);
-					var point = newPoint_xy(previousDivideP1, 0, 50);
-					point.filletRad = 0;
-					points.splice(startIndex + 2, 0, point);
+					// if (previousDivideP1.divideFix) minIndex += 2;
+					// if (points[minIndex].x !== previousDivideP2.x && !previousDivideP1.divideFix) minIndex += 2;
+					// console.log(points, "P1:", previousDivideP1, "P2:", previousDivideP2, "MIN:", points[minIndex])
+					var p1 = points.find(function(p){
+						return p.x.toFixed(1) == previousDivideP1.x.toFixed(1);//Округляем до 1 символа после запятой
+					});
+					var p2 = points.find(function(p){
+						return p.x.toFixed(1) == previousDivideP2.x.toFixed(1);//Округляем до 1 символа после запятой
+					});
+					if (p1 && p2) {
+						points.splice(points.indexOf(p1), 0, previousDivideP1);
+						points.splice(points.indexOf(p2) + 1, 0, previousDivideP2);
+					}
 				} 
 			}
 			if (i < divides.length) {

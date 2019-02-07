@@ -1782,7 +1782,7 @@ function drawTurnPlate1(par) {
 				group: "Каркас",
 			}
 		}
-		var name = Math.round(par.width) + "х" + Math.round(distance(p1,p2)) + "х" + Math.round(par.thk);
+		var name = "";//Math.round(par.width) + "х" + Math.round(distance(p1,p2)) + "х" + Math.round(par.thk);
 		var area = par.width * distance(p1,p2) / 1000000;
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
@@ -1926,7 +1926,7 @@ function drawTurnPlate3(par){
 				group: "Каркас",
 			}
 		}
-		var name = Math.round(par.width) + "х" + Math.round(distance(p1,p2)) + "х" + Math.round(par.thk);
+		var name = "";//Math.round(par.width) + "х" + Math.round(distance(p1,p2)) + "х" + Math.round(par.thk);
 		var area = par.width * distance(p1,p2) / 1000000
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
@@ -2105,7 +2105,7 @@ function drawTurnPlate2(par) {
 				group: "Каркас",
 			}
 		}
-		var name = Math.round(distance(p2,p4)) + "х" + Math.round(distance(p1,p3)) + "х" + Math.round(par.thk);
+		var name = "";//Math.round(distance(p2,p4)) + "х" + Math.round(distance(p1,p3)) + "х" + Math.round(par.thk);
 		var area = distance(p2,p4) * distance(p1,p3) / 1000000
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;

@@ -1454,13 +1454,13 @@ function drawStringerFlan(par) {
 				if (par.holeCenters[i].boltLen) boltPar.len = par.holeCenters[i].boltLen;
 				else boltPar.len = boltLen;
 				var bolt = drawBolt(boltPar).mesh;
-				bolt.rotation.x = Math.PI / 2;
+				bolt.rotation.x = Math.PI / 2 * turnFactor;
 				bolt.position.x = par.holeCenters[i].x;
 				bolt.position.y = par.holeCenters[i].y;
 				bolt.position.z = (boltPar.len / 2 - params.stringerThickness) * turnFactor + params.stringerThickness*(1-turnFactor)*0.5;
 				if (side == "right") {				
 					bolt.position.z = (params.stringerThickness * 2 - boltPar.len / 2) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
-					bolt.rotation.x = -Math.PI / 2;
+					bolt.rotation.x = -Math.PI / 2 * turnFactor;
 				}
 				par.mesh.add(bolt)
 			}
@@ -2066,6 +2066,10 @@ function drawTopFixFlan(length, dxfBasePoint) {
 		hole3Y: 20,
 		hole4X: 50,
 		hole4Y: 80,
+		hole1Zenk: 'no',
+		hole2Zenk: 'no',
+		hole3Zenk: 'no',
+		hole4Zenk: 'no',
 		hole5X: 0,
 		hole5Y: 0,
 		height: length,
@@ -2081,6 +2085,11 @@ function drawTopFixFlan(length, dxfBasePoint) {
 	//добавляем фланец
 	flanParams.mesh = new THREE.Object3D();
 	flanParams = drawRectFlan(flanParams);
+
+	flanParams.shape.drawing = {
+		name: "Фланец верхний"
+	}
+	shapesList.push(flanParams.shape);
 
 	var text = "Фланец верхний";
 	var textHeight = 30;
@@ -2100,7 +2109,7 @@ function drawTopFixFlan(length, dxfBasePoint) {
 	mesh.position.z = -thickness;
 	//mesh.position.y = -length;
 
-	flanParams.mesh.add(mesh)
+	flanParams.mesh.add(mesh);
 	
 	//сохраняем данные для спецификации
 	var partName = "topFlan";
@@ -2222,6 +2231,13 @@ function drawColumn2(par) {
 		points: pointsShape,
 		dxfArr: dxfPrimitivesArr,
 		dxfBasePoint: par.dxfBasePoint,
+	}
+	//параметры для рабочего чертежа
+	if (!par.drawing) {
+		shapePar.drawing = {
+			name: "Колонна",
+			group: "Columns",
+		}
 	}
 	shape = drawShapeByPoints2(shapePar).shape;
 
