@@ -131,7 +131,7 @@ function drawBotStepLt_floor(par) {
 	//Отверстия под ограждения
 	if (par.hasRailing) {
 
-		if (params.railingModel != "Самонесущее стекло") {
+		if (params.railingModel != "Самонесущее стекло" && params.railingModel != "Трап") {
 			center1 = newPoint_xy(par.zeroPoint, par.b * 0.5, par.rackTopHoleY + params.h1 + par.stringerLedge);
 
 			//не допускаем выскакивания низа стойки за нижнюю линию тетивы
@@ -140,6 +140,16 @@ function drawBotStepLt_floor(par) {
 				center1 = newPoint_y(center1, (90 - center1.y + botLineP1.y), par.marshAng);
 			}
 			par.railingHoles.push(center1);
+		}
+
+		if (params.railingModel == "Трап") {
+			var balOnlay = 150;
+			center1 = polar(p1, par.marshAng - Math.PI / 2, balOnlay - 30);
+			center1 = newPoint_xy(center1, 5, -5 - par.h / 2);
+			center2 = polar(center1, par.marshAng + Math.PI / 2, 60);
+			center1.noHole2 = center2.noHole2 = true;//второе отверстие делать не надо
+			par.railingHoles.push(center1);
+			par.railingHoles.push(center2);
 		}
 
 		if (params.railingModel == "Самонесущее стекло") {
@@ -1667,7 +1677,7 @@ function drawMiddleStepsLt(par) {
 		if (par.railing.indexOf(i+1) != -1) {
 			if (par.hasRailing) {
 
-				if (params.railingModel != "Самонесущее стекло") {
+				if (params.railingModel != "Самонесущее стекло" && params.railingModel != "Трап") {
 					center1 = newPoint_xy(p1, par.b * 0.5, rackTopHoleY);
 					/*
 					//смещаем стойку если она пересекается с отверстием уголка
@@ -1688,6 +1698,16 @@ function drawMiddleStepsLt(par) {
 					center1 = newPoint_x1(center1, - mooveX, par.marshAng);
 
 					par.railingHoles.push(center1);
+				}
+
+				if (params.railingModel == "Трап") {
+					var balOnlay = 150;
+					center1 = polar(p1, par.marshAng - Math.PI / 2, balOnlay - 30);
+					center1 = newPoint_xy(center1, 5, -5 - par.h / 2);
+					center2 = polar(center1, par.marshAng + Math.PI / 2, 60);
+					center1.noHole2 = center2.noHole2 = true;//второе отверстие делать не надо
+					par.railingHoles.push(center1);
+					par.railingHoles.push(center2);
 				}
 
 				if (params.railingModel == "Самонесущее стекло") {
@@ -1846,7 +1866,7 @@ function drawTopStepLt_floor(par) {
 	//Отверстия под ограждения
 	if (par.hasRailing) {
 
-		if (params.railingModel != "Самонесущее стекло") {
+		if (params.railingModel != "Самонесущее стекло" && params.railingModel != "Трап") {
 			center1 = newPoint_xy(p1, par.b * 0.5, par.rackTopHoleY);
 			//удлиннение последней стойки
 			var dyLastRack = calcLastRackDeltaY(); //функция в файле drawRailing_3.0;
@@ -1886,6 +1906,16 @@ function drawTopStepLt_floor(par) {
 
 
 			par.railingHoles.push(center1);
+		}
+
+		if (params.railingModel == "Трап") {
+			var balOnlay = 150;
+			center1 = polar(p1, par.marshAng - Math.PI / 2, balOnlay - 30);
+			center1 = newPoint_xy(center1, 5, -5 - par.h / 2);
+			center2 = polar(center1, par.marshAng + Math.PI / 2, 60);
+			center1.noHole2 = center2.noHole2 = true;//второе отверстие делать не надо
+			par.railingHoles.push(center1);
+			par.railingHoles.push(center2);
 		}
 
 		if (params.railingModel == "Самонесущее стекло") {
@@ -2281,7 +2311,7 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 		if (par.hasPltRailing) hasFirstPltRack = true;
 		if (params.stairModel == 'Прямая горка') hasFirstPltRack = true;
 		
-		if (params.railingModel != "Самонесущее стекло") {
+		if (params.railingModel != "Самонесущее стекло" && params.railingModel != "Трап") {
 
 			if (hasFirstPltRack) {
 				// отверстия под стойку ближе к маршу
@@ -2361,6 +2391,17 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 				par.railingHoles.push(center1);
 				//console.log(center1)
 				}
+		}
+
+		if (params.railingModel == "Трап") {
+			var balOnlay = 150;
+			var pt = newPoint_xy(p0, -par.b, 0);
+			center1 = polar(p0, par.marshAng - Math.PI / 2, balOnlay - 30);
+			center1 = newPoint_xy(center1, 5, -5 - par.h / 2);
+			center2 = polar(center1, par.marshAng + Math.PI / 2, 60);
+			center1.noHole2 = center2.noHole2 = true;//второе отверстие делать не надо
+			par.railingHoles.push(center1);
+			par.railingHoles.push(center2);
 		}
 
 		if (params.railingModel == "Самонесущее стекло" && hasFirstPltRack) {
