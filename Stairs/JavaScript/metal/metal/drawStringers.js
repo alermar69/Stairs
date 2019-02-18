@@ -635,11 +635,246 @@ function drawStringer(par){
 			}
 		
 	}
-	
+
+	//накладки на тетивы
+	if (par.hasStringerCover) {
+		var stringerCoverPar = {
+			points: par.pointsShape,
+			dxfBasePoint: par.dxfBasePoint,
+			radIn: 10, //Радиус скругления внутренних углов
+			radOut: 5, //радиус скругления внешних углов
+			botPoint: copyPoint(par.keyPoints.botPoint),
+			topPoint: copyPoint(par.keyPoints.topPoint),
+			stringerCoverThickness: 2,
+			railingHoles: par.railingHoles,
+			//markPoints: true,
+		}
+		if (par.keyPoints.botPoint1) stringerCoverPar.botPoint = copyPoint(par.keyPoints.botPoint1);
+
+		//объединяем массивы точек разделенных тетив, что бы была одна накладка
+		if (par.pointsShapeBot.length > 0) {
+			if (!(params.stairModel == "П-образная с площадкой" && par.key == "in"  && !par.lastMarsh)) {
+				var pt0 = copyPoint(stringerCoverPar.botPoint);
+				var arr = [];
+				var x1 = +pt0.x.toFixed(3);
+				var y1 = +pt0.y.toFixed(3);
+				
+				for (var j = 0; j < stringerCoverPar.points.length; j++) {
+					var x2 = +stringerCoverPar.points[j].x.toFixed(3);
+					var y2 = +stringerCoverPar.points[j].y.toFixed(3);
+					if (x1 == x2 && y1 == y2) {
+						arr.push(par.pointsShapeBot[1]);
+						arr.push(par.pointsShapeBot[2]);
+						if (params.model == "лт") {
+							arr.push(stringerCoverPar.points[j + 1]);
+						}
+						j++;
+					}
+					else {
+						arr.push(stringerCoverPar.points[j]);
+					}
+				}
+				stringerCoverPar.points = arr;
+				stringerCoverPar.botPoint = copyPoint(par.keyPoints.botPointDop);
+				stringerCoverPar.railingHoles.push.apply(stringerCoverPar.railingHoles, par.railingHolesBot);
+			}
+		}
+
+		//объединяем массивы точек разделенных тетив, что бы была одна накладка
+		if (par.pointsShapeTop.length > 0) {
+			if (!(params.stairModel == "П-образная с площадкой" && par.key == "in" && !par.lastMarsh)) {
+				var pt0 = copyPoint(stringerCoverPar.topPoint);
+				var arr = [];
+				var x1 = +pt0.x.toFixed(3);
+				var y1 = +pt0.y.toFixed(3);
+
+				for (var j = 0; j < stringerCoverPar.points.length; j++) {
+					var x2 = +stringerCoverPar.points[j].x.toFixed(3);
+					var y2 = +stringerCoverPar.points[j].y.toFixed(3);
+					if (x1 == x2 && y1 == y2) {
+						arr.push(par.pointsShapeTop[2]);
+						arr.push(par.pointsShapeTop[3]);
+					}
+					else {
+						arr.push(stringerCoverPar.points[j]);
+					}
+				}
+				stringerCoverPar.points = arr;
+				stringerCoverPar.topPoint = copyPoint(par.keyPoints.topPointDop);
+				stringerCoverPar.railingHoles.push.apply(stringerCoverPar.railingHoles, par.railingHolesTop);
+			}
+		}
+
+		var stringerCover = drawStringerCover(stringerCoverPar).mesh;
+		stringerCover.position.z = -stringerCoverPar.stringerCoverThickness;
+		if (par.key == 'out' && turnFactor == -1) stringerCover.position.z = params.stringerThickness;
+		if (par.key == 'in' && turnFactor == 1) stringerCover.position.z = params.stringerThickness;
+		if (params.stairModel == "Прямая") {
+			stringerCover.position.z = -stringerCoverPar.stringerCoverThickness;
+			if (par.key == 'out' && turnFactor == 1) stringerCover.position.z = params.stringerThickness;
+			if (par.key == 'in' && turnFactor == -1) stringerCover.position.z = params.stringerThickness;		
+		}
+
+		par.mesh.add(stringerCover);		
+
+		//if (par.pointsShapeTop.length > 0) {
+		//	stringerCoverPar.points = par.pointsShapeTop;
+		//	stringerCoverPar.botPoint = copyPoint(par.keyPoints.botPointDop);
+		//	stringerCoverPar.topPoint = copyPoint(par.keyPoints.topPointDop);
+		//	stringerCoverPar.railingHoles = par.railingHolesTop;
+
+		//	var stringerCover = drawStringerCover(stringerCoverPar).mesh;
+		//	stringerCover.position.z = -stringerCoverPar.stringerCoverThickness;
+		//	if (par.key == 'out' && turnFactor == -1) stringerCover.position.z = params.stringerThickness;
+		//	if (par.key == 'in' && turnFactor == 1) stringerCover.position.z = params.stringerThickness;
+
+		//	par.mesh.add(stringerCover);
+		//}
+	}
+
+
 	return par;	
 
 } //end of drawStringer
 
+function angleXFull(p1, p2) {
+	/*возвращает полный угол (от 0 до 360) между осью x и отрезком, соединяющим точки*/
+	var angle;
+
+	if ((p2.x == p1.x) && (p2.y > p1.y)) angle = Math.PI / 2;
+	if ((p2.x == p1.x) && (p2.y < p1.y)) angle = Math.PI / 2 + Math.PI;
+	if ((p2.x > p1.x) && (p2.y >= p1.y)) angle = Math.atan((p2.y - p1.y) / (p2.x - p1.x));
+	if ((p2.x < p1.x) && (p2.y >= p1.y)) angle = -Math.atan((p2.y - p1.y) / (p1.x - p2.x)) + Math.PI;
+	if ((p2.x < p1.x) && (p2.y < p1.y)) angle = Math.atan((p1.y - p2.y) / (p1.x - p2.x)) + Math.PI;
+	if ((p2.x > p1.x) && (p2.y < p1.y)) angle = -Math.atan((p1.y - p2.y) / (p2.x - p1.x)) + Math.PI * 2;
+
+
+	return angle;
+}
+
+/*функция возвращает координаты концов отрезка, параллельного отрезку, 
+	соединяющему точку p1 и p2*/
+
+function parallel1(basePoint1, basePoint2, dist) {
+
+	var ang = angleXFull(basePoint1, basePoint2);
+	if (ang < Math.PI) {
+		var newPoint1 = polar(basePoint1, (ang + Math.PI / 2), dist);
+		var newPoint2 = polar(basePoint2, (ang + Math.PI / 2), dist);
+	}
+	else {
+		var newPoint1 = polar(basePoint1, (ang - Math.PI / 2), dist);
+		var newPoint2 = polar(basePoint2, (ang - Math.PI / 2), dist);
+	}
+
+	var line = {};
+	line.p1 = newPoint1;
+	line.p2 = newPoint2;
+	return line;
+}
+
+/** 
+	* Функция отрисовывает накладку на тетиву
+*/
+function drawStringerCover(par) {
+	var pointsShape = par.points;
+	var pointsCoverShape = [];
+	
+	// создаем массив точек нижней части накладки между точками botPoint и topPoint
+	// (для определения направления где внутреняя сторона накладки)
+	var arr = [];
+	var flag = true;
+	for (var i = 0; i < pointsShape.length; i++) {
+		if (pointsShape[i].x.toFixed(3) == par.botPoint.x.toFixed(3) && pointsShape[i].y.toFixed(3) == par.botPoint.y.toFixed(3))
+			flag = false;
+
+		if (flag) arr.push(pointsShape[i]);
+
+		if (pointsShape[i].x.toFixed(3) == par.topPoint.x.toFixed(3) && pointsShape[i].y.toFixed(3) == par.topPoint.y.toFixed(3))
+			flag = true;
+	}
+
+	// создаем массив точек накладки из массива точек тетивы сдвигом на 5мм внутрь
+	var offset = 5;
+	for (var i = 0; i < pointsShape.length; i++) {	
+		if(i == 0)
+			var p1 = pointsShape[pointsShape.length - 1];
+		else
+			var p1 = pointsShape[i - 1];
+
+		var p2 = pointsShape[i];
+
+		if (i == (pointsShape.length - 1))
+			var p3 = pointsShape[0];
+		else
+			var p3 = pointsShape[i + 1];
+
+		var offset1 = -offset;
+		var offset2 = -offset;
+
+		// определяем направление внутренней стороны
+		for (var j = 0; j < arr.length; j++) {
+			if (p1.x == arr[j].x && p1.y == arr[j].y) {
+				offset1 *= -1;				
+				break;
+			}
+		}
+		for (var j = 0; j < arr.length; j++) {
+			if (p3.x == arr[j].x && p3.y == arr[j].y) {
+				offset2 *= -1;
+				break;
+			}
+		}
+		for (var j = 0; j < arr.length; j++) {
+			if (p2.x == arr[j].x && p2.y == arr[j].y) {
+				offset1 = offset;
+				offset2 = offset;
+				break;
+			}
+		}
+
+		var line1 = parallel1(p2, p1, offset1);
+		var line2 = parallel1(p2, p3, offset2);
+		var pt = itercection(line1.p1, line1.p2, line2.p1, line2.p2);
+
+		pointsCoverShape.push(pt);	
+	}
+
+	//создаем шейп
+	var shapePar = {
+		points: pointsCoverShape,
+		dxfArr: dxfPrimitivesArr,
+		dxfBasePoint: par.dxfBasePoint,
+		radIn: par.radIn, //Радиус скругления внутренних углов
+		radOut: par.radOut, //радиус скругления внешних углов
+		//markPoints: true,
+	}
+
+	var shape = drawShapeByPoints2(shapePar).shape;
+
+	//добавляем отверстия под ограждения
+	var railingHolesPar = {
+		shape: shape,
+		holeCenters: par.railingHoles,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+	drawRailingHoles(railingHolesPar);
+
+
+	var stringerExtrudeOptions = {
+		amount: par.stringerCoverThickness - 0.01,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(shape, stringerExtrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var mesh = new THREE.Mesh(geom, params.materials.stringerCover);
+	par.mesh = mesh;
+
+	return par;
+}
 
 
 /*расчет параметров косоура*/	
@@ -708,9 +943,11 @@ function calcStringerPar(par){
 	if (par.marshId > 1 && par.stairAmt_prev == 0) par.bottomTrimm = true;
 	if (params.stairModel == "П-образная с забегом" && par.marshId == 3) par.bottomTrimm = false;
 	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 3 && params.stairAmt2 == 0) par.bottomTrimm = false;
-	
-	//наличие ограждений
 
+	//наличие накладки
+	par.hasStringerCover = marshParams.hasStringerCover[par.key];
+
+	//наличие ограждений
 	par.hasRailing = marshParams.hasRailing[par.key];
 	
 	/*на внутренней стороне если сверху площадка ограждение есть только на марше.
@@ -934,3 +1171,215 @@ function calcStringerPar(par){
 	
 	return par;
 } //end of calcStringerPar
+
+
+
+
+/**функция возвращает параметры марша по номеру марша
+*/
+function getMarshParams(marshId) {
+
+	if (marshId < 1) marshId = 1;
+	if (marshId > 3) marshId = 3;
+	var par = {};
+	if (marshId == 1) {
+		par.a = params.a1 * 1.0;
+		par.b = params.b1;
+		par.h = params.h1;
+		par.stairAmt = params.stairAmt1;
+		par.railingSide = params.railingSide_1;
+		par.skirtingSide = params.skirting_1;
+		par.sideHandrailSide = params.handrailSide_1;
+		par.stringerCover = params.stringerCover_1;
+	}
+	if (marshId == 2) {
+		par.a = params.a2 * 1.0;
+		par.b = params.b2;
+		par.h = params.h2;
+		par.stairAmt = params.stairAmt2;
+		par.railingSide = params.railingSide_2;
+		par.skirtingSide = params.skirting_2;
+		par.sideHandrailSide = params.handrailSide_2;
+		if (params.stairModel == "П-образная с забегом") {
+			par.h = params.h3;
+			par.stairAmt = 0;
+		}
+		par.stringerCover = params.stringerCover_2;
+	}
+	if (marshId == 3) {
+		par.a = params.a3 * 1.0;
+		par.b = params.b3;
+		par.h = params.h3;
+		par.stairAmt = params.stairAmt3;
+		par.railingSide = params.railingSide_3;
+		par.skirtingSide = params.skirting_3;
+		par.sideHandrailSide = params.handrailSide_3;
+		par.stringerCover = params.stringerCover_3;
+	}
+
+	par.nose = par.a - par.b;
+
+	//является ли текущий марш последним
+	par.lastMarsh = false;
+	if (marshId == 3) par.lastMarsh = true;
+	if (params.stairModel == "Прямая" && marshId == 1) par.lastMarsh = true;
+
+	//подъем ступени на забеге
+	par.h_botWnd = params.h3;
+	par.h_topWnd = params.h3;
+	if (params.stairModel == "П-образная трехмаршевая") {
+		if (marshId == 1) par.h_topWnd = params.h2;
+		if (marshId == 2) par.h_botWnd = params.h2;
+	}
+
+	if (marshId == 1) {
+		par.botTurn = "пол";
+		par.topTurn = "площадка";
+		if (params.stairModel == "Прямая" && params.platformTop == "нет") par.topTurn = "пол";
+		if (params.stairModel == "Г-образная с забегом") par.topTurn = "забег";
+		if (params.stairModel == "П-образная с забегом") par.topTurn = "забег";
+		if (params.stairModel == "П-образная трехмаршевая" && params.turnType_1 == "забег") par.topTurn = "забег";
+	}
+
+	if (marshId == 2) {
+		par.botTurn = params.turnType_1;
+		par.topTurn = params.turnType_2;
+		if (params.stairModel == "П-образная с забегом") {
+			par.botTurn = "забег";
+			par.topTurn = "забег";
+		}
+		if (params.stairModel == "П-образная с площадкой") {
+			par.botTurn = "площадка";
+			par.topTurn = "площадка";
+		}
+	}
+
+	if (marshId == 3) {
+		par.topTurn = "пол";
+		par.botTurn = "площадка";
+		if (params.stairModel == "Г-образная с забегом") par.botTurn = "забег";
+		if (params.stairModel == "П-образная с забегом") par.botTurn = "забег";
+		if (params.stairModel == "П-образная трехмаршевая" && params.turnType_2 == "забег") par.botTurn = "забег";
+		if (params.platformTop != "нет") par.topTurn = "площадка";
+	}
+
+	par.nextMarshId = 3;
+	if (params.stairModel == "П-образная трехмаршевая" && marshId == 1) par.nextMarshId = 2;
+
+	par.prevMarshId = 1;
+	if (params.stairModel == "П-образная трехмаршевая" && marshId == 3) par.prevMarshId = 2;
+
+	//угол наклона марша
+	par.ang = Math.atan(par.h / par.b);
+
+	//наличие ограждений на внешней и на внутренней стороне
+	par.hasRailing = {
+		in: false,
+		out: false,
+	}
+	if (par.railingSide == "внешнее" || par.railingSide == "две") par.hasRailing.out = true;
+	if ((par.railingSide == "внутреннее" || par.railingSide == "две") && par.stairAmt != 0) par.hasRailing.in = true;
+
+	//заднее ограждение забега или площадки П-образной
+	if (params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой") {
+		if (marshId == 2 && params.backRailing_2 == "есть") par.hasRailing.out = true;
+		if (marshId == 2) par.hasRailing.in = false;
+	}
+
+	//наличие ограждения на верхней площадке
+	par.hasTopPltRailing = {
+		in: false,
+		out: false,
+	}
+
+	if (par.lastMarsh && params.platformTop != "нет") {
+		par.hasTopPltRailing = {
+			in: getTopPltRailing().in,
+			out: getTopPltRailing().out,
+		}
+	}
+
+	//наличие пристенного поручня на внешней и внутренней стороне
+	par.hasSideHandrail = {
+		in: false,
+		out: false,
+	}
+	if (par.sideHandrailSide == "внешнее" || par.sideHandrailSide == "две") par.hasSideHandrail.out = true;
+	if ((par.sideHandrailSide == "внутреннее" || par.sideHandrailSide == "две") && par.stairAmt != 0) par.hasSideHandrail.in = true;
+
+
+	//наличие плинтуса на внешней и на внутренней стороне
+	par.hasSkirting = {
+		in: false,
+		out: false,
+	}
+	if (params.riserType == "есть") {
+		if (par.skirtingSide == "внешнее" || par.skirtingSide == "две") par.hasSkirting.out = true;
+		if (par.skirtingSide == "внутреннее" || par.skirtingSide == "две") par.hasSkirting.in = true;
+		if (marshId == 2 && params.stairModel == "П-образная с забегом") {
+			if (params.skirting_wnd == "есть") par.hasSkirting.out = true;
+		}
+	}
+
+	//наличие накладки на внешней и на внутренней стороне
+	par.hasStringerCover = {
+		in: false,
+		out: false,
+	}
+	if (par.stringerCover == "внешняя" || par.stringerCover == "две") par.hasStringerCover.out = true;
+	if ((par.stringerCover == "внутренняя" || par.stringerCover == "две")) par.hasStringerCover.in = true;
+
+
+	//какая сторона правая, какая левая
+	par.side = {
+		in: "right",
+		out: "left",
+	}
+	if (params.turnSide == "левое") {
+		par.side = {
+			in: "left",
+			out: "right",
+		}
+	}
+	if (params.stairModel == "Прямая") {
+		var temp = par.side.in;
+		par.side.in = par.side.out;
+		par.side.out = temp;
+	}
+
+	par.len = par.b * par.stairAmt;
+	par.height = par.h * par.stairAmt;
+
+	//наличие креплений к стене
+	var wallFix = {
+		in: false,
+		out: false,
+	}
+
+	//стена №1
+	if (params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
+		if (params.stairModel == "Прямая") wallFix.in = true;
+		if (params.stairModel != "Прямая" && marshId == 3) wallFix.out = true;
+	}
+
+	//стена №2
+	if (params.fixPart4 != "нет" && params.fixPart4 != "не указано") {
+		if (params.stairModel == "Прямая") wallFix.out = true;
+		if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") && marshId == 3) wallFix.in = true;
+		if ((params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная трехмаршевая") && marshId == 1) wallFix.out = true;
+	}
+
+	//стена №3
+	if (params.fixPart5 != "нет" && params.fixPart5 != "не указано") {
+		if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") && marshId == 1) wallFix.in = true;
+	}
+
+	//стена №4
+	if (params.fixPart6 != "нет" && params.fixPart6 != "не указано") {
+		if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") && marshId == 1) wallFix.out = true;
+		if ((params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная трехмаршевая") && marshId == 2) wallFix.out = true;
+	}
+	par.wallFix = wallFix;
+
+	return par;
+} //end of getMarshParam

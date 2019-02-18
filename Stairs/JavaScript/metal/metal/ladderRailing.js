@@ -1,4 +1,4 @@
-function drawLadderHandrail1(par) {
+function drawLadderHandrail(par) {
 	/*функция отрисовывает секцию ограждения модель "Трап" для крутых лестниц в подвал.
 		исходные данные:
 		marshId
@@ -7,6 +7,26 @@ function drawLadderHandrail1(par) {
 	*/
 
 	par.mesh = new THREE.Object3D();
+
+	var poleProfileZ = 20; //толщина стойки
+	var flanThickness = 4;
+
+	railingPositionZ = poleProfileZ;
+	if (par.key == "in") var railingPositionZ = 0;
+	if (turnFactor === -1) {
+		railingPositionZ = -poleProfileZ * 2;
+		if (par.key == "in") railingPositionZ = -poleProfileZ;
+	}
+
+	//для прямой лестницы все наоборот
+	if (params.stairModel == "Прямая") {
+		var railingPositionZ = 0;
+		if (par.key == "in") railingPositionZ = poleProfileZ;
+		if (turnFactor === -1) {
+			railingPositionZ = -poleProfileZ;
+			if (par.key == "in") railingPositionZ = -poleProfileZ * 2;
+		}
+	}
 
 	var marshPar = getMarshParams(par.marshId);
 
@@ -70,8 +90,8 @@ function drawLadderHandrail1(par) {
 	poleParams = drawPole3D_4(poleParams);
 	var pole = poleParams.mesh;
 	pole.position.x = p1.x;
-	pole.position.y = p1.y;
-	pole.position.z = 0;
+	pole.position.y = p1.y - par.h / 2;
+	pole.position.z = -handrailProfileZ / 2 + poleProfileZ / 2 + railingPositionZ;
 	par.mesh.add(pole);
 
 	//стойки
@@ -89,31 +109,172 @@ function drawLadderHandrail1(par) {
 		partName: "ladderBal",
 		type: "rect",
 		poleProfileY: 40,
-		poleProfileZ: 20,
-		length: handrailOffset + balOnlay,
+		poleProfileZ: poleProfileZ,
+		length: handrailOffset + balOnlay - flanThickness,
 		poleAngle: marshAng + Math.PI / 2,
 		material: params.materials.metal,
 		dxfBasePoint: { x: 0, y: 0 },
 		dxfArr: dxfPrimitivesArr,
+		roundHoles: [],
 	}
 
 	//отрисовка стоек
-	for (var i = 0; i < balAmt; i++) {
-		var pos = polar(balPos1, marshAng, balDist * i);
-		poleParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
+	/*средние ступени*/
+	ltko_set_railing(par.stairAmt, par);
 
-		var center = polar(balPos1, marshAng, -20);
-		var center1 = polar(center, marshAng + Math.PI / 2, 30);
-		var center2 = polar(center1, marshAng + Math.PI / 2, 60);
-		par.roundHoles.push(center1);
-		par.roundHoles.push(center2);
+	//смещяем все стойки если начало ограждений не с первой ступени
+	if (par.marshId == 1 && params.railingStart > 0) {
+		for (var j = 0; j < par.railing.length; j++) {
+			par.railing[j] += params.railingStart * 1.0;
+		}
+	}
 
-		poleParams = drawPole3D_4(poleParams);
-		var pole = poleParams.mesh;
-		pole.position.x = pos.x;
-		pole.position.y = pos.y;
-		pole.position.z = handrailProfileZ / 2 - poleParams.poleProfileZ / 2;
-		par.mesh.add(pole);
+
+
+	for (var i = 0; i < par.stairAmt; i++) {
+		if (par.railing.indexOf(i + 1) != -1 || (i == 0 || i == par.stairAmt - 1)) {
+			var holeDist = 60; //расстояние между отверстиями
+			var pos = newPoint_xy(balPos1, par.b * (i - params.railingStart * 1.0), par.h * (i - params.railingStart * 1.0));
+			if (i == 0) pos = copyPoint(balPos1);
+			pos.y += - par.h / 2;
+			poleParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
+
+			// добавляем отверстия
+			var center = polar(p0, marshAng, -poleParams.poleProfileY / 2);
+			var center1 = polar(center, marshAng + Math.PI / 2, 30); // 30 - отступ от нижнего края стойки до первого отверстия по Y при вертикальном расположении
+			var center2 = polar(center1, marshAng + Math.PI / 2, holeDist);
+			center1.diam = center2.diam = 13;
+			poleParams.roundHoles = [center1, center2];
+
+			poleParams = drawPole3D_4(poleParams);
+			var pole = poleParams.mesh;
+			pole.position.x = pos.x;
+			pole.position.y = pos.y;
+			pole.position.z = railingPositionZ;
+			par.mesh.add(pole);
+
+			//болты
+			if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //anglesHasBolts - глобальная переменная
+				var bolts = new THREE.Object3D();
+				var boltPar = {
+					diam: boltDiam,
+					len: 20,
+					headType: "потай",
+				}
+				if (params.model == "ко") boltPar.headType = "шестигр.";
+
+				var bolt = drawBolt(boltPar).mesh;
+				if (params.model == "лт") {
+					bolt.rotation.x = Math.PI / 2;
+					bolt.position.x = pos.x + center1.x;
+					bolt.position.y = pos.y + center1.y;
+					bolt.position.z = 2
+
+					if (par.railingSide == "left") {
+						bolt.rotation.x = -Math.PI / 2;
+						bolt.position.z = poleProfileZ - 2
+					}
+				}
+
+				if (params.model == "ко") {
+					bolt.rotation.x = -Math.PI / 2;
+					bolt.position.x = pos.x + center1.x;
+					bolt.position.y = pos.y + center1.y;
+					bolt.position.z = 2 + 4//boltLen / 2 + boltBulge - 4;
+
+					if (par.railingSide == "left") {
+						bolt.rotation.x = Math.PI / 2;
+						bolt.position.z = poleProfileZ - 2 - 4// - boltLen / 2 - boltBulge + 4;
+					}
+				}
+				bolts.add(bolt)
+
+
+				var bolt2 = drawBolt(boltPar).mesh;
+				bolt2.rotation.x = bolt.rotation.x;
+				bolt2.position.x = pos.x + center2.x;
+				bolt2.position.y = pos.y + center2.y;
+				bolt2.position.z = bolt.position.z;
+				bolts.add(bolt2)
+
+				par.mesh.add(bolts)
+			}
+
+			//фланец крепления к поручню
+			{
+				var widthFlan = 20;
+				var heightFlan = 76;
+				var holeRad = 3;
+
+				var p1 = { x: 0, y: - heightFlan / 2 + 20 };
+				var p2 = newPoint_xy(p1, 0, heightFlan);
+				var p3 = newPoint_xy(p2, widthFlan, 0);
+				var p4 = newPoint_xy(p1, widthFlan, 0);
+
+				var points = [p1, p2, p3, p4]
+
+				//создаем шейп
+				var shapePar = {
+					points: points,
+					dxfArr: dxfPrimitivesArr,
+					dxfBasePoint: newPoint_xy(poleParams.dxfBasePoint, 0, -200),
+					radOut: 5, //радиус скругления внешних углов
+				}
+				var shape = drawShapeByPoints2(shapePar).shape;
+
+				var hole1 = new THREE.Path();
+				var hole2 = new THREE.Path();
+				var center1 = newPoint_xy(p1, widthFlan / 2, 7);
+				var center2 = newPoint_xy(p2, widthFlan / 2, -7);
+				addCircle(hole1, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+				addCircle(hole2, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+				shape.holes.push(hole1);
+				shape.holes.push(hole2);
+
+				var extrudeOptions = {
+					amount: flanThickness,
+					bevelEnabled: false,
+					curveSegments: 12,
+					steps: 1
+				};
+				var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+				geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+				var flan = new THREE.Mesh(geometry, params.materials.metal);
+				flan.rotation.x = Math.PI / 2;
+				flan.rotation.y = marshAng;
+				flan.rotation.z = Math.PI / 2;
+				flan.position.x = pos.x - (flanThickness + poleParams.length) * Math.sin(marshAng);
+				flan.position.y = pos.y + (flanThickness + poleParams.length) * Math.cos(marshAng);
+				flan.position.z = railingPositionZ;
+				par.mesh.add(flan)
+
+				//сохраняем данные для спецификации
+				var partName = "Flan";
+				if (typeof specObj != 'undefined') {
+					if (!specObj[partName]) {
+						specObj[partName] = {
+							types: {},
+							amt: 0,
+							name: "Фланец",
+							area: 0,
+							paintedArea: 0,
+							metalPaint: true,
+							timberPaint: false,
+							division: "metal",
+							workUnitName: "area", //единица измерения
+							group: "Ограждения",
+						}
+					}
+					var name = heightFlan + "x" + widthFlan + "x" + 8;
+					var area = heightFlan * widthFlan / 1000000;
+					if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+					if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+					specObj[partName]["amt"] += 1;
+					specObj[partName]["area"] += area;
+					specObj[partName]["paintedArea"] += area * 2;
+				}
+			}
+		}
 	}
 
 
@@ -135,9 +296,13 @@ function drawLadderHandrail1(par) {
 		rigelProfileZ = 12;
 	}
 
-	var rigelZ = 0//35 * turnFactor;
-	//	if (par.side == "right") var rigelZ = - rigelProfileZ;
-	if (par.side == "left") var rigelZ = rigelProfileZ + 20;
+	var rigelZ = rigelProfileZ * turnFactor;
+	if (par.key == "in") rigelZ = -rigelProfileZ * turnFactor;
+	//для прямой лестницы все наоборот
+	if (params.stairModel == "Прямая") {
+		var rigelZ = -rigelProfileZ * turnFactor;
+		if (par.key == "in") rigelZ = rigelProfileZ * turnFactor;
+	}
 
 
 	var poleParams = {
@@ -159,16 +324,16 @@ function drawLadderHandrail1(par) {
 		poleParams = drawPole3D_4(poleParams);
 		var pole = poleParams.mesh;
 		pole.position.x = pos.x;
-		pole.position.y = pos.y;
-		pole.position.z = rigelZ;
+		pole.position.y = pos.y - par.h / 2;
+		pole.position.z = rigelZ + railingPositionZ;
 		par.mesh.add(pole);
 	}
+
+
+	//par.mesh.position.y -= par.h / 2
 
 
 	return par;
 
 } //end of drawLadderHandrail
-
-
-
 

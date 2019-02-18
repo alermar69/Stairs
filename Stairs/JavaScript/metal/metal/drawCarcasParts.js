@@ -228,7 +228,8 @@ function drawPltStringer(par) {
 	var p1 = newPoint_xy(p0, 0.0, -plateWidth);
 	var p2 = newPoint_xy(p1, plateLen, 0.0);
 	var p3 = newPoint_xy(p2, 0.0, plateWidth);
-	par.pointsShape.push(p0, p1, p2, p3);
+	//par.pointsShape.push(p0, p1, p2, p3);
+	par.pointsShape.push(p1, p0, p3, p2);
 	
 	//сохраняем точки для отладки
 	par.keyPoints[par.key].end1 = p3;
@@ -451,8 +452,29 @@ function drawPltStringer(par) {
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["area"] += area;
 		specObj[partName]["paintedArea"] += area * 2;
+	}
+
+	//накладки на заднюю тетиву
+	if (par.key == "rear") {
+		var stringerCoverPar = {
+			points: par.pointsShape,
+			dxfBasePoint: par.dxfBasePoint,
+			radIn: 10, //Радиус скругления внутренних углов
+			radOut: 5, //радиус скругления внешних углов
+			botPoint: copyPoint(p1),
+			topPoint: copyPoint(p3),
+			stringerCoverThickness: 2,
+			railingHoles: par.elmIns[par.key].racks,
+			//markPoints: true,
 		}
-		
+		var stringerCover = drawStringerCover(stringerCoverPar).mesh;
+		if (turnFactor == 1) stringerCover.position.z = -stringerCoverPar.stringerCoverThickness;
+		if (turnFactor == -1) stringerCover.position.z = params.stringerThickness;
+
+		par.mesh.add(stringerCover);
+	}
+
+
 	par.carcasHoles = par.pointsHole;
 	par.dxfBasePoint.y += plateWidth + 150;
 	
@@ -784,7 +806,8 @@ function drawTopPltStringer(par) {
 	var p1 = newPoint_xy(p0, 0.0, -plateWidth);
 	var p2 = newPoint_xy(p1, plateLen, 0.0);
 	var p3 = newPoint_xy(p2, 0.0, plateWidth);
-	par.pointsShape.push(p0, p1, p2, p3);
+	//par.pointsShape.push(p0, p1, p2, p3);
+	par.pointsShape.push(p1, p0, p3, p2);
 	
 	//сохраняем точки для колонн
 	par.keyPoints[par.key].end1 = p3;	// для второй колонны
@@ -991,6 +1014,21 @@ function drawTopPltStringer(par) {
 		}
 		
 
+	var stringerCoverPar = {
+		points: par.pointsShape,
+		dxfBasePoint: par.dxfBasePoint,
+		radIn: 10, //Радиус скругления внутренних углов
+		radOut: 5, //радиус скругления внешних углов
+		botPoint: copyPoint(p1),
+		topPoint: copyPoint(p3),
+		stringerCoverThickness: 2,
+		railingHoles: par.elmIns[par.key].racks,
+		//markPoints: true,
+	}
+	var stringerCover = drawStringerCover(stringerCoverPar).mesh;
+	stringerCover.position.z = params.stringerThickness;
+
+	par.mesh.add(stringerCover);
 	
 	return par;
 } //end of drawTopPltStringer

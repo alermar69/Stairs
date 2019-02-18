@@ -20,7 +20,12 @@ $("#marshDist").val(400);
 
 $("#stairAmt1").val(5);
 $("#stairAmt2").val(0);
-$("#stairAmt3").val(6);
+	$("#stairAmt3").val(6);
+
+
+$("#stringerCover_1").val("две");
+$("#stringerCover_2").val("две");
+$("#stringerCover_3").val("две");
 
 $("#wallLength_1").val(0);
 $("#wallLength_2").val(0);

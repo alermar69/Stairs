@@ -198,7 +198,8 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 		par.keyPoints[par.key].botEnd = pt3;	// для первой колонны
 		par.keyPoints[par.key].botEnd2 = pt4;	// для второй колонны
 		
-		
+		par.keyPoints.botPointDop = copyPoint(pt2);
+		par.keyPoints.topPointDop = copyPoint(pt4);
 	}
 
 	par.pointsShape.push(p2);
@@ -398,6 +399,9 @@ function drawBotStepKo_pltP(par){
 		par.pointsShapeBot.push(pt4);
 		//сохраняем длину для спецификации
 		par.partsLen.push(distance(pt1, pt2))
+
+		par.keyPoints.botPoint = copyPoint(p0);
+		par.keyPoints.botPointDop = copyPoint(pt2);
 	}
 	if (!par.stringerDivisionBot) {
 		par.pointsShape.push(pt2);
@@ -643,9 +647,11 @@ function drawBotStepKo_wndIn(par){
 	//сохраняем точки контура
 	par.pointsShape.push(...botLinePoints);
 	p1.filletRad = p2.filletRad = p3.filletRad = p4.filletRad = p5.filletRad = p6.filletRad = p7.filletRad = p8.filletRad = 0; //угол тетивы не скругляется
-	par.pointsShape.push(p1);	
-	par.pointsShape.push(p2);
-	if(p3.x != p2.x) par.pointsShape.push(p3);
+	par.pointsShape.push(p1);		
+	if (p3.x != p2.x) {
+		par.pointsShape.push(p2);
+		par.pointsShape.push(p3);
+	}
 	par.pointsShape.push(p4);		
 	par.pointsShape.push(p5);
 	par.pointsShape.push(p6);
@@ -1342,12 +1348,16 @@ function drawTopStepKo_pltG(par){
 
 	pt1.filletRad = pt2.filletRad = pt3.filletRad = pt4.filletRad = 0; //углы косоура не скругляются
 	if (par.stringerDivision) {
+		par.pointsShapeTop.push(pt4);
 		par.pointsShapeTop.push(pt1);
 		par.pointsShapeTop.push(pt2);
 		par.pointsShapeTop.push(pt3);
-		par.pointsShapeTop.push(pt4);
+		
 		//сохраняем длину для спецификации
 		par.partsLen.push(distance(pt1, pt2))
+
+		par.keyPoints.botPointDop = copyPoint(pt4);
+		par.keyPoints.topPointDop = copyPoint(pt2);
 	}
 	if (!par.stringerDivision) {
 		par.pointsShape.push(pt2);
@@ -1646,12 +1656,16 @@ function drawTopStepKo_pltP(par){
 
 	pt1.filletRad = pt2.filletRad = pt3.filletRad = pt4.filletRad = 0; //углы косоура не скругляются
 	if (par.stringerDivision) {
+		par.pointsShapeTop.push(pt4);
 		par.pointsShapeTop.push(pt1);
 		par.pointsShapeTop.push(pt2);
 		par.pointsShapeTop.push(pt3);
-		par.pointsShapeTop.push(pt4);
+		
 		//сохраняем длину для спецификации
 		par.partsLen.push(distance(pt1, pt2))
+
+		par.keyPoints.topPoint = copyPoint(topLineP1);
+		par.keyPoints.topPointDop = copyPoint(pt2);
 	}
 	if (!par.stringerDivision) {
 		par.pointsShape.push(pt2);

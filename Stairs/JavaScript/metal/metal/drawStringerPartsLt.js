@@ -198,11 +198,12 @@ function drawBotStepLt_pltG(par) {
 	if (params.stringerType == 'ломаная') botStringerWidth = par.stringerWidth + 40;
 
 	/*ТОЧКИ КОНТУРА*/
-	var p1 = newPoint_xy(p0, botStringerWidth, par.carcasAnglePosY - 80 - par.stringerLedge);  // нижний правый угол
+	var p1 = newPoint_xy(p0, botStringerWidth, -par.stringerWidthPlatform + par.stringerLedge);  // нижний правый угол	
+	//var p1 = newPoint_xy(p0, botStringerWidth, par.carcasAnglePosY - 80);  // нижний правый угол	
 	if (params.stairModel == "Прямая с промежуточной площадкой" && par.marshId == 3)
 		var p1 = newPoint_xy(p0, botStringerWidth, -par.stringerWidthPlatform + par.stringerLedge);
 	var p2 = newPoint_xy(p1, -botStringerWidth + 40, 0);
-	var p3 = newPoint_xy(p0, 40.0, par.stringerLedge * 2);
+	var p3 = newPoint_xy(p0, 40.0, par.stringerLedge);
 	var p4 = newPoint_xy(p0, 0.0, par.h + par.stringerLedge);  // верхний левый угол
 	var p34 = itercection(p3, polar(p3, Math.PI * 2 / 3, 100), p4, newPoint_xy(p4, 0, -100));
 	var p5 = newPoint_xy(p4, par.b, 0.0);
@@ -252,7 +253,8 @@ function drawBotStepLt_pltG(par) {
 
 	//удлинение внешней тетивы площадки
 	if (par.key == "out" && !par.is2MarshStright || (hasCustomMidPlt(par) && par.key == 'in')) {
-		var pt1 = newPoint_xy(p3, 0, -par.stringerWidthPlatform - par.stringerLedge);
+		//var pt1 = newPoint_xy(p3, 0, -par.stringerWidthPlatform - par.stringerLedge);
+		var pt1 = newPoint_xy(p3, 0, -par.stringerWidthPlatform);
 		var pt2 = newPoint_xy(pt1, -botEndLength, 0);
 		var pt3 = newPoint_xy(pt2, 0, par.stringerWidthPlatform);
 		var pt4 = newPoint_xy(pt1, 0.0, par.stringerWidthPlatform);
@@ -267,6 +269,9 @@ function drawBotStepLt_pltG(par) {
 		//сохраняем точки для колонн
 		par.keyPoints[par.key].botEnd = pt3;	// для первой колонны
 		par.keyPoints[par.key].botEnd2 = pt4;	// для второй колонны
+
+		par.keyPoints.botPointDop = copyPoint(pt2);
+		par.keyPoints.topPointDop = copyPoint(pt4);
 		
 		//сохраняем длину для спецификации
 		par.partsLen.push(distance(pt1, pt2))
@@ -382,7 +387,7 @@ function drawBotStepLt_pltG(par) {
 	// отверстия под нижний крепежный уголок
 	if (!(params.stairModel == "Прямая с промежуточной площадкой" && par.marshId == 3)) {
 		// крепления к площадке	
-		center1 = newPoint_xy(p3, 30, par.carcasAnglePosY - par.stringerLedge);
+		center1 = newPoint_xy(p3, 30, par.carcasAnglePosY);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
 		center1.rotated = center2.rotated = true;
@@ -520,7 +525,9 @@ function drawBotStepLt_pltPIn(par) {
 	//if (params.stringerType !== "прямая") par.pointsShape.push(p7);
 
 	//сохраняем точку для расчета длины
-	par.keyPoints.botPoint = copyPoint(p2);
+	par.keyPoints.botPoint = copyPoint(p1);
+	//par.keyPoints.botPoint = copyPoint(p2);
+	//par.keyPoints.botPoint1 = copyPoint(p1);
 
 	//удлинение внутренней тетивы площадки
 	if (!hasTreadFrames()) {
