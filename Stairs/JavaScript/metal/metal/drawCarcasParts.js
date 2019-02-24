@@ -497,20 +497,27 @@ function drawCarcasPart(par, len) {
 
 	if (!par.keyPoints) par.keyPoints = {};
 	if (!par.keyPoints[par.key]) par.keyPoints[par.key] = {};
-	
+
+	par.stringerWidthPlatform = calcPltStringerWidth();
 	par.stringerWidthPlatform = par.stringerWidthPlatform ? par.stringerWidthPlatform : 150.0;
 	var offSetY = 0;
 	if (par.isMiddleStringer) offSetY = 5 + params.treadThickness;
 	par.stringerWidthPlatform -= offSetY;
 	var plateLen = len;
-	var shiftHoleY = -110 + (20 - params.treadThickness) + offSetY;
+	//var shiftHoleY = -110 + (20 - params.treadThickness) + offSetY;
 	var shiftHoleX = 30.0 + params.stringerThickness;
 	var distanceHole = 150; //расстояние между отверстиями для уголков крепления покрытия площадки у2-200
 	if (params.model == "ко") {
 		plateLen -= params.sideOverHang * 2;
 		distanceHole = 50; //расстояние между отверстиями для уголков крепления покрытия площадки у2-90
-		shiftHoleY = -20;
+		//shiftHoleY = -20;
 	}
+	//позиция верхнего отверстия уголка каркаса относительно верха тетивы
+	var shiftHoleY = -params.treadThickness - 5 - 20 + offSetY; //позиция верхнего отверстия уголка каркаса относительно верха тетивы
+	if (params.model == "ко") shiftHoleY = -65;
+	if (params.stairType == "рифленая сталь" || params.stairType == "рифленый алюминий" || params.stairType == "лотки")
+		shiftHoleY -= 65;
+	if (params.stairType == "дпк" || params.stairType == "пресснастил") shiftHoleY -= 65;
 	if (params.stairModel == "Прямая горка") shiftHoleY -= 5;
 
 	
@@ -566,8 +573,11 @@ function drawCarcasPart(par, len) {
 	par.pointsHole.push(center2);
 	
 	
+	//if (params.stairType == "рифленая сталь" || params.stairType == "лотки" || params.stairType == "пресснастил") {
 
-	if (params.stairFrame == "есть" && par.hasFrames) {
+	//}
+	//if (params.stairFrame == "есть" && par.hasFrames) {
+	if (par.hasFrames) {
 		// отверстия под рамки под площадкой
 		par.platformFramesParams = {
 			marshId: par.marshId,
@@ -610,8 +620,12 @@ function drawCarcasPart(par, len) {
             }
             if (params.platformTop == 'увеличенная') {
                 if (params.calcType == "vhod" && params.M > 1100)
-                    center1.isPltPFrame = center2.isPltPFrame = true;
-                center1.noBoltsOut = center2.noBoltsOut = true;
+					center1.isPltPFrame = center2.isPltPFrame = true;
+				if (params.stairModel == "Г-образная с площадкой" && turnFactor == 1) {
+					center1.noBoltsIn = center2.noBoltsIn = true;
+				}
+				else
+					center1.noBoltsOut = center2.noBoltsOut = true;
             }
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
@@ -620,10 +634,52 @@ function drawCarcasPart(par, len) {
 		}
 		
 	}
-	
+	if (!par.hasFrames) {
+		var stepHoleY = -(params.treadThickness + 20.0 + 5.0);
+
+		// отверстия под 1 уголок площадки
+		if (plateLen < 790) {
+			var holeDist = 50;
+			var angleType = "У2-40х40х90";
+			var angleHolePosX = 20;
+		}
+		else {
+			var angleType = "У2-40х40х200";
+			var angleHolePosX = 25;
+			var holeDist = 150;
+		}
+
+		var stepHoleXside1 = (plateLen / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
+		center1 = newPoint_xy(p0, stepHoleXside1, stepHoleY);
+		center2 = newPoint_xy(center1, holeDist, 0.0);
+		par.pointsHole.push(center1);
+		par.pointsHole.push(center2);
+		par.carcasHoles.push(center1, center2);
+
+		// отверстия под перемычку 2
+		if (plateLen > 600 && par.stringerType == "side") {
+			center1 = newPoint_xy(p0, ((plateLen * 0.5) + 29), shiftHoleY);
+			center2 = newPoint_xy(center1, 0.0, -60);
+			center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
+			//par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0 - 29 - 39, 20.0));
+			var pCentralHoles = copyPoint(center1);
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
+		}
+
+		// отверстия под 2 уголок площадки
+		var stepHoleXside2 = (plateLen / 2 - 64) / 2 + plateLen / 2 - holeDist / 2;
+		if (stepHoleXside2 > 0.0) {
+			center1 = newPoint_xy(p0, stepHoleXside2, stepHoleY);
+			center2 = newPoint_xy(center1, holeDist, 0.0);
+			par.pointsHole.push(center1);
+			par.pointsHole.push(center2);
+			par.carcasHoles.push(center1, center2);
+		}
+	}
 	//отверстия под колонну на боковой тетиве увеличенной верхней площадки
 	
-	if(par.stringerType == "side" && params.isColumnTop4){
+	if (params.columnModel !== "нет" && par.stringerType == "side" && params.isColumnTop4){
 		var center1 = newPoint_xy(angHole, 100, 0);
 		var center2 = newPoint_xy(center1, 0, -60);		
 		center1.isColumnHole = center2.isColumnHole = true;
@@ -785,7 +841,8 @@ function drawTopPltStringer(par) {
 	var distanceHole = 150; //расстояние между отверстиями для уголков крепления покрытия площадки у2-200
 	//fix
 	if (params.platformTop == 'увеличенная') {
-		plateLen = params.platformWidth_3 - (params.M - calcTreadLen()) + params.stringerThickness * 2 + 6; //8 ширина тетивы + 3 отступ		
+		plateLen = params.platformWidth_3; //8 ширина тетивы + 3 отступ		
+		//plateLen = params.platformWidth_3 - (params.M - calcTreadLen()) + params.stringerThickness * 2 + 6; //8 ширина тетивы + 3 отступ		
 	}
 	
 	if (params.model == "ко") {
@@ -985,6 +1042,9 @@ function drawTopPltStringer(par) {
 	else {
 		par.mesh.position.x = 0.01;
 	}
+	if (params.platformTop == "увеличенная" && turnFactor == 1) {
+		par.mesh.position.z += params.platformWidth_3 - params.M;
+	}
 
 
 	//сохраняем данные для спецификации
@@ -1014,21 +1074,21 @@ function drawTopPltStringer(par) {
 		}
 		
 
-	var stringerCoverPar = {
-		points: par.pointsShape,
-		dxfBasePoint: par.dxfBasePoint,
-		radIn: 10, //Радиус скругления внутренних углов
-		radOut: 5, //радиус скругления внешних углов
-		botPoint: copyPoint(p1),
-		topPoint: copyPoint(p3),
-		stringerCoverThickness: 2,
-		railingHoles: par.elmIns[par.key].racks,
-		//markPoints: true,
-	}
-	var stringerCover = drawStringerCover(stringerCoverPar).mesh;
-	stringerCover.position.z = params.stringerThickness;
+	//var stringerCoverPar = {
+	//	points: par.pointsShape,
+	//	dxfBasePoint: par.dxfBasePoint,
+	//	radIn: 10, //Радиус скругления внутренних углов
+	//	radOut: 5, //радиус скругления внешних углов
+	//	botPoint: copyPoint(p1),
+	//	topPoint: copyPoint(p3),
+	//	stringerCoverThickness: 2,
+	//	railingHoles: par.elmIns[par.key].racks,
+	//	//markPoints: true,
+	//}
+	//var stringerCover = drawStringerCover(stringerCoverPar).mesh;
+	//stringerCover.position.z = params.stringerThickness;
 
-	par.mesh.add(stringerCover);
+	//par.mesh.add(stringerCover);
 	
 	return par;
 } //end of drawTopPltStringer
@@ -1188,6 +1248,7 @@ function drawBigPltCarcas(par){
 	stringerParams.lAng = true;
 	stringerParams.rAng = true;
 	stringerParams.hasFrames = true;
+	if (!hasTreadFrames()) stringerParams.hasFrames = false;
 	stringerParams.largePlt = true;
 	var sideStringerLength = params.platformLength_3 + 3 - params.stringerThickness;//Считаем длинну боковой части
 	if (turnFactor == -1 && !(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой')) {
@@ -1215,7 +1276,7 @@ function drawBigPltCarcas(par){
 		if (turnFactor == -1) {
 			frames.position.z += params.stringerThickness;
 		}
-		if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой')) {//Считаем положения 
+		if (~params.stairModel.indexOf("Г-образная")) {//Считаем положения 
 			frames.position.z = 2 + params.stringerThickness;
 			if (turnFactor == -1) {
 				frames.position.z = params.platformLength_3 - params.M;// - 2;
@@ -1228,7 +1289,10 @@ function drawBigPltCarcas(par){
                 if (params.stairType == "рифленая сталь") frames.position.z -= 15;
             }
         }
-	    
+		if (~params.stairModel.indexOf("П-образная")) {//Считаем положения 
+			frames.position.x = 5;
+			frames.position.z = (framePar.length / 2 + params.stringerThickness) * turnFactor;
+		}
         
 		par.angles.add(frames);
 	}
@@ -1238,9 +1302,9 @@ function drawBigPltCarcas(par){
 		sideAngles.position.z += params.stringerThickness;//Фикс положения
 	}
 			
-	if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой')) {//Считаем положения 
+	if (~params.stairModel.indexOf("Г-образная")) {//Считаем положения 
 		sideStringer.rotation.y = - Math.PI / 2 * turnFactor;
-		sideStringer.position.x = params.stringerThickness * (1 + turnFactor) * 0.5;
+		sideStringer.position.x = params.stringerThickness* (1 + turnFactor) * 0.5;
 		sideStringer.position.z = 2 * (1 + turnFactor) * 0.5;
 		sideStringer.position.z -= (params.platformLength_3 - params.M) * turnFactor;
 
@@ -1248,6 +1312,18 @@ function drawBigPltCarcas(par){
 		sideAngles.position.z = (params.platformLength_3 - params.M) * (1 - turnFactor) * 0.5;
 		sideAngles.position.z += (- params.stringerThickness + 5) * (1 + turnFactor) * 0.5;
 		sideAngles.position.x = params.stringerThickness;
+	}
+	if (~params.stairModel.indexOf("П-образная")) {//Считаем положения 
+		sideStringer.rotation.y = Math.PI;
+		sideStringer.position.x = -2 * (1 + turnFactor) * 0.5;
+		sideStringer.position.z = 0//-(params.platformWidth_3 - params.M*2) * (1 + turnFactor) * 0.5;
+		sideStringer.position.z += (params.stringerThickness) * (1 + turnFactor) * 0.5;
+
+		sideAngles.rotation.y = 0;
+		sideAngles.rotation.y = Math.PI * (1 -turnFactor) * 0.5;
+		sideAngles.position.z = 0//(params.platformLength_3 - params.M*2) * (1 + turnFactor) * 0.5;
+		sideAngles.position.z += (params.stringerThickness)*turnFactor// * (1 - turnFactor) * 0.5;
+		sideAngles.position.x = 0//params.platformLength_3;
 	}
 
 
@@ -1259,11 +1335,22 @@ function drawBigPltCarcas(par){
 	columnsSide.position.x = sideStringer.position.x + 5; //5 - подогнано
 	columnsSide.position.y = sideStringer.position.y;
 	columnsSide.position.z = sideStringer.position.z + params.stringerThickness * (1 - turnFactor) * 0.5;
+	var profSize = calcColumnSize();
+	if (params.stairModel == 'Прямая с промежуточной площадкой') {
+		columnsSide.position.z += -profSize.profHeight * turnFactor;
+	}
 	if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой')) {
-		var profSize = calcColumnSize();
+		
 		columnsSide.position.x += profSize.profHeight - 5 + params.stringerThickness * (1 - turnFactor) * 0.5; 
 		columnsSide.position.z += 5; 
 		if (turnFactor == -1) columnsSide.position.z -= 10 + params.stringerThickness;
+	}
+	if (~params.stairModel.indexOf("П-образная")) {//Считаем положения 
+		columnsSide.rotation.y = sideStringer.rotation.y;
+		columnsSide.position.x = sideStringer.position.x -5; //5 - подогнано
+		columnsSide.position.y = sideStringer.position.y;
+		columnsSide.position.z = sideStringer.position.z + profSize.profHeight * turnFactor;
+		columnsSide.position.z -= params.stringerThickness * (1 - turnFactor) * 0.5;
 	}
 	par.mesh.add(columnsSide);
 
@@ -1313,6 +1400,18 @@ function drawBigPltCarcas(par){
 			frontAngles.position.z *= -1;
 			frontAngles.position.z += 2;
 		}
+	}
+	if (~params.stairModel.indexOf("П-образная")) {//Считаем положения 
+		//frontStringer.rotation.y = 0;
+		frontStringer.position.x = params.M / 2 + params.stringerThickness;//params.stringerThickness * (1 + turnFactor) * 0.5;
+		frontStringer.position.x -= 2 * (1 + turnFactor) * 0.5;
+		frontStringer.position.z = -(-params.platformWidth_3 + params.M / 2 + params.M )*turnFactor//(params.platformLength_3 - params.M) * turnFactor;//2 * (1 + turnFactor) * 0.5;
+		frontStringer.position.z -= (params.platformWidth_3 - params.M * 2) * (1 + turnFactor) * 0.5;
+
+		frontAngles.rotation.y = -Math.PI/2;
+		frontAngles.position.z = (params.platformWidth_3 - params.M + (params.platformWidth_3 - params.M *2))/2 * turnFactor// (1 - turnFactor) * 0.5;
+		frontAngles.position.z -= (params.platformWidth_3 - params.M * 2) * (1 + turnFactor) * 0.5;
+		frontAngles.position.x = params.platformLength_3 / 2//params.stringerThickness;
 	}
 
 	par.carcasHoles = stringerParams.carcasHoles;
@@ -1419,7 +1518,7 @@ function drawStringerFlan(par) {
 	if(par.key == "middle"){
 		var frontHoleOffset = 30; //отступ переднего края фланца
 		if (hasTreadFrames()) frontHoleOffset = 55;
-		if (params.stairType == "рифленая сталь" || params.stairType == "лотки") frontHoleOffset = 30;
+		if (params.stairType == "рифленая сталь" || params.stairType == "лотки" || params.stairType == "пресснастил") frontHoleOffset = 30;
 		if(params.stringerType == "прямая") frontHoleOffset = 20;
 		if(params.model == "ко") frontHoleOffset = 45;
 		}
@@ -2004,14 +2103,14 @@ function ltko_set_divide(marshId) {
 
 	if(rackPos.indexOf(divide) != -1) divide ++;
 	
-	//если разделение совпадает с перемычкой, сдвигаем разделение
-	if(bridges.indexOf(divide) != -1 && hasTreadFrames()) divide ++;
+	//если разделение совпадает с перемычкой, сдвигаем перемычку
+	if(bridges.indexOf(divide) != -1 && !hasTreadFrames()) bridges[bridges.indexOf(divide)] ++;
 
 	var result = {
 		divide: divide,
 		bridges: bridges,
 		}
-		
+	console.log(result)
 	return result;
 	
 } //end of ltko_set_divide

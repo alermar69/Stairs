@@ -64,9 +64,9 @@ function drawColumn(par){
 		var flan = drawMonoFlan(flanPar).mesh;
 		flan.position.y = -dy - 3; // 3 - зазор от нижнего края фланца до опоры
 
-		var text = "Фланец колонны";
+		var text = "Фланец колонны нижний";
 		var textHeight = 30;
-		var textBasePoint = newPoint_xy(par.dxfBasePoint, -50, -100);
+		var textBasePoint = newPoint_xy(flanPar.dxfBasePoint, -50, -50);
 		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
 
 		par.dxfBasePoint.x += par.profSize + 50;
@@ -474,9 +474,9 @@ function drawColumn(par){
 
 		var flan = drawMonoFlan(flanPar).mesh;
 		flan.position.y -= deltaHeightFlan;//par.length - deltaHeightFlan - 0.01;
-		var text = "Фланец колонны";
+		var text = "Фланец колонны верхний";
 		var textHeight = 30;
-		var textBasePoint = newPoint_xy(par.dxfBasePoint, -50, -100);
+		var textBasePoint = newPoint_xy(flanPar.dxfBasePoint, -50, -50);
 		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
 
 
@@ -1138,11 +1138,29 @@ function drawHorPlates(par) {
 				radOut: par.cornerRad, //радиус скругления внешних углов
 
 			}
-			if (par.type == "carcasPlate" && par.drawing) {
-				shapePar.drawing = par.drawing;
-				var shiftXY = par.height / 2 - par.width / 2;//корректировка положения после поворота
-				shapePar.drawing.baseLine = {p1: p1, p2: p2};
-				shapePar.drawing.basePoint = { x: shiftXY, y: shiftXY };
+			if (par.type == "carcasPlate") {
+				if (par.pointCurrentSvg) {
+					var height = par.step - par.frontOffset - gap;
+					var shiftXY = height / 2 - par.width / 2; //корректировка положения после поворота
+					shapePar.drawing = {
+						name: "Верхняя пластина каркаса под ступень",
+						group: "carcasPlates",
+						baseLine: {
+							p1: p1,
+							p2: p2
+						},
+						marshId: par.marshId,
+						basePoint: newPoint_xy(par.pointCurrentSvg,
+							-par.pointStartSvg.x + shiftXY - 100,
+							-par.pointStartSvg.y + shiftXY + par.width + 50),
+					}
+				}
+				if (par.drawing) {
+					var shiftXY = par.height / 2 - par.width / 2; //корректировка положения после поворота
+					shapePar.drawing = par.drawing;
+					shapePar.drawing.baseLine = { p1: p1, p2: p2 };
+					shapePar.drawing.basePoint = { x: shiftXY, y: shiftXY };
+				}
 			}
 			
 		    if (par.type == "treadPlate") {
@@ -3079,7 +3097,8 @@ function drawMonoFlan(par) {
 	        }
 	    }
 	    flanPar.noBolts = true; //болты не добавляются
-		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
+		//flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
+		flanPar.dxfBasePoint.y -= flanPar.width + 100;
 
 		//добавляем  отверстия по краям
 		flanPar.roundHoleCenters = [];
@@ -3118,7 +3137,8 @@ function drawMonoFlan(par) {
 	    }
 		
 
-		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
+		//flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
+		flanPar.dxfBasePoint.y -= flanPar.width + 100;
 
 		if (params.model == "сварной") {
 			//добавляем  отверстия по краям

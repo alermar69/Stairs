@@ -204,6 +204,7 @@ function drawBotStepLt_pltG(par) {
 		var p1 = newPoint_xy(p0, botStringerWidth, -par.stringerWidthPlatform + par.stringerLedge);
 	var p2 = newPoint_xy(p1, -botStringerWidth + 40, 0);
 	var p3 = newPoint_xy(p0, 40.0, par.stringerLedge);
+	var pt3 = newPoint_xy(p3, 0, par.stringerLedge);
 	var p4 = newPoint_xy(p0, 0.0, par.h + par.stringerLedge);  // верхний левый угол
 	var p34 = itercection(p3, polar(p3, Math.PI * 2 / 3, 100), p4, newPoint_xy(p4, 0, -100));
 	var p5 = newPoint_xy(p4, par.b, 0.0);
@@ -244,7 +245,7 @@ function drawBotStepLt_pltG(par) {
 	par.pointsShape.push(p1);
 	p2.filletRad = 0; //нижний угол тетивы не скругляется
 	par.pointsShape.push(p2);
-	par.pointsShape.push(p3);
+	par.pointsShape.push(pt3);
 	par.pointsShape.push(p34);
 	par.pointsShape.push(p4);
 
@@ -1686,24 +1687,16 @@ function drawMiddleStepsLt(par) {
 
 				if (params.railingModel != "Самонесущее стекло" && params.railingModel != "Трап") {
 					center1 = newPoint_xy(p1, par.b * 0.5, rackTopHoleY);
-					/*
-					//смещаем стойку если она пересекается с отверстием уголка
-					if (params.rackBottom !== "сверху с крышкой") {
-						if (Math.abs(center1.x - angleHoleCoords.x) < 30) {
-							var mooveX = 30 + Math.abs(center1.x - angleHoleCoords.x);
-							center1 = newPoint_x1(center1, - mooveX, par.marshAng);
-						}
+					if(params.rackBottom == "боковое"){
+						//смещаем стойку ближе к началу ступени
+						var mooveX = center1.x - p1.x - 40; //40 - отступ отверстия от края ступени					
+						//для 5 ступеней ставим стойку посередине между болтами уголка/рамки ступени
+						if(par.stairAmt == 5 && typeof angleHoleX1 != 'undefined'){
+							mooveX = center1.x - (angleHoleX2 + angleHoleX1) / 2
+							if(hasTreadFrames()) mooveX += par.b; //непонятный костыль
+						}					
+						center1 = newPoint_x1(center1, - mooveX, par.marshAng);
 					}
-					*/
-					//смещаем стойку ближе к началу ступени
-					var mooveX = center1.x - p1.x - 40; //40 - отступ отверстия от края ступени					
-					//для 5 ступеней ставим стойку посередине между болтами уголка/рамки ступени
-					if(par.stairAmt == 5 && typeof angleHoleX1 != 'undefined'){
-						mooveX = center1.x - (angleHoleX2 + angleHoleX1) / 2
-						if(hasTreadFrames()) mooveX += par.b; //непонятный костыль
-					}					
-					center1 = newPoint_x1(center1, - mooveX, par.marshAng);
-
 					par.railingHoles.push(center1);
 				}
 
@@ -2192,8 +2185,10 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 				center1.isPltPFrame = center2.isPltPFrame = true;
 				center1.noZenk = center2.noZenk = true;
             }
-		    if (params.calcType == 'vhod' && params.platformTop == 'увеличенная') {
+			if (params.calcType == 'vhod' && params.platformTop == 'увеличенная' && par.stringerLast) {
+				//center1.isPltPFrame = center2.isPltPFrame = true;
 				center1.noBoltsIn = center2.noBoltsIn = true;
+				//if (turnFactor == 1) center1.noBoltsOut = center2.noBoltsOut = true;
 		    }
 		}
 	}
@@ -2202,18 +2197,23 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 		par.carcasAnglePosY -= 15;
 	}
 	if (par.key == "in" && !par.stringerLast && hasTreadFrames() && params.stairModel !== "Прямая с промежуточной площадкой") {
-		center1 = newPoint_xy(p2, topMarshAnlePosX, par.carcasAnglePosY);
-		if (!isHolesOverlap) center1 = newPoint_xy(p2, -par.turnParams.topMarshOffsetZ + params.stringerThickness + 30, par.carcasAnglePosY);
-		//if (!isHolesOverlap) center1 = newPoint_xy(p2, params.marshDist + 38, 85.0 - par.stringerWidthPlatform, par.carcasAnglePosY);
-		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
-		center1.hasAngle = center2.hasAngle = false;
-		if (hasTreadFrames()) center1.backZenk = center2.backZenk = true;
-		if (!hasTreadFrames()) center1.noZenk = center2.noZenk = true;
-		par.pointsHole.push(center2);
-		par.pointsHole.push(center1);
+			center1 = newPoint_xy(p2, topMarshAnlePosX, par.carcasAnglePosY);
+			if (!isHolesOverlap)
+				center1 = newPoint_xy(p2,
+					-par.turnParams.topMarshOffsetZ + params.stringerThickness + 30,
+					par.carcasAnglePosY);
+			//if (!isHolesOverlap) center1 = newPoint_xy(p2, params.marshDist + 38, 85.0 - par.stringerWidthPlatform, par.carcasAnglePosY);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = false;
+			if (hasTreadFrames()) center1.backZenk = center2.backZenk = true;
+			if (!hasTreadFrames()) center1.noZenk = center2.noZenk = true;
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
 
 		if (params.M > 1100 && params.calcType == "vhod") {
-			center1 = newPoint_xy(p2, -turnParams.topMarshOffsetZ + (params.M + params.stringerThickness) / 2 + 30, par.carcasAnglePosY);
+			center1 = newPoint_xy(p2,
+				-turnParams.topMarshOffsetZ + (params.M + params.stringerThickness) / 2 + 30,
+				par.carcasAnglePosY);
 			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 			center1.hasAngle = center2.hasAngle = false;
 			if (hasTreadFrames()) center1.backZenk = center2.backZenk = true;
@@ -2710,17 +2710,20 @@ function drawTopStepLt_pltPIn(par) {
 		par.pointsHoleTop.push(center2);
 
 		// отверстия под перемычку
-		center1 = newPoint_xy(pt, -(params.platformLength_1 / 2 - 25), par.stepHoleY + 5 + params.treadThickness);
-		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
-		center1.hasAngle = center2.hasAngle = false;
-		par.pointsHoleTop.push(center1);
-		par.pointsHoleTop.push(center2);
+		if (par.topEndLength > 600) {
+			//center1 = newPoint_xy(pt, -(params.platformLength_1 / 2 - 25), par.stepHoleY + 5 + params.treadThickness);
+			center1 = newPoint_xy(ph, ((par.topEndLength * 0.5) + 29), par.stepHoleY + 5 + params.treadThickness);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = false;
+			par.pointsHoleTop.push(center1);
+			par.pointsHoleTop.push(center2);
+		}
 
 		// отверстия под 2 уголок площадки (ближе к углу)
 		var stepHoleXside2 = (par.topEndLength / 2 - 64) / 2 + par.topEndLength / 2 - holeDist3 / 2;
 		if (stepHoleXside2 > 0.0) {
-			//center1 = newPoint_xy(ph, stepHoleXside2, par.stepHoleY + 45);
-            var center1 = newPoint_xy(pt, -120, par.stepHoleY + 5 + params.treadThickness);
+			center1 = newPoint_xy(ph, stepHoleXside2, par.stepHoleY + 5 + params.treadThickness);
+            //var center1 = newPoint_xy(pt, -120, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, -holeDist3, 0.0);
 			par.pointsHoleTop.push(center2);
 			par.pointsHoleTop.push(center1);
@@ -2760,7 +2763,7 @@ function drawTopStepLt_pltPIn(par) {
 			begX += frameWidth + 5.0;
 		    par.pointsHole.push(center1);
             par.pointsHole.push(center2);
-		    center1.noZenk = center2.noZenk = true;
+			center1.noZenk = center2.noZenk = true;
 		}
 	}
 
@@ -2783,7 +2786,7 @@ function drawTopStepLt_pltPIn(par) {
 		par.pointsHole.push(center1);
 	}
 
-	if (params.calcType == 'vhod' && params.platformTop == 'увеличенная') {
+	if (params.platformTop == 'увеличенная') {
 		center1 = newPoint_xy(ph, 32.0, holePos);
 		if (params.stairType == "нет") center1.y += par.carcasAnglePosY;
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);

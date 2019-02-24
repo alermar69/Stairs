@@ -650,6 +650,7 @@ function drawStringer(par){
 			//markPoints: true,
 		}
 		if (par.keyPoints.botPoint1) stringerCoverPar.botPoint = copyPoint(par.keyPoints.botPoint1);
+		if (par.keyPoints.botLines) stringerCoverPar.botLines = par.keyPoints.botLines;
 
 		//объединяем массивы точек разделенных тетив, что бы была одна накладка
 		if (par.pointsShapeBot.length > 0) {
@@ -737,41 +738,6 @@ function drawStringer(par){
 
 } //end of drawStringer
 
-function angleXFull(p1, p2) {
-	/*возвращает полный угол (от 0 до 360) между осью x и отрезком, соединяющим точки*/
-	var angle;
-
-	if ((p2.x == p1.x) && (p2.y > p1.y)) angle = Math.PI / 2;
-	if ((p2.x == p1.x) && (p2.y < p1.y)) angle = Math.PI / 2 + Math.PI;
-	if ((p2.x > p1.x) && (p2.y >= p1.y)) angle = Math.atan((p2.y - p1.y) / (p2.x - p1.x));
-	if ((p2.x < p1.x) && (p2.y >= p1.y)) angle = -Math.atan((p2.y - p1.y) / (p1.x - p2.x)) + Math.PI;
-	if ((p2.x < p1.x) && (p2.y < p1.y)) angle = Math.atan((p1.y - p2.y) / (p1.x - p2.x)) + Math.PI;
-	if ((p2.x > p1.x) && (p2.y < p1.y)) angle = -Math.atan((p1.y - p2.y) / (p2.x - p1.x)) + Math.PI * 2;
-
-
-	return angle;
-}
-
-/*функция возвращает координаты концов отрезка, параллельного отрезку, 
-	соединяющему точку p1 и p2*/
-
-function parallel1(basePoint1, basePoint2, dist) {
-
-	var ang = angleXFull(basePoint1, basePoint2);
-	if (ang < Math.PI) {
-		var newPoint1 = polar(basePoint1, (ang + Math.PI / 2), dist);
-		var newPoint2 = polar(basePoint2, (ang + Math.PI / 2), dist);
-	}
-	else {
-		var newPoint1 = polar(basePoint1, (ang - Math.PI / 2), dist);
-		var newPoint2 = polar(basePoint2, (ang - Math.PI / 2), dist);
-	}
-
-	var line = {};
-	line.p1 = newPoint1;
-	line.p2 = newPoint2;
-	return line;
-}
 
 /** 
 	* Функция отрисовывает накладку на тетиву
@@ -830,6 +796,21 @@ function drawStringerCover(par) {
 				offset1 = offset;
 				offset2 = offset;
 				break;
+			}
+		}
+		if (par.botLines) {
+			for (var j = 0; j < par.botLines.length; j++) {
+				var line = par.botLines[j];
+				if ((p2.x == line.p1.x && p2.y == line.p1.y) || (p2.x == line.p2.x && p2.y == line.p2.y)) {
+					if ((p1.x == line.p1.x && p1.y == line.p1.y) || (p1.x == line.p2.x && p1.y == line.p2.y)) {
+						offset1 *= -1;
+						break;
+					}
+					if ((p3.x == line.p1.x && p3.y == line.p1.y) || (p3.x == line.p2.x && p3.y == line.p2.y)) {
+						offset2 *= -1;
+						break;
+					}
+				}
 			}
 		}
 
@@ -999,7 +980,7 @@ function calcStringerPar(par){
 
 		//верхняя площадка
 		if (marshParams.lastMarsh) {
-			par.topEndLength = params.platformLength_3 + par.stringerLedge;
+			par.topEndLength = params.platformLength_3 + par.stringerLedge - 0.01;
 			if(params.platformRearStringer == "есть") par.topEndLength -= params.stringerThickness;
 			if(params.model == "ко") par.topEndLength = par.b;
 			par.platformLength = params.platformLength_3;
@@ -1122,8 +1103,8 @@ function calcStringerPar(par){
 			if (params.stringerDivision2 == "нет") par.stringerDivisionBot = false;
 		}
 	}
-	if (params.stairModel == "П-образная трехмаршевая" && params.stairAmt2 == 0 && par.marshId == 2) 
-		par.stringerDivisionBot = false;
+	//if (params.stairModel == "П-образная трехмаршевая" && params.stairAmt2 == 0 && par.marshId == 2) 
+	//	par.stringerDivisionBot = false;
 
 
 	
@@ -1173,213 +1154,38 @@ function calcStringerPar(par){
 } //end of calcStringerPar
 
 
+function angleXFull(p1, p2) {
+	/*возвращает полный угол (от 0 до 360) между осью x и отрезком, соединяющим точки*/
+	var angle;
+
+	if ((p2.x == p1.x) && (p2.y > p1.y)) angle = Math.PI / 2;
+	if ((p2.x == p1.x) && (p2.y < p1.y)) angle = Math.PI / 2 + Math.PI;
+	if ((p2.x > p1.x) && (p2.y >= p1.y)) angle = Math.atan((p2.y - p1.y) / (p2.x - p1.x));
+	if ((p2.x < p1.x) && (p2.y >= p1.y)) angle = -Math.atan((p2.y - p1.y) / (p1.x - p2.x)) + Math.PI;
+	if ((p2.x < p1.x) && (p2.y < p1.y)) angle = Math.atan((p1.y - p2.y) / (p1.x - p2.x)) + Math.PI;
+	if ((p2.x > p1.x) && (p2.y < p1.y)) angle = -Math.atan((p1.y - p2.y) / (p2.x - p1.x)) + Math.PI * 2;
 
 
-/**функция возвращает параметры марша по номеру марша
-*/
-function getMarshParams(marshId) {
+	return angle;
+}
 
-	if (marshId < 1) marshId = 1;
-	if (marshId > 3) marshId = 3;
-	var par = {};
-	if (marshId == 1) {
-		par.a = params.a1 * 1.0;
-		par.b = params.b1;
-		par.h = params.h1;
-		par.stairAmt = params.stairAmt1;
-		par.railingSide = params.railingSide_1;
-		par.skirtingSide = params.skirting_1;
-		par.sideHandrailSide = params.handrailSide_1;
-		par.stringerCover = params.stringerCover_1;
+/*функция возвращает координаты концов отрезка, параллельного отрезку, 
+	соединяющему точку p1 и p2*/
+
+function parallel1(basePoint1, basePoint2, dist) {
+
+	var ang = angleXFull(basePoint1, basePoint2);
+	if (ang < Math.PI) {
+		var newPoint1 = polar(basePoint1, (ang + Math.PI / 2), dist);
+		var newPoint2 = polar(basePoint2, (ang + Math.PI / 2), dist);
 	}
-	if (marshId == 2) {
-		par.a = params.a2 * 1.0;
-		par.b = params.b2;
-		par.h = params.h2;
-		par.stairAmt = params.stairAmt2;
-		par.railingSide = params.railingSide_2;
-		par.skirtingSide = params.skirting_2;
-		par.sideHandrailSide = params.handrailSide_2;
-		if (params.stairModel == "П-образная с забегом") {
-			par.h = params.h3;
-			par.stairAmt = 0;
-		}
-		par.stringerCover = params.stringerCover_2;
-	}
-	if (marshId == 3) {
-		par.a = params.a3 * 1.0;
-		par.b = params.b3;
-		par.h = params.h3;
-		par.stairAmt = params.stairAmt3;
-		par.railingSide = params.railingSide_3;
-		par.skirtingSide = params.skirting_3;
-		par.sideHandrailSide = params.handrailSide_3;
-		par.stringerCover = params.stringerCover_3;
+	else {
+		var newPoint1 = polar(basePoint1, (ang - Math.PI / 2), dist);
+		var newPoint2 = polar(basePoint2, (ang - Math.PI / 2), dist);
 	}
 
-	par.nose = par.a - par.b;
-
-	//является ли текущий марш последним
-	par.lastMarsh = false;
-	if (marshId == 3) par.lastMarsh = true;
-	if (params.stairModel == "Прямая" && marshId == 1) par.lastMarsh = true;
-
-	//подъем ступени на забеге
-	par.h_botWnd = params.h3;
-	par.h_topWnd = params.h3;
-	if (params.stairModel == "П-образная трехмаршевая") {
-		if (marshId == 1) par.h_topWnd = params.h2;
-		if (marshId == 2) par.h_botWnd = params.h2;
-	}
-
-	if (marshId == 1) {
-		par.botTurn = "пол";
-		par.topTurn = "площадка";
-		if (params.stairModel == "Прямая" && params.platformTop == "нет") par.topTurn = "пол";
-		if (params.stairModel == "Г-образная с забегом") par.topTurn = "забег";
-		if (params.stairModel == "П-образная с забегом") par.topTurn = "забег";
-		if (params.stairModel == "П-образная трехмаршевая" && params.turnType_1 == "забег") par.topTurn = "забег";
-	}
-
-	if (marshId == 2) {
-		par.botTurn = params.turnType_1;
-		par.topTurn = params.turnType_2;
-		if (params.stairModel == "П-образная с забегом") {
-			par.botTurn = "забег";
-			par.topTurn = "забег";
-		}
-		if (params.stairModel == "П-образная с площадкой") {
-			par.botTurn = "площадка";
-			par.topTurn = "площадка";
-		}
-	}
-
-	if (marshId == 3) {
-		par.topTurn = "пол";
-		par.botTurn = "площадка";
-		if (params.stairModel == "Г-образная с забегом") par.botTurn = "забег";
-		if (params.stairModel == "П-образная с забегом") par.botTurn = "забег";
-		if (params.stairModel == "П-образная трехмаршевая" && params.turnType_2 == "забег") par.botTurn = "забег";
-		if (params.platformTop != "нет") par.topTurn = "площадка";
-	}
-
-	par.nextMarshId = 3;
-	if (params.stairModel == "П-образная трехмаршевая" && marshId == 1) par.nextMarshId = 2;
-
-	par.prevMarshId = 1;
-	if (params.stairModel == "П-образная трехмаршевая" && marshId == 3) par.prevMarshId = 2;
-
-	//угол наклона марша
-	par.ang = Math.atan(par.h / par.b);
-
-	//наличие ограждений на внешней и на внутренней стороне
-	par.hasRailing = {
-		in: false,
-		out: false,
-	}
-	if (par.railingSide == "внешнее" || par.railingSide == "две") par.hasRailing.out = true;
-	if ((par.railingSide == "внутреннее" || par.railingSide == "две") && par.stairAmt != 0) par.hasRailing.in = true;
-
-	//заднее ограждение забега или площадки П-образной
-	if (params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой") {
-		if (marshId == 2 && params.backRailing_2 == "есть") par.hasRailing.out = true;
-		if (marshId == 2) par.hasRailing.in = false;
-	}
-
-	//наличие ограждения на верхней площадке
-	par.hasTopPltRailing = {
-		in: false,
-		out: false,
-	}
-
-	if (par.lastMarsh && params.platformTop != "нет") {
-		par.hasTopPltRailing = {
-			in: getTopPltRailing().in,
-			out: getTopPltRailing().out,
-		}
-	}
-
-	//наличие пристенного поручня на внешней и внутренней стороне
-	par.hasSideHandrail = {
-		in: false,
-		out: false,
-	}
-	if (par.sideHandrailSide == "внешнее" || par.sideHandrailSide == "две") par.hasSideHandrail.out = true;
-	if ((par.sideHandrailSide == "внутреннее" || par.sideHandrailSide == "две") && par.stairAmt != 0) par.hasSideHandrail.in = true;
-
-
-	//наличие плинтуса на внешней и на внутренней стороне
-	par.hasSkirting = {
-		in: false,
-		out: false,
-	}
-	if (params.riserType == "есть") {
-		if (par.skirtingSide == "внешнее" || par.skirtingSide == "две") par.hasSkirting.out = true;
-		if (par.skirtingSide == "внутреннее" || par.skirtingSide == "две") par.hasSkirting.in = true;
-		if (marshId == 2 && params.stairModel == "П-образная с забегом") {
-			if (params.skirting_wnd == "есть") par.hasSkirting.out = true;
-		}
-	}
-
-	//наличие накладки на внешней и на внутренней стороне
-	par.hasStringerCover = {
-		in: false,
-		out: false,
-	}
-	if (par.stringerCover == "внешняя" || par.stringerCover == "две") par.hasStringerCover.out = true;
-	if ((par.stringerCover == "внутренняя" || par.stringerCover == "две")) par.hasStringerCover.in = true;
-
-
-	//какая сторона правая, какая левая
-	par.side = {
-		in: "right",
-		out: "left",
-	}
-	if (params.turnSide == "левое") {
-		par.side = {
-			in: "left",
-			out: "right",
-		}
-	}
-	if (params.stairModel == "Прямая") {
-		var temp = par.side.in;
-		par.side.in = par.side.out;
-		par.side.out = temp;
-	}
-
-	par.len = par.b * par.stairAmt;
-	par.height = par.h * par.stairAmt;
-
-	//наличие креплений к стене
-	var wallFix = {
-		in: false,
-		out: false,
-	}
-
-	//стена №1
-	if (params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
-		if (params.stairModel == "Прямая") wallFix.in = true;
-		if (params.stairModel != "Прямая" && marshId == 3) wallFix.out = true;
-	}
-
-	//стена №2
-	if (params.fixPart4 != "нет" && params.fixPart4 != "не указано") {
-		if (params.stairModel == "Прямая") wallFix.out = true;
-		if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") && marshId == 3) wallFix.in = true;
-		if ((params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная трехмаршевая") && marshId == 1) wallFix.out = true;
-	}
-
-	//стена №3
-	if (params.fixPart5 != "нет" && params.fixPart5 != "не указано") {
-		if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") && marshId == 1) wallFix.in = true;
-	}
-
-	//стена №4
-	if (params.fixPart6 != "нет" && params.fixPart6 != "не указано") {
-		if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") && marshId == 1) wallFix.out = true;
-		if ((params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная трехмаршевая") && marshId == 2) wallFix.out = true;
-	}
-	par.wallFix = wallFix;
-
-	return par;
-} //end of getMarshParam
+	var line = {};
+	line.p1 = newPoint1;
+	line.p2 = newPoint2;
+	return line;
+}

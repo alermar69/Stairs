@@ -953,6 +953,7 @@ function drawComplexStringer(par) {
 					//flanPar.pointStartSvg = copyPoint(par.stepPoints[0]);
 
 					flanPar.marshId = getMarshParams(par.marshId).prevMarshId;
+					if (params.stairModel == "П-образная с забегом" && par.marshId == 3) flanPar.marshId  = 2
 					flanPar.pointCurrentSvg = newPoint_xy(pointCurrentSvgTmp, params.stringerThickness * 2 + 100, 0);
 					flanPar.pointStartSvg = copyPoint(pointStartSvgTmp);
 
@@ -1443,6 +1444,7 @@ function drawComplexStringer(par) {
 
 			// отрисовываем оси крепления верхнего фланца опоры к профилю
 			var pc = copyPoint(currentColumn.position);
+			pc = polar(pc, currentColumn.topAngle, -8 * Math.tan(currentColumn.topAngle));
 			var lenFlan = columnParams.profSize / Math.cos(columnParams.topAngle) + 100; //длина верхнего фланца опоры
 			var pc1 = polar(pc, currentColumn.topAngle, (lenFlan / 2 - 20));
 			var pc2 = polar(pc, currentColumn.topAngle, -(lenFlan / 2 - 20));

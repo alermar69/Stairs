@@ -110,7 +110,7 @@ function drawLadderHandrail(par) {
 		type: "rect",
 		poleProfileY: 40,
 		poleProfileZ: poleProfileZ,
-		length: handrailOffset + balOnlay - flanThickness,
+		length: handrailOffset + balOnlay - flanThickness - 0.02,
 		poleAngle: marshAng + Math.PI / 2,
 		material: params.materials.metal,
 		dxfBasePoint: { x: 0, y: 0 },

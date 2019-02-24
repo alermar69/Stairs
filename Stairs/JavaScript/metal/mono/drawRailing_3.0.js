@@ -1211,7 +1211,7 @@ function drawRackMono(par){
 			rack.position.x = -rackProfile / 2;
 			}
     }
-    rack.position.z += 0.01 * sideFactor;
+	if (par.type !== 'turnRackStart') rack.position.z += 0.01 * sideFactor;
 	par.mesh.add(rack);
 	
 	//вставка и верхняя часть комбинированной стойки
@@ -1629,7 +1629,8 @@ function calculateRacks(par){
 			holderAng: marshPar.ang,
 			type: 'last'
 		};
-		if(par.botEnd == "забег"){
+		if (par.botEnd == "забег") {
+			parRacks.botFirst.len -= 20; //удлинняем стойку чтобы стык поручня не попадал на кронштейн
 			parRacks.botFirst.x = -params.M + 100;
 			parRacks.botFirst.y -= par.h;
 			//смещенная точка перелома поручня
@@ -1656,7 +1657,7 @@ function calculateRacks(par){
 			type: 'last'
 		};
 		if(par.topEnd == "забег"){
-			// parRacks.angTop = marshPar.ang;
+			// parRacks.angTop = marshPar.ang;			
 			parRacks.topLast.x = parRacks.marshLast.x + params.M - 100 - 70;
 			parRacks.topLast.y += marshPar.h_topWnd;
 			var handrailTurnPoint = polar(parRacks.marshLast, marshPar.ang, par.handrailTurnOffset)
@@ -2150,6 +2151,31 @@ function drawLastRackFlan(par){
 	mesh.rotation.x = -Math.PI / 2;
 	
 	par.mesh.add(mesh)
+
+
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //anglesHasBolts - глобальная переменная)
+
+		//верхние болты
+		var boltPar = {
+			diam: 10,
+			len: 20,
+			headType: "потай",
+		}
+
+		var bolt1 = drawBolt(boltPar).mesh;
+
+		bolt1.rotation.x = Math.PI;
+		bolt1.position.x = center5.x;
+		bolt1.position.y = -5/2;
+		par.mesh.add(bolt1);
+
+		var bolt2 = drawBolt(boltPar).mesh;
+
+		bolt2.rotation.x = Math.PI;
+		bolt2.position.x = center6.x;
+		bolt2.position.y = -5 / 2;
+		par.mesh.add(bolt2);
+	}
 	
 	//сохраняем данные для спецификации
 	var partName = "lastRackFlan";

@@ -226,6 +226,9 @@ function drawCarcas(par) {
 		if (testingMode && (params.stairModel == 'П-образная с площадкой' || params.stairModel == 'П-образная с забегом') && turnFactor == -1) {
 			stringerParams3.mesh1.position.x = stringerParams3.mesh2.position.x = stringerParams3.flans.position.x = stringerParams3.treadPlates.position.x -= 0.01;
 		}
+		if (params.stairModel == 'П-образная с площадкой') {
+			stringerParams3.mesh1.position.x = stringerParams3.mesh2.position.x = stringerParams3.flans.position.x = stringerParams3.treadPlates.position.x -= 0.01;
+		}
 
 		par.carcas.add(stringerParams3.mesh1);
 		par.carcas1.add(stringerParams3.mesh2);

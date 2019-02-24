@@ -91,12 +91,12 @@ function calcHandrailPoints(par, parRacks){
 					}
 					//продлеваем поручень до конца площадки
 					var extraLen = 80;
-					if (par.lastMarsh) extraLen = 70;
+					if (par.lastMarsh) extraLen = 90;
 					if (par.key == 'in' && hasCustomMidPlt(par)) {
 						extraLen = 0;
 					}
 					if(par.lastRackPos) extraLen = par.lastRackPos;
-					if (params.model == "ко") extraLen += params.sideOverHang;
+					if (params.model == "ко") extraLen += params.sideOverHang + params.stringerThickness;
 					//if (par.lastMarsh && !par.topConnection && params.rackBottom == "сверху с крышкой") extraLen -= 80;
 					if(par.topConnection) {
 						if (params.rackBottom == "сверху с крышкой") extraLen -= 80;

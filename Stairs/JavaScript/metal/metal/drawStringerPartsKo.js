@@ -295,20 +295,21 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 			pointsHoleBot.push(center2);
 
 			// отверстия для уголков крепления щитов площадки
+			if (params.M > 750) {
+				var po1 = copyPoint(pt4);
+				center1 = newPoint_xy(po1, -140, -20);
+				center2 = newPoint_xy(center1, -50.0, 0);
+				center1.hasAngle = center2.hasAngle = true;
+				pointsHoleBot.push(center2);
+				pointsHoleBot.push(center1);
 
-			var po1 = copyPoint(pt4);
-			center1 = newPoint_xy(po1, -140, -20);
-			center2 = newPoint_xy(center1, -50.0, 0);
-			center1.hasAngle = center2.hasAngle = true;
-			pointsHoleBot.push(center2);
-			pointsHoleBot.push(center1);	
-
-			var po3 = copyPoint(pt3);
-			center1 = newPoint_xy(po3, 140, -20);
-			center2 = newPoint_xy(center1, 50.0, 0);
-			center1.hasAngle = center2.hasAngle = true;
-			pointsHoleBot.push(center1);
-			pointsHoleBot.push(center2);
+				var po3 = copyPoint(pt3);
+				center1 = newPoint_xy(po3, 140, -20);
+				center2 = newPoint_xy(center1, 50.0, 0);
+				center1.hasAngle = center2.hasAngle = true;
+				pointsHoleBot.push(center1);
+				pointsHoleBot.push(center2);
+			}
 		}
 	}
 
@@ -662,6 +663,10 @@ function drawBotStepKo_wndIn(par){
 
 	//сохраняем точку для расчета длины
 	par.keyPoints.botPoint = copyPoint(p1);
+	if (p3.x != p2.x) {
+		if (!par.keyPoints.botLines) par.keyPoints.botLines = [];
+		par.keyPoints.botLines.push({p1: copyPoint(p2), p2:copyPoint(p3)});
+	}
 
 	/*ОТВЕРСТИЯ*/
 	
@@ -1061,16 +1066,12 @@ function drawMiddleStepsKo(par){
 				if (params.railingModel != "Самонесущее стекло"){
 					center1 = newPoint_xy(p1, par.rutelPosX, par.stepHoleY);
 					//смещаем стойку ближе к началу ступени
-					var mooveX = center1.x - p1.x - 40; //40 - отступ отверстия от края ступени					
-					/*
-					//для 5 ступеней ставим стойку посередине между болтами уголка/рамки ступени
-					if(par.stairAmt == 5 && typeof angleHoleX1 != 'undefined'){
-						mooveX = center1.x - (angleHoleX2 + angleHoleX1) / 2
-						if(hasTreadFrames()) mooveX += par.b; //непонятный костыль
-					}					
-					*/
-					center1 = newPoint_x1(center1, - mooveX, par.marshAng);
+					if(params.rackBottom == "боковое"){
+						var mooveX = center1.x - p1.x - 40; //40 - отступ отверстия от края ступени					
+						center1 = newPoint_x1(center1, - mooveX, par.marshAng);
+					}
 					par.railingHoles.push(center1);
+					
 				}
 
 				if (params.railingModel == "Самонесущее стекло"){
@@ -2329,16 +2330,29 @@ function drawStringerKo_0Bot_WndGIn(par){
 	/*ОТВЕРСТИЯ*/
 	
 
-	// отверстие под уголок крепления верхнего косоура
-	// второе отверстие совпадает с отверстием под уголок крепления к нижнему перекрытию
+	// отверстие под уголок крепления верхнего косоура	
 	var htrim = h_1 - 95.0;
 	if (params.bottomAngleType === "регулируемая опора") htrim -= 15.0;
-	var center1 = newPoint_xy(p2, -30, -htrim);
-	center1.hasAngle = false;
-	par.pointsHole.push(center1);
+	
+	if (stingerLen == 120) {
+		var dx = par.turnParams.topMarshOffsetX + par.stringerSideOffset - params.nose + params.stringerThickness + 30;
+		if (params.riserType == "есть") dx -= params.riserThickness;
+		var center1 = newPoint_xy(p1, dx, -htrim);
+		center2 = newPoint_xy(center1, 0.0, -60.0);
+		center1.hasAngle = center2.hasAngle = false;
+		par.pointsHole.push(center1);
+		par.pointsHole.push(center2);
+	}
+	else {
+		// второе отверстие совпадает с отверстием под уголок крепления к нижнему перекрытию
+		var center1 = newPoint_xy(p2, -30, -htrim);
+		center1.hasAngle = false;
+		par.pointsHole.push(center1);
+	}
+
 
 	// отверстия под нижний крепежный уголок
-	center1 = newPoint_xy(center1, 0, -60);
+	center1 = newPoint_xy(p2, -30, -htrim - 60);
 	//if (params.bottomAngleType === "регулируемая опора") center1 = newPoint_xy(botLineP1, -97.0, 50.0);
 	center2 = newPoint_xy(center1, -60.0, 0.0);
 	center1.hasAngle = center2.hasAngle = true;
