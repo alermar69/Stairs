@@ -216,7 +216,6 @@ function drawRack3d_4(par) {
 			bolts.position.x -= profSize / 2 * turnFactor;
 		}
 
-
 		par.mesh.add(bolts)
 	}
 
@@ -403,6 +402,6 @@ function drawRack3d_4(par) {
 		}
 
 	}
-
+	
 	return par;
 }//end of drawRack3d_4
