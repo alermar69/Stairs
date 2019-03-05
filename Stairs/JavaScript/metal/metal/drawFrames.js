@@ -218,6 +218,7 @@ function drawWndFrames2(par){
 
 			var mooveZ = par.wndPar.params[3].stepWidthLow - frameWidthLow1 - wndSteps.frameFrontOffset / Math.cos(wndFrame3.frameParams.edgeAngle);
 			wndFrame3.mesh.position.z -= mooveZ * turnFactor;
+			wndFrame3.mesh.position.x -= par.frameParams.flanThk.side;
 			}
 		if(params.model == "ко"){
 			//устанавливаем переднюю кромку бокового фланца вровень с внешней плоскостью косоура нижнего марша
@@ -283,7 +284,8 @@ function drawWndFrame(par){
 		}
 			
 		var pathPar = {
-			treadWidth: params.M - params.stringerThickness * 2 - thk.side * 2,
+			//treadWidth: params.M - params.stringerThickness * 2 - thk.side * 2,
+			treadWidth: params.M - params.stringerThickness * 2,
 			edgeAngle: treadParams.edgeAngle,
 			stepWidthLow: stepWidthLow,
 		}
@@ -320,11 +322,14 @@ function drawWndFrame(par){
 
 //размеры рамки с учетом фланцев
 par.frameParams = {
-	treadWidth: pathPar.treadWidth + thk.side * 2,
+	treadWidth: pathPar.treadWidth,
 	edgeAngle: pathPar.edgeAngle,
 	stepWidthLow: stepWidthLow,
 	flanThk: thk,
 	};
+	if (params.model == "ко") par.frameParams.treadWidth += thk.side * 2;
+
+
 
 	var outLine = calcWndTread1Points(pathPar); //точки наружного контура
 	var pathOut = outLine.points;
@@ -338,6 +343,16 @@ par.frameParams = {
 		outLine.sideOut.p1 = outLine.points[0];
 		outLine.sideOut.len = distance(outLine.points[0], outLine.points[1])
 	}
+
+	//if (par.frameId == 1) {
+	//	outLine.front.p1.x -= thk.side;
+	//	outLine.front.p2.x += thk.side;
+	//	outLine.front.len += thk.side * 2;
+	//}
+	//if (par.frameId == 3) {
+	//	outLine.points[i].x -= (pathPar.treadWidth - thk.front) * turnFactor;
+	//	outLine.points[i].y += thk.front;
+	//}
 
 	//смещаем точки так, чтобы базовая точка была в середине передней грани
 	for(var i=0; i<outLine.points.length; i++){
@@ -520,12 +535,25 @@ par.frameParams = {
 		type: "riser_holes",
 		frameId: par.frameId,
 		dxfBasePoint: flanDxfBasePoint,
-		}
+	}
 	if(params.stairType == "рифленая сталь" || params.stairType == "лотки") flanParams.flanHeight = 50;
 	if (par.frameId == 3 && turnFactor > 0) flanParams.line = outLine.rear;
+	//if (par.frameId == 3) flanParams.line = outLine.rear;
+
+	if (params.model == "лт" && par.frameId == 3) {
+		flanParams.line.len -= thk.side * Math.tan(treadParams.edgeAngle);
+		if (turnFactor == -1) {
+			flanParams.line.p1 = polar(flanParams.line.p1, treadParams.edgeAngle, thk.side * Math.tan(treadParams.edgeAngle));
+			flanParams.line.p2 = polar(flanParams.line.p2, treadParams.edgeAngle, thk.side * Math.tan(treadParams.edgeAngle));
+			flanParams.line.p1.y -= thk.side * Math.tan(treadParams.edgeAngle);
+			flanParams.line.p2.y -= thk.side * Math.tan(treadParams.edgeAngle);
+		}
+	}
+
 	flanParams = drawWndTreadFlan(flanParams);
 	var frontFlan = flanParams.mesh;
 	//костыль чтобы не было пересечения из-за погрешности округления
+	//if (par.frameId == 1) frontFlan.position.z -= thk.side; 
 	if (par.frameId == 3) frontFlan.position.z += 0.01 * turnFactor; 
 	par.mesh.add(frontFlan);
 
@@ -542,6 +570,15 @@ par.frameParams = {
 			}
 		if(params.stairType == "рифленая сталь" || params.stairType == "лотки") flanParams.flanHeight = 50;
 		if (par.frameId == 3 && turnFactor > 0) flanParams.line = outLine.front;
+		if (par.frameId == 1) {
+			flanParams.line.len -= thk.side * Math.tan(treadParams.edgeAngle);
+			if (turnFactor == 1) {
+				flanParams.line.p1 = polar(flanParams.line.p1, treadParams.edgeAngle, -thk.side * Math.tan(treadParams.edgeAngle));
+				flanParams.line.p2 = polar(flanParams.line.p2, treadParams.edgeAngle, -thk.side * Math.tan(treadParams.edgeAngle));
+				flanParams.line.p1.y += thk.side * Math.tan(treadParams.edgeAngle);
+				flanParams.line.p2.y += thk.side * Math.tan(treadParams.edgeAngle);
+			}
+		}
 		flanParams = drawWndTreadFlan(flanParams);
 		var rearFlan = flanParams.mesh;
 		//костыль чтобы не было пересечения из-за погрешности округления
@@ -558,7 +595,13 @@ par.frameParams = {
 		type: "1_hole",
 		frameId: par.frameId,
 		dxfBasePoint: flanDxfBasePoint,
-		}
+	}
+
+	if (params.model == "лт") {
+		flanParams.line.p1.x -= thk.side * turnFactor;
+		flanParams.line.p2.x -= thk.side * turnFactor;
+	}
+
 	flanParams = drawWndTreadFlan(flanParams);
 	var sideInFlan = flanParams.mesh;
 		
@@ -598,10 +641,24 @@ par.frameParams = {
 		type: "2_holes",
 		frameId: par.frameId,
 		dxfBasePoint: flanDxfBasePoint,
+	}
+
+	if (params.model == "лт") {
+		flanParams.line.p1.x += thk.side * turnFactor;
+		flanParams.line.p2.x += thk.side * turnFactor;
+		flanParams.line.len -= thk.side * Math.tan(treadParams.edgeAngle);
+		if (par.frameId == 1 && turnFactor == 1) {
+			flanParams.line.p1.y -= thk.side * Math.tan(treadParams.edgeAngle);
+			flanParams.line.p2.y -= thk.side * Math.tan(treadParams.edgeAngle);
 		}
+		if (par.frameId == 3 && turnFactor == -1) {
+			flanParams.line.p1.y += thk.side * Math.tan(treadParams.edgeAngle);
+			flanParams.line.p2.y += thk.side * Math.tan(treadParams.edgeAngle);
+		}
+	}
+
 	flanParams = drawWndTreadFlan(flanParams);
 	var sideOutFlan = flanParams.mesh;
-		
 	par.mesh.add(sideOutFlan);
 
 	// смещаем координаты отверстий с учётом смещения базовой точки фланца от базовой точки рамки
@@ -620,6 +677,7 @@ par.frameParams = {
 		//размер holeMooveX http://6692035.ru/drawings/wndFramesHoles/3-3.jpg 
 		holeMooveX = outLine.sideOut.p2.y - outLine.sideIn.p1.y;
 		if (turnFactor == -1) holeMooveX = outLine.sideOut.p1.y - outLine.sideIn.p2.y;
+		if (params.model == "лт" && turnFactor == 1) holeMooveX += thk.side * Math.tan(treadParams.edgeAngle);
 		
 		for (i=0; i<flanParams.roundHoleCenters.length; i++){
 			flanParams.roundHoleCenters[i].x += holeMooveX;
@@ -2221,3 +2279,4 @@ function calcFrameParams(par){
 	return par;
 	
 } //end of calcFrameParams
+

@@ -48,7 +48,7 @@ function drawColumn(par){
 		col.position.y = -dy;
 		par.mesh.add(col);
 		//размер для спецификации
-		par.poleLength = par.length + deltaHeight / 2 - deltaHeightFlan - 3;
+		par.poleLength = par.length + deltaHeight / 2 - deltaHeightFlan;
 
 		//нижний фланец
 		var flanPar = {
@@ -504,7 +504,7 @@ function drawColumn(par){
 			if (par.type == "подкос") specObj[partName].name = "Подкос"
 			if (par.type == "двойной подкос") specObj[partName].name = "Двойной подкос"
 		}
-		var name = Math.round(par.profSize) + "х" + Math.round(par.profSize) + " L=" + Math.round(par.length) + " A=" + Math.round(par.topAngle * 180 / Math.PI * 10) / 10 + "гр."
+		var name = Math.round(par.profSize) + "х" + Math.round(par.profSize) + " L=" + Math.round(par.poleLength) + " A=" + Math.round(par.topAngle * 180 / Math.PI * 10) / 10 + "гр."
 		if (par.type == "подкос") {
 			name = Math.round(maxHeight) + "х" + Math.round(length) + "х" + 8;
 		}
@@ -4200,11 +4200,15 @@ function drawTurn2TreadPlateCabriole(par) {
 	{
 		var shape = new THREE.Shape();
 
-		addLine(shape, dxfArr, pv0, pv4, dxfBasePoint);
-		addLine(shape, dxfArr, pv4, pv3, dxfBasePoint);
+		var line_pv0_pv4 = parallel(pv0, pv4, 0.01)
+		var pv0t = itercection(pv0, pv1, line_pv0_pv4.p1, line_pv0_pv4.p2);
+		var pv4t = itercection(pv4, pv3, line_pv0_pv4.p1, line_pv0_pv4.p2);
+
+		addLine(shape, dxfArr, pv0t, pv4t, dxfBasePoint);
+		addLine(shape, dxfArr, pv4t, pv3, dxfBasePoint);
 		addLine(shape, dxfArr, pv3, pv2, dxfBasePoint);
 		addLine(shape, dxfArr, pv2, pv1, dxfBasePoint);
-		addLine(shape, dxfArr, pv1, pv0, dxfBasePoint);
+		addLine(shape, dxfArr, pv1, pv0t, dxfBasePoint);
 
 		//размеры для спецификации
 		var sizeA = Math.round(distance(pv0, pv2))

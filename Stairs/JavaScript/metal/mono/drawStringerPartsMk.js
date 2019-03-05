@@ -710,6 +710,9 @@ function drawTopStepMk_pltG(par) {
 	var topLineP3 = itercectionBackLineMarsh(p1, topLineP2, 0, par);
 	if (par.stairAmt == 1 && par.botEnd == "пол")
 		topLineP3 = itercection(par.botUnitStart, polar(par.botUnitStart, par.marshAngle, 100), topLineP2, polar(topLineP2, 0, 100));
+	if (topLineP3.x > topLineP2.x) {
+		topLineP3 = itercection(par.botUnitStart, polar(par.botUnitStart, par.marshAngle, 100), topLineP2, polar(topLineP2, Math.PI / 2, 100));
+	}
 
 	par.pointsShape.push(p2);
 	if (params.model == "труба" && !par.lastMarsh)

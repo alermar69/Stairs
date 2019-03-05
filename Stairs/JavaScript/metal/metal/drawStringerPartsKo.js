@@ -628,6 +628,8 @@ function drawBotStepKo_wndIn(par){
 		var botLineP1 = newPoint_xy(p1, par.stringerWidth, 0);
 		var botLineP2 = newPoint_xy(p4, par.stringerWidth, - par.stringerWidth);
 		var botLineP3 = newPoint_xy(p5, par.stringerWidth, - par.stringerWidth);
+		if (p3.x != p2.x)
+			botLineP2 = itercection(botLineP1, polar(botLineP1, Math.PI / 2, 100), botLineP3, polar(botLineP3, 0, 100));
 		var botLineP4 = newPoint_xy(p6, par.stringerWidth, - par.stringerWidth);
 		var botLineP5 = newPoint_xy(p7, par.stringerWidth, - par.stringerWidth);
 		var botLineP6 = newPoint_xy(p8, par.stringerWidth, - par.stringerWidth);
@@ -690,6 +692,13 @@ function drawBotStepKo_wndIn(par){
 		var center2 = newPoint_xy(center1, 0, -60);
 		center1.rotated = center2.rotated = true;
 		center1.hasAngle = center2.hasAngle = true;
+		// если второе отверстие на уголке крепления к нижнему косоуру совпадает с отверстием под уголок крепления к нижнему перекрытию нижнего косоура
+		if (par.prevMarshPar.botTurn == 'пол') {
+			var turnParams = calcTurnParams(par.prevMarshPar.marshId)
+			var stingerLen = turnParams.topMarshOffsetX + par.stringerSideOffset - params.nose + params.stringerThickness + 60;
+			if (params.riserType == "есть") stingerLen -= params.riserThickness;
+			if (stingerLen >= 120) center2.noBoltsInSide1_2 = true;
+		}
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
 	}
@@ -1232,8 +1241,18 @@ function drawTopStepKo_floor(par){
 			center1.x += dyLastRack / Math.tan(par.marshAng);
 			//смещаем отверстие чуть назад, чтобы не было пересечения с отверстием рамки
 			if (params.topAnglePosition != "вертикальная рамка"){
-				if(topLineP1.x > center1.x - 70) center1 = newPoint_x1(center1, -(70 - (topLineP1.x - center1.x)), par.marshAng)
+				//if(topLineP1.x > center1.x - 70) center1 = newPoint_x1(center1, -(70 - (topLineP1.x - center1.x)), par.marshAng)
+				var dx = 0;
+				for (var i = 0; i < par.pointsHole.length; i++) {
+					if (par.pointsHole[i].x > (center1.x - 15) && par.pointsHole[i].x < (center1.x + 15)) {
+						if (par.pointsHole[i].y > (center1.y - 15) && par.pointsHole[i].y < (center1.y + 15)) {
+							if (par.pointsHole[i].x > center1.x) dx = center1.x - (par.pointsHole[i].x - 15);
+							if (par.pointsHole[i].x < center1.x) dx = center1.x - par.pointsHole[i].x + 15;
+						}
+					}
 				}
+				center1 = newPoint_x1(center1, -dx, par.marshAng)
+			}
 			//смещаем отверстие чуть назад, чтобы стойка не вылезала за край косоура
 			if (params.topAnglePosition == "вертикальная рамка"){
 				center1 = newPoint_x1(center1, -25, par.marshAng); //25 - подогнано
@@ -1600,6 +1619,53 @@ function drawTopStepKo_pltG(par){
 		ph = newPoint_xy(p1, par.b, par.h);
 
 	par.keyPoints[par.key].botLineP10 = copyPoint(ph);
+
+
+	// отверстия для подкосов верхней площадки
+	if (par.stringerLast) {
+		var pt = itercection(pt3, polar(pt3, 0, 100), p2, polar(p2, Math.PI / 2, 100));
+		if(params.M < 650) pt.x -= 30;
+		if (params.platformTopColumn === "подкосы" || params.topPltColumns === "подкосы") {
+			var hasBrace = false;
+			if (params.topPltConsolePos == "слева" && getSide()[par.key] == "right") hasBrace = true;
+			if (params.topPltConsolePos == "справа" && getSide()[par.key] == "left") hasBrace = true;
+
+			if (hasBrace) {
+				var holeDistX = 95; //расстояние между отверстиями по горизонтали
+
+				var center1 = newPoint_xy(pt, 180, 80);
+				var center2 = newPoint_xy(center1, 0, -par.holeDistU4);
+				var center3 = newPoint_xy(center1, holeDistX, 0);
+				var center4 = newPoint_xy(center2, holeDistX, 0);
+				center1.isBraceHole = center2.isBraceHole = center3.isBraceHole = center4.isBraceHole = true;
+				center1.hasAngle = center2.hasAngle = center3.hasAngle = center4.hasAngle = false;
+				par.pointsHole.push(center2);
+				par.pointsHole.push(center1);
+				par.pointsHole.push(center3);
+				par.pointsHole.push(center4);
+
+
+				//отверстия под второй подкос
+				var center1 = newPoint_xy(pt, 140 + (params.platformLength_3 - 400), 80);
+				var center2 = newPoint_xy(center1, 0, -par.holeDistU4);
+				var center3 = newPoint_xy(center1, holeDistX, 0);
+				var center4 = newPoint_xy(center2, holeDistX, 0);
+				center1.isBraceHole = center2.isBraceHole = center3.isBraceHole = center4.isBraceHole = true;
+				center1.hasAngle = center2.hasAngle = center3.hasAngle = center4.hasAngle = false;
+				par.pointsHole.push(center1);
+				par.pointsHole.push(center2);
+				par.pointsHole.push(center3);
+				par.pointsHole.push(center4);
+
+			}
+			if (params.topPltConsolePos == "сзади") {
+				var center1 = newPoint_xy(pt, 260, 50);
+				center1.isBraceHole = true;
+				par.pointsHole.push(center1);
+
+			}
+		}
+	}
 	
 }//end of drawTopStepKo_pltG
 
@@ -2346,17 +2412,23 @@ function drawStringerKo_0Bot_WndGIn(par){
 	else {
 		// второе отверстие совпадает с отверстием под уголок крепления к нижнему перекрытию
 		var center1 = newPoint_xy(p2, -30, -htrim);
-		center1.hasAngle = false;
+		center1.hasAngle = false; 
+		
 		par.pointsHole.push(center1);
 	}
 
 
 	// отверстия под нижний крепежный уголок
-	center1 = newPoint_xy(p2, -30, -htrim - 60);
+	center1 = newPoint_xy(p2, -30, -htrim - 60);	
 	//if (params.bottomAngleType === "регулируемая опора") center1 = newPoint_xy(botLineP1, -97.0, 50.0);
 	center2 = newPoint_xy(center1, -60.0, 0.0);
 	center1.hasAngle = center2.hasAngle = true;
 	center1.pos = center2.pos = "botFloor";
+	// если первое отверстие совпадает с отверстием под уголок крепления верхнего косоура
+	if (stingerLen !== 120) {
+		center1.noZenk = true;
+		center2.noBoltsInSide2_2 = true;
+	}
 	par.pointsHole.push(center2);
 	par.pointsHole.push(center1);
 

@@ -300,7 +300,7 @@ function drawPltStringer(par) {
 	if(params.model == "ко" && par.key == "rear") hasAngles = true;
 	if(params.model == "лт" && !hasTreadFrames()) hasAngles = true;
 	
-	if (hasAngles){
+	if (hasAngles && params.platformLength_1 > 650){
 		//уголок нижнего марша ближе к внешней стороне
 		var center1 = newPoint_xy(p0, angleOffset + columnProf, shiftHolePlY);
 		var center2 = newPoint_xy(center1, distanceHole, 0.0);
@@ -1290,7 +1290,7 @@ function drawBigPltCarcas(par){
             }
         }
 		if (~params.stairModel.indexOf("П-образная")) {//Считаем положения 
-			frames.position.x = 5;
+			frames.position.x = -(params.platformLength_3 - params.M) + 5;
 			frames.position.z = (framePar.length / 2 + params.stringerThickness) * turnFactor;
 		}
         
@@ -1323,7 +1323,8 @@ function drawBigPltCarcas(par){
 		sideAngles.rotation.y = Math.PI * (1 -turnFactor) * 0.5;
 		sideAngles.position.z = 0//(params.platformLength_3 - params.M*2) * (1 + turnFactor) * 0.5;
 		sideAngles.position.z += (params.stringerThickness)*turnFactor// * (1 - turnFactor) * 0.5;
-		sideAngles.position.x = 0//params.platformLength_3;
+		sideAngles.position.x = 0;
+		sideAngles.position.x = (-(params.platformLength_3 - params.M) + 3) * (1 + turnFactor) * 0.5;
 	}
 
 
@@ -1403,15 +1404,15 @@ function drawBigPltCarcas(par){
 	}
 	if (~params.stairModel.indexOf("П-образная")) {//Считаем положения 
 		//frontStringer.rotation.y = 0;
-		frontStringer.position.x = params.M / 2 + params.stringerThickness;//params.stringerThickness * (1 + turnFactor) * 0.5;
+		frontStringer.position.x = params.M / 2 + params.stringerThickness;
 		frontStringer.position.x -= 2 * (1 + turnFactor) * 0.5;
-		frontStringer.position.z = -(-params.platformWidth_3 + params.M / 2 + params.M )*turnFactor//(params.platformLength_3 - params.M) * turnFactor;//2 * (1 + turnFactor) * 0.5;
+		frontStringer.position.z = -(-params.platformWidth_3 + params.M / 2 + params.M )*turnFactor
 		frontStringer.position.z -= (params.platformWidth_3 - params.M * 2) * (1 + turnFactor) * 0.5;
 
 		frontAngles.rotation.y = -Math.PI/2;
-		frontAngles.position.z = (params.platformWidth_3 - params.M + (params.platformWidth_3 - params.M *2))/2 * turnFactor// (1 - turnFactor) * 0.5;
+		frontAngles.position.z = (params.platformWidth_3 - params.M + (params.platformWidth_3 - params.M *2))/2 * turnFactor
 		frontAngles.position.z -= (params.platformWidth_3 - params.M * 2) * (1 + turnFactor) * 0.5;
-		frontAngles.position.x = params.platformLength_3 / 2//params.stringerThickness;
+		frontAngles.position.x = params.M / 2 - 2 * (1 + turnFactor) * 0.5
 	}
 
 	par.carcasHoles = stringerParams.carcasHoles;
@@ -2247,6 +2248,32 @@ function drawTopFixFlan(length, dxfBasePoint) {
 	//mesh.position.y = -length;
 
 	flanParams.mesh.add(mesh);
+
+	//болты
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
+		var boltPar = {
+			diam: boltDiam,
+			len: boltLen,
+		}
+		
+		var x = flanParams.width / 2;
+		var z = -boltPar.len / 2;
+		var y = flanParams.hole1Y;
+
+		var bolt = drawBolt(boltPar).mesh;
+		bolt.rotation.x = -Math.PI / 2;
+		bolt.position.x = x;
+		bolt.position.z = z;
+		bolt.position.y = y;
+		flanParams.mesh.add(bolt);
+
+		var bolt2 = drawBolt(boltPar).mesh;
+		bolt2.rotation.x = -Math.PI / 2;
+		bolt2.position.x = x;
+		bolt2.position.y = flanParams.hole4Y;
+		bolt2.position.z = z;
+		flanParams.mesh.add(bolt2);
+	}
 	
 	//сохраняем данные для спецификации
 	var partName = "topFlan";

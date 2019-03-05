@@ -547,25 +547,10 @@ calcWorks(partsAmt, "staircase");
 calcWorks(partsAmt_bal, "banister");
 printWorks2();
 
-//ступени, детали каркаса
-//addTimberWorksCarcas("tread") //функция в works.js
-//addTimberWorksCarcas("wndTread")
-//addTimberWorksCarcas("riser")
-//addTimberWorksCarcas("riser_arc")
-//addTimberWorksCarcas("startTread")
-
-//плинтус
-//addTimberWorksCarcas("skirting_vert")
-//addTimberWorksCarcas("skirting_hor")
-	/*	
-//детали ограждений
-addTimberWorksRailing("handrails") //функция в works.js
-if(params.banisterMaterial == "40х40 нерж+дуб") addTimberWorksRailing("racks")
-
-//металлический цех
-addMetalWorks("stringer")
-
-*/
+//материалы
+createMaterialsList(); // обнуляем список материалов
+calcMaterialsAmt();
+printMaterialsNeed();
 	
 
 		

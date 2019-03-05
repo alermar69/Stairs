@@ -855,6 +855,11 @@ function calcHandrailPoints(par, parRacks){
 				fixType: params.handrailFixType,
 				sectText: par.text,
 				}
+
+				if (meterHandrailPar.handrailModel == 'round' && params.startVertHandrail !== "есть") {
+					var handrailAngle = Math.atan((handrailPoints[1].y - handrailPoints[0].y) / (handrailPoints[1].x - handrailPoints[0].x));
+					handrailParams.extraLengthStart += meterHandrailPar.profY / 2 * Math.tan(handrailAngle);
+				}
 	
 			//удлиннение поручня последнего марша
 			if(params.stairModel == "прямая" || par.marshId == 3) {

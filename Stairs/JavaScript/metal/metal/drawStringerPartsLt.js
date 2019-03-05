@@ -85,9 +85,15 @@ function drawBotStepLt_floor(par) {
 	
 	/*ОТВЕРСТИЯ*/
 
+	var parFrames = { marshId: par.marshId };
+	calcFrameParams(parFrames); // рассчитываем параметры рамки
+
 	// отверстия под нижний крепежный уголок
 	center1 = newPoint_xy(botLineP1, -100, 35);
 	if (params.stringerType == "ломаная") center1 = newPoint_xy(p0, 100, 35);
+	if (par.h < 180 && params.stairFrame == "есть") {
+		center1 = newPoint_xy(p0, parFrames.width / 2 + params.nose - 30, 35)
+	}
 	if (params.bottomAngleType === "регулируемая опора") {
 		center1 = newPoint_xy(botLineP1, -100, 50);
 		//если есть рамки под ступенями, тогда чтобы не было пересечения уголка с рамкой, уголок располагаем по середине рамки
@@ -97,9 +103,6 @@ function drawBotStepLt_floor(par) {
 	if(isShortBotLine) center1 = newPoint_xy(center1, 20, 0);
 	
 	//не допускаем пересечения уголка и рамки/уголка ступени
-	var parFrames = { marshId: par.marshId };
-	calcFrameParams(parFrames); // рассчитываем параметры рамки
-	
 	var angleCorner = newPoint_xy(p2, 0, -params.treadThickness - par.stringerLedge)
 	var nose1 = params.a1 - params.b1; //вместо params.nose чтобы учесть дпк и пресснастил, где params.nose отсутствует
 
@@ -1886,7 +1889,7 @@ function drawTopStepLt_floor(par) {
 					center1 = newPoint_x1(center1, mooveX, par.marshAng);
                 }
 			    if (params.topAnglePosition == "под ступенью") {
-			        var mooveX = topLineP1.x - center1.x - 20;
+			        var mooveX = topLineP1.x - center1.x - 40;
 			        center1 = newPoint_x1(center1, mooveX, par.marshAng);
 			    }
 			}
@@ -2720,13 +2723,13 @@ function drawTopStepLt_pltPIn(par) {
 		}
 
 		// отверстия под 2 уголок площадки (ближе к углу)
-		var stepHoleXside2 = (par.topEndLength / 2 - 64) / 2 + par.topEndLength / 2 - holeDist3 / 2;
+		var stepHoleXside2 = par.topEndLength / 4 * 3 - holeDist3 / 2;
 		if (stepHoleXside2 > 0.0) {
 			center1 = newPoint_xy(ph, stepHoleXside2, par.stepHoleY + 5 + params.treadThickness);
             //var center1 = newPoint_xy(pt, -120, par.stepHoleY + 5 + params.treadThickness);
-			center2 = newPoint_xy(center1, -holeDist3, 0.0);
-			par.pointsHoleTop.push(center2);
+			center2 = newPoint_xy(center1, holeDist3, 0.0);
 			par.pointsHoleTop.push(center1);
+			par.pointsHoleTop.push(center2);
 		}
 
 		// отверстия под уголки крепления к поперечному косоуру площадки

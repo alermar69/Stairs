@@ -802,7 +802,10 @@ function drawComplexStringer(par) {
                     platePar.pStart = newPoint_xy(par.pointsShape[par.pointsShape.length - 1], 0.01, 0);
                     if (par.topEnd == "забег" && ang1 < ang2) {
                         platePar.pStart.x += params.metalThickness * Math.sin(ang2);
-                    }
+					}
+					if (par.topEnd == "площадка" && ang2 == Math.PI / 2) {
+						platePar.pStart.y += params.metalThickness * Math.cos(ang1);
+					}
                     platePar.pEnd = par.pointsShape[par.pointsShape.length - 2];
                     platePar.pointCurrentSvg = copyPoint(platePar.pStart);
                     if (par.topEnd == "площадка")
@@ -1133,7 +1136,7 @@ function drawComplexStringer(par) {
 								height: 215 - 20 - 5 - params.metalThickness * 2.5, //пластина рисуется на 20мм длиннее
 								isBack: true,
 						}
-						platePar.pointCurrentSvg = copyPoint(par.pointsShape[pointId - 1]);
+						platePar.pointCurrentSvg = newPoint_xy(par.pointsShape[pointId - 1], params.stringerThickness, 0);
 						platePar.pointStartSvg = copyPoint(par.pointsShape[0]);
 						
 							var plate = drawFrontPlate(platePar).mesh; //функция в drawCarcasParts.js
@@ -1364,7 +1367,7 @@ function drawComplexStringer(par) {
                     name: "Фланец крепления к перекрытию",
 				};
 
-				var dy = params.topHolePos + 20 * 2 + 20;
+				var dy = params.topHolePos + params.treadThickness + 20;
 				if (params.topAnglePosition === "под ступенью")
 					dy = 20 + 20 - params.treadThickness;
 

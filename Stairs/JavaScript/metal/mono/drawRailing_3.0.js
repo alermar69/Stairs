@@ -56,6 +56,10 @@ function calculateGlassPoints(par){
 
 	marshFirst = newPoint_xy(marshFirst, marshFirstDelta, marshPar.ang * marshFirstDelta);
 
+	if (marshPar.botTurn == 'пол') {
+		marshFirst.y += 20;
+	}
+
 	if(par.key == 'out' && marshPar.botTurn !== 'пол'){
 		marshFirst.x = -marshPar.b * 0.5;
 		marshFirst.y = marshPar.h * 0.5;
@@ -88,20 +92,10 @@ function calculateGlassPoints(par){
 
 	handrailPoints.push(handrailPoint);
 
-	if (marshPar.botTurn == 'пол') {
-		marshFirst.y += 20;		
-	}
+	
 	glassPoints.push(marshFirst)
 
-	//центральные точки марша
-	for (var i = 0; i < rackPos.length; i++){
-		var prevPosition = parseInt(rackPos[i] - 1);
-		let xDelta = marshPar.a / 2;
-		glassPoints.push({
-			x: prevPosition * marshPar.b + xDelta,
-			y: marshPar.h * rackPos[i] + (xDelta) * Math.tan(marshPar.ang),
-		});
-	}
+	
 	//последняя точка марша
 
 	var lastMarshPoint = {
@@ -142,6 +136,17 @@ function calculateGlassPoints(par){
 				handrailPoint = polar(handrailPoint, ang, 40);	
 			}
 		}
+	}
+
+	//центральные точки марша
+	for (var i = 0; i < rackPos.length; i++) {
+		var prevPosition = parseInt(rackPos[i] - 1);
+		let xDelta = marshPar.a / 2;
+		var pt = {
+			x: prevPosition * marshPar.b + xDelta,
+			y: marshPar.h * rackPos[i] + (xDelta) * Math.tan(marshPar.ang),
+		};
+		glassPoints.push(itercection(marshFirst, lastMarshPoint, pt, polar(pt, Math.PI / 2, 100)));
 	}
 
 
