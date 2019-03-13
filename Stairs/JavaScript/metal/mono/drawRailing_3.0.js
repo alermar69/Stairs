@@ -114,13 +114,21 @@ function calculateGlassPoints(par){
 		var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
 		if (nextMarshPar.hasRailing.in) deltaX = 60 - marshTurnParams.pltExtraLen;
 		lastMarshPoint = newPoint_xy(lastMarshPoint, deltaX, Math.tan(marshPar.ang) * deltaX);
+
+		var handrailPoint = copyPoint(lastMarshPoint);
+
+		//Стекло с нижнего марша не вставляется в вертикальный поручень, поэтому лучше там сделать технологический зазор в 5мм.
+		if (nextMarshPar.hasRailing.in) lastMarshPoint = newPoint_x1(lastMarshPoint, -5, marshPar.ang);
 	}
 
 	if((par.key == "out" || (par.key == 'in' && marshPar.lastMarsh)) && marshPar.topTurn !== 'пол'){
 		lastMarshPoint.x += marshPar.b * 0.5;
 		lastMarshPoint.y += marshPar.h * 0.5;
-	}
-	var handrailPoint = copyPoint(lastMarshPoint);
+
+		var handrailPoint = copyPoint(lastMarshPoint);
+	}	
+
+
 	if (marshPar.stairAmt > 0) {
 		var ang = calcAngleX1(handrailPoints[handrailPoints.length - 1], handrailPoint);
 		if (par.key == 'out' && marshPar.topTurn !== 'пол'){
@@ -939,6 +947,11 @@ function drawGlassAngle2(par){
 	glassAngleObject.position.x = -bw1 / 2;
 	glassAngleObject.position.y = -bh1 + smallCenterTopOffset1;
 	glassAngleObject.position.z = 20;
+	if (type == "corner" && turnFactor == -1) {
+		glassAngleObject.rotation.y += Math.PI / 2;
+		glassAngleObject.position.x -= thk;
+		glassAngleObject.position.z += bw1 + thk;
+	}
 	positionFixMesh.add(glassAngleObject);
 	par.mesh = positionFixMesh;
 	return par;
@@ -2157,31 +2170,33 @@ function drawLastRackFlan(par){
 	
 	par.mesh.add(mesh)
 
+	if (!testingMode) {
+		if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts
+		) { //anglesHasBolts - глобальная переменная)
 
-	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //anglesHasBolts - глобальная переменная)
+			//верхние болты
+			var boltPar = {
+				diam: 10,
+				len: 20,
+				headType: "потай",
+			}
 
-		//верхние болты
-		var boltPar = {
-			diam: 10,
-			len: 20,
-			headType: "потай",
+			var bolt1 = drawBolt(boltPar).mesh;
+
+			bolt1.rotation.x = Math.PI;
+			bolt1.position.x = center5.x;
+			bolt1.position.y = -5 / 2;
+			par.mesh.add(bolt1);
+
+			var bolt2 = drawBolt(boltPar).mesh;
+
+			bolt2.rotation.x = Math.PI;
+			bolt2.position.x = center6.x;
+			bolt2.position.y = -5 / 2;
+			par.mesh.add(bolt2);
 		}
-
-		var bolt1 = drawBolt(boltPar).mesh;
-
-		bolt1.rotation.x = Math.PI;
-		bolt1.position.x = center5.x;
-		bolt1.position.y = -5/2;
-		par.mesh.add(bolt1);
-
-		var bolt2 = drawBolt(boltPar).mesh;
-
-		bolt2.rotation.x = Math.PI;
-		bolt2.position.x = center6.x;
-		bolt2.position.y = -5 / 2;
-		par.mesh.add(bolt2);
 	}
-	
+
 	//сохраняем данные для спецификации
 	var partName = "lastRackFlan";
 	if(typeof specObj !='undefined'){
@@ -2221,6 +2236,7 @@ function addRackAngles(par){
 	//к-т, учитывающий сторону ограждения
 	var sideFactor = 1;
 	if (par.railingSide === "left") sideFactor = -1;
+
 	
 	for(var i=0; i < par.holeCenters.length; i++){
 		var angleParams = drawBanisterAngle();

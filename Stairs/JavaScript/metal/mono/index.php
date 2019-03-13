@@ -61,6 +61,7 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 
 <script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 <script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
+<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
 
 <!--визуализация-->
 <script type="text/javascript" src="drawStaircase.js"></script>
@@ -75,7 +76,7 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <script type="text/javascript" src="drawSvg.js"></script>
 
 <!--файлы с едиными функциями (сейчас в работе)-->
-<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
+
 <script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
 <script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
 <script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>

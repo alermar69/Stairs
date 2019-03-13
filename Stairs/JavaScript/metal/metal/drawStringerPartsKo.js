@@ -445,7 +445,10 @@ function drawBotStepKo_pltP(par){
     //для П-образная с площадкой делаем рамки на площадке одинаковой ширины (ширина как на первом марше)
     if (params.stairModel == "П-образная с площадкой") center1.x += params.b3 - params.b1;
     //на лестнице с подступенками делаем рамки короче, чтобы последняя не отличалась
-    if (params.riserType == "есть") center2.x -= params.riserThickness;
+	if (params.riserType == "есть") {
+		center1.x -= params.riserThickness;
+		center2.x -= params.riserThickness*2;
+	}
 	par.pointsHole.push(center1);
     par.pointsHole.push(center2);
     var frameHoleDist = center2.x - center1.x //сохраняем расстояние чтобы все рамки сделать одинаковыми
@@ -1578,7 +1581,8 @@ function drawTopStepKo_pltG(par){
 	}
 
 	// отверстия под рамки площадки
-	var pltPar = {len: platformLen + params.nose,}
+	//var pltPar = {len: platformLen + params.nose,}
+	var pltPar = { len: pltStringerLen + par.topEndLength,}
 	calcPltPartsParams(pltPar);
 	var xPo = pltPar.partLen - params.sideOverHang - par.topEndLength - 50;
 	var po1 = newPoint_xy(pt1, xPo, -20);

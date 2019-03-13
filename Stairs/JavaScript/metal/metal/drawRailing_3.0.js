@@ -1208,6 +1208,13 @@ function calcHandrailPoints(par, parRacks){
 
 		
 		//рассчитываем длины и углы верхнего и нижнего участков
+		if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && par.stairAmt == 0 && par.key == "out") {
+			parRacks.angBot = calcAngleX1(parRacks.botFirst, parRacks.botLast);
+			parRacks.botLen = distance(parRacks.botFirst, parRacks.botLast);
+
+			parRacks.angTop = calcAngleX1(parRacks.topFirst, parRacks.topLast);
+			parRacks.topLen = distance(parRacks.topFirst, parRacks.topLast);
+		} 
 	
 		if ((par.botEnd !== "нет" && par.stairAmt > 0) || (par.botEnd == "площадка" && par.topEnd == "площадка")) {
 					parRacks.angBot = calcAngleX1(parRacks.botFirst, parRacks.botLast);
@@ -1272,8 +1279,11 @@ function calcHandrailPoints(par, parRacks){
 		parRacks.angMarsh = Math.atan(par.h / par.b);
 		//if (par.topEnd == "площадка" && par.key == "out")
 		//	parRacks.angMarsh = calcAngleX1(parRacks.marshFirst, parRacks.marshLast);
-		if (par.stairAmt < 2 && par.key == "out")
+		if (par.stairAmt < 2 && par.key == "out") {
 			parRacks.angMarsh = calcAngleX1(parRacks.marshFirst, parRacks.marshLast);
+			if (parRacks.marshFirst.x == parRacks.marshLast.x && parRacks.marshFirst.y == parRacks.marshLast.y)
+				parRacks.angMarsh = 0;
+		}
 	
 	
 		if (racks.length == 2){

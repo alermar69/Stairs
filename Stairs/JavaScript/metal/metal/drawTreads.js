@@ -9,6 +9,12 @@ function drawTreads() {
 	var drawWndTreads = drawWndTreadsMetal;
 	if (params.calcType == "mono") drawWndTreads = drawWndTreadsMono;
 	if (params.calcType == "timber") drawWndTreads = drawWndTreadsTimber;
+	if (params.calcType == "timber_stock") drawWndTreads = drawWndTreadsTimber_stock;
+	if (params.calcType == "geometry") {
+		if (params.staircaseType == "mono") drawWndTreads = drawWndTreadsMono;
+		if (params.staircaseType == "timber") drawWndTreads = drawWndTreadsTimber;
+	}
+
 
 	//нижний марш
 	var marshId = 1;
@@ -21,15 +27,17 @@ function drawTreads() {
 	var marshObj = drawMarshTreads2(treadParams1)
 	var marshTreads = marshObj.treads;
 	var marshRisers = marshObj.risers;
+	marshTreads.marshId = 1;
 	treadsGroup.add(marshTreads);
 	risersGroup.add(marshRisers);
 
-	var unitPos = calcMarshEndPoint(marshTreads.position, marshTreads.rotation.y, treadParams1);
+
+	var unitPos = calcMarshEndPoint(marshTreads.position, marshTreads.rotation.y, marshId);
 	var lastMarshEnd = copyPoint(unitPos);
 	lastMarshEnd.rot = 0;
+	var startTreadsParams = marshObj.startTreadsParams;
 
 	dxfBasePoint.x += 2000;
-	
 
 	if (params.stairModel != "Прямая") {
 
@@ -57,14 +65,20 @@ function drawTreads() {
 				dxfBasePoint: dxfBasePoint,
 				botMarshId: 1,
 			}
-			if (params.calcType == 'vhod' && params.stairModel == "Г-образная с площадкой") {
+			//если лотки или рифленая сталь ступень отрисовываем в функции отрисовки рамок drawFrames
+			if (params.stairType == "лотки" || params.stairType == "рифленая сталь") {
+				if (params.calcType != 'geometry') pltPar.isNotTread = true;
+				//добавляем зазор в конце площадки
+				if (params.calcType == 'geometry') pltPar.len -= 5;
+			}
+			if (params.calcType == 'vhod' && params.stairModel == "Г-образная с площадкой" && params.middlePltLength !== params.M) {
 				pltPar.len = params.middlePltLength + calcTurnParams(marshId).topMarshOffsetX - (params.M - calcTreadLen()) / 2;
 			}
 			if (params.stairModel == "П-образная с площадкой") {
 				pltPar.width = params.M * 2 + params.marshDist - (params.M - calcTreadLen());
 				pltPar.len = params.platformLength_1 + params.nose;
 				if (params.model == "лт") pltPar.len -= (params.M - calcTreadLen()) / 2;
-				pltPar.isP = true; //является промежуточной площадкой П-образной
+				pltPar.isP = true; //является промежуточной площадкой П-образной				
 			}
 			//коррекция ширины нижней площадки П-образной трехмаршевой с 0 ступеней в среднем марше
 			if (params.stairModel == "П-образная трехмаршевая" && params.stairAmt2 == 0) {
@@ -74,7 +88,7 @@ function drawTreads() {
 			}
 			if (params.stairModel == 'Прямая с промежуточной площадкой' || params.stairModel == 'Прямая горка') {
 				//FIX IT заменить 19 на рассчитанную величину.
-				pltPar.len = params.middlePltLength + 19;
+				pltPar.len = params.middlePltLength + calcTurnParams(marshId).topStepDelta;
 				if (params.stairModel == 'Прямая горка') pltPar.len = params.middlePltLength - 5;
 				// pltPar.isP = true;
 			}
@@ -83,13 +97,16 @@ function drawTreads() {
 
 			var platform = pltPar.treads;
 			var platformRiser = pltPar.risers;
+			platform.marshId = 1;
+			if (params.stairModel == "П-образная с площадкой") platform.marshId = 2;
+			platform.isTurn = true;
 			platform.position.x = platformRiser.position.x = unitPos.x;
 			platform.position.y = platformRiser.position.y = unitPos.y;
 			platform.position.z = platformRiser.position.z = unitPos.z;
 
 			treadsGroup.add(platform);
 			risersGroup.add(platformRiser);
-			var unitPos = calcTurnEndPoint(platform.position, platform.rotation.y, marshId, pltPar.plusMarshDist);
+			unitPos = calcTurnEndPoint(platform.position, platform.rotation.y, marshId, pltPar.plusMarshDist);
 			if (params.calcType == 'vhod' && params.middlePltWidth !== params.M && params.stairModel !== 'Прямая горка') {
 				var pltPar = {
 					len: (params.middlePltWidth - params.M) - 3,// + calcTurnParams(marshId).topMarshOffsetX - (params.M - calcTreadLen()) / 2,
@@ -97,16 +114,31 @@ function drawTreads() {
 					dxfBasePoint: dxfBasePoint,
 					botMarshId: 1,
 				}
+				if (params.stairModel == 'Прямая с промежуточной площадкой') {
+					pltPar.width = (params.middlePltWidth - params.M) - 3;
+					pltPar.len = params.middlePltLength + calcTurnParams(marshId).topStepDelta;
+				}
+
 				pltPar = pltDrawFunction(pltPar);
 
 				var platform = pltPar.treads;
+				platform.marshId = 1;
+				platform.isTurn = true;
 				var platformRiser = pltPar.risers;
-				var turnZ = pltPar.len - calcTurnParams(marshId).topMarshOffsetX - params.stringerThickness + 3;
+				var turnZ = pltPar.width - calcTurnParams(marshId).topMarshOffsetX - params.stringerThickness + 3;
+				var unitPosTmp = unitPos;
+				if (params.stairModel == 'Г-образная с площадкой') {
+					turnZ = pltPar.len - calcTurnParams(marshId).topMarshOffsetX - params.stringerThickness + 3;
+				}
+				if (params.stairModel == 'Прямая с промежуточной площадкой') {
+					unitPosTmp = allUnitsPos.turn1;
+					turnZ = pltPar.width + params.stringerThickness + 3 + 3;
+				}
 				turnZ *= turnFactor;
-				platform.position.x = platformRiser.position.x = unitPos.x;
-				platform.position.y = platformRiser.position.y = unitPos.y;
-				platform.rotation.y = platformRiser.rotation.y = unitPos.rot;
-				platform.position.z = platformRiser.position.z = unitPos.z - turnZ;
+				platform.position.x = platformRiser.position.x = unitPosTmp.x;
+				platform.position.y = platformRiser.position.y = unitPosTmp.y;
+				platform.rotation.y = platformRiser.rotation.y = unitPosTmp.rot;
+				platform.position.z = platformRiser.position.z = unitPosTmp.z - turnZ;
 				treadsGroup.add(platform);
 				risersGroup.add(platformRiser);
 			}
@@ -134,6 +166,8 @@ function drawTreads() {
 			wndTreads.position.x = wndRisers.position.x = unitPos.x;
 			wndTreads.position.y = wndRisers.position.y = unitPos.y;
 			wndTreads.position.z = wndRisers.position.z = unitPos.z;
+			wndTreads.marshId = 1;
+			wndTreads.isTurn = true;
 			treadsGroup.add(wndTreads);
 			risersGroup.add(wndRisers);
 
@@ -165,10 +199,11 @@ function drawTreads() {
 			marshTreads.position.x = marshRisers.position.x = unitPos.x;
 			marshTreads.position.y = marshRisers.position.y = unitPos.y;
 			marshTreads.position.z = marshRisers.position.z = unitPos.z;
+			marshTreads.marshId = 2;
 			treadsGroup.add(marshTreads);
 			risersGroup.add(marshRisers);
 
-			var unitPos = calcMarshEndPoint(marshTreads.position, marshTreads.rotation.y, treadParams2);
+			var unitPos = calcMarshEndPoint(marshTreads.position, marshTreads.rotation.y, marshId);
 			dxfBasePoint.x += 2000;
 		}
 
@@ -188,10 +223,18 @@ function drawTreads() {
 					dxfBasePoint: dxfBasePoint,
 					botMarshId: 2,
 				};
+				//если лотки или рифленая сталь ступень отрисовываем в функции отрисовки рамок drawFrames
+				if (params.stairType == "лотки" || params.stairType == "рифленая сталь") {
+					if (params.calcType != 'geometry') pltPar.isNotTread = true;
+					//добавляем зазор в конце площадки
+					if (params.calcType == 'geometry') pltPar.len -= 5;
+				}
 				//для деревянных из pltPar используются только параметры botMarshId и dxfBasePoint, размеры площадки считаются внутри
 				pltPar = pltDrawFunction(pltPar);
 
 				var platform = pltPar.treads;
+				platform.marshId = 2;
+				platform.isTurn = true;
 				var platformRiser = pltPar.risers;
 				platform.rotation.y = platformRiser.rotation.y = unitPos.rot;
 				platform.position.x = platformRiser.position.x = unitPos.x;
@@ -226,6 +269,8 @@ function drawTreads() {
 					wndRisers.position.y += params.h3;
 				}
 				wndTreads.position.z = wndRisers.position.z = unitPos.z;
+				wndTreads.marshId = 2;
+				wndTreads.isTurn = true;
 				treadsGroup.add(wndTreads);
 				risersGroup.add(wndRisers);
 				var unitPos = calcTurnEndPoint(wndTreads.position, wndTreads.rotation.y, marshId, false, wndPar2.turnId);
@@ -255,10 +300,11 @@ function drawTreads() {
 		marshTreads.position.x = marshRisers.position.x = unitPos.x;
 		marshTreads.position.y = marshRisers.position.y = unitPos.y;
 		marshTreads.position.z = marshRisers.position.z = unitPos.z;
+		marshTreads.marshId = 3;
 		treadsGroup.add(marshTreads);
 		risersGroup.add(marshRisers);
 
-		lastMarshEnd = calcMarshEndPoint(marshTreads.position, marshTreads.rotation.y, treadParams3);
+		lastMarshEnd = calcMarshEndPoint(marshTreads.position, marshTreads.rotation.y, marshId);
 		dxfBasePoint.x += 2000;
 	}
 
@@ -268,9 +314,9 @@ function drawTreads() {
 
 		if (params.model == "ко" && params.stairAmt3 == 0 && (turnType1 == "забег" || turnType2 == "забег")) {
 			if (params.stairModel == "Г-образная с забегом")
-				lastMarshEnd.z += params.lastWinderTreadWidth - 55; //55 - номинальная ширина ступени	
+				lastMarshEnd.z += params.lastWinderTreadWidth - 55; //55 - номинальная ширина ступени
 			else
-				lastMarshEnd.x -= (params.lastWinderTreadWidth - 55); //55 - номинальная ширина ступени	
+				lastMarshEnd.x -= (params.lastWinderTreadWidth - 55); //55 - номинальная ширина ступени
 		}
 
 		//сохраняем позицию и поворот
@@ -278,10 +324,24 @@ function drawTreads() {
 		allUnitsPos.topPlt.rot = lastMarshEnd.rot;
 
 		var pltPar = {
-			len: params.platformLength_3 - (params.M - calcTreadLen()) / 2,
+			len: params.platformLength_3,
 			width: calcTreadLen(),
 			dxfBasePoint: dxfBasePoint,
+			botMarshId: 3,
 		};
+
+		//учитываем наличие задней тетивы верхней площадки + 5мм зазор
+		if ((params.model == "лт" || params.calcType == "vhod") && params.platformRearStringer == "есть") {
+			pltPar.len -= 8 + 5;
+		}
+
+		//если лотки или рифленая сталь ступень отрисовываем в функции отрисовки рамок drawFrames
+		if (params.stairType == "лотки" || params.stairType == "рифленая сталь") {
+			if (params.calcType != 'geometry') pltPar.isNotTread = true;
+			//добавляем зазор в конце площадки
+			//if (params.calcType == 'geometry') pltPar.len -= 5;
+		}
+		if (params.stairModel == "Прямая") pltPar.botMarshId = 1;
 
 		if (params.platformTop == 'увеличенная') {
 			pltPar.width = params.platformWidth_3 - (params.M - calcTreadLen());
@@ -289,18 +349,19 @@ function drawTreads() {
 
 		pltPar = drawPlatform2(pltPar);
 		var platform = pltPar.treads;
-		platform.rotation.y = lastMarshEnd.rot;
-		platform.position.x = lastMarshEnd.x;
-		platform.position.y = lastMarshEnd.y;
-		platform.position.z = lastMarshEnd.z;
+		var risers = pltPar.risers;
+		platform.rotation.y = risers.rotation.y = lastMarshEnd.rot;
+		platform.position.x = risers.position.x = lastMarshEnd.x;
+		platform.position.y = risers.position.y = lastMarshEnd.y;
+		platform.position.z = risers.position.z = lastMarshEnd.z;
 		if (params.platformTop == 'увеличенная') {
-			if ((params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && turnFactor == -1 && params.stairType == 'дпк') {
+			if ((params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && turnFactor == -1 && (params.stairType == 'дпк')) {
 				platform.position.z -= (pltPar.width - params.M) / 2 + (params.M - calcTreadLen()) / 2;
 				if (turnFactor == -1) {
 					platform.position.z = lastMarshEnd.z
 				}
 			}
-			if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && params.stairModel == 'дпк') {//Считаем положения
+			if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && (params.stairModel == 'дпк')) {//Считаем положения
 				platform.position.x += (pltPar.width - params.M) / 2 + (params.M - calcTreadLen()) / 2;//-pltPar.len / 2 * turnFactor - params.stringerThickness * 2;
 				if (turnFactor == -1) {
 					platform.position.x -= (pltPar.width - params.M) / 2 + (params.M - calcTreadLen()) / 2;//-pltPar.len / 2 * turnFactor - params.stringerThickness * 2;
@@ -308,11 +369,15 @@ function drawTreads() {
 				}
 			}
 		}
+		platform.marshId = 3;
 		treadsGroup.add(platform);
+		risersGroup.add(risers);
+
 	}
 
 	//рассчитываем точку конца верхнего марша для привязки к перекрытию
 	var topStepDelta = calcTurnParams(marshId).topStepDelta;
+
 	if (params.platformTop == "площадка" || params.platformTop == 'увеличенная') topStepDelta = params.platformLength_3;
 
 	lastMarshEnd.x += topStepDelta * Math.cos(lastMarshEnd.rot);
@@ -328,14 +393,13 @@ function drawTreads() {
 		wndPar: wndPar,
 		wndPar2: wndPar2,
 		unitsPos: allUnitsPos,
+		startTreadsParams: startTreadsParams,
 	}
 
 	return par;
 
 
 } //end of drawTreads
-
-
 
 function drawMarshTreads2(par) {
 	/*
@@ -347,6 +411,25 @@ function drawMarshTreads2(par) {
 
 	par.treads = new THREE.Object3D();
 	par.risers = new THREE.Object3D();
+
+	var techDelta = 0;
+	if (params.calcType == 'timber' && testingMode) techDelta = 0.01;
+
+	var hasTurnRack = false;
+	if (params.railingModel == "Деревянные балясины" || params.railingModel == "Дерево с ковкой" || params.railingModel == "Стекло") {
+		if (params.stairModel == 'Г-образная с забегом' || params.stairModel == 'Г-образная с площадкой') {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 2) {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(2).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 3) {
+			hasTurnRack = getMarshParams(2).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if ((params.stairModel == 'П-образная с забегом' || params.stairModel == 'П-образная с площадкой') && par.marshId == 3) {
+			hasTurnRack = getMarshParams(3).hasRailing.in;
+		}
+	}
 
 	//параметры марша
 	var marshPar = getMarshParams(par.marshId);
@@ -371,22 +454,25 @@ function drawMarshTreads2(par) {
 			width: par.a,
 			dxfBasePoint: par.dxfBasePoint,
 			dxfArr: dxfPrimitivesArr,
-			thk: params.treadThickness,
+			thk: params.treadThickness - techDelta * 2,
 			material: params.materials.tread,
 			partName: "tread",
 		};
 		//коррекция толщины
-		if (params.stairType == "лотки") plateParams.thk = 4;
-		if (params.calcType == "timber") plateParams.thk -= 0.02;
+		if (params.stairType == "лотки" || params.stairType == "рифленая сталь") plateParams.thk = 4;
+		// if (params.calcType == "timber") plateParams.thk -= 0.02;
 
 
 		//пригласительные ступени
+		par.startTreadsParams = [];
 		if (params.startTreadAmt > 0 && par.marshId == 1) {
 			var startTreadsObj = drawStartUnit();
 			startTreadsObj.treads.position.z = -params.M / 2 * turnFactor;
 			startTreadsObj.risers.position.z = -params.M / 2 * turnFactor;
 			par.treads.add(startTreadsObj.treads);
 			par.risers.add(startTreadsObj.risers);
+			//добавляем размеры в возвращаемый объект
+			par.startTreadsParams = startTreadsObj.dim;
 		}
 
 		//цикл построения ступеней
@@ -395,15 +481,8 @@ function drawMarshTreads2(par) {
 
 		var posZ = 0;
 		for (var i = startIndex; i < par.stairAmt; i++) {
-
-			var text = "Ступень " + par.marshId + " марша";
-			var textHeight = 25;
-			var textBasePoint = newPoint_xy(par.dxfBasePoint, -20, -120);
-			addText(text, textHeight, plateParams.dxfArr, textBasePoint);
-
-			//выводим в dxf только одну ступень
-			if (i > startIndex) plateParams.dxfArr = [];
-			if (params.calcType == "timber") {
+			var addToDxf = true;
+			if (params.calcType == "timber" || params.calcType == "timber_stock") {
 				par.notches = calcMarshNotches(par.marshId);
 				plateParams.notches = {
 					botIn: { x: 0, y: 0 },
@@ -413,35 +492,97 @@ function drawMarshTreads2(par) {
 				};
 			}
 			var drawRectTread = true; //отрисовываем обыкновенную прямогуольную ступень на этой итерации
+
+			var railingStartIndex = startIndex;
+			if (par.marshId == 1) {
+				if (params.firstNewellPos == "на первой ступени") railingStartIndex += 1;
+				if (params.firstNewellPos == "на второй ступени") railingStartIndex += 2;
+				railingStartIndex -= params.startTreadAmt;
+			}
 			//нестандартная первая ступень
-			if (i == startIndex) {
-				if (params.calcType == "timber") {
+			if (par.stairAmt > 1 && railingStartIndex !== par.stairAmt - 1) {
+				plateParams.dxfArr = dxfPrimitivesArr;
+				if (i == startIndex && params.calcType == "mono" && hasTurnRack && par.marshId > 1 && getMarshParams(par.marshId).botTurn == 'забег') {
+					plateParams.notches = {
+						botIn: { x: 0, y: 0 },
+						botOut: { x: 0, y: 0 },
+						topIn: { x: 0, y: 0 },
+						topOut: { x: 0, y: 0 },
+					};
+					plateParams.width -= 5;
+
+					var tread = drawNotchedPlate(plateParams).mesh;
+					tread.rotation.x = Math.PI / 2;
+					tread.position.x = par.b * startIndex + 5;
+					tread.position.y = par.h * (startIndex + 1) - techDelta;
+					tread.position.z = - plateParams.len / 2;
+					drawRectTread = false;
+				}
+
+				if (i == startIndex && (params.calcType == "lt-ko" || params.calcType == "mono") && hasTurnRack && par.marshId > 1 && getMarshParams(par.marshId).botTurn == 'площадка') {
+					plateParams.notches = {
+						botIn: { x: 0, y: 0 },
+						botOut: { x: 0, y: 0 },
+						topIn: { x: 0, y: 0 },
+						topOut: { x: 0, y: 0 },
+					};
+					plateParams.notches.hasNothes = true;
+					plateParams.notches.botIn = {
+						x: params.nose, y: 95 + 0.01
+					};
+					//выводим в dxf только одну ступень
+					plateParams.dxfArr = dxfPrimitivesArr;
+					if (i > startIndex && plateParams.width == par.a) plateParams.dxfArr = [];
+
+					var tread = drawNotchedPlate(plateParams).mesh;
+					tread.rotation.x = Math.PI / 2;
+					tread.position.x = par.b * startIndex;
+					tread.position.y = par.h * (startIndex + 1) - techDelta;
+					tread.position.z = - plateParams.len / 2;
+					drawRectTread = false;
+				}
+
+				if (i == railingStartIndex && (params.calcType == "timber" || params.calcType == "timber_stock")) {
 					if (par.notches.botIn.x != 0 && par.notches.botIn.y != 0) {
 						plateParams.notches.hasNothes = true;
 						plateParams.notches.botIn = copyPoint(par.notches.botIn);
 					}
-					// plateParams.notches.hasNothes = true;
-					// plateParams.notches.botIn = {x:100,y:100};
+
 					if (par.notches.botOut.x != 0 && par.notches.botOut.y != 0) {
 						plateParams.notches.hasNothes = true;
 						plateParams.notches.botOut = copyPoint(par.notches.botOut);
 					}
 					var tread = drawNotchedPlate(plateParams).mesh;
 					tread.rotation.x = Math.PI / 2;
-					tread.position.x = 0;
-					tread.position.y = par.h;
+					tread.position.x = par.b * railingStartIndex;
+					tread.position.y = par.h * (railingStartIndex + 1) - techDelta;
 					tread.position.z = - plateParams.len / 2;
 					drawRectTread = false;
 				}
 			}
 
 			//нестандартная последняя ступень
-			if (i == par.stairAmt - 1) {
+			if (i == par.stairAmt - 1 && par.stairAmt > 1) {
+				plateParams.dxfArr = dxfPrimitivesArr;
 				if (params.calcType == "timber") {
 					plateParams.dxfBasePoint = newPoint_xy(plateParams.dxfBasePoint, plateParams.width + 100, 0);
 					plateParams.dxfArr = dxfPrimitivesArr;
 					plateParams.notches.botIn = { x: 0, y: 0 };
 					plateParams.notches.botOut = { x: 0, y: 0 };
+
+					//Корректировка если осталась одна ступень на марше, чтобы отрисовались отверстия и в начале и в конце ступени
+					if (railingStartIndex == par.stairAmt - 1) {
+						if (par.notches.botIn.x != 0 && par.notches.botIn.y != 0) {
+							plateParams.notches.hasNothes = true;
+							plateParams.notches.botIn = copyPoint(par.notches.botIn);
+						}
+
+						if (par.notches.botOut.x != 0 && par.notches.botOut.y != 0) {
+							plateParams.notches.hasNothes = true;
+							plateParams.notches.botOut = copyPoint(par.notches.botOut);
+						}
+					}
+
 					if (par.notches.topIn.x != 0 && par.notches.topIn.y != 0) {
 						plateParams.notches.hasNothes = true;
 						plateParams.notches.topIn = copyPoint(par.notches.topIn);
@@ -453,50 +594,111 @@ function drawMarshTreads2(par) {
 					var tread = drawNotchedPlate(plateParams).mesh;
 					tread.rotation.x = Math.PI / 2;
 					tread.position.x = par.b * (par.stairAmt - 1);
-					tread.position.y = par.h * par.stairAmt;
+					tread.position.y = par.h * par.stairAmt - techDelta;
 					tread.position.z = - plateParams.len / 2;
 					drawRectTread = false;
 				}
 				if (params.model == "лт" && params.topAnglePosition == "вертикальная рамка") {
 					plateParams.width = par.b + 40 - params.riserThickness;
 				}
-				/*if (params.model == "ко" && 
-					params.riserType == "есть" && 
-					params.topAnglePosition != "вертикальная рамка" &&
-					marshPar.lastMarsh == true){
-						plateParams.width += params.riserThickness;
-						}*/
 			}
 
+			if (par.stairAmt == 1) {
+				par.notches = calcMarshNotches(par.marshId);
+				plateParams.notches = {
+					botIn: { x: 0, y: 0 },
+					botOut: { x: 0, y: 0 },
+					topIn: { x: 0, y: 0 },
+					topOut: { x: 0, y: 0 },
+				};
+				if (params.calcType == "mono" && hasTurnRack && par.marshId > 1 && getMarshParams(par.marshId).botTurn == 'забег') {
+					plateParams.width -= 5;
+				}
+				if ((params.calcType == "lt-ko" || params.calcType == "mono") && hasTurnRack && par.marshId > 1 && getMarshParams(par.marshId).botTurn == 'площадка') {
+					plateParams.notches.hasNothes = true;
+					plateParams.notches.botIn = {
+						x: params.nose, y: 95 + 0.01
+					};
+				}
+				if (params.calcType == "timber") {
+					plateParams.dxfBasePoint = newPoint_xy(plateParams.dxfBasePoint, plateParams.width + 100, 0);
+					plateParams.dxfArr = dxfPrimitivesArr;
+
+					if (par.notches.botIn.x != 0 && par.notches.botIn.y != 0) {
+						plateParams.notches.hasNothes = true;
+						plateParams.notches.botIn = copyPoint(par.notches.botIn);
+					}
+					// plateParams.notches.hasNothes = true;
+					// plateParams.notches.botIn = {x:100,y:100};
+					if (par.notches.botOut.x != 0 && par.notches.botOut.y != 0) {
+						plateParams.notches.hasNothes = true;
+						plateParams.notches.botOut = copyPoint(par.notches.botOut);
+					}
+					if (par.notches.topIn.x != 0 && par.notches.topIn.y != 0) {
+						plateParams.notches.hasNothes = true;
+						plateParams.notches.topIn = copyPoint(par.notches.topIn);
+					}
+					if (par.notches.topOut.x != 0 && par.notches.topOut.y != 0) {
+						plateParams.notches.hasNothes = true;
+						plateParams.notches.topOut = copyPoint(par.notches.topOut);
+					}
+				}
+				if (params.model == "лт" && params.topAnglePosition == "вертикальная рамка") {
+					plateParams.width = par.b + 40 - params.riserThickness;
+				}
+				var tread = drawNotchedPlate(plateParams).mesh;
+				tread.rotation.x = Math.PI / 2;
+				tread.position.x = par.b * (par.stairAmt - 1);
+				tread.position.y = par.h * par.stairAmt - techDelta;
+				if (params.stairType == 'лотки') {
+					// рассчитываем параметры рамки
+					var parFrame = { marshId: par.marshId }
+					calcFrameParams(parFrame);
+					tread.position.y -= parFrame.profHeight + plateParams.thk;
+				}
+				tread.position.z = - plateParams.len / 2;
+				drawRectTread = false;
+			}
 			//стандартная ступень
 
 			if (drawRectTread) {
-				if (params.stairType == 'дпк') {
+				if (params.stairType == 'дпк' || params.stairType == "лиственница тер.") {
 					var tread = new THREE.Object3D();//Объеъкт ступеньки
-					var plDefaultLen = 150;//Стандартная шерина доски
-					plateParams.width = plDefaultLen;//Задаем ширину доски для отрисовки
-					var plCount = Math.floor(par.a / plDefaultLen);//Считаем количество досок на ступень
-					//Считаем ширину последней доски(при нестандартной ширине ступени)
-					var lastPlLen = par.a - (5 * (plCount - 1)) - (plDefaultLen * plCount);
-					if (lastPlLen > 0) plCount++;//Добавляем количество досок, если есть нестадртная доска
-					for (var j = 0; j < plCount; j++) {//Рисуем доски
-						if (j == plCount - 1 && lastPlLen > 0) {
-							plateParams.width = lastPlLen;//Задаем нестандартную ширину если имеем такую доску
-						}
+					plateParams.material = params.materials.dpc;
+					plateParams.dxfArr = [];
+
+					//Считаем количество досок на ступень
+					var deckAmt = Math.round((par.a - params.dpcDst) / (params.dpcWidth + params.dpcDst));
+
+					//Задаем ширину доски для отрисовки
+					plateParams.width = params.dpcWidth;
+
+					for (var j = 0; j < deckAmt; j++) {//Рисуем доски
 						var treadPlank = drawPlate(plateParams).mesh;//Меш
-						treadPlank.position.y = plateParams.width * j;//Задаем положения досок
-						if (j > 0) {//Выбираем средние доски, для установки зазора
-							treadPlank.position.y += 5;//Зазор между досками
-						}
+						treadPlank.position.y = (params.dpcWidth + params.dpcDst) * (j - deckAmt + 1)// - (params.dpcWidth + params.dpcDst);//Задаем положения досок
 						tread.add(treadPlank);//Добавляем доски в объект
 					}
-					plateParams.width = par.a;//Возвращаем всё на место
-				} else {
+					//plateParams.width = par.a;//Возвращаем всё на место
+				}
+				else {
+					//выводим в dxf только одну ступень
+					plateParams.dxfArr = dxfPrimitivesArr;
+					if (i > startIndex && plateParams.width == par.a) {
+						plateParams.dxfArr = [];
+						addToDxf = false;
+					}
+
 					var tread = drawPlate(plateParams).mesh;//Стандартная отрисовка
 				}
 				tread.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.5);
 				tread.position.x = par.b * i + plateParams.width;
-				tread.position.y = par.h * (i + 1);
+				tread.position.y = par.h * (i + 1) - techDelta;
+				if (params.stairType == 'лотки') {
+					// рассчитываем параметры рамки
+					var parFrame = {}
+					calcFrameParams(parFrame);
+					tread.position.y -= parFrame.profHeight + plateParams.thk;
+				}
 				tread.position.z = - plateParams.len / 2;
 			}
 
@@ -511,7 +713,7 @@ function drawMarshTreads2(par) {
 				tread.position.x -= 0.01;
 			}
 			if (params.calcType == "timber") {
-				tread.position.y -= 0.01;
+				// tread.position.y -= 0.01;
 				//tread.position.x -= 0.01;
 			}
 
@@ -523,18 +725,42 @@ function drawMarshTreads2(par) {
 			if (params.riserType == "есть") {
 				var riserPar = {
 					len: plateParams.len,
-					width: par.h,
+					width: par.h - techDelta * 2,
 					thk: params.riserThickness,
-					dxfArr: dxfPrimitivesArr,
-					dxfBasePoint: dxfBasePoint,
+					dxfArr: [],
+					dxfBasePoint: newPoint_xy(par.dxfBasePoint, params.M + 200, 0),
 				};
 
 				//коррекция размеров первого подступенка
 				if (i == 0) {
 					if (marshPar.botTurn == "пол") riserPar.width = par.h - params.treadThickness;	// первый подступенок на первом марше и первый после площадки ниже остальных на толщину ступени
-					if (marshPar.botTurn != "пол" && params.calcType == "timber") riserPar.len = calcNewellRiserLen();
-
+					if (marshPar.botTurn != "пол" && params.calcType == "timber") {
+						riserPar.len = calcNewellRiserLen();
+					}
 				}
+
+				if (marshPar.botTurn == "пол") {
+					if (i == 0) {
+						riserPar.description = "Подступенок первой ступени"
+						riserPar.count = 1
+						riserPar.dxfArr = dxfPrimitivesArr
+					}
+					if (i == 1) {
+						riserPar.description = "Подступенок марша"
+						riserPar.count = par.stairAmt - 1
+						riserPar.dxfBasePoint.x += par.h + 50
+						riserPar.dxfArr = dxfPrimitivesArr
+					}
+				}
+				else {
+					if (i == 0) {
+						riserPar.description = "Подступенок марша"
+						riserPar.count = par.stairAmt
+						riserPar.dxfArr = dxfPrimitivesArr
+					}
+				}
+
+
 
 				//отрисовка
 				riserPar = drawRectRiser(riserPar);
@@ -544,14 +770,21 @@ function drawMarshTreads2(par) {
 				riser.rotation.x = Math.PI / 2;
 				riser.position.x = tread.position.x - plateParams.width + params.nose + 0.01;
 				if (!drawRectTread) riser.position.x += plateParams.width;
-				riser.position.y = tread.position.y - (par.h + params.treadThickness);
+				riser.position.y = tread.position.y - (par.h + params.treadThickness) + techDelta * 1.5;
 				if (i == 0 && marshPar.botTurn == "пол") riser.position.y = 0;
 				riser.position.z = tread.position.z;
+				if (i == 0 && marshPar.botTurn !== 'пол' && turnFactor == -1) riser.position.z += plateParams.len - calcNewellRiserLen();
 
 				par.risers.add(riser);
 			}
 
-
+			if (addToDxf) {
+				var text = "Ступени " + par.marshId + " марша";
+				var textHeight = 25;
+				var textBasePoint = newPoint_xy(par.dxfBasePoint, -20, -120);
+				if (i == startIndex) addText(text, textHeight, plateParams.dxfArr, textBasePoint);
+				plateParams.dxfBasePoint.y += par.a + 100;
+			}
 
 		}//end of for
 
@@ -566,52 +799,73 @@ function drawMarshTreads2(par) {
 
 	//последняя урезанная ступень
 
-	if (marshPar.lastMarsh && params.topAnglePosition == "вертикальная рамка") {
+	if (marshPar.lastMarsh && (params.topAnglePosition == "вертикальная рамка" || params.calcType == "timber_stock")) {
 
 		//рассчитываем размеры поворота, зависящие от модели лестницы
 		var lastTreadWidth = setModelDimensions({ model: params.model, }).topStepDelta;
 
-		var plateParams = {
-			len: par.treadLen,
-			width: lastTreadWidth,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, par.a + 50),
-			dxfArr: dxfPrimitivesArr,
-			thk: params.treadThickness,
-			material: params.materials.tread,
-			partName: "tread",
-		};
+		//ступень
+		var posX = par.endPos.x;
+		if (params.calcType != "timber_stock") {
+			var plateParams = {
+				len: par.treadLen,
+				width: lastTreadWidth,
+				dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, par.a + 50),
+				dxfArr: dxfPrimitivesArr,
+				thk: params.treadThickness,
+				material: params.materials.tread,
+				partName: "tread",
+			};
 
-		var lastTread = drawPlate(plateParams).mesh;
-		lastTread.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.5);
-		lastTread.position.x = par.endPos.x - par.b + params.riserThickness + 40; //40 - размер вертикальной рамки
-		if (par.stairAmt == 0) {
-			lastTread.position.x = par.endPos.x + params.riserThickness + 40;
-			var marshPar = getMarshParams(par.marshId);
-			if (marshPar.botTurn == "забег") {
-				lastTread.position.x += params.lastWinderTreadWidth;
-				if (params.model == "ко") lastTread.position.x += -55 + 20;
+			var lastTread = drawPlate(plateParams).mesh;
+			lastTread.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.5);
+			lastTread.position.x = par.endPos.x - par.b + params.riserThickness + 40; //40 - размер вертикальной рамки
+			if (par.stairAmt == 0) {
+				lastTread.position.x = par.endPos.x + params.riserThickness + 40;
+				var marshPar = getMarshParams(par.marshId);
+				if (marshPar.botTurn == "забег") {
+					lastTread.position.x += params.lastWinderTreadWidth;
+					if (params.model == "ко") lastTread.position.x += -55 + params.nose;
+				}
 			}
+			if (par.stairAmt == 1) {
+				lastTread.position.x = par.endPos.x + 80;
+				if (params.model == "ко")
+					lastTread.position.x = par.endPos.x + params.riserThickness + 90 - (50 - params.nose);
+			}
+			lastTread.position.y = par.endPos.y;
+			lastTread.position.z = - plateParams.len / 2;
+			par.treads.add(lastTread);
+			posX = lastTread.position.x - 40;
 		}
-		lastTread.position.y = par.endPos.y;
-		lastTread.position.z = - plateParams.len / 2;
-		par.treads.add(lastTread);
 
 		//подступенок вертикальной рамки
+
 		var plateParams = {
 			len: par.treadLen,
 			width: par.h - 1,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, par.a + lastTreadWidth + 150),
+			dxfBasePoint: newPoint_xy(par.dxfBasePoint, params.M + 200 + par.h + 50, par.a + lastTreadWidth + 150),
 			dxfArr: dxfPrimitivesArr,
 			thk: params.riserThickness,
-			material: params.materials.tread,
+			material: params.materials.riser,
 			partName: "riser",
 		};
+		if (params.calcType == "timber_stock") {
+			plateParams.width = par.h + 200;
+			plateParams.thk = params.treadThickness;
+			posX = par.endPos.x - par.b + params.treadThickness;
+			if (par.stairAmt < 2) {
+				posX = par.endPos.x + params.nose + plateParams.thk;
+			}
+		}
 
 		var lastRiser = drawPlate(plateParams).mesh;
 		lastRiser.rotation.y = -Math.PI / 2;
-		lastRiser.position.x = lastTread.position.x - 40;
+		lastRiser.position.x = posX;
 		lastRiser.position.y = par.endPos.y - par.h - params.treadThickness;
+		if (params.calcType == "timber_stock") lastRiser.position.y = par.endPos.y - plateParams.width;
 		lastRiser.position.z = - plateParams.len / 2;
+
 		par.risers.add(lastRiser);
 
 		//подпись в dxf
@@ -622,14 +876,8 @@ function drawMarshTreads2(par) {
 
 	}
 
-	par.len = par.b * par.stairAmt;
-	/*
-	if(params.model == "ко") {
-		par.len += par.a - par.b;
-		if(marshPar.topTurn != "пол") par.len -= 20; //свес площадки/первой забежной ступени над последней ступенью марша
-		}
-	*/
-	par.height = par.h * par.stairAmt;
+	par.len = marshPar.len;
+	par.height = marshPar.height;
 
 	return par;
 
@@ -653,56 +901,67 @@ function drawPlatform2(par) {
 
 	var marshPar = getMarshParams(par.botMarshId);
 
-	var plateParams = {
-		len: par.width,
-		width: par.partLen,
-		dxfBasePoint: par.dxfBasePoint,
-		dxfArr: dxfPrimitivesArr,
-		thk: params.treadThickness,
-		material: params.materials.tread,
-		partName: "tread",
-	}
-	var partLen = par.partLen;
-	for (var i = 0; i < par.partsAmt; i++) {
-		par.partLen = partLen;
-		if (par.lastPartLen && i == par.partsAmt - 1) par.partLen = par.lastPartLen;
-		plateParams.width = par.partLen;
-		var tread = drawPlate(plateParams).mesh;
-		tread.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.5);
-		tread.position.x = (partLen + par.partsGap) * i + plateParams.width;
-		tread.position.y = 0.01;
-		tread.position.z = - calcTreadLen() / 2;
-		if (turnFactor == -1) tread.position.z = calcTreadLen() / 2 - plateParams.len;
-
-
-		par.treads.add(tread);
-	}//end of for
-
-	/*подступенок под площадкой*/
-
-	if (params.riserType == "есть") {
-		var riserPar = {
-			len: params.M,
-			width: marshPar.h,
-			thk: params.riserThickness,
+	if (!par.isNotTread) {
+		var plateParams = {
+			len: par.width,
+			width: par.partLen,
+			dxfBasePoint: par.dxfBasePoint,
 			dxfArr: dxfPrimitivesArr,
-			dxfBasePoint: dxfBasePoint,
-		};
-
-		//отрисовка
-		riserPar = drawRectRiser(riserPar);
-		riser = riserPar.mesh;
-
-		riser.rotation.y = Math.PI / 2;
-		riser.rotation.x = Math.PI / 2;
-		riser.position.x = params.nose;
-		riser.position.y = tread.position.y - params.treadThickness - marshPar.h + 0.01;
-		riser.position.z = tread.position.z;
-		if (params.stairModel == "П-образная с площадкой" && turnFactor == -1) {
-			riser.position.z = -plateParams.len / 2 + riserPar.len / 2 + params.marshDist / 2;
+			thk: params.treadThickness,
+			material: params.materials.tread,
+			partName: "tread",
+		}
+		if (params.stairType == 'дпк' || params.stairType == "лиственница тер.") {
+			plateParams.material = params.materials.dpc;
+			plateParams.dxfArr = [];
 		}
 
-		par.risers.add(riser);
+		var partLen = par.partLen;
+		for (var i = 0; i < par.partsAmt; i++) {
+			par.partLen = partLen;
+			if (par.lastPartLen && i == par.partsAmt - 1) par.partLen = par.lastPartLen;
+			plateParams.width = par.partLen;
+			if (params.calcType == 'timber_stock' && $sceneStruct["vl_1"]["newell_fixings"]) {
+				if (i == 0) plateParams.holes = calcTimberStokPltHoles(plateParams.width, i == 0);
+				if (i == par.partsAmt - 1) plateParams.holes = calcTimberStokPltHoles(plateParams.width, i == 0);
+			}
+			var tread = drawPlate(plateParams).mesh;
+			tread.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.5);
+			tread.position.x = (partLen + par.partsGap) * i + plateParams.width;
+			tread.position.y = 0.01;
+			tread.position.z = - calcTreadLen() / 2;
+			if (turnFactor == -1) tread.position.z = calcTreadLen() / 2 - plateParams.len;
+			plateParams.dxfBasePoint.y += plateParams.width + 150;
+
+			par.treads.add(tread);
+		} //end of for
+
+		/*подступенок под площадкой*/
+
+		if (params.riserType == "есть") {
+			var riserPar = {
+				len: params.M,
+				width: marshPar.h,
+				thk: params.riserThickness,
+				dxfArr: dxfPrimitivesArr,
+				dxfBasePoint: dxfBasePoint,
+			};
+
+			//отрисовка
+			riserPar = drawRectRiser(riserPar);
+			riser = riserPar.mesh;
+
+			riser.rotation.y = Math.PI / 2;
+			riser.rotation.x = Math.PI / 2;
+			riser.position.x = params.nose;
+			riser.position.y = tread.position.y - params.treadThickness - marshPar.h + 0.01;
+			riser.position.z = tread.position.z;
+			if (params.stairModel == "П-образная с площадкой" && turnFactor == -1) {
+				riser.position.z = -plateParams.len / 2 + riserPar.len / 2 + params.marshDist / 2;
+			}
+
+			par.risers.add(riser);
+		}
 	}
 
 	//сохраняем позицию последней ступени
@@ -712,6 +971,87 @@ function drawPlatform2(par) {
 	}
 
 	return par;
+}
+
+/**
+ * Функция рассчитывает отверстия под столбы в площадке
+ * @param {number} plateWidth ширина доски, необходима для рассчетов отверстий на первой доске
+ * @param {boolean} isFirst определяет первая или последняя доска в деревяшках
+ * @return {object} [{center:{x,y}, rad:number}] - массив отверстий
+ */
+function calcTimberStokPltHoles(plateLength, isFirst) {
+	var holeRad = 4;
+	var holes = [];
+	plateLength = plateLength || 0;
+	var plateWidth = params.M;
+	if (params.stairModel == 'П-образная с площадкой') plateWidth = params.M * 2 + params.marshDist;
+
+	if (!isFirst) {
+		holes = [
+			{
+				rad: holeRad,
+				center: {
+					x: 24 + 32,
+					y: 24,
+				}
+			},
+			{
+				rad: holeRad,
+				center: {
+					x: 24,
+					y: 24 + 32,
+				}
+			},
+			{
+				rad: holeRad,
+				center: {
+					x: plateWidth - (24 + 32),
+					y: 24,
+				}
+			},
+			{
+				rad: holeRad,
+				center: {
+					x: plateWidth - (24),
+					y: 24 + 32,
+				}
+			},
+		];
+	}
+	if (isFirst) {
+		holes = [
+			{
+				rad: holeRad,
+				center: {
+					x: 24 + 32,
+					y: plateLength - (24 + params.nose + (params.riserType == 'есть' ? params.riserThickness : 0)),
+				}
+			},
+			{
+				rad: holeRad,
+				center: {
+					x: 24,
+					y: plateLength - (24 + 32 + params.nose + (params.riserType == 'есть' ? params.riserThickness : 0)),
+				}
+			},
+			{
+				rad: holeRad,
+				center: {
+					x: plateWidth - (24 + 32),
+					y: plateLength - (24 + params.nose + (params.riserType == 'есть' ? params.riserThickness : 0)),
+				}
+			},
+			{
+				rad: holeRad,
+				center: {
+					x: plateWidth - 24,
+					y: plateLength - (24 + 32 + params.nose + (params.riserType == 'есть' ? params.riserThickness : 0)),
+				}
+			},
+		];
+	}
+
+	return holes;
 }
 
 /** функция рассчитывает точки внешнего контура первой и третьей забежной ступени
@@ -751,10 +1091,116 @@ function calcWndTread1Points(par) {
 		var p21 = itercection(p3t, polar(p3t, -par.edgeAngle, -100), p11, newPoint_xy(p11, 0, 100));
 		var p2 = newPoint_xy(p21, -par.outerOffset, 0);
 	}
+	if (par.outNotch) {
+		var p3_n = newPoint_xy(p1, 0, par.outNotch.y);
+		var p2_n = newPoint_xy(p3_n, params.rackSize, 0);
+		var p1_n = newPoint_xy(p2_n, 0, -par.outNotch.y);
+	}
 
+	var newellPosition = null;
+	var newellMod_1 = null;
+	var newellMod3_1 = null;
+	var newellMod3_2 = null;
+	//Модифицируем контур для столба
+	var marshPar = getMarshParams(par.marshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+	if (par.hasTurnRack && par.isTread) {
+		var turnPar = calcTurnParams(par.marshId);
+		if ((par.treadId == 3 || par.treadId == 6) && params.calcType == 'lt-ko' && nextMarshPar.stairAmt > 0) {
+			// Рассчитываем положение поворотного столба
+			var newellPosition = {
+				x: params.M - 95 - 0.03,
+				y: turnPar.topMarshOffsetZ + params.nose - 0.03
+			}
+			if (par.turnId == 1 && params.stairModel == 'П-образная с забегом') {
+				newellPosition.y = params.marshDist - (80 - params.sideOverHang);
+			}
+
+			// Ищем пересечения со столбом
+			var newellMod3_1 = itercection(newellPosition, newPoint_xy(newellPosition, 0, 100), p2, p3);
+			var newellMod3_2 = itercection(newellPosition, newPoint_xy(newellPosition, -100, 0), p2, p3);
+			newellMod3_2.x = p3.x;
+		}
+		if ((par.treadId == 3 || par.treadId == 6) && params.calcType == 'lt-ko' && nextMarshPar.stairAmt == 0) {
+			var newellPosition = {
+				x: p3.x - 95 - 0.05,
+				y: p3.y + turnPar.topMarshOffsetZ - 35 - 0.05
+			}
+
+			// Ищем пересечения со столбом
+			var newellMod3_1 = itercection(newellPosition, newPoint_xy(newellPosition, 0, 100), p2, p3);
+			p3 = newPoint_xy(newellPosition, 95, 0);
+		}
+		if (par.treadId == 1 && params.calcType == 'lt-ko') {
+			if (params.riserType == "нет") {
+				var tempPoint = copyPoint(p3);
+				var deltaX = 95 + turnPar.topMarshOffsetX;
+				if (params.calcType == 'lt-ko') {
+					deltaX = params.sideOverHang + turnPar.topMarshOffsetX;
+					if (params.sideOverHang > 95) {
+						deltaX -= params.sideOverHang - 95;
+					}
+				}
+				var p3 = newPoint_xy(p4, 0, deltaX - 0.01);
+				var newellMod_1 = itercection(p3, newPoint_xy(p3, 100, 0), p2, tempPoint)//(p3, -65 / Math.sin(par.edgeAngle), 0);
+				delete tempPoint;
+
+				par.riserFix = distance(p3, newellMod_1)
+			}
+			if (params.riserType == "есть") {
+				var tempPoint = copyPoint(p3);
+				var deltaX = 95 + turnPar.topMarshOffsetX;
+				if (params.calcType == 'lt-ko') {
+					deltaX = params.sideOverHang + turnPar.topMarshOffsetX;
+					if (params.sideOverHang > 95) {
+						deltaX -= params.sideOverHang - 95;
+					}
+				}
+				var p3 = newPoint_xy(p4, 0, deltaX - 0.01);
+				var p3_riserFix = newPoint_xy(p3, -95, 0);
+				var newellMod_1 = itercection(p3_riserFix, newPoint_xy(p3_riserFix, 0, 100), p2, tempPoint)//(p3, -65 / Math.sin(par.edgeAngle), 0);
+				delete tempPoint;
+
+				par.riserFix = distance(p3, newellMod_1)
+			}
+		}
+		if (par.treadId == 1 && params.calcType == 'mono') {
+			var tempPoint = copyPoint(p3);
+			var p3 = newPoint_xy(p3, 0, 95 + turnPar.topMarshOffsetZ + 5);
+			var newellMod_1 = itercection(p3, newPoint_xy(p3, 100, 0), p2, tempPoint)
+			delete tempPoint;
+		}
+		if ((par.treadId == 3 || par.treadId == 6) && params.calcType == 'mono') {
+			// Рассчитываем положение поворотного столба
+			var newellPosition = {
+				x: p3.x - 95 - 0.05,
+				y: p3.y + turnPar.topMarshOffsetZ - 0.05
+			}
+
+			// Ищем пересечения со столбом
+			var newellMod3_1 = itercection(newellPosition, newPoint_xy(newellPosition, 0, 100), p2, p3);
+			p3 = newPoint_xy(newellPosition, 95, 0);
+		}
+	}
+	//Урезаем ступень на 5 мм чтобы не было пересечения со столбом поворотным
+	if (par.treadId == 1 && par.turnId == 2 && //второй поворот первая ступень
+		params.stairModel == 'П-образная с забегом' && params.calcType == 'mono' && // только на моно и на п-образной с забегом
+		getMarshParams(1).hasRailing.in && (params.railingModel == 'Деревянные балясины' || params.railingModel == 'Дерево с ковкой')) {//Ограждения только деревянные
+		p1.y += 5;
+		p4.y += 5;
+	}
+	// outNotch
 	var points = [p1, p2];
+	if (par.outNotch) points = [p1_n, p2_n, p3_n, p2];
 	if (p21) points.push(p21);
 	if (p31) points.push(p31);
+	// модификации для поворотного столба, при наличии деревянных ограждений 
+	if (newellMod_1) points.push(newellMod_1);
+	if (newellMod3_1) points.push(newellMod3_1);
+	if (newellPosition) points.push(newellPosition);
+	if (newellMod3_2) points.push(newellMod3_2);
+	// модификации для поворотного столба, при наличии деревянных ограждений
+	if (p3_riserFix) points.push(p3_riserFix)
 	points.push(p3);
 	points.push(p4);
 
@@ -766,6 +1212,7 @@ function calcWndTread1Points(par) {
 	//формируем возвращаемый объект
 
 	var result = {
+		signKeyPoints: {},
 		keyPoints: [p1, p2, p3, p4],
 		points: points,
 		front: {
@@ -789,6 +1236,20 @@ function calcWndTread1Points(par) {
 			len: distance(p3, p4),
 		},
 	}
+
+	//Для отладки
+	if (p1) result.signKeyPoints.p1 = p1;
+	if (p2) result.signKeyPoints.p2 = p2;
+	if (p1_n) result.signKeyPoints.p1_n = p1_n;
+	if (p2_n) result.signKeyPoints.p2_n = p2_n;
+	if (p3_n) result.signKeyPoints.p3_n = p3_n;
+	if (p21) result.signKeyPoints.p21 = p21;
+	if (p31) result.signKeyPoints.p31 = p31;
+	if (newellMod_1) result.signKeyPoints.newellMod_1 = newellMod_1;
+	if (p3) result.signKeyPoints.p3 = p3;
+	if (p4) result.signKeyPoints.p4 = p4;
+	if (newellPosition) result.signKeyPoints.newellPosition = newellPosition;
+
 	return result;
 
 }
@@ -845,10 +1306,36 @@ function calcWndTread2Points(par) {
 		var p51 = newPoint_xy(p5, 0, -par.outerOffsetY);
 	}
 
+	var newellPosition = null;
+	//Модифицируем контур для столба
+	if (par.isTread && par.hasTurnRack && params.calcType == 'lt-ko') {
+		//Рассчитываем положение поворотного столба
+		var newellPosition = {
+			x: params.M - 95 - 0.05,
+			y: p2.y + 95 + 0.05
+		}
+		//Ищем пересечения со столбом
+		p2 = itercection(newellPosition, newPoint_xy(newellPosition, 0, -100), p1, p2);
+		p3 = itercection(newellPosition, newPoint_xy(newellPosition, -100, 0), p3, p5)
+		p4 = p3;//Почему-то точка дублируется, для корректного отображения дублируем.	
+	}
+	if (par.isTread && par.hasTurnRack && params.calcType == 'mono') {
+		//Рассчитываем положение поворотного столба
+		var newellPosition = {
+			x: params.M - 95 - 0.05,
+			y: p3.y + params.nose + calcTurnParams(par.marshId).topMarshOffsetZ + 95 + 0.05
+		}
+		//Ищем пересечения со столбом
+		p2 = itercection(newellPosition, newPoint_xy(newellPosition, 0, -100), p1, p2);
+		p4 = itercection(newellPosition, newPoint_xy(newellPosition, -100, 0), p4, p5)
+		p3 = p4;
+	}
+
 	var points = [p1];
 	if (p11) points.push(p11);
 	points.push(p2);
 	if (p31) points.push(p31);
+	if (newellPosition) points.push(newellPosition);
 	points.push(p3);
 	if (p32) points.push(p32);
 	points.push(p4);
@@ -866,6 +1353,7 @@ function calcWndTread2Points(par) {
 	//формируем возвращаемый объект
 
 	var result = {
+		signKeyPoints: {},
 		keyPoints: points,
 		points: points,
 		front1: {
@@ -899,6 +1387,22 @@ function calcWndTread2Points(par) {
 			len: distance(p4, p3),
 		},
 	}
+
+	//Для отладки
+	/*
+	if (p1) result.signKeyPoints.p1 = p1;
+	if (p11) result.signKeyPoints.p11 = p11;
+	if (p2) result.signKeyPoints.p2 = p2;
+	if (newellPosition) result.signKeyPoints.newellPosition = newellPosition;
+	if (p31) result.signKeyPoints.p31 = p31;
+	if (p3) result.signKeyPoints.p3 = p3;
+	if (p32) result.signKeyPoints.p32 = p32;
+	if (p4) result.signKeyPoints.p4 = p4;
+	if (p51) result.signKeyPoints.p51 = p51;
+	if (p5) result.signKeyPoints.p5 = p5;
+	if (p6) result.signKeyPoints.p6 = p6;
+
+	*/
 	return result;
 
 }
@@ -921,6 +1425,7 @@ function drawWndTread1(par) {
 	*/
 
 	var path = calcWndTread1Points(par);
+
 	//зеркалим третью ступень
 	if (par.treadId == 3) {
 		for (var i = 0; i < path.points.length; i++) {
@@ -928,13 +1433,33 @@ function drawWndTread1(par) {
 		}
 	}
 
+	//	signKeyPoints(path.signKeyPoints, par.dxfBasePoint);
+
 	//создаем шейп
 	var shapePar = {
 		points: path.points,
 		dxfArr: dxfPrimitivesArr,
 		dxfBasePoint: par.dxfBasePoint,
-		//markPoints: true, //пометить точки в dxf для отладки
+		markPoints: true, //пометить точки в dxf для отладки		
 	};
+
+	//параметры для рабочего чертежа
+	shapePar.drawing = {
+		name: "Забежная ступень " + par.treadId,
+		group: "wndTreads",
+		baseLine: {
+			p1: shapePar.points[0],
+			p2: shapePar.points[3],
+		},
+	}
+
+	if (par.treadId == 3) {
+		shapePar.drawing.baseLine = {
+			p1: shapePar.points[1],
+			p2: shapePar.points[2],
+		};
+	}
+
 	var shape = drawShapeByPoints2(shapePar).shape;
 
 	var extrudeOptions = {
@@ -943,13 +1468,76 @@ function drawWndTread1(par) {
 		curveSegments: 12,
 		steps: 1
 	};
+	if (params.calcType == 'timber') extrudeOptions.amount -= par.techDelta;
 	//лотки
-	if (params.stairType == "лотки") extrudeOptions.amount = 4;
+	if (params.stairType == "лотки" || params.stairType == "рифленая сталь") extrudeOptions.amount = 4;
 
+	if (params.calcType == 'timber_stock' && par.treadId == 1 && $sceneStruct["vl_1"]["newell_fixings"]) {
+		// круглые отверстия
+		var p0 = { x: 24 * turnFactor, y: params.nose + 24 };
+		if (params.riserType == 'есть') {
+			p0.y += params.riserThickness;
+		}
+		var holeRad = 4;
+		var bigHoleRad = 7;
+
+		center1 = newPoint_xy(p0, 0, 0);
+		center2 = newPoint_xy(p0, 0, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+
+		//Отверстия под крепление столба
+		p0.x = (params.M - 24) * turnFactor;
+		center1 = newPoint_xy(p0, 0, 0);
+		center2 = newPoint_xy(p0, 0, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+
+		// center1 = newPoint_xy(p0, -16 * turnFactor, 16);
+		// addRoundHole(shape, dxfPrimitivesArr, center1, bigHoleRad, par.dxfBasePoint);
+
+		center1 = newPoint_xy(p0, -32 * turnFactor, 0);
+		center2 = newPoint_xy(p0, -32 * turnFactor, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+	}
+
+	if (params.calcType == 'timber_stock' && par.treadId == 3 && $sceneStruct["vl_1"]["newell_fixings"]) {
+		// круглые отверстия
+		var p0 = { x: -24 * turnFactor, y: 24 };
+		if (par.deltaLen) {
+			p0.y += par.deltaLen;
+		}
+		var holeRad = 4;
+		// var bigHoleRad = 7;
+		center1 = newPoint_xy(p0, 0, 0);
+		center2 = newPoint_xy(p0, 0, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+
+		//Отверстия под крепление столба
+		p0.x = (-params.M + 24) * turnFactor;
+		center1 = newPoint_xy(p0, 0, 0);
+		center2 = newPoint_xy(p0, 0, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+
+		// center1 = newPoint_xy(p0, 16 * turnFactor, 16);
+		// addRoundHole(shape, dxfPrimitivesArr, center1, bigHoleRad, par.dxfBasePoint);
+
+		center1 = newPoint_xy(p0, 32 * turnFactor, 0);
+		center2 = newPoint_xy(p0, 32 * turnFactor, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+	}
 
 	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	var mesh = new THREE.Mesh(geom, params.materials.tread);
+	mesh.userData.wndTreadParams = {
+		angle: par.edgeAngle,
+		treadId: par.treadId,
+	}
 	par.mesh = mesh;
 
 	//сохраняем параметр
@@ -988,8 +1576,9 @@ function drawWndTread1(par) {
 
 	//сохраняем данные для спецификации
 	var treadPar = getTreadParams(); //функция в файле calcSpecGeneral.js
+
 	var partName = "wndTread";
-	if (typeof specObj != 'undefined') {
+	if (typeof specObj != 'undefined' && params.stairType != "нет") {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
@@ -1001,8 +1590,9 @@ function drawWndTread1(par) {
 				timberPaint: treadPar.timberPaint,
 				division: treadPar.division,
 				workUnitName: "amt",
-				group: "Ступени",
+				group: "treads",
 			}
+			if (params.calcType == "timber") specObj[partName].name = "Ступень забежная " + params.treadsMaterial;
 		}
 
 
@@ -1027,13 +1617,13 @@ function drawWndTread2(par) {
     /*функция отрисовывает шейп второй (угловой) забежной ступени
     Исходные данные:
     Чертеж с обозначением параметров здесь: 6692035.ru/drawings/turnTreads/turnTreads.pdf
-    
+
 	обязательыне:
 	treadWidthX
     treadWidthY
     angleX
     angleY
-	
+
 	не обязательные:
     outerOffsetX
     outerOffsetY
@@ -1061,24 +1651,66 @@ function drawWndTread2(par) {
 
 	var dxfBasePoint = par.dxfBasePoint;
 
-	var points = calcWndTread2Points(par).points;
+	var wndTreadParams = calcWndTread2Points(par);
+	var points = wndTreadParams.points;
+
 	par.points = points;
 	//сохраняем размеры для спецификации
-	par.sizeA = distance(points[2], points[4]);
-	par.sizeB = distance(points[0], points[3]);
-	//корректируем точки чтобы не было пересечений с тетивой
 
+	par.sizeA = distance(points[2], points[points.length - 1]);
+	par.sizeB = distance(points[4], points[0]);
+	if (params.model == "ко") par.sizeB = distance(points[3], points[0]);
+	//корректируем точки чтобы не было пересечений с тетивой
 	points[1].y += 0.01;
 	points[2].y += 0.01;
+	points[0].x += 0.01 * turnFactor;
+	if (points[5]) points[5].x += 0.01 * turnFactor;
 
 	//создаем шейп
 	var shapePar = {
 		points: points,
 		dxfArr: dxfPrimitivesArr,
 		dxfBasePoint: par.dxfBasePoint,
-		//	markPoints: true, //пометить точки в dxf для отладки
+		markPoints: true, //пометить точки в dxf для отладки
 	}
+
+	//параметры для рабочего чертежа
+	shapePar.drawing = {
+		name: "Забежная ступень " + par.treadId,
+		group: "wndTreads",
+		baseLine: {
+			p1: shapePar.points[0],
+			p2: shapePar.points[1],
+		},
+	}
+
 	var shape = drawShapeByPoints2(shapePar).shape;
+
+	if (params.calcType == 'timber_stock' && $sceneStruct["vl_1"]["newell_fixings"]) {
+		// круглые отверстия
+		var p0 = { x: shapePar.points[4].x + 24 * turnFactor, y: shapePar.points[4].y - 80 + 24 };
+		var holeRad = 4;
+		var bigHoleRad = 7;
+
+		center1 = newPoint_xy(p0, 0, 0);
+		center2 = newPoint_xy(p0, 32 * turnFactor, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+
+		p0 = newPoint_xy(shapePar.points[1], -24 * turnFactor, 5 + 24)
+		center1 = newPoint_xy(p0, 0, 0);
+		center2 = newPoint_xy(p0, 0, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+
+		center1 = newPoint_xy(p0, -16 * turnFactor, 16);
+		addRoundHole(shape, dxfPrimitivesArr, center1, bigHoleRad, par.dxfBasePoint);
+
+		center1 = newPoint_xy(p0, -32 * turnFactor, 0);
+		center2 = newPoint_xy(p0, -32 * turnFactor, 32);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, par.dxfBasePoint);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, par.dxfBasePoint);
+	}
 
 	var extrudeOptions = {
 		amount: params.treadThickness,
@@ -1086,12 +1718,20 @@ function drawWndTread2(par) {
 		curveSegments: 12,
 		steps: 1
 	};
-	//лотки
-	if (params.stairType == "лотки") extrudeOptions.amount = 4;
+	if (params.calcType == 'timber') extrudeOptions.amount -= par.techDelta;
 
+	//лотки
+	if (params.stairType == "лотки" || params.stairType == "рифленая сталь") extrudeOptions.amount = 4;
+
+	//signKeyPoints(wndTreadParams.signKeyPoints, par.dxfBasePoint);
 	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
 	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	var mesh = new THREE.Mesh(geom, params.materials.tread);
+	mesh.userData.wndTreadParams = {
+		angle: par.angleX,
+		treadId: 2,
+	}
 	par.mesh = mesh;
 
 	//производственная информация для вывода в dxf
@@ -1116,7 +1756,7 @@ function drawWndTread2(par) {
 	//сохраняем данные для спецификации
 	var treadPar = getTreadParams(); //функция в файле calcSpecGeneral.js
 	var partName = "wndTread";
-	if (typeof specObj != 'undefined') {
+	if (typeof specObj != 'undefined' && params.stairType != "нет") {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
@@ -1128,9 +1768,11 @@ function drawWndTread2(par) {
 				timberPaint: treadPar.timberPaint,
 				division: treadPar.division,
 				workUnitName: "amt",
-				group: "Ступени",
+				group: "treads",
 			}
+			if (params.calcType == "timber") specObj[partName].name = "Ступень забежная " + params.treadsMaterial;
 		}
+
 		var name = "A=" + Math.round(par.sizeA) + " B=" + Math.round(par.sizeB);
 		var area = par.sizeA * par.sizeB * 0.7 / 1000000;
 		name += " средняя";
@@ -1212,16 +1854,36 @@ function drawWndTreadsMetal(par) {
         h: params.h, - подъем ступени
         dxfBasePoint: dxfBasePoint, - базовая точка вставки контуров ступеней
         extendTopTurnTread: extendTopTurnTread, - продление верхней забежной ступени для попадания в проём
-    
+
     Возвращаемое значение:
     объект  turnSteps = {
         meshes: treads; - мэши ступеней в виде единого 3D объекта
-        params: treadParams; - массив параметров каждой ступени    
+        params: treadParams; - массив параметров каждой ступени
     */
 
 	//параметры марша
 	var marshPar = getMarshParams(par.botMarshId);
 	par.h = marshPar.h_topWnd;
+
+	var hasTurnRack = false;
+	if (params.railingModel == "Деревянные балясины" || params.railingModel == "Дерево с ковкой") {
+		if (params.stairModel == 'Г-образная с забегом' || params.stairModel == 'Г-образная с площадкой') {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.botMarshId == 1) {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(2).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.botMarshId == 2) {
+			hasTurnRack = getMarshParams(2).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная с забегом' && par.turnId == 1) {
+			hasTurnRack = getMarshParams(1).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная с забегом' && par.turnId == 2) {
+			hasTurnRack = getMarshParams(3).hasRailing.in;
+		}
+	}
+	var rackSize = 95;
 
 	//параметры поворота
 	var turnPar = calcTurnParams(par.botMarshId);
@@ -1232,7 +1894,7 @@ function drawWndTreadsMetal(par) {
 	var stepWidthLow_ko = 55;
 
 	var dxfBasePoint = par.dxfBasePoint;
-	var material = par.material;
+	var material = params.materials.tread;
 	var treadParams = [];
 	var treads = new THREE.Object3D();
 	var risers = new THREE.Object3D();
@@ -1243,7 +1905,7 @@ function drawWndTreadsMetal(par) {
 	if (params.model == "лт") {
 		stepWidthLow = 100;
 		var treadSideOffset = 5;//зазор от торца ступени до тетивы
-		if (params.stairType == "рифленая сталь" || params.stairType == "лотки") treadSideOffset = 0;
+		if (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил") treadSideOffset = 0;
 
 		treadWidth = params.M - params.stringerThickness * 2 - treadSideOffset * 2;
 	}
@@ -1261,6 +1923,9 @@ function drawWndTreadsMetal(par) {
 		stepWidthLow: stepWidthLow,
 		dxfBasePoint: dxfBasePoint,
 		treadId: 1,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId
 	};
 
 	if (params.riserType == "есть") treadParams[1].stepWidthLow -= params.riserThickness / Math.cos(treadParams[1].edgeAngle)
@@ -1301,8 +1966,6 @@ function drawWndTreadsMetal(par) {
 		riser.position.x = params.nose// - params.riserThickness;
 		if (params.stairModel == "П-образная с забегом" && par.turnId == 2) riser.position.x = 20 - 0.01;
 		riser.position.y = -riserPar.width - params.treadThickness;
-		if (par.botMarshId == 1 && params.stairAmt1 == 0) riser.position.y += params.treadThickness;
-		//else riser.position.y += (marshPar.h - riserPar.width) / 2; //костыль чтобы не было пересечений
 		riser.position.z = tread1.position.z;
 
 		if (turnFactor < 0) riser.position.x += params.riserThickness;
@@ -1334,7 +1997,7 @@ function drawWndTreadsMetal(par) {
 	if (par.type == "ко") {
 		treadParams[2] = {
 			treadWidthX: params.M - 25 + 88,
-			treadWidthY: params.M,
+			treadWidthY: params.M - 0.01,
 			angleX: 30 * Math.PI / 180,
 			angleY: 30 * Math.PI / 180,
 			outerOffsetX: 0,
@@ -1344,6 +2007,8 @@ function drawWndTreadsMetal(par) {
 			notchDepthX: 0,
 			notchDepthY: 0,
 			dxfBasePoint: dxfBasePoint,
+			hasTurnRack: hasTurnRack,
+			isTread: true,
 		};
 	}
 	//if(params.riserType == "есть") treadParams[2].innerOffsetX -= params.riserThickness / Math.cos(treadParams[2].angleY)
@@ -1366,7 +2031,6 @@ function drawWndTreadsMetal(par) {
 	//лотки
 	if (params.stairType == "лотки") tread2.position.y += params.treadThickness - 4 - 0.01;
 	tread2.position.z = -(treadParams[1].treadWidth) / 2 * turnFactor;
-
 	treads.add(tread2);
 
 	/*подступенок 2*/
@@ -1375,32 +2039,34 @@ function drawWndTreadsMetal(par) {
 		var riserPar = {
 			len: treadParams[1].treadWidth / Math.cos(treadParams[1].edgeAngle),
 			width: par.h,
+			ang: treadParams[1].edgeAngle * turnFactor,
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
-			dxfBasePoint: dxfBasePoint,
+			dxfBasePoint: newPoint_xy(dxfBasePoint, 0, -500),
 		};
+		if (hasTurnRack && treadParams[1].riserFix) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+			riserPar.cutWndIn = treadParams[1].riserFix / Math.cos(treadParams[1].edgeAngle) + 0.03;
+		}
 
 		//отрисовка
 		riserPar = drawRectRiser(riserPar);
 		riser = riserPar.mesh;
 
 		riser.rotation.z = Math.PI / 2;
-		riser.rotation.y = - treadParams[1].edgeAngle * turnFactor;
-		riser.position.x = tread1.position.x + treadParams[1].stepWidthLow + (turnFactor > 0 ? params.riserThickness / Math.cos(treadParams[1].edgeAngle) : 0) + 0.01;
+		riser.rotation.y = (Math.PI / 2 - treadParams[1].edgeAngle) * turnFactor;
+		//базовая точка - внешний дальний угол ступени		
+		riser.position.x = tread1.position.x + treadParams[1].stepWidthHi + 0.01;
+		if (turnFactor == -1) riser.position.x += params.riserThickness / Math.cos(treadParams[1].edgeAngle);
 		riser.position.y = -params.treadThickness + 0.01;
-		riser.position.z = tread1.position.z + treadParams[1].treadWidth * turnFactor;
-		var dz = params.riserThickness * Math.sin(treadParams[1].edgeAngle);
-		riser.position.z += dz * turnFactor;
-		riser.position.x -= dz * Math.tan(treadParams[1].edgeAngle)
-		if (turnFactor > 0) riser.rotation.y += Math.PI * 1.5;
-		if (turnFactor < 0) riser.rotation.y += Math.PI / 2;
+		riser.position.z = tread1.position.z;
+
 
 		risers.add(riser);
 	}
 
 	/*забежная ступень 3*/
 
-	dxfBasePoint = newPoint_xy(dxfBasePoint, 1000, 0);
+	dxfBasePoint = newPoint_xy(dxfBasePoint, 1000 + treadWidth, 0);
 
 	//задаем параметры ступени
 	treadParams[3] = {
@@ -1411,6 +2077,10 @@ function drawWndTreadsMetal(par) {
 		stepWidthLow: stepWidthLow,
 		dxfBasePoint: dxfBasePoint,
 		treadId: 3,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId,
+		turnId: par.turnId
 	};
 
 	//удлиннение 3 забежной ступени на П-образной с забегом
@@ -1425,14 +2095,10 @@ function drawWndTreadsMetal(par) {
 	}
 	if (isLastTread) deltaLen = params.lastWinderTreadWidth - treadParams[3].stepWidthLow;
 
-	treadParams[3].stepWidthLow += deltaLen
-
-
-
+	treadParams[3].stepWidthLow += deltaLen;
 
 	var tread3 = drawWndTread1(treadParams[3]).mesh;
 	tread3.rotation.x = -Math.PI / 2;
-	//tread3.rotation.y = -Math.PI;
 
 	tread3.position.x = params.M + turnPar.topMarshOffsetX - treadZOffset;
 	tread3.position.y = par.h * 2 - params.treadThickness + 0.01;
@@ -1456,12 +2122,17 @@ function drawWndTreadsMetal(par) {
 
 	if (params.riserType == "есть") {
 		var riserPar = {
-			len: treadParams[3].treadWidth / Math.cos(treadParams[3].edgeAngle) - params.riserThickness * Math.tan(treadParams[3].edgeAngle),
+			len: treadParams[2].treadWidthY / Math.cos(treadParams[2].angleY),
 			width: par.h,
+			ang: treadParams[3].edgeAngle,
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
-			dxfBasePoint: dxfBasePoint,
+			dxfBasePoint: newPoint_xy(dxfBasePoint, 0, -500),
 		};
+		if (hasTurnRack) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+			//riserPar.cutWndIn = params.rackSize / Math.cos(treadParams[3].edgeAngle) + 10;
+			riserPar.len -= params.rackSize / Math.cos(treadParams[3].edgeAngle) + 0.5; //0.5 - подогнано чтобы не было пересечения со столбом
+		}
 
 		//отрисовка
 		riserPar = drawRectRiser(riserPar);
@@ -1469,12 +2140,20 @@ function drawWndTreadsMetal(par) {
 
 		riser.rotation.z = -Math.PI / 2;
 		riser.rotation.y = treadParams[2].angleY;
-		riser.position.x = tread2.position.x - (treadParams[2].treadWidthY - treadParams[2].stepWidthY) + 0.01;
+
+		//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+		var offsetX = -(riserPar.len - riserPar.thk * Math.tan(riserPar.ang));
+
+		//if (hasTurnRack) offsetX -= 0.01;
+
+		//смещаем базовую точку на острый угол внешней стороны марша
+		riser.children[0].geometry.translate(offsetX, 0, 0)
+		riser.position.x = tread2.position.x + (treadParams[2].stepWidthY) + 0.01;
 		tread2.position.x -= 0.01; //корректинуем позицию чтобы не было пересечений
 		riser.position.y = (turnFactor > 0 ? riserPar.width : 0) + par.h - params.treadThickness + 0.1;
-		riser.position.z = tread2.position.z + treadParams[2].treadWidthX * turnFactor;
-
+		riser.position.z = tread2.position.z + treadParams[2].stepWidthX * turnFactor;
 		if (turnFactor < 0) riser.rotation.x = -Math.PI;
+
 
 		risers.add(riser);
 	}
@@ -1492,20 +2171,98 @@ function drawWndTreadsMetal(par) {
 
 } //end of drawWndTreadsMetal
 
+/**
+	Создает отверстия в геометрии
+	@param {geometry} geom геометия в готорой нужно создать отверстие
+
+	@param holeShape (если отверстие не квадратное)
+
+	если отсутствует шейп то отверстие квадратное
+	@param holeBasePoint - базовая точка отверстия
+	@param holeWidth - ширина
+	@param holeHeight  - высота
+	@param holeDepth - глубина
+	@param dxfBasePoint - базовая точка в dxf
+
+	@return {geometry}
+*/
+function drawNotchInMesh(par) {
+	var geom = par.geom;
+	if (geom) {
+		//преобразуем геометрию в BSP объект
+		var geomBSP = new ThreeBSP(geom);
+		var holeShape = par.holeShape;
+		if (!holeShape) {
+			// Точки отверстия
+			var p1 = newPoint_xy(par.holeBasePoint, par.holeWidth, 0);
+			var p2 = newPoint_xy(p1, 0, par.holeHeight);
+			var p3 = newPoint_xy(p2, -par.holeWidth, 0);
+			var p4 = newPoint_xy(p3, 0, -par.holeHeight);
+
+			var points = [p1, p2, p3, p4];
+
+			//Параметры шейпа
+			var shapePar = {
+				points: points,
+				dxfArr: dxfPrimitivesArr,
+				dxfBasePoint: par.dxfBasePoint,
+				markPoints: false, //пометить точки в dxf для отладки
+			}
+			holeShape = drawShapeByPoints2(shapePar).shape;
+		}
+		var extrudeOptions = {
+			amount: par.holeDepth,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		//преобразуем шейп отверстия в геометрию
+		var holeGeom = new THREE.ExtrudeGeometry(holeShape, extrudeOptions);
+		//преобразуем геометрию отверстия в BSP объект
+		var holeBSP = new ThreeBSP(holeGeom);
+		//Выдавливаем отверстие в столбе
+		var geomBSP = geomBSP.subtract(holeBSP);
+		//Преобразуем обратно в геометрию
+		geom = geomBSP.toGeometry();
+		par.geom = geom;
+	}
+	return par;
+}
 
 function drawWndTreadsMono(par) {
     /*функция отрисовывает блок забежных ступеней для лестниц монокосоур
-    
+
     Исходные данные:
         botMarshId - id нижнего марша
         dxfBasePoint: dxfBasePoint, - базовая точка вставки контуров ступеней
-    
+
     Возвращаемое значение:
     объект  turnSteps = {
         treads: treads; - мэши ступеней в виде единого 3D объекта
         params: treadParams; - массив параметров каждой ступени
-    
+
     */
+
+	var hasTurnRack = false;
+	if (params.railingModel == "Деревянные балясины" || params.railingModel == "Дерево с ковкой") {
+		if (params.stairModel == 'Г-образная с забегом' || params.stairModel == 'Г-образная с площадкой') {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.botMarshId == 1) {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(2).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.botMarshId == 2) {
+			hasTurnRack = getMarshParams(2).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная с забегом' && par.turnId == 1) {
+			hasTurnRack = getMarshParams(1).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная с забегом' && par.turnId == 2) {
+			hasTurnRack = getMarshParams(3).hasRailing.in;
+		}
+	}
+
+	var rackSize = 95;
 
 	if (params.calcType == "mono") par.type = "mono";
 
@@ -1532,6 +2289,11 @@ function drawWndTreadsMono(par) {
 		edgeAngle: Math.PI / 6,
 		stepWidthLow: stepWidthLow,
 		dxfBasePoint: par.dxfBasePoint,
+		treadId: 1,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId,
+		turnId: par.turnId
 	};
 
 	var tread1 = drawWndTread1(treadParams[1]).mesh;
@@ -1541,7 +2303,7 @@ function drawWndTreadsMono(par) {
 
 	tread1.position.x = 0;
 	tread1.position.y = -params.treadThickness + 0.02;
-	tread1.position.z = -(treadParams[1].treadWidth - treadZOffset) / 2 * turnFactor;
+	tread1.position.z = -(treadParams[1].treadWidth - treadZOffset + 0.01) / 2 * turnFactor;
 	treads.add(tread1);
 
 	/*забежная ступень 2*/
@@ -1553,10 +2315,14 @@ function drawWndTreadsMono(par) {
 		treadWidthX: params.M,
 		treadWidthY: params.M + 40 + 5, //40мм стойка, 5мм свес
 		angleX: 30 * Math.PI / 180,
-		angleY: 30 * Math.PI / 180,
-		innerOffsetX: 10,
-		innerOffsetY: 130, //так исторически сложилось
+		angleY: 30 * Math.PI / 180, // было 30
+		innerOffsetX: 25,
+		innerOffsetY: 130, //130, //так исторически сложилось
+		//outerOffsetY: 200,
 		dxfBasePoint: par.dxfBasePoint,
+		marshId: par.botMarshId,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
 	};
 
 
@@ -1568,7 +2334,7 @@ function drawWndTreadsMono(par) {
 	tread2.rotation.z = -Math.PI / 2;
 	tread2.position.x = -treadParams[2].stepWidthY + params.M + 45;
 	tread2.position.y = par.h - params.treadThickness + 0.02;
-	tread2.position.z = -treadParams[2].treadWidthX / 2 * turnFactor;
+	tread2.position.z = -(treadParams[2].treadWidthX / 2 + 0.01) * turnFactor;
 
 	treads.add(tread2);
 
@@ -1585,6 +2351,10 @@ function drawWndTreadsMono(par) {
 		stepWidthLow: stepWidthLow,
 		dxfBasePoint: par.dxfBasePoint,
 		treadId: 3,
+
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId
 	};
 
 	//удлиннение последней ступени
@@ -1607,7 +2377,7 @@ function drawWndTreadsMono(par) {
 	//	tread3.rotation.y = -Math.PI;
 	tread3.position.x = params.M + 45;
 	tread3.position.y = par.h * 2 - params.treadThickness + 0.02;
-	tread3.position.z = (params.M / 2 + treadParams[3].stepWidthLow - 5) * turnFactor;
+	tread3.position.z = (params.M / 2 + treadParams[3].stepWidthLow - 5 - 0.01) * turnFactor;
 
 	if (turnFactor == -1) {
 		tread3.rotation.z = Math.PI;
@@ -1641,6 +2411,8 @@ function drawWndTreadsTimber(par) {
 		params: treadParams; - массив параметров каждой ступени
 
 	*/
+	var techDelta = 0;
+	if (testingMode) techDelta = 0.01;
 	//параметры марша
 	var marshPar = getMarshParams(par.botMarshId);
 	//параметры поворота
@@ -1651,7 +2423,7 @@ function drawWndTreadsTimber(par) {
 
 	var dxfBasePoint = par.dxfBasePoint;
 	var topMarshOffset = 0; //заглушка
-	var material = par.treadMaterial;
+	var material = params.materials.tread;
 	var treadParams = [];
 	var treads = new THREE.Object3D();
 	var risers = new THREE.Object3D();
@@ -1680,7 +2452,11 @@ function drawWndTreadsTimber(par) {
 		outerOffset: 0,
 		dxfBasePoint: par.dxfBasePoint,
 		treadId: 1,
+		techDelta: techDelta * 2,
 	};
+	if (marshPar.topTurn == 'забег' && marshPar.hasRailing.out && params.model == 'косоуры') {
+		treadParams[1].outNotch = { x: params.rackSize, y: params.nose };
+	}
 
 	//выступы ступени чтобы она входила в паз под прямым углом (только для лестницы без подступенков)
 	if (params.riserType == "нет") {
@@ -1705,7 +2481,7 @@ function drawWndTreadsTimber(par) {
 	tread1.rotation.z = -Math.PI / 2;
 
 	tread1.position.x = 0;
-	tread1.position.y = -params.treadThickness;
+	tread1.position.y = -params.treadThickness + techDelta;
 	tread1.position.z = -(params.M / 2 - treadZOffset) * turnFactor;
 
 	treads.add(tread1);
@@ -1715,11 +2491,13 @@ function drawWndTreadsTimber(par) {
 	if (params.riserType == "есть") {
 		var riserPar = {
 			len: treadParams[1].treadWidth,
-			width: par.turnId == 1 ? par.h : par.h_topWnd,
+			width: par.h,//par.turnId == 1 ? par.h : par.h_topWnd,
 			thk: params.riserThickness - 0.01,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
 		};
+		if (params.stairModel == 'П-образная с забегом') riserPar.width = par.turnId == 1 ? par.h : par.h_topWnd;
+		if (marshPar.stairAmt == 0) riserPar.width -= params.treadThickness;
 
 		//отрисовка
 		riserPar = drawRectRiser(riserPar);
@@ -1727,7 +2505,7 @@ function drawWndTreadsTimber(par) {
 		riser.rotation.z = Math.PI / 2;
 		riser.rotation.y = Math.PI / 2 * turnFactor;
 		riser.position.x = params.nose;
-		riser.position.y = - riserPar.width - params.treadThickness - 0.01;
+		riser.position.y = - riserPar.width - params.treadThickness;
 		riser.position.z = tread1.position.z;
 
 		if (turnFactor < 0) riser.position.x += params.riserThickness;
@@ -1761,6 +2539,7 @@ function drawWndTreadsTimber(par) {
 		notchDepthY: notchDepthY,
 		dxfBasePoint: par.dxfBasePoint,
 		treadId: 2,
+		techDelta: techDelta * 2,
 	};
 
 	if (params.riserType == "есть") treadParams[2].innerOffsetY = notchDepthY;
@@ -1775,7 +2554,7 @@ function drawWndTreadsTimber(par) {
 	tread2.rotation.z = -Math.PI / 2;
 	//позиция считается так, чтобы внешний угол оказался в проектном положении
 	tread2.position.x = -treadParams[2].stepWidthY + params.M + turnPar.topMarshOffsetX - treadZOffset;
-	tread2.position.y = par.h_topWnd - params.treadThickness;
+	tread2.position.y = par.h_topWnd - params.treadThickness + techDelta;
 	tread2.position.z = -(params.M / 2 - treadZOffset) * turnFactor;
 
 	treads.add(tread2);
@@ -1798,14 +2577,14 @@ function drawWndTreadsTimber(par) {
 			riserPar.width = params.M - params.rackSize;
 			if (params.model == "тетива+косоур") riserPar.width -= params.stringerThickness;
 		}
-
+		riserPar.height -= techDelta * 2;//В момент тестирования чуть чуть ужимаем подступенок
 		riserPar = drawWinderRiser(riserPar);
 		var riser2 = riserPar.mesh;
 
-		var displacementZ = ((6 * Math.cos(riserPar.ang)) / Math.tan(riserPar.ang) - params.riserThickness) * Math.sin(riserPar.ang);	// перемещение базовой точки подступенка на шстрый угол для удобства позиционирования, 6 = длина фаски
+		var displacementZ = ((6 * Math.cos(riserPar.ang)) / Math.tan(riserPar.ang) - params.riserThickness) * Math.sin(riserPar.ang) + 1;	// 1 Подогнано, т.к. позиция неверная// перемещение базовой точки подступенка на шстрый угол для удобства позиционирования, 6 = длина фаски
 
 		riser2.rotation.z = Math.PI / 2;
-		riser2.position.y -= params.treadThickness;
+		riser2.position.y -= params.treadThickness - techDelta;
 		riser2.position.x = -displacementZ * Math.tan(riserPar.ang) + treadParams[1].stepWidthLow + params.riserThickness / Math.cos(riserPar.ang);
 		riser2.position.z = riser.position.z + (treadParams[1].treadWidth - (displacementZ - 0.01)) * turnFactor;
 
@@ -1836,6 +2615,19 @@ function drawWndTreadsTimber(par) {
 		}
 	}
 
+	var thirdTreadFix = 0;
+	if (params.riserType == 'нет') {
+		thirdTreadFix = 20;
+		if (params.model == 'тетивы' && !(params.stairModel == 'П-образная с забегом' && par.turnId == 1)) {
+			thirdTreadFix += 2.5;
+		}
+		if (params.model == 'косоуры' && params.stairModel == 'П-образная с забегом' && par.turnId == 1) {
+			thirdTreadFix += 10;
+		}
+	}
+
+	stepWidthLow -= thirdTreadFix;
+
 	treadParams[3] = {
 		treadWidth: treadWidth,
 		innerOffset: ledgeWidth,
@@ -1844,20 +2636,22 @@ function drawWndTreadsTimber(par) {
 		stepWidthLow: stepWidthLow,
 		dxfBasePoint: par.dxfBasePoint,
 		treadId: 3,
+		techDelta: techDelta * 2,
 	};
 
 	if (params.model == "косоуры") treadParams[3].outerOffset = 0;
-
 	var tread3 = drawWndTread1(treadParams[3]).mesh;
 	tread3.rotation.x = -Math.PI / 2;
 	//tread3.rotation.y = -Math.PI;
 
 	tread3.position.x = params.M + turnPar.topMarshOffsetX - treadZOffset;
-	tread3.position.y = par.h_topWnd * 2 - params.treadThickness;
+	tread3.position.y = par.h_topWnd * 2 - params.treadThickness + techDelta;
 	//позиция считается от переднего угла на внутренней стороне
 	tread3.position.z = (params.M / 2 - (params.rackSize - params.stringerThickness) / 2 - params.stringerThickness + treadParams[3].stepWidthLow + rackToStepDim_3) * turnFactor;
 
 	if (params.model == "косоуры" || params.model == "тетива+косоур") tread3.position.z = (params.M / 2 - params.rackSize + treadParams[3].stepWidthLow + rackToStepDim_3) * turnFactor;
+
+
 
 	if (turnFactor == -1) {
 		tread3.rotation.z = Math.PI;
@@ -1870,7 +2664,7 @@ function drawWndTreadsTimber(par) {
 	if (params.riserType == "есть") {
 		var riserPar = {
 			height: par.h_topWnd,
-			thk: params.riserThickness - 0.02,
+			thk: params.riserThickness - 0.05,
 			ang: -Math.PI / 6,
 			width: params.M - params.stringerThickness - params.stringerThickness / 2 - params.rackSize / 2,
 			material: par.riserMaterial,
@@ -1881,14 +2675,14 @@ function drawWndTreadsTimber(par) {
 			riserPar.width = params.M - params.rackSize;
 			if (params.model == "тетива+косоур") riserPar.width -= params.stringerThickness;
 		}
-
+		riserPar.height -= techDelta * 2;// Чуть чуть ужимаем подступенок в момент теститрования
 		riserPar = drawWinderRiser(riserPar);
 		var riser = riserPar.mesh;
 
 		riser.rotation.y = - Math.PI;
-		riser.position.x = tread2.position.x + displacementZ - (treadParams[2].treadWidthY - treadParams[2].stepWidthY) + treadParams[2].innerOffsetY;
-		riser.position.z = tread2.position.z + ((displacementZ - 0.01) * Math.tan(riserPar.ang) + treadParams[2].treadWidthX) * turnFactor;
-		riser.position.y = riserPar.height - params.treadThickness;
+		riser.position.x = tread2.position.x + displacementZ - (treadParams[2].treadWidthY - treadParams[2].stepWidthY) + treadParams[2].innerOffsetY - thirdTreadFix;
+		riser.position.z = tread2.position.z + ((displacementZ - 0.025) * Math.tan(riserPar.ang) + treadParams[2].treadWidthX) * turnFactor;
+		riser.position.y = riserPar.height - params.treadThickness + techDelta * 3;
 
 		if (turnFactor < 0) {
 			riser.rotation.x = -Math.PI / 2;
@@ -1908,8 +2702,261 @@ function drawWndTreadsTimber(par) {
 
 	return turnSteps;
 
-} //end of drawWndTreadsTimber 
+} //end of drawWndTreadsTimber
 
+/* *функция отрисовывает блок забежных ступеней деревянных лестниц серии эконом
+
+    Исходные данные:
+        botMarshId - id нижнего марша
+        dxfBasePoint: dxfBasePoint, - базовая точка вставки контуров ступеней
+
+    Возвращаемое значение:
+    объект  turnSteps = {
+        treads: treads; - мэши ступеней в виде единого 3D объекта
+        params: treadParams; - массив параметров каждой ступени
+
+    */
+
+
+function drawWndTreadsTimber_stock(par) {
+
+	var hasTurnRack = false;
+	var rackLedge = 5; //выступ ступеней относительно плоскости столба
+
+
+
+	//константы
+	var stepWidthLow = params.rackSize; //40мм размер стойки, по 5мм свес
+
+
+	//параметры марша
+	var marshPar = getMarshParams(par.botMarshId);
+
+	par.h = marshPar.h_topWnd;
+
+	var treadParams = [];
+	var treads = new THREE.Object3D();
+	var risers = new THREE.Object3D();
+
+	/*забежная ступень 1*/
+
+	//задаем параметры ступени
+	var treadZOffset = 0; //смещение ступени к центру поворота
+
+	treadParams[1] = {
+		treadWidth: params.M + rackLedge,
+		edgeAngle: 25 / 180 * Math.PI, //подогнано чтобы свес на внешней стороне марша при ширине 900 был 20мм
+		stepWidthLow: params.rackSize + params.nose,
+		dxfBasePoint: par.dxfBasePoint,
+		treadId: 1,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId,
+		turnId: par.turnId
+	};
+	if (params.riserType == "есть") {
+		treadParams[1].stepWidthLow += params.riserThickness;
+	}
+
+	var tread1 = drawWndTread1(treadParams[1]).mesh;
+
+	tread1.rotation.x = -Math.PI / 2;
+	tread1.rotation.z = -Math.PI / 2;
+
+	tread1.position.x = 0;
+	tread1.position.y = -params.treadThickness + 0.02;
+	tread1.position.z = -params.M / 2 * turnFactor;
+	/*
+	if (params.riserType == "есть"){
+		tread1.position.x -= params.riserThickness;
+	}
+	*/
+	treads.add(tread1);
+
+	/*подступенок 1*/
+
+	if (params.riserType == "есть") {
+		var riserPar = {
+			len: treadParams[1].treadWidth,
+			width: par.h,//par.turnId == 1 ? par.h : par.h_topWnd,
+			thk: params.riserThickness - 0.01,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: dxfBasePoint,
+		};
+		if (params.calcType == 'timber_stock') riserPar.width = marshPar.h
+		//if (params.stairModel == 'П-образная с забегом') riserPar.width = par.turnId == 1 ? par.h : par.h_topWnd;
+		if (marshPar.stairAmt == 0) riserPar.width -= params.treadThickness;
+
+		//отрисовка
+		riserPar = drawRectRiser(riserPar);
+		riser = riserPar.mesh;
+		riser.rotation.z = Math.PI / 2;
+		riser.rotation.y = Math.PI / 2 * turnFactor;
+		riser.position.x = params.nose;
+		riser.position.y = - riserPar.width - params.treadThickness;
+		riser.position.z = tread1.position.z;
+
+		if (turnFactor < 0) riser.position.x += params.riserThickness;
+
+		risers.add(riser);
+	}
+
+	/*забежная ступень 2*/
+	par.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2000, 0);
+
+	//задаем параметры ступени
+
+	treadParams[2] = {
+		treadWidthX: params.M,
+		treadWidthY: params.M + rackLedge, //40мм стойка, 5мм свес
+		angleX: 30 * Math.PI / 180,
+		angleY: 35 / 180 * Math.PI, //подогнано чтобы свес на внешней стороне марша при ширине 900 был 20мм
+		innerOffsetX: params.rackSize,
+		innerOffsetY: params.rackSize,
+		dxfBasePoint: par.dxfBasePoint,
+		marshId: par.botMarshId,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+	};
+
+
+
+
+	var tread2 = drawWndTread2(treadParams[2]).mesh;
+
+	tread2.rotation.x = -Math.PI / 2;
+	tread2.rotation.z = -Math.PI / 2;
+	tread2.position.x = -treadParams[2].stepWidthY + params.M + params.nose;
+	tread2.position.y = par.h - params.treadThickness + 0.02;
+	tread2.position.z = -(treadParams[2].treadWidthX / 2 + 0.01) * turnFactor;
+	if (params.riserType == "есть") tread2.position.x += params.riserThickness;
+
+
+	treads.add(tread2);
+
+
+	/*подступенок 2*/
+
+	if (params.riserType == "есть") {
+		var riserPar = {
+			len: treadParams[1].treadWidth / Math.cos(treadParams[1].edgeAngle),
+			width: par.h,
+			ang: treadParams[1].edgeAngle * turnFactor,
+			thk: params.riserThickness,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: dxfBasePoint,
+		};
+		if (hasTurnRack && treadParams[1].riserFix) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+			riserPar.cutWndIn = treadParams[1].riserFix / Math.cos(treadParams[1].edgeAngle);
+		}
+
+		//отрисовка
+		riserPar = drawRectRiser(riserPar);
+		riser = riserPar.mesh;
+
+		riser.rotation.z = Math.PI / 2;
+		riser.rotation.y = (Math.PI / 2 - treadParams[1].edgeAngle) * turnFactor;
+		//базовая точка - внешний дальний угол ступени		
+		riser.position.x = tread1.position.x + treadParams[1].stepWidthHi + 0.01;
+		if (turnFactor == -1) riser.position.x += params.riserThickness / Math.cos(treadParams[1].edgeAngle);
+		riser.position.y = -params.treadThickness + 0.01;
+		riser.position.z = tread1.position.z;
+
+		risers.add(riser);
+	}
+
+	/*забежная ступень 3*/
+	par.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 3000, 0);
+
+	//задаем параметры ступени
+
+	treadParams[3] = {
+		treadWidth: params.M + rackLedge,
+		innerOffset: 0,
+		outerOffset: 0,
+		edgeAngle: Math.PI / 6,
+		stepWidthLow: params.rackSize,
+		dxfBasePoint: par.dxfBasePoint,
+		treadId: 3,
+
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId
+	};
+
+	// учитываем межмаршевое расстояние
+	if (par.plusMarshDist) {
+		treadParams[3].stepWidthLow += params.marshDist;
+		treadParams[3].deltaLen = params.marshDist;
+	}
+
+	var tread3 = drawWndTread1(treadParams[3]).mesh;
+
+	tread3.rotation.x = -Math.PI / 2;
+
+	tread3.position.x = params.M + params.nose;
+	if (params.riserType == "есть") tread3.position.x += params.riserThickness;
+	tread3.position.y = par.h * 2 - params.treadThickness + 0.02;
+	tread3.position.z = (params.M / 2 - 0.01) * turnFactor;
+	if (par.plusMarshDist) tread3.position.z += params.marshDist * turnFactor
+
+	if (turnFactor == -1) {
+		tread3.rotation.z = Math.PI;
+	}
+
+	treads.add(tread3);
+
+
+	/*подступенок 3*/
+
+	if (params.riserType == "есть") {
+		var riserPar = {
+			len: (treadParams[2].treadWidthY - treadParams[2].innerOffsetY) / Math.cos(treadParams[2].angleY),
+			width: par.h,
+			ang: treadParams[2].angleY,
+			thk: params.riserThickness,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: dxfBasePoint,
+		};
+
+		//отрисовка
+		riserPar = drawRectRiser(riserPar);
+		riser = riserPar.mesh;
+
+		riser.rotation.z = -Math.PI / 2;
+		riser.position.z = -params.M / 2
+		riser.rotation.z = -Math.PI / 2;
+		riser.rotation.y = treadParams[2].angleY;
+		riser.position.x = tread2.position.x - (treadParams[2].treadWidthY - treadParams[2].stepWidthY) + treadParams[2].innerOffsetY + 0.01;
+		tread2.position.x -= 0.01; //корректинуем позицию чтобы не было пересечений
+		riser.position.y = (turnFactor > 0 ? riserPar.width : 0) + par.h - params.treadThickness + 0.1;
+		riser.position.z = tread2.position.z + treadParams[2].treadWidthX * turnFactor;
+		if (turnFactor < 0) riser.rotation.x = -Math.PI;
+
+		/*
+		//смещаем базовую точку на острый угол внешней стороны марша
+		riser.children[0].geometry.translate(-(riserPar.len + riserPar.thk * Math.tan(riserPar.ang)), 0, 0)
+		riser.rotation.y = treadParams[2].angleY;
+
+	
+		riser.position.x = tread2.position.x + (treadParams[2].stepWidthY) + 0.01;
+		tread2.position.x -= 0.01; //корректинуем позицию чтобы не было пересечений
+		riser.position.y = (turnFactor > 0 ? riserPar.width : 0) + par.h - params.treadThickness + 0.1;
+		riser.position.z = tread2.position.z + treadParams[2].stepWidthX * turnFactor;
+		if (turnFactor < 0) riser.rotation.x = -Math.PI;
+		*/
+
+		risers.add(riser);
+	}
+
+	/*добавляем к параметрам*/
+	par.treads = treads;
+	par.risers = risers;
+	par.params = treadParams;
+
+	return par;
+
+} //end of drawWndTreadsTimber_stock
 
 
 function calcTreadLen() {
@@ -1935,13 +2982,13 @@ function calcTreadLen() {
 	}
 
 	if (params.calcType == "vhod") {
-		treadLen = params.M - params.stringerThickness * 2 - 6;
+		treadLen = params.M - params.stringerThickness * 2;
+		if (params.stairType == 'дпк' || params.stairType == 'лиственница тер.') treadLen -= 6;
 	}
 
 	return treadLen;
 
 }//end of calcTreadWidth
-
 
 function timberBlockfunctions() { };
 
@@ -1967,65 +3014,62 @@ function calcMarshNotches(marshId) {
 	var model = params.model;
 	var topTreadWidth = 40;
 
-	if (params.stairModel == 'Прямая') {
+	if (params.stairModel == 'Прямая' && !(params.calcType == 'timber' || params.calcType == 'timber_stock')) {
 		if (railingSide !== 'две' && railingSide !== 'нет') {
 			railingSide = railingSide == 'внешнее' ? 'внутреннее' : 'внешнее';
 		}
 	}
 
-	if (marshPar.botTurn == "пол" && params.calcType == 'timber' && marshId == 1) {
-		var rackDelta = params.rackSize / 2 - params.stringerThickness / 2 + params.stringerSlotsDepth;
-		if (model == 'косоуры') {
-			rackDelta = params.rackSize;
-		}
-		if (marshPar.hasRailing.in && params.firstNewellPos == 'на полу') {
-			notches.botIn = { x: params.nose, y: rackDelta };
-		}
-		if (marshPar.hasRailing.out && params.firstNewellPos == 'на полу') {
-			notches.botOut = { x: params.nose, y: rackDelta };
-		}
-	}
-
-	//снизу перекрытие
+	//снизу пол
 	if (marshPar.botTurn == "пол") {
-		if (railingSide == "внешнее" || railingSide == "две") {
-			notches.botOut = { x: params.nose, y: params.rackSize / 2 - params.stringerThickness / 2 + params.stringerSlotsDepth };
-			if (model == "косоуры") {
-				notches.botOut.y = params.rackSize;
+		if (model == "тетивы" || model == "тетива+косоур") {
+			if (railingSide == 'внутреннее' || railingSide == 'две') {
+				notches.botIn = {
+					x: params.nose + 0.01,
+					y: params.rackSize / 2 - params.stringerThickness / 2 + params.stringerSlotsDepth + 0.01,
+				};
+			}
+			if ((railingSide == 'внешнее' || railingSide == 'две') && model == 'тетивы') {
+				notches.botOut = {
+					x: params.nose + 0.01,
+					y: params.rackSize / 2 - params.stringerThickness / 2 + params.stringerSlotsDepth + 0.01,
+				};
 			}
 		}
 	}
 
 	//снизу поворот
-	if (marshPar.botTurn != "пол") {
-		if ((model == "косоуры" || marshPar.botTurn == "площадка") && railingSide == "внешнее" || railingSide == "две") {
-			notches.botOut = {
-				x: params.nose,
-				y: params.rackSize / 2 - params.stringerThickness / 2 + params.stringerSlotsDepth
-			};
-			if (model == "косоуры" || model == "тетива+косоур") notches.botOut.y = params.rackSize;
-		}
-
+	if (marshPar.botTurn != "пол" && params.calcType !== 'timber_stock') {
 		if (model == "косоуры" || model == "тетива+косоур") {
 			notches.botIn = {
 				x: -topMarshZOffset + params.nose,
 				y: params.rackSize - params.stringerSlotsDepth,
 			};
-
 		}
-
 		if (model == "тетивы") {
 			notches.botIn = {
 				x: -topMarshZOffset + (params.rackSize - params.stringerThickness) / 2 + params.nose,
 				y: (params.rackSize - params.stringerThickness) / 2,
 			};
+			if (params.stairModel == 'П-образная с площадкой') {
+				notches.botIn = {
+					x: 42.5,//(params.rackSize - params.stringerThickness) / 2 + params.nose,
+					y: params.rackSize / 2 - params.stringerThickness / 2,// params.stringerSlotsDepth,
+				};
+			}
 			if (marshPar.botTurn == "забег") notches.botIn.x -= 25;
+		}
+		if (params.calcType == "timber_stock") {
+			notches.botIn = {
+				x: params.nose,
+				y: params.rackSize,
+			};
 		}
 	}
 
 	//сверху перекрытие
 	if (marshPar.topTurn == "пол") {
-		notches.topIn.x = topTreadWidth - params.riserThickness;
+		notches.topIn.x = topTreadWidth - params.riserThickness + 0.01;
 		notches.topIn.y = params.rackSize;
 
 		if (model == "тетивы") {
@@ -2035,7 +3079,7 @@ function calcMarshNotches(marshId) {
 			}
 		}
 
-		notches.topOut.x = topTreadWidth - params.riserThickness;
+		notches.topOut.x = topTreadWidth - params.riserThickness + 0.01;
 		notches.topOut.y = params.rackSize - (params.stringerThickness - params.stringerSlotsDepth);
 		if (model == "косоуры") {
 			notches.topOut.y = params.rackSize;
@@ -2046,8 +3090,8 @@ function calcMarshNotches(marshId) {
 			}
 		}
 
-		if (railingSide == "внутреннее" || railingSide == "две") {
-			notches.botIn = { x: params.nose, y: params.rackSize / 2 - params.stringerThickness / 2 + params.stringerSlotsDepth };
+		if ((railingSide == "внутреннее" || railingSide == "две") && params.stairModel !== 'П-образная с площадкой') {
+			// notches.botIn = { x: params.nose, y: params.rackSize/2 - params.stringerThickness/2 + params.stringerSlotsDepth };
 			if (model == "косоуры" || model == "тетива+косоур") {
 				notches.botIn.y = params.rackSize;
 			}
@@ -2058,11 +3102,16 @@ function calcMarshNotches(marshId) {
 	if (marshPar.topTurn != "пол") {
 		if (model == "косоуры" || model == "тетива+косоур") {
 			notches.topIn = {
-				x: marshPar.a - (marshPar.b + topMarshXOffset),
+				x: marshPar.a - (marshPar.b + topMarshXOffset) + 0.01,
 				y: params.rackSize - params.stringerSlotsDepth
 			};
+			if (params.stairModel == 'П-образная с площадкой') {
+				notches.topIn = {
+					x: params.nose + 30,
+					y: params.rackSize - params.stringerSlotsDepth
+				};
+			}
 		}
-
 		if (model == "тетивы") {
 			notches.topIn = {
 				x: marshPar.a - (marshPar.b - (params.rackSize - params.stringerThickness) / 2 + topMarshXOffset),
@@ -2072,8 +3121,23 @@ function calcMarshNotches(marshId) {
 		}
 	}
 
-	if (model == 'косоуры' && params.stairModel == 'П-образная трехмаршевая' && marshId == 3) {
-		notches.botIn = { x: 50, y: params.rackSize - params.stringerSlotsDepth }//recalc 50 FIX
+	//костыли
+	if (params.calcType == "timber") {
+		if (model == 'косоуры' && params.stairModel == 'П-образная трехмаршевая' && marshId == 3) {
+			notches.botIn = { x: 50, y: params.rackSize - params.stringerSlotsDepth }
+		}
+
+		if (marshId == 3 && (model == "косоуры" || model == "тетива+косоур") && params.calcType == 'timber') {
+			notches.botIn = {
+				x: -topMarshZOffset + params.nose,
+				y: params.rackSize - params.stringerSlotsDepth,
+			};
+		}
+	}
+
+	for (var notch in notches) {
+		notches[notch].x += 0.01;
+		notches[notch].y += 0.01;
 	}
 
 	return notches;
@@ -2085,6 +3149,7 @@ function calcMarshNotches(marshId) {
  * @returns {*}
  */
 function drawNotchedPlate(par) {
+
     /*
     par = {
         len
@@ -2096,12 +3161,12 @@ function drawNotchedPlate(par) {
             botOut: {x: 0, y:0},
             topIn: {x: 0, y:0},
             topOut: {x: 0, y:0},
+			middle
             }
         dxfArr
         dxfBasePoint
         }
     */
-	var material = params.materials.tread_old;
 
 	//пересчет внутренней/внешней стороны на правую/левую
 
@@ -2163,7 +3228,7 @@ function drawNotchedPlate(par) {
 
 	var shape = new THREE.Shape();
 
-	if (p0.x != p1.x || p0.y != p1.y) addLine(shape, par.dxfArr, p0, p1, par.dxfBasePoint);
+	// if(p0.x != p1.x || p0.y != p1.y) addLine(shape, par.dxfArr, p0, p1, par.dxfBasePoint);
 	if (p1.x != p2.x || p1.y != p2.y) addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
 	if (p2.x != p3.x || p2.y != p3.y) addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
 	if (p3.x != p4.x || p3.y != p4.y) addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
@@ -2190,8 +3255,43 @@ function drawNotchedPlate(par) {
 	};
 	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	par.mesh = new THREE.Mesh(geometry, material);
+	par.mesh = new THREE.Mesh(geometry, params.materials.tread);
 
+	//сохраняем данные для спецификации
+	var treadPar = getTreadParams(); //функция в файле calcSpecGeneral.js
+
+	var partName = "tread";
+	$.each(par.notches, function () {
+		if (this.x && this.y) partName = "notchedTread";
+	})
+	if (typeof specObj != 'undefined' && params.stairType != "нет") {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Ступень",
+				area: 0,
+				paintedArea: 0,
+				metalPaint: treadPar.metalPaint,
+				timberPaint: treadPar.timberPaint,
+				division: treadPar.division,
+				workUnitName: "amt",
+				group: "treads",
+			}
+			if (partName == "notchedTread") specObj[partName].name = "Ступень с вырезами";
+		}
+
+
+		var area = par.len * par.width / 1000000;
+		var paintedArea = area * 2 + (par.len + par.width) * 2 * par.thk / 1000000;
+
+		var name = Math.round(par.len) + "x" + Math.round(par.width) + "x" + par.thk;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+		specObj[partName]["area"] += area;
+		specObj[partName]["paintedArea"] += paintedArea;
+	}
 	return par;
 
 }//end of drawNotchedTread
@@ -2202,16 +3302,17 @@ function drawNotchedPlate(par) {
 
 function calcPltPartsParams(par) {
 	var minPartWidth = 30;
-	if (params.stairType == 'дпк') {
-		par.maxWidth = 150;
+	if (params.stairType == 'дпк' || params.stairType == "лиственница тер.") {
+		par.maxWidth = params.dpcWidth;
 		par.partLen = par.maxWidth;
-		par.partsGap = 5;
+		par.partsGap = params.dpcDst;
 		par.partsAmt = Math.floor(par.len / par.maxWidth);
-		var lastPartLen = par.len - (par.partsAmt * par.partsGap) - (par.maxWidth * par.partsAmt);
+		var lastPartLen = par.len - ((par.partsAmt - 1) * par.partsGap) - (par.maxWidth * par.partsAmt);
 		if (lastPartLen >= minPartWidth + par.partsGap) par.lastPartLen = lastPartLen, par.partsAmt++;
-		if (lastPartLen < -par.partsGap) par.lastPartLen = par.partLen + (lastPartLen + par.partsGap);
+		if (lastPartLen < -par.partsGap) par.lastPartLen = par.partLen + lastPartLen;
+		//if (lastPartLen < -par.partsGap) par.lastPartLen = par.partLen + (lastPartLen + par.partsGap);
 	}
-	if (params.stairType != 'дпк') {
+	if (params.stairType != 'дпк' && params.stairType !== "лиственница тер.") {
 		//поперек волокон площадка делается из кусков не шире 600мм
 		par.maxWidth = 600;
 		par.partsGap = 2; //зазор между частями площадки
@@ -2241,7 +3342,7 @@ function drawTimberPlt_G(par) {
 		topOut: { x: 0, y: 0 },
 	};
 
-	if (params.model == "косоуры" && (params.railingSide_1 == "внешнее" || params.railingSide_1 == "две")) {
+	if (params.model == "косоуры" && (params.railingSide_1 == "внешнее" || params.railingSide_1 == "две") && getMarshParams(par.botMarshId).stairAmt > 0 && params.calcType !== 'timber') {
 		par.notches.botOut = { x: params.riserType == "есть" ? params.nose : a1 - b1, y: params.rackSize };
 	}
 
@@ -2262,8 +3363,8 @@ function drawTimberPlt_G(par) {
 	par.risers = new THREE.Object3D();
 	par.maxPltWidth = 600;
 
-
-	par.h = getMarshParams(par.botMarshId).h; //функция в файле inputsReading.js
+	var marshParams = getMarshParams(par.botMarshId)
+	par.h = marshParams.h; //функция в файле inputsReading.js
 
 	//увеличение площадки в ширину на нижнем повороте трехмаршевой с 0 ступеней в среднем марше
 	if (!par.extraWidth) par.extraWidth = 0;
@@ -2348,6 +3449,9 @@ function drawTimberPlt_G(par) {
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
 		}
+		if (marshParams.stairAmt == 0) {
+			riserPar.width -= params.treadThickness;
+		}
 
 		//расчет длины подступенков
 
@@ -2389,6 +3493,9 @@ function drawTimberPlt_G(par) {
 		riser.rotation.y = Math.PI / 2;
 		riser.position.x = params.nose;
 		riser.position.y = -(par.h + params.treadThickness);
+		if (marshParams.stairAmt == 0) {
+			riser.position.y += params.treadThickness;
+		}
 		riser.position.z = posZ;
 
 		par.risers.add(riser);
@@ -2449,7 +3556,7 @@ function drawTimberPlt_P(par) {
 		middle: { x: 0, y: 0 },
 	};
 
-	if (params.model == "косоуры" && (params.railingSide_1 == "внешнее" || params.railingSide_1 == "две")) {
+	if (params.model == "косоуры" && (params.railingSide_1 == "внешнее" || params.railingSide_1 == "две") && !(params.calcType == 'timber' && params.stairModel == 'П-образная с площадкой')) {
 		par.notches.botOut = { x: params.nose, y: params.rackSize };
 	}
 	if (params.model == "косоуры" || params.model == "тетива+косоур") {
@@ -2613,7 +3720,8 @@ riserPar.len = par.riserLen;
 		if (params.model == "тетивы" || params.model == "тетива+косоур") {
 			posZ = params.stringerThickness - params.stringerSlotsDepth;
 			if (params.turnSide == "левое") {
-				posZ = -(riserPar.len + (params.stringerThickness - params.stringerSlotsDepth));
+				posZ += 5;
+				// posZ = -(riserPar.len+(params.stringerThickness - params.stringerSlotsDepth));
 			}
 		}
 		posZ -= params.M / 2;//FIX
@@ -2633,6 +3741,13 @@ riserPar.len = par.riserLen;
 	return par;
 }//end of calcPltPPar
 
+/** 
+	Функция возвращает прямой подступенок
+	@param len длинна подступенка
+	@param width высота? подступенка
+	@param thk толщина подступенка
+	@param cutWndIn модиикатор, позволяет обрезать подступенок без изменения позиции
+*/
 /*функция возвращает прямой подступенок*/
 
 function drawRectRiser(par) {
@@ -2642,7 +3757,7 @@ function drawRectRiser(par) {
 		width
 		thk
 		dxfArr
-		dxfBasePoint	
+		dxfBasePoint
 		}
 	*/
 	var shape = new THREE.Shape();
@@ -2652,18 +3767,12 @@ function drawRectRiser(par) {
 
 	/*внешний контур*/
 
-	var p1 = { x: 0.01, y: 0.01 }
-	var p2 = newPoint_xy(p1, par.width, 0)
-	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-	p1 = copyPoint(p2);
-	p2 = newPoint_xy(p1, 0, par.len - 0.02);
-	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-	p1 = copyPoint(p2);
-	p2 = newPoint_xy(p1, -par.width, 0);
-	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-	p1 = copyPoint(p2);
-	p2 = newPoint_xy(p1, 0, -(par.len - 0.02));
-	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+	var cutWndIn = 0;
+
+	if (par.cutWndIn) {
+		cutWndIn = par.cutWndIn;
+		par.len -= cutWndIn;
+	}
 
 	//подпись под фигурой
 	var text = par.description;
@@ -2671,32 +3780,112 @@ function drawRectRiser(par) {
 	var textBasePoint = newPoint_xy(par.dxfBasePoint, par.width / 2 - 200, -100)
 	addText(text + " " + par.count + "шт.", textHeight, par.dxfArr, textBasePoint);
 
-	var extrudeOptions = {
-		amount: par.thk - 0.02,
-		bevelEnabled: false,
-		curveSegments: 12,
-		steps: 1
-	};
-	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	par.mesh = new THREE.Mesh(geometry, params.materials.timber);
+	if (!par.ang) {
+		var p1 = { x: 0.01, y: 0.01 + cutWndIn }
+		var p2 = newPoint_xy(p1, par.width, 0)
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+		p1 = copyPoint(p2);
+		p2 = newPoint_xy(p1, 0, par.len - 0.02);
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+		p1 = copyPoint(p2);
+		p2 = newPoint_xy(p1, -par.width, 0);
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+		p1 = copyPoint(p2);
+		p2 = newPoint_xy(p1, 0, -(par.len - 0.02));
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+
+
+		var extrudeOptions = {
+			amount: par.thk - 0.02,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		par.mesh = new THREE.Mesh(geometry, params.materials.riser);
+	}
+
+	//подступенок со срезанными углами - забежной
+	if (par.ang) {
+		var outDelta = par.thk * Math.tan(par.ang);
+
+		var inDelta = 0;
+
+		var p1 = { x: 0, y: 0 }
+		var p2 = newPoint_xy(p1, -outDelta, par.thk);
+		var p3 = newPoint_xy(p2, par.len, 0);
+		var p4 = newPoint_xy(p3, outDelta, -par.thk);
+
+		var points = [p1, p2, p3, p4]
+
+		//создаем шейп
+		var shapePar = {
+			points: points,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: par.dxfBasePoint,
+			markPoints: false, //пометить точки в dxf для отладки
+		};
+		var shape = drawShapeByPoints2(shapePar).shape;
+		/*
+		// addLine(shape, par.dxfArr, p1_ang, p1, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p4, p5, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p5, p1, par.dxfBasePoint);
+		*/
+
+		var extrudeOptions = {
+			amount: par.width - 0.02,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var mesh = new THREE.Object3D();
+		var riser = new THREE.Mesh(geometry, params.materials.riser);
+		//riser.position.y += cutWndIn;
+		riser.rotation.y = Math.PI / 2;
+		riser.rotation.z = Math.PI / 2;
+		mesh.add(riser);
+		par.mesh = mesh;
+
+		//размеры для спецификации
+		var minX = 0;
+		var maxX = 0;
+		$.each(points, function () {
+			if (this.x < minX) minX = this.x;
+			if (this.x > maxX) maxX = this.x;
+		})
+		par.len = Math.round(Math.abs(maxX - minX));
+	}
 
 	//сохраняем данные для спецификации
+	var treadPar = getTreadParams(); //функция в файле calcSpecGeneral.js
 	var partName = "riser";
-	if (typeof specObj != 'undefined') {
+
+	if (typeof specObj != 'undefined' && params.stairType != "нет") {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
 				amt: 0,
-				name: "Подступенок " + params.stairType,
+				name: "Подступенок",
 				area: 0,
 				paintedArea: 0,
+				metalPaint: treadPar.metalPaint,
+				timberPaint: treadPar.timberPaint,
+				division: treadPar.division,
+				workUnitName: "amt",
+				group: "risers",
 			}
 		}
 		var area = par.len * par.width / 1000000;
 		var paintedArea = area * 2 + (par.len + par.width) * 2 * par.thk / 1000000;
 
 		var name = Math.round(par.len) + "x" + par.width + "x" + par.thk;
+		if (par.ang) name += " забежн."
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
@@ -2772,11 +3961,11 @@ function drawWinderRiser(par) {
 function calcNewellRiserLen() {
 
 	var len = params.M;
-	if (params.model == "косоуры") len -= params.rackSize - params.stringerSlotsDepth;
-	if (params.model == "тетивы") len -= 2 * (params.stringerThickness - params.stringerSlotsDepth) + (params.rackSize - params.stringerThickness) / 2;
-	if (params.model == "тетива+косоур") len -= params.stringerThickness - 2 * params.stringerSlotsDepth + params.rackSize;
-
+	if (params.calcType == "timber") {
+		if (params.model == "косоуры") len -= params.rackSize - params.stringerSlotsDepth;
+		if (params.model == "тетивы") len -= 2 * (params.stringerThickness - params.stringerSlotsDepth) + (params.rackSize - params.stringerThickness) / 2;
+		if (params.model == "тетива+косоур") len -= params.stringerThickness - 2 * params.stringerSlotsDepth + params.rackSize;
+	}
 	return len;
 
 }//end of calcNewellRiserLen
-

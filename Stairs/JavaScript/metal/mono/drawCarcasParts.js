@@ -482,7 +482,8 @@ function drawColumn(par){
 
 		par.mesh.add(flan);
 	}
-	
+
+	var poleLen = Math.round(p3.y - p1.y)
 	//сохраняем данные для спецификации
 	var partName = "column";
 	if (par.type == "подкос") partName = "brace";
@@ -504,7 +505,7 @@ function drawColumn(par){
 			if (par.type == "подкос") specObj[partName].name = "Подкос"
 			if (par.type == "двойной подкос") specObj[partName].name = "Двойной подкос"
 		}
-		var name = Math.round(par.profSize) + "х" + Math.round(par.profSize) + " L=" + Math.round(par.poleLength) + " A=" + Math.round(par.topAngle * 180 / Math.PI * 10) / 10 + "гр."
+		var name = Math.round(par.profSize) + "х" + Math.round(par.profSize) + " L=" + Math.round(poleLen) + " A=" + Math.round(par.topAngle * 180 / Math.PI * 10) / 10 + "гр."
 		if (par.type == "подкос") {
 			name = Math.round(maxHeight) + "х" + Math.round(length) + "х" + 8;
 		}
@@ -913,6 +914,8 @@ function drawHorPlate(par) {
 
 	var points = [p1, p2, p3, p4]
 
+	if (par.isTurn2Top) par.dxfBasePoint.x -= params.stringerThickness;
+
 	//создаем шейп
 	var shapePar = {
 		points: points,
@@ -966,6 +969,12 @@ function drawHorPlate(par) {
 			holesPar.isTurn2Top = par.isTurn2Top;
 			holesPar.dStep = -par.dStep + par.backOffHoles;
 		}
+	}
+
+	//второй прямогуольный вырез в пластине для закрепления фланца
+	if (par.type == "carcasPlate" && par.isBotPlatform) {
+		holesPar.isTurn2Top = par.isBotPlatform;
+		holesPar.dStep = -50;
 	}
 
 	if (par.basePointShiftX) {
@@ -3035,6 +3044,8 @@ function drawMonoFlan(par) {
 		flan.position.z = flanPar.width / 2;
 		flan.position.y = -flanPar.height + holOffZapTop;
 		flan.rotation.y = Math.PI / 2;
+
+		if (params.topAnglePosition == "над ступенью") flanPar.height += 10;
 	}
 	//верхний фланец-заглушка
 	if (par.type == "topStub") {
@@ -5739,7 +5750,6 @@ function drawFlanTop(par) {
 	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	var flan = new THREE.Mesh(geom, params.materials.metal2);
 	par.mesh = flan;
-
 
 	return par;
 } //end of drawFlanTop

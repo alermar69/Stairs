@@ -440,6 +440,10 @@ function drawBotStepLt_pltG(par) {
 		center2.pos = "topRight";
 		//center3.pos = "botRight";
 		//center4.pos = "topRight";
+		if (par.isMiddleStringer) {
+			par.elmIns[par.key].longBolts.push(center1);
+			par.elmIns[par.key].longBolts.push(center2);
+		}
 		par.pointsHole.push(center1);
 		par.pointsHole.push(center2);
 		//par.pointsHole.push(center3);
@@ -447,7 +451,7 @@ function drawBotStepLt_pltG(par) {
 	}
 	
 	//крепление к стенам
-	if(par.key == "out" && par.marshParams.wallFix.out && pt3){
+	if(par.key == "out" && par.marshParams.wallFix.out && pt3 && pt4){
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(pt3, 100, -100);
 		center1.rad = 10;
@@ -566,16 +570,17 @@ function drawBotStepLt_pltPIn(par) {
 			var holeDist = par.holeDistU2_200;
 		}
 
+		var lenMiddlePlatform = (params.platformLength_1 + 7) / 2;
+		var centerPlatform = newPoint_xy(pt2, lenMiddlePlatform + 5, 0);
+
 		// отверстия под 1 уголок площадки
-		//var stepHoleXside1 = (par.botEndLength / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
-		//center1 = newPoint_xy(p3, stepHoleXside1 - par.botEndLength - 30, par.stepHoleY + 45);
-        center1 = newPoint_xy(pt2, 120, par.stepHoleY + 5 + params.treadThickness);
+		center1 = newPoint_xy(centerPlatform, -lenMiddlePlatform / 2 - holeDist / 2, par.stepHoleY + 5 + params.treadThickness);
 		center2 = newPoint_xy(center1, holeDist, 0.0);
 		par.pointsHoleBot.push(center1);
 		par.pointsHoleBot.push(center2);
 
 		// отверстия под перемычку 2
-		center1 = newPoint_xy(pt, params.platformLength_1 / 2 - 25, par.stepHoleY + 5 + params.treadThickness); //25 подогнано
+		center1 = newPoint_xy(centerPlatform, -(params.stringerThickness + 60) / 2, par.stepHoleY + 5 + params.treadThickness); //25 подогнано
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
 		par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0, 20.0));
@@ -585,7 +590,7 @@ function drawBotStepLt_pltPIn(par) {
 		// отверстия под 2 уголок площадки
 		var stepHoleXside2 = (par.botEndLength / 2 - 64) / 2 + par.botEndLength / 2 - holeDist / 2;
 		if (stepHoleXside2 > 0.0) {
-            center1 = newPoint_xy(p3, stepHoleXside2 - par.botEndLength - 30, par.stepHoleY + 5 + params.treadThickness);
+			center1 = newPoint_xy(centerPlatform, (lenMiddlePlatform - 75 - 60) / 2 - holeDist / 2, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, holeDist, 0.0);
 			par.pointsHoleBot.push(center1);
 			par.pointsHoleBot.push(center2);
@@ -2015,6 +2020,8 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 	if (par.isMiddleStringer) {
 		topLineP1.x -= par.treadFrontOverhang;
 	}
+	if (params.stairModel == "Прямая с промежуточной площадкой" && par.marshId == 1)
+		topLineP1.x -= 6;
 	topLineP1.filletRad = 0; //верхний угол тетивы не скругляется
 
 	if ((params.stringerType != "прямая" || par.isMiddleStringer) && par.stairAmt !== 0) {
@@ -2273,6 +2280,10 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 	if (!isAngel) {
 		center1 = newPoint_xy(topLineP1, -30.0, -par.stringerWidthPlatform + 85.0);
 		center2 = newPoint_xy(center1, 0, -60.0);
+		if (par.isMiddleStringer) {
+			par.elmIns[par.key].longBolts.push(center1);
+			par.elmIns[par.key].longBolts.push(center2);
+		}
 		//center3 = newPoint_xy(center1, -50.0, 0);
 		//center4 = newPoint_xy(center3, 0, -60.0);
 		center3 = newPoint_xy(topLineP1, 30.0, -par.stringerWidthPlatform + 85.0);
@@ -2705,17 +2716,18 @@ function drawTopStepLt_pltPIn(par) {
 			angleHolePosX = 20;
 		}
 
+		var lenMiddlePlatform = (params.platformLength_1 + 7) / 2;
+		var centerPlatform = newPoint_xy(pt2, -lenMiddlePlatform - 5, 0);
+
 		// отверстия под 1 уголок площадки (ближе к маршу)
-		var stepHoleXside1 = (par.topEndLength / 2 - 110 - 64) / 2 + 140 - holeDist3 / 2;		
-        center1 = newPoint_xy(ph, stepHoleXside1, par.stepHoleY + 5 + params.treadThickness);		
+		center1 = newPoint_xy(centerPlatform, -(lenMiddlePlatform - 75 - 60) / 2 - holeDist3 / 2, par.stepHoleY + 5 + params.treadThickness);		
 		var center2 = newPoint_xy(center1, holeDist3, 0.0);
 		par.pointsHoleTop.push(center1);
 		par.pointsHoleTop.push(center2);
 
 		// отверстия под перемычку
 		if (par.topEndLength > 600) {
-			//center1 = newPoint_xy(pt, -(params.platformLength_1 / 2 - 25), par.stepHoleY + 5 + params.treadThickness);
-			center1 = newPoint_xy(ph, ((par.topEndLength * 0.5) + 29), par.stepHoleY + 5 + params.treadThickness);
+			center1 = newPoint_xy(centerPlatform, (params.stringerThickness + 60) / 2, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 			center1.hasAngle = center2.hasAngle = false;
 			par.pointsHoleTop.push(center1);
@@ -2725,8 +2737,7 @@ function drawTopStepLt_pltPIn(par) {
 		// отверстия под 2 уголок площадки (ближе к углу)
 		var stepHoleXside2 = par.topEndLength / 4 * 3 - holeDist3 / 2;
 		if (stepHoleXside2 > 0.0) {
-			center1 = newPoint_xy(ph, stepHoleXside2, par.stepHoleY + 5 + params.treadThickness);
-            //var center1 = newPoint_xy(pt, -120, par.stepHoleY + 5 + params.treadThickness);
+			center1 = newPoint_xy(centerPlatform, lenMiddlePlatform / 2 - holeDist3 / 2, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, holeDist3, 0.0);
 			par.pointsHoleTop.push(center1);
 			par.pointsHoleTop.push(center2);
@@ -3534,6 +3545,10 @@ function drawTopStepLt_wndOut(par) {
 				
 				if (par.stairAmt > 1) par.railingHoles.push(center1);
 				if (par.stairAmt == 1 && params.stairModel == "П-образная трехмаршевая" && par.marshId == 2) par.railingHoles.push(center1);
+				if (par.stairAmt == 0 && params.stairModel == "П-образная трехмаршевая" && par.marshId == 2) {
+					center1 = newPoint_xy(p2, par.b * 0.5, par.rackTopHoleY);
+					par.railingHoles.push(center1);
+				}
 				}
 			
 
@@ -3561,11 +3576,13 @@ function drawTopStepLt_wndOut(par) {
 		center1 = newPoint_xy(p5, -150, -200);
 		center1.rad = 10;
 		center1.hasAngle = false;
+		center1.noZenk = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(p2, 150, -200);
 		center1.rad = 10;
 		center1.hasAngle = false;
+		center1.noZenk = true;
 		par.pointsHole.push(center1);		
 	}
 
@@ -4042,8 +4059,8 @@ function drawStringerLt_0Bot_WndGIn(par) {
 	par.pointsShape.push(p3);
 	
 	//сохраняем точку для расчета длины
-	par.keyPoints.botPoint = copyPoint(p1);
-	par.keyPoints.topPoint = copyPoint(p2);
+	//par.keyPoints.botPoint = copyPoint(p1);
+	//par.keyPoints.topPoint = copyPoint(p2);
 
 	/*ОТВЕРСТИЯ*/
 
@@ -4078,6 +4095,7 @@ function drawStringerLt_0Bot_WndGIn(par) {
 	var center1 = newPoint_xy(p11, holePosX, holePosY);
 	var center2 = newPoint_xy(center1, 0, -60);
 	center1.hasAngle = center2.hasAngle = false;
+	center1.backZenk = center2.backZenk = true;
 	par.pointsHole.push(center1);
 	par.pointsHole.push(center2);
 

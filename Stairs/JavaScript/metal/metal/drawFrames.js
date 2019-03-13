@@ -218,7 +218,6 @@ function drawWndFrames2(par){
 
 			var mooveZ = par.wndPar.params[3].stepWidthLow - frameWidthLow1 - wndSteps.frameFrontOffset / Math.cos(wndFrame3.frameParams.edgeAngle);
 			wndFrame3.mesh.position.z -= mooveZ * turnFactor;
-			wndFrame3.mesh.position.x -= par.frameParams.flanThk.side;
 			}
 		if(params.model == "ко"){
 			//устанавливаем переднюю кромку бокового фланца вровень с внешней плоскостью косоура нижнего марша
@@ -284,8 +283,7 @@ function drawWndFrame(par){
 		}
 			
 		var pathPar = {
-			//treadWidth: params.M - params.stringerThickness * 2 - thk.side * 2,
-			treadWidth: params.M - params.stringerThickness * 2,
+			treadWidth: params.M - params.stringerThickness * 2 - thk.side * 2,
 			edgeAngle: treadParams.edgeAngle,
 			stepWidthLow: stepWidthLow,
 		}
@@ -322,12 +320,11 @@ function drawWndFrame(par){
 
 //размеры рамки с учетом фланцев
 par.frameParams = {
-	treadWidth: pathPar.treadWidth,
+	treadWidth: pathPar.treadWidth + thk.side * 2,
 	edgeAngle: pathPar.edgeAngle,
 	stepWidthLow: stepWidthLow,
 	flanThk: thk,
 	};
-	if (params.model == "ко") par.frameParams.treadWidth += thk.side * 2;
 
 
 
@@ -343,16 +340,6 @@ par.frameParams = {
 		outLine.sideOut.p1 = outLine.points[0];
 		outLine.sideOut.len = distance(outLine.points[0], outLine.points[1])
 	}
-
-	//if (par.frameId == 1) {
-	//	outLine.front.p1.x -= thk.side;
-	//	outLine.front.p2.x += thk.side;
-	//	outLine.front.len += thk.side * 2;
-	//}
-	//if (par.frameId == 3) {
-	//	outLine.points[i].x -= (pathPar.treadWidth - thk.front) * turnFactor;
-	//	outLine.points[i].y += thk.front;
-	//}
 
 	//смещаем точки так, чтобы базовая точка была в середине передней грани
 	for(var i=0; i<outLine.points.length; i++){
@@ -411,7 +398,9 @@ par.frameParams = {
 			p2: shapePar.points[2],
 		};
 	}
-	var shape = drawShapeByPoints2(shapePar).shape;
+
+	if (params.stairType != "рифленая сталь" && params.stairType != "лотки")
+		var shape = drawShapeByPoints2(shapePar).shape;
 	
 
 //внутренний контур
@@ -436,64 +425,66 @@ par.frameParams = {
 	
 	if(turnFactor == 1 && par.frameId == 1) pathIn = pathIn.reverse(); //переворачиваем массив чтобы точки шли по часовой стрелке и отверстие корректно отрисовалось
 
-	//добавляем центральное отверстие
-	var hole = new THREE.Path();
-	var filletParams = {
-		vertexes: pathIn,
-		cornerRad: 10,
-		dxfBasePoint: shapePar.dxfBasePoint,
-		dxfPrimitivesArr: dxfPrimitivesArr,
-		type: "path",
+	if (params.stairType != "рифленая сталь" && params.stairType != "лотки") {
+		//добавляем центральное отверстие
+		var hole = new THREE.Path();
+		var filletParams = {
+			vertexes: pathIn,
+			cornerRad: 10,
+			dxfBasePoint: shapePar.dxfBasePoint,
+			dxfPrimitivesArr: dxfPrimitivesArr,
+			type: "path",
 		}
 
-	hole = fiiletPathCorners(filletParams);
-	shape.holes.push(hole);
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
 
 //Отверстия для шурупов
 
-	if(par.frameId == 1 && turnFactor > 0) outLine.sideIn.offsetBack = true;
-	if(par.frameId == 3) outLine.sideIn.offsetBack = turnFactor > 0 ? true : false;
+		if (par.frameId == 1 && turnFactor > 0) outLine.sideIn.offsetBack = true;
+		if (par.frameId == 3) outLine.sideIn.offsetBack = turnFactor > 0 ? true : false;
 
-	var lines = [outLine.rear, outLine.sideIn, outLine.front, outLine.sideOut];
+		var lines = [outLine.rear, outLine.sideIn, outLine.front, outLine.sideOut];
 
-	linesPar = {
-		lines: lines,
-		dist: -20,
-		frameId: par.frameId,
+		linesPar = {
+			lines: lines,
+			dist: -20,
+			frameId: par.frameId,
 		}
 
-	var screwHoles = offsetLines(linesPar);
-	
-	var screwHolesPar = {
-		points: screwHoles,
-		frameId: par.frameId
-	}
-	
-	screwHoles = getScrewHoles(screwHolesPar);
+		var screwHoles = offsetLines(linesPar);
 
-	var holesPar = {
-		holeArr: screwHoles,
-		dxfBasePoint: shapePar.dxfBasePoint,
-		shape: shape,
-		holeRad: screwHoleRad,
+		var screwHolesPar = {
+			points: screwHoles,
+			frameId: par.frameId
 		}
 
-	addHolesToShape(holesPar);
-	
-	var extrudeOptions = {
-		amount: thk.top,
-		bevelEnabled: false,
-		curveSegments: 12,
-		steps: 1
+		screwHoles = getScrewHoles(screwHolesPar);
+
+		var holesPar = {
+			holeArr: screwHoles,
+			dxfBasePoint: shapePar.dxfBasePoint,
+			shape: shape,
+			holeRad: screwHoleRad,
+		}
+
+		addHolesToShape(holesPar);
+
+		var extrudeOptions = {
+			amount: thk.top,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
 		};
 
-	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var mesh = new THREE.Mesh(geom, params.materials.metal);
-	mesh.rotation.x = -Math.PI / 2;
-	mesh.rotation.z = -Math.PI / 2;	
-	if(params.stairType != "рифленая сталь" && params.stairType != "лотки") par.mesh.add(mesh);
-	
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var mesh = new THREE.Mesh(geom, params.materials.metal);
+		mesh.rotation.x = -Math.PI / 2;
+		mesh.rotation.z = -Math.PI / 2;
+		par.mesh.add(mesh);
+	}
+
 	//фланцы
 	
 	var flanDxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -200);
@@ -526,65 +517,7 @@ par.frameParams = {
 		}
 	}
 	
-	//передний
 	
-	flanDxfBasePoint.y -= flanDxfDist;
-	
-	var flanParams = {
-		line: outLine.front,
-		type: "riser_holes",
-		frameId: par.frameId,
-		dxfBasePoint: flanDxfBasePoint,
-	}
-	if(params.stairType == "рифленая сталь" || params.stairType == "лотки") flanParams.flanHeight = 50;
-	if (par.frameId == 3 && turnFactor > 0) flanParams.line = outLine.rear;
-	//if (par.frameId == 3) flanParams.line = outLine.rear;
-
-	if (params.model == "лт" && par.frameId == 3) {
-		flanParams.line.len -= thk.side * Math.tan(treadParams.edgeAngle);
-		if (turnFactor == -1) {
-			flanParams.line.p1 = polar(flanParams.line.p1, treadParams.edgeAngle, thk.side * Math.tan(treadParams.edgeAngle));
-			flanParams.line.p2 = polar(flanParams.line.p2, treadParams.edgeAngle, thk.side * Math.tan(treadParams.edgeAngle));
-			flanParams.line.p1.y -= thk.side * Math.tan(treadParams.edgeAngle);
-			flanParams.line.p2.y -= thk.side * Math.tan(treadParams.edgeAngle);
-		}
-	}
-
-	flanParams = drawWndTreadFlan(flanParams);
-	var frontFlan = flanParams.mesh;
-	//костыль чтобы не было пересечения из-за погрешности округления
-	//if (par.frameId == 1) frontFlan.position.z -= thk.side; 
-	if (par.frameId == 3) frontFlan.position.z += 0.01 * turnFactor; 
-	par.mesh.add(frontFlan);
-
-	//задний
-	
-	flanDxfBasePoint.y -= flanDxfDist;
-	
-	if(params.model == "лт"){
-		var flanParams = {
-			line: outLine.rear,
-			type: "no_holes",
-			frameId: par.frameId,
-			dxfBasePoint: flanDxfBasePoint,
-			}
-		if(params.stairType == "рифленая сталь" || params.stairType == "лотки") flanParams.flanHeight = 50;
-		if (par.frameId == 3 && turnFactor > 0) flanParams.line = outLine.front;
-		if (par.frameId == 1) {
-			flanParams.line.len -= thk.side * Math.tan(treadParams.edgeAngle);
-			if (turnFactor == 1) {
-				flanParams.line.p1 = polar(flanParams.line.p1, treadParams.edgeAngle, -thk.side * Math.tan(treadParams.edgeAngle));
-				flanParams.line.p2 = polar(flanParams.line.p2, treadParams.edgeAngle, -thk.side * Math.tan(treadParams.edgeAngle));
-				flanParams.line.p1.y += thk.side * Math.tan(treadParams.edgeAngle);
-				flanParams.line.p2.y += thk.side * Math.tan(treadParams.edgeAngle);
-			}
-		}
-		flanParams = drawWndTreadFlan(flanParams);
-		var rearFlan = flanParams.mesh;
-		//костыль чтобы не было пересечения из-за погрешности округления
-		if (par.frameId == 1) rearFlan.position.x += 0.01; 
-		par.mesh.add(rearFlan);
-	};
 		
 	//боковой на внутренней стороне марша
 
@@ -595,11 +528,6 @@ par.frameParams = {
 		type: "1_hole",
 		frameId: par.frameId,
 		dxfBasePoint: flanDxfBasePoint,
-	}
-
-	if (params.model == "лт") {
-		flanParams.line.p1.x -= thk.side * turnFactor;
-		flanParams.line.p2.x -= thk.side * turnFactor;
 	}
 
 	flanParams = drawWndTreadFlan(flanParams);
@@ -643,19 +571,6 @@ par.frameParams = {
 		dxfBasePoint: flanDxfBasePoint,
 	}
 
-	if (params.model == "лт") {
-		flanParams.line.p1.x += thk.side * turnFactor;
-		flanParams.line.p2.x += thk.side * turnFactor;
-		flanParams.line.len -= thk.side * Math.tan(treadParams.edgeAngle);
-		if (par.frameId == 1 && turnFactor == 1) {
-			flanParams.line.p1.y -= thk.side * Math.tan(treadParams.edgeAngle);
-			flanParams.line.p2.y -= thk.side * Math.tan(treadParams.edgeAngle);
-		}
-		if (par.frameId == 3 && turnFactor == -1) {
-			flanParams.line.p1.y += thk.side * Math.tan(treadParams.edgeAngle);
-			flanParams.line.p2.y += thk.side * Math.tan(treadParams.edgeAngle);
-		}
-	}
 
 	flanParams = drawWndTreadFlan(flanParams);
 	var sideOutFlan = flanParams.mesh;
@@ -677,7 +592,6 @@ par.frameParams = {
 		//размер holeMooveX http://6692035.ru/drawings/wndFramesHoles/3-3.jpg 
 		holeMooveX = outLine.sideOut.p2.y - outLine.sideIn.p1.y;
 		if (turnFactor == -1) holeMooveX = outLine.sideOut.p1.y - outLine.sideIn.p2.y;
-		if (params.model == "лт" && turnFactor == 1) holeMooveX += thk.side * Math.tan(treadParams.edgeAngle);
 		
 		for (i=0; i<flanParams.roundHoleCenters.length; i++){
 			flanParams.roundHoleCenters[i].x += holeMooveX;
@@ -685,6 +599,67 @@ par.frameParams = {
 			}
 		par.wndFramesHoles.topMarsh.out[par.frameId].push(...flanParams.roundHoleCenters);
 	}
+
+
+	//передний
+
+	flanDxfBasePoint.y -= flanDxfDist;
+
+	if (par.frameId == 1) {
+		outLine.front.len += thk.side * 2;
+		outLine.front.p1.x += thk.side * turnFactor;
+		outLine.front.p2.x -= thk.side * turnFactor;
+	}
+
+	var flanParams = {
+		line: outLine.front,
+		type: "riser_holes",
+		frameId: par.frameId,
+		dxfBasePoint: flanDxfBasePoint,
+	}
+	if (params.stairType == "рифленая сталь" || params.stairType == "лотки") flanParams.flanHeight = 50;
+	if (par.frameId == 3 && turnFactor > 0) flanParams.line = outLine.rear;
+	//if (par.frameId == 3) flanParams.line = outLine.rear;
+
+	flanParams = drawWndTreadFlan(flanParams);
+	var frontFlan = flanParams.mesh;
+	//костыль чтобы не было пересечения из-за погрешности округления
+	//if (par.frameId == 1) frontFlan.position.z -= thk.side; 
+	if (par.frameId == 3) frontFlan.position.z += 0.01 * turnFactor;
+	par.mesh.add(frontFlan);
+
+	//задний
+
+	flanDxfBasePoint.y -= flanDxfDist;
+
+	if (params.model == "лт") {
+		if (par.frameId == 3) {
+			if (turnFactor == -1) {
+				outLine.rear.len += thk.side * 2;
+				outLine.rear.p1.x += thk.side;
+				outLine.rear.p2.x -= thk.side;
+			}
+			if (turnFactor == 1) {
+				outLine.front.len += thk.side * 2;
+				outLine.front.p1.x += thk.side;
+				outLine.front.p2.x -= thk.side;
+			}
+		}
+
+		var flanParams = {
+			line: outLine.rear,
+			type: "no_holes",
+			frameId: par.frameId,
+			dxfBasePoint: flanDxfBasePoint,
+		}
+		if (params.stairType == "рифленая сталь" || params.stairType == "лотки") flanParams.flanHeight = 50;
+		if (par.frameId == 3 && turnFactor > 0) flanParams.line = outLine.front;
+		flanParams = drawWndTreadFlan(flanParams);
+		var rearFlan = flanParams.mesh;
+		//костыль чтобы не было пересечения из-за погрешности округления
+		if (par.frameId == 1) rearFlan.position.x += 0.01;
+		par.mesh.add(rearFlan);
+	};
 	
 	//сохраняем данные для спецификации
 	var partName = "wndFrame" + par.frameId;
@@ -869,8 +844,9 @@ function drawWndFrame2(par){
 			p2: shapePar.points[1],
 		},
 	}
-	
-	var shape = drawShapeByPoints2(shapePar).shape;
+
+	if (params.stairType != "рифленая сталь" && params.stairType != "лотки")
+		var shape = drawShapeByPoints2(shapePar).shape;
 
 	//внутренний контур
 	var holeOffset = 40;
@@ -893,67 +869,68 @@ function drawWndFrame2(par){
 	
 	if(turnFactor == -1) pathIn = pathIn.reverse(); //переворачиваем массив чтобы точки шли по часовой стрелке и отверстие корректно отрисовалось
 
-	//добавляем центральное отверстие
-	var hole = new THREE.Path();
-	var filletParams = {
-		vertexes: pathIn,
-		cornerRad: 10,
-		dxfBasePoint: par.dxfBasePoint,
-		dxfPrimitivesArr: dxfPrimitivesArr,
-		type: "path",
+	if (params.stairType != "рифленая сталь" && params.stairType != "лотки") {
+		//добавляем центральное отверстие
+		var hole = new THREE.Path();
+		var filletParams = {
+			vertexes: pathIn,
+			cornerRad: 10,
+			dxfBasePoint: par.dxfBasePoint,
+			dxfPrimitivesArr: dxfPrimitivesArr,
+			type: "path",
 		}
 
-	hole = fiiletPathCorners(filletParams);
-	shape.holes.push(hole);
-	
+		hole = fiiletPathCorners(filletParams);
+		shape.holes.push(hole);
+
 //Отверстия для шурупов
 
-	outLine.front1.offsetBack = true;
-	if(turnFactor == -1) outLine.front1.offsetBack = true;
+		outLine.front1.offsetBack = true;
+		if (turnFactor == -1) outLine.front1.offsetBack = true;
 
-	var lines = [outLine.rear2, outLine.front1, outLine.front2, outLine.sideOut];
-	if(params.model == "ко") lines.push(outLine.sideOut2);
-	lines.push(outLine.rear1);
+		var lines = [outLine.rear2, outLine.front1, outLine.front2, outLine.sideOut];
+		if (params.model == "ко") lines.push(outLine.sideOut2);
+		lines.push(outLine.rear1);
 
-	linesPar = {
-		lines: lines,
-		dist: -20,
-		frameId: par.frameId,
+		linesPar = {
+			lines: lines,
+			dist: -20,
+			frameId: par.frameId,
 		}
 
-	var screwHoles = offsetLines(linesPar);
-	
-	var screwHolesPar = {
-		points: screwHoles,
-		frameId: par.frameId
-	}
-	
-	screwHoles = getScrewHoles(screwHolesPar);
-	
-	var holesPar = {
-		holeArr: screwHoles,
-		dxfBasePoint: par.dxfBasePoint,
-		shape: shape,
-		holeRad: screwHoleRad,
+		var screwHoles = offsetLines(linesPar);
+
+		var screwHolesPar = {
+			points: screwHoles,
+			frameId: par.frameId
 		}
 
-	addHolesToShape(holesPar);
+		screwHoles = getScrewHoles(screwHolesPar);
 
-	var extrudeOptions = {
-		amount: thk.top,
-		bevelEnabled: false,
-		curveSegments: 12,
-		steps: 1
+		var holesPar = {
+			holeArr: screwHoles,
+			dxfBasePoint: par.dxfBasePoint,
+			shape: shape,
+			holeRad: screwHoleRad,
+		}
+
+		addHolesToShape(holesPar);
+
+		var extrudeOptions = {
+			amount: thk.top,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
 		};
 
-	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var mesh = new THREE.Mesh(geom, params.materials.metal);
-	mesh.rotation.x = -Math.PI / 2;
-	mesh.rotation.z = -Math.PI / 2;
-	//par.mesh.add(mesh);
-	if(params.stairType != "рифленая сталь" && params.stairType != "лотки") par.mesh.add(mesh);
-	
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var mesh = new THREE.Mesh(geom, params.materials.metal);
+		mesh.rotation.x = -Math.PI / 2;
+		mesh.rotation.z = -Math.PI / 2;
+		par.mesh.add(mesh);
+	}
+
 	//фланцы
 
 	var flanDxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -200);
@@ -1054,6 +1031,9 @@ function drawWndFrame2(par){
 
 	if(params.model == "лт"){
 		flanDxfBasePoint.y -= flanDxfDist;
+
+		outLine.sideIn.len += thk.side;
+		if(turnFactor == 1) outLine.sideIn.p2.y -= thk.side;
 		
 		var flanParams = {
 			line: outLine.sideIn,

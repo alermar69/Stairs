@@ -70,8 +70,11 @@ function drawRack3d_4(par) {
 
 		//на поворотной стойке для лт добавляем дополнительное отверстие крепления
 		if (par.holeYTurnRack) {
-			var center = { x: 0, y: par.holeYTurnRack }
-			addRoundHole(shape, par.dxfArr, center, 3.5, par.dxfBasePoint);
+			var rad1 = 3;
+			if (testingMode) rad1 = 4;
+			var center = { x: 0, y: par.holeYTurnRack - holeDist }
+			addRoundHole(shape, par.dxfArr, center, rad1, par.dxfBasePoint);
+			console.log(testingMode, rad1)
 		}
 	}
 
@@ -217,16 +220,14 @@ function drawRack3d_4(par) {
 
 		//на поворотной стойке для лт добавляем дополнительный болт крепления и поворачиваем болты
 		if (par.holeYTurnRack) {
-			if (params.model == "лт") {
-				boltPar.diam = 6;
+			boltPar.diam = 6;
 
-				var bolt2 = drawBolt(boltPar).mesh;
-				bolt2.rotation.x = bolt.rotation.x;
-				bolt2.position.x = 0;
-				bolt2.position.y = par.holeYTurnRack;
-				bolt2.position.z = bolt.position.z;
-				bolts.add(bolt2)
-			}
+			var bolt2 = drawBolt(boltPar).mesh;
+			bolt2.rotation.x = bolt.rotation.x;
+			bolt2.position.x = 0;
+			bolt2.position.y = par.holeYTurnRack - holeDist;
+			bolt2.position.z = bolt.position.z;
+			bolts.add(bolt2)
 
 			bolts.rotation.y += Math.PI / 2 * turnFactor;
 			bolts.position.z += profSize / 2;
@@ -364,6 +365,30 @@ function drawRack3d_4(par) {
 			specObj[partName]["amt"] += 1;
 		}
 
+	}
+
+	//заглушка Ф16
+	if (par.holeYTurnRack) {
+		var partName = "stainlessPlug_16";
+		if (typeof specObj != 'undefined') {
+			if (!specObj[partName]) {
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Заглушка нерж.",
+					metalPaint: false,
+					timberPaint: false,
+					division: "metal",
+					workUnitName: "amt", //единица измерения
+					group: "Ограждения",
+				};
+			}
+
+			var name = "Ф16"
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+		}
 	}
 
 	//сохраняем данные для ведомости заготовок
@@ -2183,6 +2208,7 @@ function drawBanisterAngle(par) {
 	if (!par.dxfBasePoint) {
 		par.dxfBasePoint = { x: 0, y: 0 };
 		dxfArr = [];
+		par.dxfArr = dxfArr;
 	}
 
 	par.mesh = new THREE.Object3D();
@@ -2219,7 +2245,7 @@ function drawBanisterAngle(par) {
 	//создаем шейп
 	var shapePar = {
 		points: points,
-		dxfArr: dxfPrimitivesArr,
+		dxfArr: dxfArr,
 		dxfBasePoint: par.dxfBasePoint,
 		//markPoints: true,
 	}
