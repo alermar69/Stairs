@@ -699,7 +699,7 @@ function drawComplexStringer(par) {
 								else {
 									platePar.basePointShiftX = params.stringerThickness / 2 - (params.M / 2) / 2 - 5 - 30;
 									platePar.frontOffset = 0;
-									if (par.botConnection) platePar.isBotPlatform = true; //второй прямогуольный вырез в пластине для закрепления фланца
+									platePar.isBotPlatform = true; //второй прямогуольный вырез в пластине для закрепления фланца
 								}
 							}
 							

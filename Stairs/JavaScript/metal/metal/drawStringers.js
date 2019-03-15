@@ -1137,6 +1137,12 @@ function calcStringerPar(par){
 	if (hasTreadFrames()) {       
 		par.stepHoleX1 = par.marshFramesParams.stepHoleX1
 		par.stepHoleX2 = par.marshFramesParams.stepHoleX2
+		//на лестнице с подступенками делаем рамки короче, чтобы последняя не отличалась
+		if (params.riserType == "есть" && params.model == "лт") {
+			var frameWidthStep = 20; //точность округления ширины рамок
+			var offset = Math.ceil(params.riserThickness / frameWidthStep) * frameWidthStep;
+			par.stepHoleX2 -= offset;
+		}
 		par.holeDist = par.stepHoleX2 - par.stepHoleX1;
 		if (params.stairType == "пресснастил") par.holeDist = calcPresParams(par.a).holeDist; //функция в файле drawFrames.js
 	}

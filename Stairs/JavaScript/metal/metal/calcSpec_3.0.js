@@ -213,25 +213,25 @@ function addTreadItems(){}; //пустая функция для навигац�
 //подступенки
 
 	var wndTreadAmt = getPartAmt("wndTread") + getPartAmt("wndTreadMid");
-	
-	item = {
-		id:  "screw_4x32",
-		amt: getPartAmt("riser") * 6 - wndTreadAmt * 3,
-		discription: "Крепление подступенков",
-		unit: "Крепление подступенков",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	
-	item = {
-		id:  "screw_4x19",
-		amt: wndTreadAmt * 3,
-		discription: "Крепление подступенков забежных рамок сверху",
-		unit: "Крепление подступенков",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-
+	if(getPartAmt("riser")){
+		item = {
+			id:  "screw_4x32",
+			amt: getPartAmt("riser") * 6 - wndTreadAmt * 3,
+			discription: "Крепление подступенков",
+			unit: "Крепление подступенков",
+			itemGroup: "Ступени",
+			};
+		if(item.amt > 0) partsList.addItem(item);
+		
+		item = {
+			id:  "screw_4x19",
+			amt: wndTreadAmt * 3,
+			discription: "Крепление подступенков забежных рамок сверху",
+			unit: "Крепление подступенков",
+			itemGroup: "Ступени",
+			};
+		if(item.amt > 0) partsList.addItem(item);
+	}
 //гнутые подступенки
 
 	item = {

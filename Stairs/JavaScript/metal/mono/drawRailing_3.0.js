@@ -70,8 +70,8 @@ function calculateGlassPoints(par){
 	}
 
 	// если есть вертикальный поручень добавляем первую нижнюю точку
-	if (params.handrailFixType == "паз" && params.startVertHandrail == "есть") {
-		if (par.marshId == 1) {
+	if (params.handrailFixType == "паз") {
+		if (par.marshId == 1 && params.startVertHandrail == "есть") {
 			var startPoint = {
 				x: marshFirst.x,
 				y: -par.sectionHeight,
@@ -109,7 +109,8 @@ function calculateGlassPoints(par){
 	//	var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
 	//	lastMarshPoint = newPoint_xy(lastMarshPoint, deltaX, marshPar.ang * deltaX);
 	//}
-	
+	var handrailPoint = copyPoint(lastMarshPoint);	
+
 	if (par.key == 'in' && marshPar.topTurn !== 'нет' && !marshPar.lastMarsh) {
 		var deltaX = marshTurnParams.pltExtraLen - par.treadOffset - par.glassThickness - 20;
 		if (nextMarshPar.hasRailing.in) deltaX = 60 - marshTurnParams.pltExtraLen;
@@ -157,13 +158,17 @@ function calculateGlassPoints(par){
 		glassPoints.push(itercection(marshFirst, lastMarshPoint, pt, polar(pt, Math.PI / 2, 100)));
 	}
 
+	if (par.key == 'in' && marshPar.topTurn == 'пол' && params.handrailFixType == "паз") {
+		handrailPoint = polar(handrailPoint, marshPar.ang, 50);
+	}
+
 
 	handrailPoints.push(handrailPoint);
 	glassPoints.push(lastMarshPoint);
 
 
 	// если есть вертикальный поручень добавляем последнюю нижнюю точку
-	if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
+	if (params.handrailFixType == "паз") {
 		var isShiftLastMarshPoint = false;
 		if (par.key == 'in') {
 			if (!marshPar.lastMarsh) {
@@ -175,7 +180,7 @@ function calculateGlassPoints(par){
 				}
 			}
 		}
-		if (marshPar.topTurn == 'пол') isShiftLastMarshPoint = true;
+		if (marshPar.topTurn == 'пол' && params.startVertHandrail == "есть") isShiftLastMarshPoint = true;
 
 		if (isShiftLastMarshPoint) {
 			handrailPoints.pop();

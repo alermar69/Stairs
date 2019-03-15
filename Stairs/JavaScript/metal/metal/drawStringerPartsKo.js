@@ -573,6 +573,7 @@ function drawBotStepKo_wndIn(par){
 	var p0 = newPoint_xy(par.zeroPoint, params.nose - params.sideOverHang - 72, -(par.h * 2 + params.treadThickness + 215)); //215 - 2 уголка каркаса + 3 х 5мм 72 - подогнано
 	if(par.isWndP){
 		p0.x = params.M - 75.0 + 40 - params.sideOverHang;
+		if (getMarshParams(getMarshParams(par.marshId).prevMarshId).stringerCover == "внутренняя") p0.x += 2;
 	}
 	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0)
 		p0.x -= params.marshDist - 77;
@@ -1430,16 +1431,7 @@ function drawTopStepKo_pltG(par){
 		pointsHoleTop = par.pointsHole;
 		railingHolesTop = par.railingHoles;
 	}
-
-
-
-	// отверстия под рамку
-	var center1 = newPoint_xy(p2, par.stepHoleX1, par.stepHoleY);
-	var center2 = newPoint_xy(p2, par.stepHoleX2, par.stepHoleY);
-	par.pointsHole.push(center1);
-	par.pointsHole.push(center2);
-	//сохраняем координаты
-	var frame1Hole = copyPoint(center2)
+	
 
 	//Отверстия под ограждения
 	var hasRailingTop = false;
@@ -1581,22 +1573,30 @@ function drawTopStepKo_pltG(par){
 	}
 
 	// отверстия под рамки площадки
-	//var pltPar = {len: platformLen + params.nose,}
-	var pltPar = { len: pltStringerLen + par.topEndLength,}
+	var pltPar = {
+		len: params.M + calcTurnParams(par.marshId).topMarshOffsetX - (params.M - calcTreadLen()) / 2,//длина площадки
+		lenFrame: pltStringerLen + par.topEndLength,
+		widthFrame: par.stepHoleX1 + par.stepHoleX2,
+		partsGap: 20
+	}
 	calcPltPartsParams(pltPar);
-	var xPo = pltPar.partLen - params.sideOverHang - par.topEndLength - 50;
-	var po1 = newPoint_xy(pt1, xPo, -20);
-	var dX = 0;
+	var stepHoleX2 = par.stepHoleX2;
+	if (pltPar.maxWidth !== pltPar.widthFrame) stepHoleX2 = pltPar.maxWidth - par.stepHoleX1;
+
+	// отверстия под первую рамку
+	var center1 = newPoint_xy(p2, par.stepHoleX1, par.stepHoleY);
+	var center2 = newPoint_xy(p2, stepHoleX2, par.stepHoleY);
+	par.pointsHole.push(center1);
+	par.pointsHole.push(center2);
+
+	// отверстия под средние  рамки
 	for (var i = 0; i < pltPar.partsAmt - 1; i++){
-		center1 = newPoint_xy(po1, dX, 0);
-		//не допускаем пересечения рамок
-		var minDist = 45 * 2 + 5 + 15;
-		if(center1.x - frame1Hole.x < minDist) center1.x = frame1Hole.x + minDist;
-		center2 = newPoint_xy(center1, 170.0, 0);
+		var pt0 = newPoint_xy(center2, par.stepHoleX1 + pltPar.partsGap, 0);
+		//pt0.x += (pltPar.maxWidth + pltPar.partsGap) * i;
+		center1 = newPoint_xy(pt0, par.stepHoleX1, 0);
+		center2 = newPoint_xy(pt0, stepHoleX2, 0);
 		pointsHoleTop.push(center1);
 		pointsHoleTop.push(center2);
-		
-		dX += pltPar.partLen;
 	}	
 
 	var topPltRailing = getTopPltRailing(); //функция в файле inputsReading.js
@@ -2673,3 +2673,4 @@ function calcWndHoles(par){
 	
 	return centers;
 } //end of calcWndHoles
+

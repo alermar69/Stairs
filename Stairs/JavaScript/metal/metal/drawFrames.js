@@ -1586,8 +1586,10 @@ function drawTopFixFrame2(par){
  * @params dxfBasePoint, holeDist, isPltFrame
  * @return mesh
  */
+ 
 function drawTreadFrame2(par){
-
+	
+	
 	// создаем меш
 	var mesh = new THREE.Object3D();
 
@@ -2180,7 +2182,7 @@ function calcFrameParams(par){
 		par.profHeight = 60;
 		}
 	if(params.stairType == "рифленая сталь" || params.stairType == "лотки"){
-		par.profWidth = 5;
+		par.profWidth = params.treadThickness;
 		par.profHeight = 50;
 		if(par.length > 1020) par.profHeight = 60;
 		};

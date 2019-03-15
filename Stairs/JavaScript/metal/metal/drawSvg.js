@@ -268,7 +268,11 @@ function makeSvg(){
 		
 		//угол поворота
 		var ang = 0;
-		if(this.drawing && this.drawing.baseLine){
+		var isBaseLine = false;
+		if (this.drawing.baseLine) {
+			if (this.drawing.baseLine.p1 && this.drawing.baseLine.p2) isBaseLine = true;
+		}
+		if (this.drawing && isBaseLine){
 			ang = angle(this.drawing.baseLine.p1, this.drawing.baseLine.p2) / Math.PI * 180;
 		};
 		
