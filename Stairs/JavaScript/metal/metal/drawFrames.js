@@ -2018,7 +2018,9 @@ function drawTopFrameFlan(par){
 
 // фронтальный фланец вертикальной рамки крепленя к перекрытию
 
-function drawTopFrameFrontFlan(par){
+function drawTopFrameFrontFlan(par) {
+
+	par.mesh = new THREE.Object3D();
 	
 	var shape = new THREE.Shape();
 
@@ -2039,6 +2041,7 @@ function drawTopFrameFrontFlan(par){
 	addLine(shape, dxfPrimitivesArr, p1, p2, par.dxfBasePoint);
 
 	/*отверстия*/
+	var fixPar = getFixPart(0, 'topFloor');
 	var holeDist = (par.height - 40 * 2) / (par.holesAmt - 1);
 	var holeRad = 7.5;
 	var center = newPoint_xy(p0, 15, 40);
@@ -2047,6 +2050,19 @@ function drawTopFrameFrontFlan(par){
 		var hole1 = new THREE.Path();
 		addCircle(hole1, dxfPrimitivesArr, center, holeRad, par.dxfBasePoint);
 		shape.holes.push(hole1);
+
+		//болты крепления к верхнему перекрытию
+		if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+			if (fixPar.fixPart !== 'нет') {
+				var fix = drawFixPart(fixPar).mesh;
+				fix.position.x = center.x;
+				fix.position.y = center.y;
+				fix.position.z = 8 * (1 - turnFactor) * 0.5;
+				fix.rotation.x = Math.PI / 2 * turnFactor;
+				par.mesh.add(fix);
+			}
+		}
+
 		center = newPoint_xy(center, 0, holeDist);
 	}
 
@@ -2055,6 +2071,19 @@ function drawTopFrameFrontFlan(par){
 		var hole1 = new THREE.Path();
 		addCircle(hole1, dxfPrimitivesArr, center, holeRad, par.dxfBasePoint);
 		shape.holes.push(hole1);
+
+		//болты крепления к верхнему перекрытию
+		if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+			if (fixPar.fixPart !== 'нет') {
+				var fix = drawFixPart(fixPar).mesh;
+				fix.position.x = center.x;
+				fix.position.y = center.y;
+				fix.position.z = 8 * (1 - turnFactor) * 0.5;
+				fix.rotation.x = Math.PI / 2 * turnFactor;
+				par.mesh.add(fix);
+			}
+		}
+
 		center = newPoint_xy(center, 0, holeDist);
 	}
 	if(!par.noText){
@@ -2073,7 +2102,8 @@ function drawTopFrameFrontFlan(par){
 
 	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	par.mesh = new THREE.Mesh(geometry, params.materials.metal);
+	var mesh = new THREE.Mesh(geometry, params.materials.metal);
+	par.mesh.add(mesh);
 	
 	return par;
 }

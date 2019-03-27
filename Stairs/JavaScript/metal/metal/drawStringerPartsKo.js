@@ -313,6 +313,23 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 		}
 	}
 
+	//крепление к стенам
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(pt3, 100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHoleBot.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(pt4, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHoleBot.push(center1);
+	}
+
 	//базовые точки для стыковки с другими частями косоура
 	//http://6692035.ru/dev/mayorov/metal/image/drawBotStepKo_pltG_Lom.jpg - для ломанной
 	//http://6692035.ru/dev/mayorov/metal/image/drawBotStepKo_pltG_Pil.jpg - для пилообразной
@@ -409,11 +426,7 @@ function drawBotStepKo_pltP(par){
 		par.pointsShape.push(pt3);
 		//сохраняем точку для расчета длины
 		par.keyPoints.botPoint = copyPoint(pt2);
-	}
-	
-	
-
-	
+	}		
 
 	par.pointsShape.push(p2);
 	par.pointsShape.push(p3);
@@ -547,6 +560,23 @@ function drawBotStepKo_pltP(par){
 
 
 		}
+	}
+
+	//крепление к стенам
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(pt3, 100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHoleBot.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p2, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHoleBot.push(center1);
 	}
 
 	//базовые точки для стыковки с другими частями косоура
@@ -945,6 +975,23 @@ function drawBotStepKo_wndOut(par){
 			par.railingHoles.push(center2);
 		}
 
+	}
+
+	//крепление к стенам
+	if (par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -150);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p5, -150, -150);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
 	}
 
 	//базовые точки для стыковки с другими частями косоура
@@ -1670,7 +1717,24 @@ function drawTopStepKo_pltG(par){
 			}
 		}
 	}
-	
+
+
+	//крепление к стенам
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(pt2, -100 , -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+	}
 }//end of drawTopStepKo_pltG
 
 /**
@@ -1890,6 +1954,22 @@ function drawTopStepKo_pltP(par){
 			newPoint_xy(p2, - 40 + params.platformLength_1 - params.stringerThickness,
 				par.h);
 
+	//крепление к стенам
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(pt2, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+	}
 
 }//end of drawTopStepKo_pltP
 
@@ -2240,6 +2320,25 @@ function drawTopStepKo_wndOut(par){
 
 		par.keyPoints[par.key].marshBotLineP1 = copyPoint(p10)
 		par.keyPoints[par.key].marshBotLineP2 = copyPoint(p20)
+	}
+
+	//крепление к стенам
+	if (par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(topLineP1, -150, -150);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		//center1.noZenk = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -150);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		//center1.noZenk = true;
+		par.pointsHole.push(center1);
 	}
 
 

@@ -451,16 +451,19 @@ function drawBotStepLt_pltG(par) {
 	}
 	
 	//крепление к стенам
-	if(par.key == "out" && par.marshParams.wallFix.out && pt3 && pt4){
+	if (par.key == "out" && par.marshParams.wallFix.out && pt3 && pt4) {
+		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(pt3, 100, -100);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt4, -100, -100);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);		
 	}
 
@@ -902,6 +905,24 @@ function drawBotStepLt_pltPOut(par) {
 	center1.hasAngle = center2.hasAngle = true;
 	par.pointsHole.push(center2);
 	par.pointsHole.push(center1);
+
+
+	//крепление к стенам
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p1, 100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHoleBot.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p2, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHoleBot.push(center1);
+	}
 
 
 	//базовые точки для стыковки с другими частями косоура
@@ -1459,16 +1480,19 @@ function drawBotStepLt_wndOut(par) {
 	}
 	
 	//крепление к стенам
-	if(par.marshParams.wallFix.out){
+	if (par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(p4, -150, -200);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p1, 150, -200);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.wallFix = true;
 		par.pointsHole.push(center1);		
 	}
 
@@ -2564,16 +2588,19 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 	}
 	
 	//крепление к стенам
-	if(par.key == "out" && par.marshParams.wallFix.out){
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(p2, 150, -100);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(topLineP1, -100, -100);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.wallFix = true;
 		par.pointsHole.push(center1);		
 	}
 
@@ -3071,6 +3098,23 @@ function drawTopStepLt_pltPOut(par) {
 		var p20 = polar(p10, par.marshAng, -100.0)
 		par.keyPoints[par.key].marshBotLineP1 = copyPoint(p10)
 		par.keyPoints[par.key].marshBotLineP2 = copyPoint(p20)
+	}
+
+	//крепление к стенам
+	if (par.key == "out" && par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p2, 150, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(topLineP1, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
 	}
 
 }//end of drawTopStepLt_pltPOut
@@ -3571,18 +3615,21 @@ function drawTopStepLt_wndOut(par) {
 	}
 	
 	//крепление к стенам
-	if(par.marshParams.wallFix.out){
+	if (par.marshParams.wallFix.out) {
+		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p5, -150, -200);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
-		center1.noZenk = true;
+		center1.wallFix = true;
+		//center1.noZenk = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(p2, 150, -200);
-		center1.rad = 10;
+		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
-		center1.noZenk = true;
+		center1.wallFix = true;
+		//center1.noZenk = true;
 		par.pointsHole.push(center1);		
 	}
 

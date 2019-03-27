@@ -40,6 +40,11 @@ function drawAdjustableLeg(isAngle) {
 	flanParams.dxfBasePoint = dxfBasePoint;
 	flanParams.dxfPrimitivesArr = [];
 
+	if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
+		var fixPar = getFixPart(1, 'botFloor');
+		flanParams.holeDiam = fixPar.diam + 1;
+	}
+
 	//добавляем фланец
 	drawRectFlan(flanParams);
 	var flanShape = flanParams.shape;
@@ -79,6 +84,58 @@ function drawAdjustableLeg(isAngle) {
 	bolt.rotation.z = 0.0;
 	bolt.castShadow = true;
 	leg.add(bolt);
+
+	/* болты крепления к нижнему перекрытию */
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
+			var fixPar = getFixPart(1, 'botFloor');
+			var holeXY = 15;
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = flan.position.x + holeXY;
+			fix.position.y = flan.position.y - thickness;
+			fix.position.z = flan.position.z - holeXY;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += thickness;
+			}
+			leg.add(fix);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = flan.position.x + flanParams.width - holeXY;
+			fix.position.y = flan.position.y - thickness;
+			fix.position.z = flan.position.z - holeXY;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += thickness
+			}
+			leg.add(fix);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = flan.position.x + holeXY;
+			fix.position.y = flan.position.y - thickness;
+			fix.position.z = flan.position.z - flanParams.height + holeXY;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += thickness;
+			}
+			leg.add(fix);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = flan.position.x + flanParams.width - holeXY;
+			fix.position.y = flan.position.y - thickness;
+			fix.position.z = flan.position.z - flanParams.height + holeXY;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += thickness
+			}
+			leg.add(fix);
+		}
+	}
 
 	//сохраняем данные для спецификации
 	var partName = "adjustableLeg";

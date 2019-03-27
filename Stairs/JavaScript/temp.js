@@ -1591,3 +1591,258 @@ function addOvalHoleY(shape, dxfPrimitivesArr, center, rad, distOval, dxfBasePoi
 }//end of addOvalHoleY
 
 
+function drawBolt(par) {
+	/*
+	diam
+	len
+	headType
+	*/
+
+	par.mesh = new THREE.Object3D();
+	if (!par.headType) {
+		par.headType = "потай";
+		if (par.len == 40 || params.boltHead == "hexagon") par.headType = "шестигр.";
+	}
+
+	var headHeight = 4;
+
+	var boltColor = "#808080"; //серый для странных болтов	
+	if (par.len == 20) boltColor = "#FF0000"; //красный
+	if (par.len == 30) boltColor = "#0000FF"; //синий
+	if (par.len == 40) boltColor = "#00FF00"; //зеленый
+
+	var boltMaterial = new THREE.MeshLambertMaterial({ color: boltColor });
+	if (!$sceneStruct.vl_1.realColors) {
+		boltMaterial = params.materials.bolt;
+	}
+	var boltLen = par.len;
+	if ($sceneStruct.vl_1.boltHead && !testingMode && par.headType != "шестигр.") boltLen -= headHeight;
+
+	var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, boltLen, 10, 1, false);
+	var bolt = new THREE.Mesh(geometry, boltMaterial);
+	if ($sceneStruct.vl_1.boltHead && !testingMode && par.headType != "шестигр.") bolt.position.y += headHeight / 2;
+	par.mesh.add(bolt);
+
+
+	if (!$sceneStruct.vl_1.realColors) {
+		if (params.paintedBolts == "есть") boltMaterial = params.materials.metal;
+	}
+	//головка для шестигранных болтов
+	if (!testingMode && par.headType == "шестигр.") {
+		var headHeight = par.diam * 0.6;
+
+
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+
+
+		var shape = drawPolygon(polygonParams).shape;
+
+		var extrudeOptions = {
+			amount: headHeight,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var head = new THREE.Mesh(geom, boltMaterial);
+		head.rotation.x = -Math.PI / 2;
+		//	head.position.x = -polygonParams.edgeLength / 2;
+		//	head.position.z = polygonParams.edgeLength * Math.cos(Math.PI / 6);
+		head.position.y = par.len / 2// + par.diam / 2;
+		par.mesh.add(head);
+	}
+
+	//головка для болтов в потай
+	if ($sceneStruct.vl_1.boltHead && par.headType != "шестигр.") {
+		var shape = new THREE.Shape();
+		addCircle(shape, [], { x: 0, y: 0 }, par.diam, { x: 0, y: 0 })
+
+		//шестигранное отверстие
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.4,
+			basePoint: { x: 0, y: 0 },
+			type: "path",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+		//polygonParams.basePoint = newPoint_xy(polygonParams.basePoint, -polygonParams.edgeLength / 2, -polygonParams.edgeLength * Math.cos(Math.PI / 6))
+
+		var path = drawPolygon(polygonParams).path;
+
+		shape.holes.push(path);
+
+		var extrudeOptions = {
+			amount: headHeight,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		//var geometry = new THREE.CylinderGeometry(par.diam, par.diam, headThk, 30, 1, false);
+		var head = new THREE.Mesh(geom, boltMaterial);
+		head.rotation.x = -Math.PI / 2;
+		head.position.y = -par.len / 2 - headHeight * 0.1;
+		par.mesh.add(head);
+
+		//заглушка дна чтобы не просвечивал белый материал
+		var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, 0.1, 10, 1, false);
+		var cyl = new THREE.Mesh(geometry, boltMaterial);
+		cyl.position.y = -par.len / 2 + headHeight;
+		par.mesh.add(cyl);
+
+		//гайка
+		var nutHeight = par.diam * 0.8;
+
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+
+
+		var shape = drawPolygon(polygonParams).shape;
+
+		var extrudeOptions = {
+			amount: nutHeight,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var nut = new THREE.Mesh(geom, params.materials.bolt);
+		nut.rotation.x = -Math.PI / 2;
+		nut.position.y = -par.len / 2 + 8 + 3;
+		if (par.len > 20) nut.position.y += 1 + 4;
+		if (par.len > 30) nut.position.y += 8;
+		par.mesh.add(nut);
+	}
+
+
+	//сохраняем данные для спецификации
+	par.partName = "bolt"
+	if (par.diam != 10) par.partName += "M" + par.diam;
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Болт",
+				metalPaint: (params.paintedBolts == "есть"),
+				timberPaint: false,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Метизы",
+			}
+		}
+		var headName = "шестигр. гол.";
+		if (par.headType == "потай") headName = "потай внутр. шестигр."
+		var name = "М" + par.diam + "x" + par.len + " " + headName;
+		if (par.headType == "меб.") name = "мебельный М" + par.diam + "х" + par.len;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
+
+}
+
+function drawNut(par) {
+
+
+	par.height = par.diam * 0.8;
+	if (par.isLong) par.height = par.diam * 2.5;
+
+	if (!par.dxfBasePoint) {
+		par.dxfBasePoint = { x: 0, y: 0 };
+		par.dxfArr = [];
+	}
+
+	var boltColor = "#00FF00"; //зеленый
+	var boltMaterial = new THREE.MeshLambertMaterial({ color: boltColor });
+
+
+	var polygonParams = {
+		cornerRad: 0,
+		vertexAmt: 6,
+		edgeLength: par.diam * 0.9815,
+		basePoint: { x: 0, y: 0 },
+		type: "shape",
+		dxfPrimitivesArr: par.dxfArr,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+
+
+	var shape = drawPolygon(polygonParams).shape;
+
+	//центральное отверстие
+
+	//var flanCenter = {x: polygonParams.edgeLength / 2, y: polygonParams.edgeLength * Math.cos(Math.PI / 6)}
+	addRoundHole(shape, par.dxfArr, polygonParams.basePoint, par.diam / 2 + 0.5, par.dxfBasePoint);
+
+	var extrudeOptions = {
+		amount: par.height,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var head = new THREE.Mesh(geom, boltMaterial);
+	head.rotation.x = -Math.PI / 2;
+	head.position.x = 0//-polygonParams.edgeLength / 2;
+	head.position.z = 0//polygonParams.edgeLength * Math.cos(Math.PI / 6);
+	//head.position.y = par.len / 2// + par.diam / 2;
+
+	par.mesh = head;
+
+	//сохраняем данные для спецификации
+	par.partName = "nut"
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Гайка",
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Метизы",
+			}
+		}
+
+		var name = "М" + par.diam;
+		if (par.isLong) name += " удлин."
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
+
+
+}

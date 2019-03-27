@@ -162,6 +162,7 @@
     <Content Include="JavaScript\metal\vint\draw_vint.js" />
     <Content Include="JavaScript\temp.js" />
     <Content Include="JavaScript\temp1.js" />
+    <Content Include="JavaScript\Temp\calcSpecGeneral.js" />
     <Content Include="JavaScript\three.js" />
     <Content Include="Web.config" />
   </ItemGroup>
@@ -188,7 +189,6 @@
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="Controllers\" />
-    <Folder Include="JavaScript\Temp\" />
     <Folder Include="Models\" />
   </ItemGroup>
   <PropertyGroup>

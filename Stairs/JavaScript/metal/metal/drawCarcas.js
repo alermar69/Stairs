@@ -1554,3 +1554,1051 @@ function calcColumnSize(){
 
 
 
+function drawFixPart (par) {
+	/*
+	diam
+	len
+	headType
+	*/
+
+	par.mesh = new THREE.Object3D();
+	var fixPart = new THREE.Object3D();
+	if (turnFactor == -1) fixPart.rotation.x = Math.PI;
+
+	par.layer = 'fixPats';
+
+	par.material = new THREE.MeshLambertMaterial({ color: "#0000FF" });
+	par.material = params.materials.bolt;
+	par.dopParams = {};
+
+
+	if (par.fixPart == 'химия') {
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		//анкер
+		par.dopParams = {
+			name: "Химический анкер, баллон",
+			lenCylinder: 75,
+			diamCylinder: par.diam + 4,
+			material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
+		}
+		var anchor = drawStudF(par);
+		anchor.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
+		fixPart.add(anchor);
+
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + (params.stringerThickness) * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'глухари') {		
+		//глухарь
+		var screw = drawScrewF(par);
+		fixPart.add(screw);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = par.len / 2 - par.shimAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.shimAmount) * turnFactor + params.stringerThickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'шпилька насквозь') {
+		//шпилька
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		//гайка
+		nut = drawNutF(par);
+		nut.position.y = - par.len / 2 + 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y + par.nutAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + (params.stringerThickness) * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'саморезы') {
+		//глухарь
+		par.dopParams.name = "Саморез";
+		var screw = drawScrewF(par);
+		fixPart.add(screw);
+
+		if (par.fixType !== 'дерево') {
+			//дюбель	
+			par.dopParams = {
+				name: "Дюбель",
+				lenCylinder: 50,
+				diamCylinder: 10,
+				material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
+			}
+			var dowel = drawStudF(par);
+			dowel.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
+			fixPart.add(dowel);
+		}
+
+		fixPart.position.y = (-par.len / 2) * turnFactor + (params.stringerThickness) * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'шпилька-шуруп') {
+		//шпилька
+		par.dopParams.name = "Шпилька-шуруп"
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);		
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + (params.stringerThickness) * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	//проставка
+	if (par.isSpacer) {
+		for (var i = 1; i <= par.spacerAmt; i++) {
+			par.material = params.materials.bolt;
+			var spacer = drawSpacerF(par);
+			spacer.position.y = -fixPart.position.y * turnFactor - par.spacerAmount * i;
+			if (turnFactor == -1) spacer.position.y -= params.stringerThickness;
+			fixPart.add(spacer);
+
+			par.mesh.add(fixPart);
+		}		
+	}
+
+	//проставка
+	function drawSpacerF(par) {
+		var extrudeOptions = {
+			amount: par.fixSpacerLength,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+
+		var p1 = newPoint_xy(center, -par.spacerWidt / 2, -par.spacerHeigth / 2);
+		var p2 = newPoint_xy(center, -par.spacerWidt / 2, par.spacerHeigth / 2);
+		var p3 = newPoint_xy(center, par.spacerWidt / 2, par.spacerHeigth / 2);
+		var p4 = newPoint_xy(center, par.spacerWidt / 2, -par.spacerHeigth / 2);
+
+		var pointsShape = [p1, p2, p3, p4];
+
+		//создаем шейп
+		var shapePar = {
+			points: pointsShape,
+			dxfArr: dxfArr,
+			dxfBasePoint: dxfBasePoint,
+		}
+		var shape = drawShapeByPoints2(shapePar).shape;
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint, par.layer);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var shim = new THREE.Mesh(geom, par.material);
+		shim.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "fixSpacer"
+		par.partName += "_M" + par.diam + "-" + par.fixSpacer;
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Проставка",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "М" + par.diam + "-" + par.spacerWidt + 'x' + par.spacerHeigth + 'x' + par.fixSpacerLength;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.spacerAmount = extrudeOptions.amount;
+
+		return shim;
+	}
+
+	//шпилька или деталь в виде цилиндра
+	function drawStudF(par) {
+		var len = par.len;
+		if (par.dopParams.lenCylinder) len = par.dopParams.lenCylinder;
+		var diam = par.diam;
+		if (par.dopParams.diamCylinder) diam = par.dopParams.diamCylinder;
+		var material = par.material;
+		if (par.dopParams.material) material = par.dopParams.material;
+
+
+		var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
+		var stud = new THREE.Mesh(geometry, material);
+
+		//сохраняем данные для спецификации
+		var nameFix = "Шпилька";
+		if (par.dopParams.name) nameFix = par.dopParams .name;
+
+		par.partName = "stud"
+		if (nameFix == 'Шпилька-шуруп') par.partName = "stud_screw"		
+		par.partName += "_M" + diam;
+
+		if (nameFix == 'Химический анкер, баллон') par.partName = "chemAnc"
+		if (nameFix == 'Дюбель') par.partName = "dowel" + "_Ф" + diam;
+					
+		
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: nameFix,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+					discription: "Крепление к стене 1"
+				}
+			}
+			var name = "М" + diam + "x" + len;
+			if (nameFix == 'Химический анкер, баллон') name = "Ф" + diam + "x" + len;
+			if (nameFix == 'Дюбель') name = "Ф" + diam + "x" + len;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		return stud;
+	}
+
+	//глухарь
+	function drawScrewF(par) {
+		var screw = new THREE.Object3D();
+
+		//шпилька
+		var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, par.len, 10, 1, false);
+		var stud = new THREE.Mesh(geometry, par.material);
+		screw.add(stud);		
+
+		//головка для болтов
+		var extrudeOptions = {
+			amount: par.diam * 0.6,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+		var shape = drawPolygon(polygonParams).shape;
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var head = new THREE.Mesh(geom, par.material);
+		head.rotation.x = -Math.PI / 2;
+		head.position.y = par.len / 2
+		screw.add(head);
+
+		//сохраняем данные для спецификации
+		var nameFix = "Глухарь";
+		if (par.dopParams.name) nameFix = par.dopParams.name;
+
+		var d = 'М';
+		if (nameFix == "Саморез") d = 'Ф';
+
+		par.partName = "screw"
+		par.partName += "_" + d + par.diam;
+		
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: nameFix,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = d + par.diam + "x" + par.len;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.headAmount = extrudeOptions.amount;
+
+		return screw;
+	}
+
+	//гайка
+	function drawNutF(par) {
+		var extrudeOptions = {
+			amount: par.diam * 0.8,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+
+		var shape = drawPolygon(polygonParams).shape;
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var nut = new THREE.Mesh(geom, par.material);
+		nut.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "nut"
+		par.partName += "_M" + par.diam;
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Гайка",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "М" + par.diam;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.nutAmount = extrudeOptions.amount;
+
+		return nut;
+	}
+
+	//шайба
+	function drawShimF(par) {
+		var extrudeOptions = {
+			amount: par.diam * 0.2,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};	
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+		addCircle(shape, dxfArr, center, par.diam, dxfBasePoint, par.layer);
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint, par.layer);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var shim = new THREE.Mesh(geom, par.material);
+		shim.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "shim"
+		par.partName += "_M" + par.diam;
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Шайба",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "М" + par.diam;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.shimAmount = extrudeOptions.amount;
+
+		return shim;
+	}
+
+	//анкер
+	function drawAnchorF(par) {
+		var extrudeOptions = {
+			amount: 75,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+		addCircle(shape, dxfArr, center, par.diam / 2 + 2, dxfBasePoint, par.layer);
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint, par.layer);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var anchor = new THREE.Mesh(geom, par.material);
+		anchor.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		var name = "Химический анкер, баллон";
+		if (par.name) name = par.name;
+
+		par.partName = "chemAnc"
+		if (name == 'Дюбель') par.partName = "dowel"
+		par.partName += "_Ф" + par.diam;		
+		
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: name,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "Ф" + par.diam + "x" + extrudeOptions.amount;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.anchorAmount = extrudeOptions.amount;
+
+		return anchor;
+	}
+
+	return par;
+}
+
+function getFixPart(marshId, wall='wall') {
+	//наличие креплений к стене
+	var fixPar = {
+		fixType: 'нет',
+		fixPart: 'нет',
+		fixSpacer: 'нет',
+		diam: 10,
+		len: 100,
+	}
+
+	if (wall == 'wall') {
+		//стена №1
+		if (params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
+			var isWallFix = false;
+			if (params.stairModel == "Прямая") isWallFix = true;
+			if (params.stairModel != "Прямая" && marshId == 3) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType3;
+				fixPar.fixPart = params.fixPart3;
+				fixPar.fixSpacer = params.fixSpacer3;
+				if (params.fixSpacerLength3) fixPar.fixSpacerLength = params.fixSpacerLength3;
+			}
+		}
+
+		//стена №2
+		if (params.fixPart4 != "нет" && params.fixPart4 != "не указано") {
+			var isWallFix = false;
+			if (params.stairModel == "Прямая") fixPar.out = true;
+			if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") &&
+				marshId == 3) isWallFix = true;
+			if ((params.stairModel == "П-образная с забегом" ||
+					params.stairModel == "П-образная с площадкой" ||
+					params.stairModel == "П-образная трехмаршевая") &&
+				marshId == 1) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType4;
+				fixPar.fixPart = params.fixPart4;
+				fixPar.fixSpacer = params.fixSpacer4;
+				if (params.fixSpacerLength4) fixPar.fixSpacerLength = params.fixSpacerLength4;
+			}
+		}
+
+		//стена №3
+		if (params.fixPart5 != "нет" && params.fixPart5 != "не указано") {
+			var isWallFix = false;
+			if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") &&
+				marshId == 1) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType5;
+				fixPar.fixPart = params.fixPart5;
+				fixPar.fixSpacer = params.fixSpacer5;
+				if (params.fixSpacerLength5) fixPar.fixSpacerLength = params.fixSpacerLength5;
+			}
+		}
+
+		//стена №4
+		if (params.fixPart6 != "нет" && params.fixPart6 != "не указано") {
+			var isWallFix = false;
+			if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") &&
+				marshId == 1) isWallFix = true;
+			if ((params.stairModel == "П-образная с забегом" ||
+					params.stairModel == "П-образная с площадкой" ||
+					params.stairModel == "П-образная трехмаршевая") &&
+				marshId == 2) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType6;
+				fixPar.fixPart = params.fixPart6;
+				fixPar.fixSpacer = params.fixSpacer6;
+				if (params.fixSpacerLength6) fixPar.fixSpacerLength = params.fixSpacerLength6;
+			}
+		}
+	}
+
+	//нижнее перекрытие
+	if (wall == 'botFloor') {
+		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
+			fixPar.fixType = params.fixType1;
+			fixPar.fixPart = params.fixPart1;
+			fixPar.fixSpacer = params.fixSpacer1;
+			if (params.fixSpacerLength1) fixPar.fixSpacerLength = params.fixSpacerLength1;
+		}
+	}
+
+	//верхнее перекрытие
+	if (wall == 'topFloor') {
+		if (params.fixPart2 != "нет" && params.fixPart2 != "не указано") {
+			fixPar.fixType = params.fixType2;
+			fixPar.fixPart = params.fixPart2;
+			fixPar.fixSpacer = params.fixSpacer2;
+			if (params.fixSpacerLength2) fixPar.fixSpacerLength = params.fixSpacerLength2;
+		}
+	}
+
+
+	//определяем параметры крепления в зависимости от типа крепления и типа стены
+	if (fixPar.fixPart == 'глухари') {
+		if (params.model == "ко" && fixPar.fixType == 'дерево') {
+			fixPar.diam = 12;
+			fixPar.len = 200;
+		}
+	}
+
+	if (fixPar.fixPart == 'шпилька насквозь') {
+		if (fixPar.fixType == 'пеноблок' || ~fixPar.fixType.indexOf('кирпич')) {
+			if (params.model == "лт") fixPar.diam = 12;
+			if (params.model == "ко") fixPar.diam = 16;			
+		}
+		fixPar.len = 300;
+	}
+
+	if (fixPar.fixPart == 'шпилька-шуруп') {
+		fixPar.diam = 12;
+	}	
+
+	if (fixPar.fixPart == 'саморезы') {
+		fixPar.diam = 6;
+		fixPar.len = 60;
+	}
+
+
+	//проставка
+	if (fixPar.fixPart != "не указано" && fixPar.fixPart != "нет" &&
+		fixPar.fixSpacer != "не указано" && fixPar.fixSpacer != "нет") {
+		fixPar.isSpacer = true;
+		fixPar.spacerWidt = 40;
+		fixPar.spacerHeigth = 40;
+		fixPar.spacerAmt = 1;
+
+		if (fixPar.fixSpacer == "100х50") {
+			fixPar.spacerWidt = 100;
+			fixPar.spacerHeigth = 50;
+		}
+		if (fixPar.fixSpacer == "40х40 сдвоен.") {
+			fixPar.spacerAmt = 2;
+		}
+	}
+
+	return fixPar;
+}
+
+function drawAngleSupport(par) {
+    /*исходные данные - модель уголка:
+        У2-40х40х230
+        У2-40х40х200
+        У2-40х40х160
+        У2-40х40х90
+        У4-60х60х100
+        У4-70х70х100
+        У5-60х60х100
+		
+		noBoltsInSide1
+		noBoltsInSide2
+    */
+
+	if (!par.model) {
+		var angleModel = par; //костыль для совместимости, когда в параметрах передавалась только модель
+		par = {};
+	}
+	else var angleModel = par.model;
+
+
+	//if(!dxfBasePoint.x || !dxfBasePoint.y) dxfBasePoint = {x:0,y:0};
+	var dxfBasePoint = { x: 0, y: 0 };
+
+	var color = 0xC0C0C0;
+
+	var partParams = {
+		height: 40,
+		holeDiam1: 7,
+		holeDiam2: 13,
+		hole1Y: 15,
+		hole2Y: 20,
+		metalThickness: 3
+	}
+
+	if (angleModel == "У2-40х40х230") {
+		partParams.width = 230;
+		partParams.holeDist1 = 200;
+		partParams.holeDist2 = 180;
+		color = 0xFF0000;
+	}
+
+	if (angleModel == "У2-40х40х200") {
+		partParams.width = 200;
+		partParams.holeDist1 = 170;
+		partParams.holeDist2 = 150;
+		color = 0xFFFF00;
+	}
+
+	if (angleModel == "У2-40х40х160") {
+		partParams.width = 160;
+		partParams.holeDist1 = 130;
+		partParams.holeDist2 = 110;
+		color = 0xFF00FF;
+	}
+
+	if (angleModel == "У2-40х40х90") {
+		partParams.width = 90;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 50;
+		color = 0x00FF00;
+	}
+
+	if (angleModel == "У4-60х60х100") {
+		partParams.width = 100;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 60;
+		partParams.height = 60,
+			partParams.holeDiam1 = 13,
+			partParams.holeDiam2 = 13,
+			partParams.hole1Y = 30,
+			partParams.hole2Y = 30,
+			partParams.metalThickness = 8
+		color = 0x004080;
+	}
+
+	if (angleModel == "У4-70х70х100") {
+		partParams.width = 100;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 60;
+		partParams.height = 70,
+			partParams.holeDiam1 = 0,
+			partParams.holeDiam2 = 13,
+			//partParams.hole1Y = 30,
+			partParams.hole2Y = 20,
+			partParams.metalThickness = 8
+		color = 0x800000;
+	}
+
+	if (angleModel == "У5-60х60х100") {
+		partParams.width = 100;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 0;
+		partParams.height = 60,
+			partParams.holeDiam1 = 13,
+			partParams.holeDiam2 = 23,
+			partParams.hole1Y = 30,
+			partParams.hole2Y = 23,
+			partParams.metalThickness = 8
+		color = 0x008040;
+	}
+
+	var metalMaterial = new THREE.MeshLambertMaterial({ color: color, wireframe: false });
+	if (!$sceneStruct.vl_1.realColors) metalMaterial = params.materials.metal;
+
+	// Уголок деталь изгиб
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = 0;
+
+	var shape = drawAngleSupportCentr(partParams.width, partParams.metalThickness);//передаваемые параметры (width, metalThickness)
+
+	var extrudeOptions = {
+		amount: partParams.width,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var angleSupportCentrGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
+	angleSupportCentrGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var angleSupport1 = new THREE.Mesh(angleSupportCentrGeometry, metalMaterial);
+	angleSupport1.position.x = 0;
+	angleSupport1.position.y = 0;
+	angleSupport1.position.z = 0;
+
+	angleSupport1.rotation.x = Math.PI / 2;
+	angleSupport1.rotation.y = Math.PI / 2;
+	angleSupport1.rotation.z = 0;
+
+	//meshes.push(angleSupport1);
+
+	// Уголок деталь полка 1
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = -100;
+	var shape = drawAngleSupportSide(partParams.width, partParams.height, partParams.holeDist1, partParams.hole1Y, partParams.holeDiam1, partParams.metalThickness);//передаваемые параметры (width, height, holeDist, hole1Y, holeDiam, metalThickness)
+
+	/*добавление овальных отверстий*/
+
+	if (angleModel == "У4-70х70х100") {
+
+		var holeWidth = 13;
+
+		/*
+		/*первое отверстие*
+		var hole1 = new THREE.Path();
+		var center1 = { x: 20, y: 19 };
+		var center2 = newPoint_xy(center1, 0, 10);
+		var p1 = newPoint_xy(center1, holeWidth / 2, 0);
+		var p2 = newPoint_xy(center2, holeWidth / 2, 0);
+		var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
+		var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
+		addLine(hole1, dxfPrimitivesArr0, p1, p2, dxfBasePoint)
+		addArc2(hole1, dxfPrimitivesArr0, center2, holeWidth / 2, Math.PI, 0, true, dxfBasePoint)
+		addLine(hole1, dxfPrimitivesArr0, p3, p4, dxfBasePoint)
+		addArc2(hole1, dxfPrimitivesArr0, center1, holeWidth / 2, 0, -Math.PI, false, dxfBasePoint)
+		shape.holes.push(hole1);
+
+		/*второе отверстие*
+		var hole2 = new THREE.Path();
+		var center1 = { x: 80, y: 19 };
+		var center2 = newPoint_xy(center1, 0, 10);
+		var p1 = newPoint_xy(center1, holeWidth / 2, 0);
+		var p2 = newPoint_xy(center2, holeWidth / 2, 0);
+		var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
+		var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
+		addLine(hole2, dxfPrimitivesArr0, p1, p2, dxfBasePoint)
+		addArc2(hole2, dxfPrimitivesArr0, center2, holeWidth / 2, Math.PI, 0, true, dxfBasePoint)
+		addLine(hole2, dxfPrimitivesArr0, p3, p4, dxfBasePoint)
+		addArc2(hole2, dxfPrimitivesArr0, center1, holeWidth / 2, 0, Math.PI, false, dxfBasePoint)
+		shape.holes.push(hole2);
+		*/
+		var rad = 6.5;
+		var clockwise = true;
+		var distOval = 10;
+		var center1 = { x: 20, y: 24 };
+		var center2 = { x: 80, y: 24 };
+
+		//нижнее отверстие
+		addOvalHoleY(shape, [], center1, rad, distOval, dxfBasePoint, clockwise)
+		//верхнее отверстие
+		addOvalHoleY(shape, [], center2, rad, distOval, dxfBasePoint, clockwise)
+	}
+	var extrudeOptions = {
+		amount: partParams.metalThickness,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var angleSupportGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
+	angleSupportGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var angleSupport2 = new THREE.Mesh(angleSupportGeometry, metalMaterial);
+	angleSupport2.position.x = 0;
+	angleSupport2.position.y = partParams.metalThickness * 2;
+	angleSupport2.position.z = 0;
+
+	angleSupport2.rotation.x = 0;
+	angleSupport2.rotation.y = 0;
+	angleSupport2.rotation.z = 0;
+
+	//meshes.push(angleSupport2);
+
+	// Уголок деталь полка 2
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = 100;
+	if (angleModel == "У4-70х70х100" && par.pos) {
+		var fixPar = getFixPart(0, par.pos);
+		partParams.holeDiam2 = fixPar.diam + 1;
+	}
+	var shape = drawAngleSupportSide(partParams.width, partParams.height, partParams.holeDist2, partParams.hole2Y, partParams.holeDiam2, partParams.metalThickness);
+
+	var extrudeOptions = {
+		amount: partParams.metalThickness,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var angleSupportGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
+	angleSupportGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var angleSupport3 = new THREE.Mesh(angleSupportGeometry, metalMaterial);
+	angleSupport3.position.x = 0;
+	angleSupport3.position.y = partParams.metalThickness;
+	angleSupport3.position.z = partParams.metalThickness * 2;
+
+	angleSupport3.rotation.x = Math.PI / 2;
+	angleSupport3.rotation.y = 0;
+	angleSupport3.rotation.z = 0;
+
+	//meshes.push(angleSupport3);
+
+	var complexObject1 = new THREE.Object3D();
+	complexObject1.add(angleSupport1);
+	complexObject1.add(angleSupport2);
+	complexObject1.add(angleSupport3);
+
+	complexObject1.position.x = 0;
+	complexObject1.position.y = 0;
+	complexObject1.position.z = 0;
+
+	complexObject1.rotation.x = 0;
+	complexObject1.rotation.y = 0;
+	complexObject1.rotation.z = 0;
+
+	/* болты крепления к нижнему или верхнему перекрытию */
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (angleModel == "У4-70х70х100" && par.pos) {
+			var fixPar = getFixPart(0, par.pos);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = (partParams.width - partParams.holeDist2) / 2;
+			fix.position.y = 0;
+			fix.position.z = partParams.height - partParams.hole2Y;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += partParams.metalThickness;
+			}
+			complexObject1.add(fix);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = (partParams.width + partParams.holeDist2) / 2;
+			fix.position.y = 0;
+			fix.position.z = partParams.height - partParams.hole2Y;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += partParams.metalThickness;
+			}
+			complexObject1.add(fix);
+		}
+	}
+
+	/* болты */
+	var partName = "treadAngle";
+	if (angleModel == "У4-70х70х100" || angleModel == "У4-60х60х100" || angleModel == "У5-60х60х100") partName = "carcasAngle";
+
+	//болты в грани 1
+	if (!par.noBoltsInSide1) par.noBoltsInSide1 = false;	//болты есть
+	if (angleModel == "У4-70х70х100" || angleModel == "У5-60х60х100") par.noBoltsInSide1 = true;
+
+	//болты в грани 2
+	if (!par.noBoltsInSide2) par.noBoltsInSide2 = false; //болты есть
+	if (angleModel != "У4-70х70х100" && angleModel != "У4-60х60х100" && angleModel != "У5-60х60х100")
+		par.noBoltsInSide2 = true;
+
+
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
+		//болты в грани №1
+		var boltPar = {
+			diam: boltDiam,
+			len: boltLen,
+		}
+		if (!testingMode) {
+			if (partName == "treadAngle") boltPar.len = 20;
+			if (partName == "carcasAngle") boltPar.len = 30;
+		}
+
+
+		if (!par.noBoltsInSide1) {
+			var x = (partParams.width - partParams.holeDist2) / 2;
+			var z = partParams.height - partParams.hole2Y;
+			var y = boltPar.len / 2 - boltBulge;
+			if (!par.noBoltsInSide1_1) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.position.x = x;
+				bolt.position.z = z;
+				bolt.position.y = y;
+				complexObject1.add(bolt)
+			}
+
+			if (!par.noBoltsInSide1_2) {
+				var bolt2 = drawBolt(boltPar).mesh;
+				bolt2.position.x = x + partParams.holeDist2;
+				bolt2.position.y = y;
+				bolt2.position.z = z;
+				complexObject1.add(bolt2)
+			}
+		}
+
+		//болты в грани №2
+
+		if (!par.noBoltsInSide2) {
+			var x = (partParams.width - partParams.holeDist1) / 2;
+			var y = partParams.height - partParams.hole1Y;
+			if (angleModel == "У4-70х70х100") y = partParams.height - 35;
+			var z = boltPar.len / 2 - boltBulge;
+			if (!par.noBoltsInSide2_1) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2
+				bolt.position.x = x;
+				bolt.position.y = y;
+				bolt.position.z = z;
+				complexObject1.add(bolt)
+			}
+
+			if (!par.noBoltsInSide2_2) {
+				var bolt2 = drawBolt(boltPar).mesh;
+				bolt2.rotation.x = Math.PI / 2
+				bolt2.position.x = x + partParams.holeDist1;
+				bolt2.position.y = y;
+				bolt2.position.z = z;
+				complexObject1.add(bolt2)
+			}
+		}
+	}
+
+
+	//сохраняем данные для спецификации
+
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Уголок ступени",
+				metalPaint: true,
+				timberPaint: false,
+				division: "stock_2",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+		if (partName == "carcasAngle") specObj[partName].name = "Уголок каркаса";
+
+		var name = angleModel;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	//параметры для позиционирования
+	var dimensions = {
+		width: partParams.width,
+		holeDist1: partParams.holeDist1,
+		holeDist2: partParams.holeDist2,
+		holePos: {
+			x: (partParams.width - partParams.holeDist2) / 2,
+			y: partParams.height - partParams.hole1Y,
+		}
+	}
+	if (angleModel == "У4-70х70х100") dimensions.holePos.y = partParams.height - 35;
+	if (angleModel == "У5-60х60х100") {
+		dimensions.holePos.y = partParams.height - partParams.hole1Y;
+		dimensions.holePos.x = (partParams.width - partParams.holeDist1) / 2
+	}
+
+	if (angleModel == "У2-40х40х230" ||
+		angleModel == "У2-40х40х200" ||
+		angleModel == "У2-40х40х160" ||
+		angleModel == "У2-40х40х90") {
+		dimensions.holePos.y = partParams.height - partParams.hole2Y;
+	}
+
+	complexObject1.dimensions = dimensions;
+
+	return complexObject1
+}

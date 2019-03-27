@@ -22,7 +22,7 @@ function drawComplexStringer(par) {
 	calcStringerPar(par);
 
 	var dxfBasePoint0 = copyPoint(par.dxfBasePoint);
-	
+	params.carcasConfig = $("#carcasConfig").val();
 	
 	//боковые накладки косоура
 
@@ -1945,7 +1945,7 @@ function drawPltStringer(par) {
 
 			shapePar.points = par.pointsShape;
 		}
-
+console.log(shapePar, params.carcasConfig)
 		par.stringerShape = drawShapeByPoints2(shapePar).shape;
 
 		//отверстия под фланец соединения косоуров

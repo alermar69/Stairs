@@ -569,7 +569,7 @@ function drawStringer(par){
 		var mesh = new THREE.Mesh(geom, params.materials.metal);
 		par.mesh.add(mesh);
 		}
-		
+
 	//формируем единый массив центров отверстий косоура для вставки уголков, рамок, колонн и т.п.
 	par.carcasHoles = [];
 	par.carcasHoles.push(...par.pointsHole, ...par.pointsHoleBot, ...par.pointsHoleTop);
@@ -603,8 +603,25 @@ function drawStringer(par){
 			}
 		}
 	//сохраняем данные для спецификации
-	if(!par.partsLen[0]) par.partsLen[0] = 0;
-	
+	if (!par.partsLen[0]) par.partsLen[0] = 0;
+
+	//болты крепления к стенам
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (par.marshParams.wallFix.out || par.marshParams.wallFix.in) {
+			var fixPar = getFixPart(par.marshId);
+			for (var i = 0; i < par.carcasHoles.length; i++) {
+				var hole = par.carcasHoles[i];
+				if (hole.wallFix) {
+					var fix = drawFixPart(fixPar).mesh;
+					fix.position.x = hole.x;
+					fix.position.y = hole.y;
+					fix.rotation.x = Math.PI / 2;
+					par.mesh.add(fix);
+				}
+			}
+		}
+	}
+
 	var partName = "stringer";
 	if (typeof specObj != 'undefined'){
 		if (!specObj[partName]){

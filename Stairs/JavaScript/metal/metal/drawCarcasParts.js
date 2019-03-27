@@ -34,6 +34,7 @@ function drawCarcasAngles(holes, side){
 			var carcasAnglePar = {
 				model: anglePar.model,
 				side: side,
+				pos: holes[i].pos,
 			}
 			
 			//нет болтов в грани 1
@@ -394,6 +395,23 @@ function drawPltStringer(par) {
 			par.pointsHole.push(colunsHoles[i]);
 		}
 	}
+
+	//крепление к стенам
+	if (par.marshParams.wallFix.out && par.key == "rear") {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p0, 150, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p3, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+	}
 	
 	//создаем шейп
 	var shapePar = {
@@ -426,6 +444,20 @@ function drawPltStringer(par) {
 	var geom = new THREE.ExtrudeGeometry(par.stringerShape, extrudeOptions);
 	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	par.mesh = new THREE.Mesh(geom, params.materials.metal);
+
+	if (par.marshParams.wallFix.out && par.key == "rear") {
+		var fixPar = getFixPart(par.marshId);
+		for (var i = 0; i < par.pointsHole.length; i++) {
+			var hole = par.pointsHole[i];
+			if (hole.wallFix) {
+				var fix = drawFixPart(fixPar).mesh;
+				fix.position.x = hole.x;
+				fix.position.y = hole.y;
+				fix.rotation.x = Math.PI / 2;
+				par.mesh.add(fix);
+			}
+		}
+	}
 
 	
 	//сохраняем данные для спецификации
@@ -1002,6 +1034,23 @@ function drawTopPltStringer(par) {
 		}
 	}
 
+	//крепление к стенам
+	if (par.marshParams.wallFix.out && par.key == "rear") {
+		var fixPar = getFixPart(par.marshId);
+		//отверстие ближе к маршу
+		center1 = newPoint_xy(p0, 150, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+		//отверстие ближе к углу
+		center1 = newPoint_xy(p3, -100, -100);
+		center1.rad = fixPar.diam / 2 + 1;
+		center1.hasAngle = false;
+		center1.wallFix = true;
+		par.pointsHole.push(center1);
+	}
+
 	
 	//создаем шейп
 	var shapePar = {
@@ -1044,6 +1093,20 @@ function drawTopPltStringer(par) {
 	}
 	if (params.platformTop == "увеличенная" && turnFactor == 1) {
 		par.mesh.position.z += params.platformWidth_3 - params.M;
+	}
+
+	if (par.marshParams.wallFix.out && par.key == "rear") {
+		var fixPar = getFixPart(par.marshId);
+		for (var i = 0; i < par.pointsHole.length; i++) {
+			var hole = par.pointsHole[i];
+			if (hole.wallFix) {
+				var fix = drawFixPart(fixPar).mesh;
+				fix.position.x = hole.x;
+				fix.position.y = hole.y;
+				fix.rotation.x = Math.PI / 2;
+				par.mesh.add(fix);
+			}
+		}
 	}
 
 
