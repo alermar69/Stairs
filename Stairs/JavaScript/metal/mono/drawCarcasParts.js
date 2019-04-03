@@ -62,7 +62,7 @@ function drawColumn(par){
 		};
 
 		var flan = drawMonoFlan(flanPar).mesh;
-		flan.position.y = -dy - 3; // 3 - зазор от нижнего края фланца до опоры
+		flan.position.y += -dy - 3; // 3 - зазор от нижнего края фланца до опоры
 
 		var text = "Фланец колонны нижний";
 		var textHeight = 30;
@@ -132,7 +132,9 @@ function drawColumn(par){
 		if (par.side == "right") cons.position.z = length - par.profSize / 2;;
 		par.mesh.add(cons);
 
+		
 		//фланец к стене
+		var flanFix = new THREE.Object3D();
 		par.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -500);
 		var flanParams = {
 			width: 100,
@@ -154,6 +156,10 @@ function drawColumn(par){
 			dxfBasePoint: par.dxfBasePoint,
 			dxfPrimitivesArr: par.dxfArr,
 		};
+
+		flanParams.isFixPart = true; // болты крепления к стенам
+		flanParams.fixPar = getFixPart(par.marshId); // параметры крепления к стенам
+		flanParams.holeDiam = flanParams.fixPar.diam + 2; 
 
 		//добавляем фланец
 		flanParams = drawRectFlan(flanParams);
@@ -179,7 +185,28 @@ function drawColumn(par){
 		flan.position.z = -params.M / 2;
 		if (par.side == "right") flan.position.z = params.M / 2;
 
-		par.mesh.add(flan);
+		flanFix.add(flan);
+
+
+		//болты крепления к стенам
+		if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+			if (flanParams.fixPar.fixPart !== 'нет') {
+				for (var i = 0; i < flanParams.holesFix.length; i++) {
+					var fix = drawFixPart(flanParams.fixPar).mesh;
+					fix.position.x = flan.position.x + flanParams.holesFix[i].x;
+					fix.position.y = flan.position.y + flanParams.holesFix[i].y;
+					fix.position.z = flan.position.z + params.flanThickness * (1 + turnFactor) * 0.5;
+					fix.rotation.x = -Math.PI / 2 * turnFactor;
+					flanFix.add(fix);
+				}
+			}
+		}
+
+		flanFix.rotation.y = Math.PI;
+		flanFix.position.x = params.flanThickness;
+		flanFix.position.z = -params.M + params.flanThickness;
+
+		par.mesh.add(flanFix);
 
 	} //end of подкос
 
@@ -2722,6 +2749,9 @@ function drawMonoFlan(par) {
 
 		flanPar.noBolts = true; //болты не добавляются
 
+		flanPar.isFixPart = true; // болты крепления к стенам
+		flanPar.fixPar = getFixPart(0, 'botFloor'); // параметры крепления к стенам
+
 		flanPar.roundHoleCenters = [];
 
 		//добавляем  отверстия в центре
@@ -2800,6 +2830,11 @@ function drawMonoFlan(par) {
 		if (!par.isCentralHoles) flanPar.holeY = 25;
 		par.width = flanPar.width;
 
+		var marshIdFix = par.marshId;
+		if (par.marshIdFix) marshIdFix = par.marshIdFix;
+		flanPar.isFixPart = true; // болты крепления к стенам
+		flanPar.fixPar = getFixPart(marshIdFix); // параметры крепления к стенам
+
 	    flanPar.drawing = {
 	        name: par.name,
 	        group: "carcasFlans",
@@ -2822,6 +2857,7 @@ function drawMonoFlan(par) {
 		}
 
 		//добавляем  отверстия по краям
+		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1;
 		addHolesMonoFlan(flanPar);
 
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
@@ -2954,11 +2990,17 @@ function drawMonoFlan(par) {
 		if (par.height) flanPar.height = par.height;
 		par.height = flanPar.height;
 
+		var marshIdFix = par.marshId;
+		if (par.marshIdFix) marshIdFix = par.marshIdFix;
+		flanPar.isFixPart = true; // болты крепления к стенам
+		flanPar.fixPar = getFixPart(marshIdFix); // параметры крепления к стенам
+
 
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
 
 		//добавляем  отверстия по краям
 		flanPar.roundHoleCenters = [];
+		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1;
 		addHolesMonoFlan(flanPar);
 
 		//добавляем прямоугольное отверстие под трубу
@@ -3003,6 +3045,9 @@ function drawMonoFlan(par) {
 			dxfBasePoint: par.dxfBasePoint,
 		};
 		flanPar.noBolts = true; //болты не добавляются
+
+		flanPar.isFixPart = true; // болты крепления к стенам
+		flanPar.fixPar = getFixPart(0, 'topFloor'); // параметры крепления к стенам
 
 		if (params.platformTop != "площадка") {
 			flanPar.height = par.pointsShape[par.pointsShape.length - 2].y - par.pointsShape[par.pointsShape.length - 1].y;
@@ -3111,6 +3156,9 @@ function drawMonoFlan(par) {
 		//flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
 		flanPar.dxfBasePoint.y -= flanPar.width + 100;
 
+		flanPar.isFixPart = true; // болты крепления к стенам
+		flanPar.fixPar = getFixPart(0, 'botFloor'); // параметры крепления к стенам
+
 		//добавляем  отверстия по краям
 		flanPar.roundHoleCenters = [];
 		addHolesMonoFlan(flanPar);
@@ -3121,9 +3169,10 @@ function drawMonoFlan(par) {
 		flanPar.pathHoles.push(pathPolygonHole(center, par.profSize / 2 + 1, par.profSize / 2 + 1, flanPar.dxfBasePoint));
 
 		var flan = drawRectFlan2(flanPar).mesh;
-		flan.rotation.x = -Math.PI / 2;
+		flan.rotation.x = Math.PI / 2;
 		flan.position.x = -flanPar.width / 2;
-		flan.position.z = flanPar.height / 2;;
+		flan.position.z = -flanPar.height / 2;
+		flan.position.y = params.flanThickness;
 	}
 	//верхний фланец колонны
 	if (par.type == "topColon") {
@@ -3178,10 +3227,10 @@ function drawMonoFlan(par) {
 		if (par.hole1Y) hole1Y = par.hole1Y;
 		if (par.hole2Y) hole2Y = par.hole2Y;
 		//функция добавляет координаты отверстий по краям фланца
-		par.roundHoleCenters.push({ x: par.holeX, y: hole1Y, holeData: {zenk: 'no'} });
-		par.roundHoleCenters.push({ x: par.holeX, y: par.height - hole2Y, holeData: {zenk: 'no'}});
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - hole2Y, holeData: {zenk: 'no'}});
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y, holeData: {zenk: 'no'}});
+		par.roundHoleCenters.push({ x: par.holeX, y: hole1Y, holeData: {zenk: 'no'}, isFixPart: par.isFixPart });
+		par.roundHoleCenters.push({ x: par.holeX, y: par.height - hole2Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - hole2Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});
 	}
 	function flanCentralHoles(length) {
 		//функция возвращает координаты центральных отверстий от центра фланца (для нижнего и верхнего фланцев)
@@ -5435,7 +5484,7 @@ function drawFlanPipeBot(par) {
 	par.widthPipe = par.widthPipe || flanParams.widthPipe;
 	par.heightPipe = par.heightPipe || flanParams.heightPipe;
 	par.width = par.width || flanParams.width;
-	par.height = par.height || flanParams.height;
+	par.height = par.height || flanParams.height;	
 	
 	//рисуем контур фланца
 	var p0 = { x: 0, y: 0 };
@@ -5469,6 +5518,8 @@ function drawFlanPipeBot(par) {
 
 	par.shape = drawShapeByPoints2(shapePar).shape;
 
+	flanParams.isFixPart = true; // болты крепления к стенам
+	flanParams.fixPar = getFixPart(0, 'botFloor'); // параметры крепления к стенам
 
 	//Добавляем отверстия
 	var center1 = newPoint_xy(p0, holeX, holeY);
@@ -5485,7 +5536,7 @@ function drawFlanPipeBot(par) {
 
 	var holesPar = {
 		holeArr: holeCenters,
-		holeRad: 9,
+		holeRad: flanParams.fixPar.diam / 2 + 1,
 		dxfBasePoint: par.dxfBasePoint,
 		shape: par.shape,
 	}
@@ -5521,6 +5572,20 @@ function drawFlanPipeBot(par) {
 		flanObj.add(boltPar.mesh);
 	}
 
+	//болты крепления к нижнему перекрытию
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (flanParams.fixPar.fixPart !== 'нет') {
+			for (var i = 0; i < holeCenters.length; i++) {
+				var fix = drawFixPart(flanParams.fixPar).mesh;
+				fix.position.x = holeCenters[i].x;
+				fix.position.y = holeCenters[i].y;
+				fix.position.z = params.flanThickness * (1 + turnFactor) * 0.5;
+				fix.rotation.x = -Math.PI / 2 * turnFactor;
+				flanObj.add(fix);
+			}
+		}
+	}
+
 	flanObj.position.z = -par.width / 2;
 	par.mesh = flanObj;
 
@@ -5548,6 +5613,10 @@ function drawFlanPipeTop(par) {
 	var height = par.height + 20;
 	var width = par.width;
 
+	par.isFixPart = true; // болты крепления к стенам
+	par.fixPar = getFixPart(0, 'topFloor'); // параметры крепления к стенам
+
+	holeRad = par.fixPar.diam / 2 + 1;
 
 	//рисуем контур фланца
 	if (params.topAnglePosition === "под ступенью") {
@@ -5614,8 +5683,7 @@ function drawFlanPipeTop(par) {
 		holeCenters.push(center3);
 		holeCenters.push(center4);
 		holeCenters.push(center5);
-	}
-
+	}	
 	
 
 	var holesPar = {
@@ -5650,6 +5718,24 @@ function drawFlanPipeTop(par) {
 	flan.rotation.y = Math.PI / 2;
 	par.mesh = flan;
 
+
+	//болты крепления к верхнему перекрытию
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (par.fixPar.fixPart !== 'нет') {
+			if (params.topAnglePosition === "под ступенью") {
+				holeCenters.push(newPoint_xy(p10, holeRad, -holeRad));
+				holeCenters.push(newPoint_xy(p6, holeRad, -holeRad));
+			}
+			for (var i = 0; i < holeCenters.length; i++) {
+				var fix = drawFixPart(par.fixPar).mesh;
+				fix.position.x = holeCenters[i].x;
+				fix.position.y = holeCenters[i].y;
+				fix.position.z = params.flanThickness * (1 + turnFactor) * 0.5;
+				fix.rotation.x = -Math.PI / 2 * turnFactor;
+				par.mesh.add(fix);
+			}
+		}
+	}
 
 	return par;
 } //end of drawFlanPipeTop
@@ -5732,12 +5818,11 @@ function drawFlanTop(par) {
 
 	var holesPar = {
 		holeArr: holeCenters,
-		holeRad: holeRad,
+		holeRad: par.fixPar.diam / 2 + 1,
 		dxfBasePoint: par.dxfBasePoint,
 		shape: par.shape,
 	}
 	addHolesToShape(holesPar);
-
 
 	var extrudeOptions = {
 		amount: params.flanThickness,
@@ -5750,6 +5835,20 @@ function drawFlanTop(par) {
 	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	var flan = new THREE.Mesh(geom, params.materials.metal2);
 	par.mesh = flan;
+
+	//болты крепления к верхнему перекрытию
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (par.fixPar.fixPart !== 'нет') {
+			for (var i = 0; i < holeCenters.length; i++) {
+				var fix = drawFixPart(par.fixPar).mesh;
+				fix.position.x = holeCenters[i].x;
+				fix.position.y = holeCenters[i].y;
+				fix.position.z = params.flanThickness * (1 + turnFactor) * 0.5;
+				fix.rotation.x = -Math.PI / 2 * turnFactor;
+				par.mesh.add(fix);
+			}
+		}
+	}
 
 	return par;
 } //end of drawFlanTop

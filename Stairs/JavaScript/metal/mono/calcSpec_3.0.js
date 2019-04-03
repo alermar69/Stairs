@@ -112,6 +112,7 @@ function floorsMountingItemsAdd(){}; //пустая функция для нав
 	if(params.isAssembling == "есть") addFixParts(fixParams);
 	
 	//крепление первой стойки
+
 	var fixParams = {
 		partsList: partsList,
 		fixPart: "саморезы",
@@ -123,7 +124,7 @@ function floorsMountingItemsAdd(){}; //пустая функция для нав
 		extraStudLength: 0,
 		studDiam: 10,
 		}
-	if(params.isAssembling == "есть") addFixParts(fixParams);
+	if(params.isAssembling == "есть" && params.railingSide_1 != "нет") addFixParts(fixParams);
 	
 	//крепление к верхнему перекрытию
 	var fixParams = {

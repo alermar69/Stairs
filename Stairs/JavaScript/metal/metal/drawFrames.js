@@ -69,9 +69,10 @@ function drawFrames(par){
 				var platform = pltPar.treads;
 				platform.position.x = frame.position.x - framePar.sideHolePosX;
 				platform.position.y = frame.position.y - framePar.profHeight / 2 - 0.01;
-				if (params.stairType == "рифленая сталь")
-					//platform.position.y = frame.position.y + framePar.profHeight / 2 - 1 + 0.01;
-					platform.position.y = frame.position.y + framePar.profHeight / 2 - params.treadThickness - params.treadThickness / 2 + 0.01;
+				if (params.stairType == "рифленая сталь"){
+					platform.position.y = frame.position.y + framePar.profHeight / 2 - 1 + 0.01;
+					//platform.position.y = frame.position.y + framePar.profHeight / 2 - params.treadThickness - params.treadThickness / 2 + 0.01;
+				}
 				platform.position.z = frame.position.z;
 				if (par.isBigPlt) {
 					platform.position.z = -(framePar.length / 2 - params.M / 2 + params.stringerThickness) * turnFactor;

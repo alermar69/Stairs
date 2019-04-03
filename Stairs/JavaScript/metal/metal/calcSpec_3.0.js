@@ -337,7 +337,7 @@ function bracesAdd(){}; //пустая функция для навигации
 
 	
 //крепления к перекрытиям
-
+/*
 function floorsMountingItemsAdd(){}; //пустая функция для навигации	
 	
 	//крепление к нижнему перекрытию
@@ -476,7 +476,7 @@ function wallsMountingItemsAdd(){} //пустая функция для нави
 
 	//end of wallsMountingItemsAdd	
 	
-
+*/
 
 // ОГРАЖДЕНИЯ
 	

@@ -10,6 +10,8 @@ function drawComplexStringer(par) {
 	par.flans = new THREE.Object3D();
 	par.treadPlates = new THREE.Object3D();
 
+	var marshParams = getMarshParams(par.marshId);
+
 	if (params.model == "труба") params.stringerThickness = params.profileWidth + params.metalThickness * 2;
 	
 	//именованные ключевые точки
@@ -886,7 +888,8 @@ function drawComplexStringer(par) {
 					type: "join",
 					pointsShape: par.pointsShape,
                     dxfBasePoint: dxfBasePoint,
-                    name: "Фланец площадки крепления к стене",
+					name: "Фланец площадки крепления к стене",
+					marshIdFix: marshParams.prevMarshId,
 				};
 
 				//если соединение к стене
@@ -914,7 +917,8 @@ function drawComplexStringer(par) {
 					par.flans.add(flan);
 				}
 				//если соединение косоуров
-                if (!par.botConnection || params.stairModel == "П-образная с площадкой") {
+				if (!par.botConnection || params.stairModel == "П-образная с площадкой") {	
+					flanPar.marshIdFix = 2;
                     flanPar.type = "joinStub";
                     flanPar.height = params.stringerThickness - params.metalThickness * 2 - 5;
                     //flanPar.holeY = 25;
@@ -951,6 +955,7 @@ function drawComplexStringer(par) {
 						height: 215 - params.metalThickness * 2 - 5,
 						pointsShape: par.pointsShape, 
 						dxfBasePoint: par.dxfBasePoint,
+						marshIdFix: marshParams.prevMarshId,
 					};
 
 					flanPar.pointCurrentSvg = newPoint_xy(par.stepPoints[1], -params.stringerThickness - 100, 0);
@@ -1002,9 +1007,11 @@ function drawComplexStringer(par) {
 						pointsShape: par.pointsShape, 
 						dxfBasePoint: dxfBasePoint,
 						name: "Фланец площадки крепления к стене",
+						marshIdFix: marshParams.nextMarshId,
 					};
 					//если соединение к стене
-					if (par.topConnection ) {
+					if (par.topConnection) {
+						flanPar.marshIdFix = 2;
 						if (par.topEnd === "забег") flanPar.height = 215.0;
 						flanPar.noBolts = true; //болты не добавляются
 						flanPar.isCentralHoles = true; //отверстия в центре
@@ -1248,8 +1255,9 @@ function drawComplexStringer(par) {
 
 				var flan = drawFlanPipeBot(flanPar).mesh;
 				flan.position.x = sidePlate2.position.x + params.treadPlateThickness;
+				flan.position.z = sidePlate2.position.z + (flanPar.width + flanPar.widthPipe) / 2 + 3;
 				flan.position.y = sidePlate2.position.y;
-				flan.rotation.x = Math.PI / 2;
+				flan.rotation.x = -Math.PI / 2;
 				flan.rotation.y = Math.PI;
 				flan.rotation.z = Math.PI / 2;
 
@@ -1300,8 +1308,10 @@ function drawComplexStringer(par) {
 						stringerHeight: par.pointsShape[1].y - par.pointsShape[2].y,
                         dxfBasePoint: dxfBasePoint,
 						marshId: par.marshId,
-                        name: "Фланец площадки крепления к стене",
+						name: "Фланец площадки крепления к стене",
+						marshIdFix: marshParams.prevMarshId,
 					};
+					if (params.stairModel == 'П-образная с площадкой') flanPar.marshIdFix = 2;
 
 					flanPar.topEnd = "площадка";
 					var flan = drawMonoFlan(flanPar).mesh;
@@ -1325,8 +1335,11 @@ function drawComplexStringer(par) {
 						stringerHeight: par.pointsShape[i].y - par.pointsShape[i - 1].y,
 						dxfBasePoint: dxfBasePoint,
 						marshId: par.marshId,
-                        name: "Фланец площадки крепления к стене",
+						name: "Фланец площадки крепления к стене",
+						marshIdFix: marshParams.nextMarshId,
 					};
+					if (params.stairModel == 'П-образная с площадкой' && par.marshId == 1)
+						flanPar.marshIdFix = 2;
 
 					flanPar.topEnd = par.topEnd;
 
@@ -1535,6 +1548,8 @@ function drawPltStringer(par) {
 	par.mesh2 = new THREE.Object3D();
 	par.flans = new THREE.Object3D();
 	par.treadPlates = new THREE.Object3D();
+
+	var marshParams = getMarshParams(par.marshId);
 
 	//par.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, 5000);
 
@@ -1816,8 +1831,12 @@ function drawPltStringer(par) {
 				type: "join",
 				pointsShape: par.pointsShape,
                 dxfBasePoint: par.dxfBasePoint,
-                name: "Фланец площадки крепления к стене",
+				name: "Фланец площадки крепления к стене",
+                marshIdFix: 3,
 			};
+            if (par.marshId1 == 21) flanPar.marshIdFix = 2;
+			if (par.marshId1 == 22) flanPar.marshIdFix = 1;
+			
 			if (!par.isReversBolt) flanPar.noBolts = true; //болты не добавляются
 
 			var flan = drawMonoFlan(flanPar).mesh;
@@ -2085,6 +2104,7 @@ console.log(shapePar, params.carcasConfig)
 				pointsShape: par.pointsShape,
 				dxfBasePoint: par.dxfBasePoint,
 				stringerHeight: p2.y,
+				marshIdFix: 1,
 			};
 			flanPar.noBolts = true; //болты не добавляются
 			flanPar.topEnd = "площадка";
@@ -2103,6 +2123,8 @@ console.log(shapePar, params.carcasConfig)
 				pointsShape: par.pointsShape,
 				dxfBasePoint: par.dxfBasePoint,
 				stringerHeight: p2.y,
+				marshId: par.marshId,
+				marshIdFix: 3,
 			};
 			flanPar.noBolts = true; //болты не добавляются
 			flanPar.topEnd = "площадка";

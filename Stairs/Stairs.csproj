@@ -158,8 +158,15 @@
     <Content Include="JavaScript\metal\vhod\drawCarcasParts.js" />
     <Content Include="JavaScript\metal\vhod\drawStaircase.js" />
     <Content Include="JavaScript\metal\vhod\drawStringerPartsLt.js" />
+    <Content Include="JavaScript\metal\vint\blocks.php" />
+    <Content Include="JavaScript\metal\vint\calcSpec_3.0.js" />
     <Content Include="JavaScript\metal\vint\drawCarcasParts.js" />
+    <Content Include="JavaScript\metal\vint\drawRailing.js" />
     <Content Include="JavaScript\metal\vint\draw_vint.js" />
+    <Content Include="JavaScript\metal\vint\index.php" />
+    <Content Include="JavaScript\metal\vint\main.js" />
+    <Content Include="JavaScript\metal\vint\testing.js" />
+    <Content Include="JavaScript\metal\vint\view.js" />
     <Content Include="JavaScript\temp.js" />
     <Content Include="JavaScript\temp1.js" />
     <Content Include="JavaScript\Temp\calcSpecGeneral.js" />

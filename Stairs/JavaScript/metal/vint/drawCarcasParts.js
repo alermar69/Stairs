@@ -1,566 +1,4404 @@
-function drawBanisterAngle(par) {
-    par.mesh = new THREE.Object3D();
-    par.thk = 2;
-    //par.dxfArr = [];
-    var extrudeOptions = {
-        amount: par.thk,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
 
-    //верхняя пластина
-    var dxfBasePoint = { x: 0, y: 0 }
-    var p0 = { x: 0, y: 0 }
-    var topShape = new THREE.Shape();
-    var cornerRad = 8;
-    var clockwise = true;
-    par.holeDist = 24;
+function drawBanisterAngle_(par) {
+	par.mesh = new THREE.Object3D();
+	par.thk = 2;
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
 
-    //углы без учета скруглений
-    var p1 = copyPoint(p0);
-    var p2 = newPoint_xy(p1, 0, 5);
-    var p3 = newPoint_xy(p1, -20, 30);
-    var p4 = newPoint_xy(p1, 40, 30);
-    var p5 = newPoint_xy(p1, 20, 5);
-    var p6 = newPoint_xy(p1, 20, 0);
+	//верхняя пластина
+	var dxfBasePoint = {
+		x: 0,
+		y: 0
+	}
+	var p0 = {
+		x: 0,
+		y: 0
+	}
+	var topShape = new THREE.Shape();
+	var cornerRad = 8;
+	var clockwise = true;
+	par.holeDist = 24;
 
-    //скругление левого угла
-    var fil1 = calcFilletParams1(p2, p3, p4, cornerRad, clockwise)
-    //скругление правого угла
-    var fil2 = calcFilletParams1(p3, p4, p5, cornerRad, clockwise)
+	//углы без учета скруглений
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, 5);
+	var p3 = newPoint_xy(p1, -20, 30);
+	var p4 = newPoint_xy(p1, 40, 30);
+	var p5 = newPoint_xy(p1, 20, 5);
+	var p6 = newPoint_xy(p1, 20, 0);
 
-    addLine(topShape, par.dxfArr, p1, p2, dxfBasePoint);
-    addLine(topShape, par.dxfArr, p2, fil1.start, dxfBasePoint);
-    addArc(topShape, par.dxfArr, fil1.center, cornerRad, fil1.angstart, fil1.angend, dxfBasePoint)
-    addLine(topShape, par.dxfArr, fil1.end, fil2.start, dxfBasePoint);
-    addArc(topShape, par.dxfArr, fil2.center, cornerRad, fil2.angstart, fil2.angend, dxfBasePoint)
-    addLine(topShape, par.dxfArr, fil1.end, p5, dxfBasePoint);
-    addLine(topShape, par.dxfArr, p5, p6, dxfBasePoint);
-    addLine(topShape, par.dxfArr, p6, p1, dxfBasePoint);
+	//скругление левого угла
+	var fil1 = calcFilletParams1(p2, p3, p4, cornerRad, clockwise)
+	//скругление правого угла
+	var fil2 = calcFilletParams1(p3, p4, p5, cornerRad, clockwise)
 
-    //отверстия
-    var center1 = newPoint_xy(p1, -2, 22);
-    var holeRad = 3.5;
-    addRoundHole(topShape, par.dxfArr, center1, holeRad, dxfBasePoint); //функция в файле drawPrimitives
+	addLine(topShape, par.dxfArr, p1, p2, dxfBasePoint);
+	addLine(topShape, par.dxfArr, p2, fil1.start, dxfBasePoint);
+	addArc(topShape, par.dxfArr, fil1.center, cornerRad, fil1.angstart, fil1.angend, dxfBasePoint)
+	addLine(topShape, par.dxfArr, fil1.end, fil2.start, dxfBasePoint);
+	addArc(topShape, par.dxfArr, fil2.center, cornerRad, fil2.angstart, fil2.angend, dxfBasePoint)
+	addLine(topShape, par.dxfArr, fil1.end, p5, dxfBasePoint);
+	addLine(topShape, par.dxfArr, p5, p6, dxfBasePoint);
+	addLine(topShape, par.dxfArr, p6, p1, dxfBasePoint);
 
-    var center2 = newPoint_xy(center1, par.holeDist, 0);
-    var holeRad = 3.5;
-    addRoundHole(topShape, par.dxfArr, center2, holeRad, dxfBasePoint); //функция в файле drawPrimitives
+	//отверстия
+	var center1 = newPoint_xy(p1, -2, 22);
+	var holeRad = 3.5;
+	addRoundHole(topShape, par.dxfArr, center1, holeRad, dxfBasePoint); //функция в файле drawPrimitives
 
-
-
-    var geometry = new THREE.ExtrudeGeometry(topShape, extrudeOptions);
-    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var topPlate = new THREE.Mesh(geometry, par.material);
-    topPlate.rotation.x = Math.PI / 2
-    topPlate.position.x = -10;
-    topPlate.position.y = 25;
-    topPlate.position.z = 0;
-    par.mesh.add(topPlate);
+	var center2 = newPoint_xy(center1, par.holeDist, 0);
+	var holeRad = 3.5;
+	addRoundHole(topShape, par.dxfArr, center2, holeRad, dxfBasePoint); //функция в файле drawPrimitives
 
 
 
-    //вертикальная пластина
-    var frontShape = new THREE.Shape();
-    var dxfBasePoint = { x: 0, y: -50 }
-    var p0 = { x: 0, y: 0 }
-    par.holeOffset = 9;
-    par.height = 25;
-    par.vertWidth = 20;
-
-    var p1 = copyPoint(p0);
-    var p2 = newPoint_xy(p1, 0, par.height);
-    var p3 = newPoint_xy(p1, par.vertWidth, par.height);
-    var p4 = newPoint_xy(p1, par.vertWidth, 0);
+	var geometry = new THREE.ExtrudeGeometry(topShape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var topPlate = new THREE.Mesh(geometry, par.material);
+	topPlate.rotation.x = Math.PI / 2
+	topPlate.position.x = -10;
+	topPlate.position.y = 25;
+	topPlate.position.z = 0;
+	par.mesh.add(topPlate);
 
 
-    addLine(frontShape, par.dxfArr, p1, p2, dxfBasePoint);
-    addLine(frontShape, par.dxfArr, p2, p3, dxfBasePoint);
-    addLine(frontShape, par.dxfArr, p3, p4, dxfBasePoint);
-    addLine(frontShape, par.dxfArr, p4, p1, dxfBasePoint);
 
-    //овальное отверстие
-    var holeWidth = 7;
-    var holeHeight = 10;
-    var hole1 = new THREE.Path();
-    var center1 = newPoint_xy(p1, 10, 7.5);
-    var center2 = newPoint_xy(center1, 0, 3);
-    var p1 = newPoint_xy(center1, holeWidth / 2, 0);
-    var p2 = newPoint_xy(center2, holeWidth / 2, 0);
-    var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
-    var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
-    addLine(hole1, par.dxfArr, p1, p2, dxfBasePoint)
-    addArc(hole1, par.dxfArr, center2, holeWidth / 2, 0, Math.PI, dxfBasePoint)
-    addLine(hole1, par.dxfArr, p3, p4, dxfBasePoint)
-    addArc(hole1, par.dxfArr, center1, holeWidth / 2, Math.PI, Math.PI * 2, dxfBasePoint)
-    frontShape.holes.push(hole1);
+	//вертикальная пластина
+	var frontShape = new THREE.Shape();
+	var dxfBasePoint = {
+		x: 0,
+		y: -50
+	}
+	var p0 = {
+		x: 0,
+		y: 0
+	}
+	par.holeOffset = 9;
+	par.height = 25;
+	par.vertWidth = 20;
 
-    var geometry = new THREE.ExtrudeGeometry(frontShape, extrudeOptions);
-    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var frontPlate = new THREE.Mesh(geometry, par.material);
-    frontPlate.position.x = -10;
-    frontPlate.position.y = 0;
-    frontPlate.position.z = 0;
-    par.mesh.add(frontPlate);
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, par.height);
+	var p3 = newPoint_xy(p1, par.vertWidth, par.height);
+	var p4 = newPoint_xy(p1, par.vertWidth, 0);
 
 
-    return par;
+	addLine(frontShape, par.dxfArr, p1, p2, dxfBasePoint);
+	addLine(frontShape, par.dxfArr, p2, p3, dxfBasePoint);
+	addLine(frontShape, par.dxfArr, p3, p4, dxfBasePoint);
+	addLine(frontShape, par.dxfArr, p4, p1, dxfBasePoint);
+
+	//овальное отверстие
+	var holeWidth = 7;
+	var holeHeight = 10;
+	var hole1 = new THREE.Path();
+	var center1 = newPoint_xy(p1, 10, 7.5);
+	var center2 = newPoint_xy(center1, 0, 3);
+	var p1 = newPoint_xy(center1, holeWidth / 2, 0);
+	var p2 = newPoint_xy(center2, holeWidth / 2, 0);
+	var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
+	var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
+	addLine(hole1, par.dxfArr, p1, p2, dxfBasePoint)
+	addArc(hole1, par.dxfArr, center2, holeWidth / 2, 0, Math.PI, dxfBasePoint)
+	addLine(hole1, par.dxfArr, p3, p4, dxfBasePoint)
+	addArc(hole1, par.dxfArr, center1, holeWidth / 2, Math.PI, Math.PI * 2, dxfBasePoint)
+	frontShape.holes.push(hole1);
+
+	var geometry = new THREE.ExtrudeGeometry(frontShape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var frontPlate = new THREE.Mesh(geometry, par.material);
+	frontPlate.position.x = -10;
+	frontPlate.position.y = 0;
+	frontPlate.position.z = 0;
+	par.mesh.add(frontPlate);
+
+	//сохраняем данные для спецификации
+	var partName = "balAngle";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Уголок балясины",
+				metalPaint: true,
+				timberPaint: false,
+				division: "stock_2",
+				workUnitName: "amt", //единица измерения
+				group: "Ограждения",
+			}
+		}
+		var name = "3мм";
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	return par;
 } //end of drawBanisterAngle
 
 function drawBal(par) {
-    //функция отрисовывает прямоугольную балясину с боковыми уголками
+	//функция отрисовывает прямоугольную балясину с боковыми уголками
 
-    par.mesh = new THREE.Object3D();
-    var dxfBasePoint = par.dxfBasePoint;
-
-
-    /*стойка*/
-    var extrudeOptions = {
-        amount: par.size,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
-
-    var shape = new THREE.Shape();
-    var p0 = { x: 0, y: 0 }
-
-    var p1 = copyPoint(p0);
-    var p2 = newPoint_xy(p1, 0, par.length);
-    var p3 = newPoint_xy(p1, par.size, par.length);
-    var p4 = newPoint_xy(p1, par.size, 0);
-
-    addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
-    addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
-    addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
-    addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+	par.mesh = new THREE.Object3D();
+	var dxfBasePoint = par.dxfBasePoint;
 
 
-    //отверстие под нижний уголок
-    par.botHoleOffset = 20;
-    if (par.type == "first") par.botHoleOffset = 15;
-    var center1 = newPoint_xy(p1, par.size / 2, par.botHoleOffset);
-    par.holeRad = 3.5;
-    addRoundHole(shape, par.dxfArr, center1, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
+	/*стойка*/
+	var extrudeOptions = {
+		amount: par.size,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
 
-    //отверстие под средний уголок
-    if (par.type != "middle") {
-        var center2 = newPoint_xy(center1, 0, par.holeDst);
-        addRoundHole(shape, par.dxfArr, center2, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
-    }
+	var shape = new THREE.Shape();
+	var p0 = {
+		x: 0,
+		y: 0
+	}
 
-    //отверстие под кронштейн поручня
-    if (par.topHole == "yes") {
-        par.bracketHoleOffset = 8;
-        var center3 = newPoint_xy(p2, par.size / 2, -par.bracketHoleOffset);
-        addRoundHole(shape, par.dxfArr, center3, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
-    }
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, par.length);
+	var p3 = newPoint_xy(p1, par.size, par.length);
+	var p4 = newPoint_xy(p1, par.size, 0);
 
-    var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var bal = new THREE.Mesh(geometry, par.balMaterial);
-    bal.position.x = -par.size / 2;
-    bal.position.y = 0;
-    bal.position.z = -par.size;
-    par.mesh.add(bal);
+	addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+	addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
 
-    //подпись под фигурой
-    var textHeight = 30;
-    var textBasePoint = newPoint_xy(dxfBasePoint, -100, -50)
-    addText(par.text, textHeight, dxfPrimitivesArr, textBasePoint)
 
-    /*уголки*/
+	//отверстие под нижний уголок
+	par.botHoleOffset = 20;
+	if (par.type == "first") par.botHoleOffset = 15;
+	if (par.base == "stringer") par.botHoleOffset += par.holeOffset;
+	var center1 = newPoint_xy(p1, par.size / 2, par.botHoleOffset);
+	par.holeRad = 3.5;
+	addRoundHole(shape, par.dxfArr, center1, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
 
-    var angleParams = {
-        material: par.angMaterial,
-        dxfArr: [],
-    }
+	//отверстие под средний уголок
+	if (par.type != "middle" && par.base !== 'stringer') {
+		var center2 = newPoint_xy(center1, 0, par.holeDst);
+		addRoundHole(shape, par.dxfArr, center2, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
+	}
 
-    //нижний уголок
-    angleParams = drawBanisterAngle(angleParams);
-    var angle = angleParams.mesh;
-    if (par.type == "first") {
-        angle.rotation.z = Math.PI;
-        //angle.position.x = 0;
-        angle.position.y = angleParams.height;
-    }
-    if (par.type != "first") {
-        //angle.position.x = 0;
-        angle.position.y = par.botHoleOffset - angleParams.holeOffset;
-    }
-    par.mesh.add(angle);
+	//отверстие под кронштейн поручня
+	if (par.topHole == "yes") {
+		par.bracketHoleOffset = 8;
+		var center3 = newPoint_xy(p2, par.size / 2, -par.bracketHoleOffset);
+		addRoundHole(shape, par.dxfArr, center3, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
+	}
 
-    //верхний уголок
-    if (par.type != "middle") {
-        angleParams = drawBanisterAngle(angleParams);
-        var angle = angleParams.mesh;
-        //angle.position.x = 0;
-        angle.position.y = par.botHoleOffset + par.holeDst - angleParams.holeOffset + par.angleShift;
-        par.mesh.add(angle);
-    }
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var bal = new THREE.Mesh(geometry, par.balMaterial);
+	bal.position.x = -par.size / 2;
+	bal.position.y = 0;
+	bal.position.z = -par.size;
+	par.mesh.add(bal);
 
-    return par;
+	//подпись под фигурой
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, -100, -50)
+	addText(par.text, textHeight, dxfPrimitivesArr, textBasePoint)
 
-} //end of drawBal20x20
+	/*уголки*/
 
+	var angleGap = 0.1; //зазор чтобы проходили тесты
+
+	var angleParams = {
+		material: par.angMaterial,
+		dxfArr: [],
+	}
+
+	//нижний уголок
+	angleParams = drawBanisterAngle(angleParams);
+	var angle = angleParams.mesh;
+	if (par.type == "first") {
+		angle.rotation.z = Math.PI;
+		angle.position.z = angleGap;
+		angle.position.y = angleParams.height;
+	}
+	if (par.type != "first") {
+		angle.position.z = angleGap;
+		angle.position.y = par.botHoleOffset - angleParams.holeOffset;
+	}
+	par.mesh.add(angle);
+
+	//верхний уголок
+	if (par.type != "middle" && par.base !== 'stringer') {
+		angleParams = drawBanisterAngle(angleParams);
+		var angle = angleParams.mesh;
+		angle.position.z = angleGap;
+		angle.position.y = par.botHoleOffset + par.holeDst - angleParams.holeOffset + par.angleShift;
+		par.mesh.add(angle);
+	}
+
+	//сохраняем данные для спецификации
+	var partName = "bal";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Балясина черн. ",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Ограждения",
+			}
+		}
+		if (params.rackType == "нержавейка") {
+			specObj[partName].name = "Балясина нерж. "
+			specObj[partName].metalPaint = false;
+		}
+		var name = "";
+		if (par.type == "first") name += "стартовая "
+		if (par.type == "middle") name += "промежуточная "
+		name += "L=" + par.length;
+		if (par.type != "middle") name += " аст=" + par.holeDst;
+
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	return par;
+
+} //end of drawBal
 
 function drawMetalTreadFrontPlate(par) {
-    var length = par.length;
-    var widthHi = 120; //высота ребна на внутренней стороне
-    par.widthHi = widthHi;
-    var widthLow = 40; //высота ребра на внешней стороне
-    var offsetIn = 15; //длина горизонтального участка у столба
-    var cornerRad = 15; //радиус скругления нижнего угла на внешней стороне 
+	var length = par.length;
+	var widthHi = 120; //высота ребна на внутренней стороне
+	par.widthHi = widthHi;
+	var widthLow = 40; //высота ребра на внешней стороне
+	var offsetIn = 15; //длина горизонтального участка у столба
+	var cornerRad = 15; //радиус скругления нижнего угла на внешней стороне 
 
-    var shape = new THREE.Shape();
-    var extrudeOptions = {
-        amount: par.thk,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
+	var shape = new THREE.Shape();
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
 
-    var p0 = { x: 0, y: 0 }
+	var p0 = {
+		x: 0,
+		y: 0
+	}
 
-    var p1 = copyPoint(p0);
-    var p2 = newPoint_xy(p1, 0, widthHi);
-    var p3 = newPoint_xy(p2, length, 0);
-    var p4 = newPoint_xy(p3, 0, -widthLow);
-    var p5 = newPoint_xy(p1, offsetIn, 0);
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, widthHi);
+	var p3 = newPoint_xy(p2, length, 0);
+	var p4 = newPoint_xy(p3, 0, -widthLow);
+	var p5 = newPoint_xy(p1, offsetIn, 0);
 
-    //скругление нижнего угла на внешней стороне
-    var clockwise = true;
-    var fil4 = calcFilletParams1(p3, p4, p1, cornerRad, clockwise)
+	//скругление нижнего угла на внешней стороне
+	var clockwise = true;
+	var fil4 = calcFilletParams1(p3, p4, p1, cornerRad, clockwise)
 
-    addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, p3, fil4.start, par.dxfBasePoint);
-    addArc(shape, par.dxfArr, fil4.center, cornerRad, fil4.angstart, fil4.angend, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, fil4.end, p5, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, p5, p1, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, fil4.start, par.dxfBasePoint);
+	addArc(shape, par.dxfArr, fil4.center, cornerRad, fil4.angstart, fil4.angend, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, fil4.end, p5, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p5, p1, par.dxfBasePoint);
 
-    var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var topPlate = new THREE.Mesh(geometry, par.material);
-    par.mesh = topPlate;
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var topPlate = new THREE.Mesh(geometry, par.material);
+	par.mesh = topPlate;
 
-    return par;
+	return par;
 
-}
+} //end of drawMetalTreadFrontPlate
+
+function drawVintTreadShape(par) {
+
+	/*чертеж ступени с обозначением параметров здесь:
+	http://6692035.ru/drawings/vint/vintTread.pdf
+	*/
+
+	//локальные переменные
+	var staircaseDiam = params.staircaseDiam;
+	var treadAngle = par.treadAngle;
+	var treadLowRad = par.treadLowRad;
+	var columnRad = par.columnDiam / 2 + 0.05; //учитываем зазор для тестирования
+	var holeDiam = par.holeDiam;
+	var type = par.type;
+	var stairRad = staircaseDiam / 2;
+	var overlayAngle = calcTriangleParams().treadOverlayAngle;
+
+	//угол между ребрами ступени
+	var extraAngle = calcTriangleParams().extraAngle;
+	var edgeLength = stairRad * Math.cos(extraAngle);
+	var edgeAngle = treadAngle - 2 * extraAngle;
+
+
+	//сохраняем значения в массив параметров
+	stairParams.treadAngle = treadAngle;
+	stairParams.treadEdgeAngle = edgeAngle;
+	
+	//рассчитываем координаты базовых точек
+	var basePoints = calcVintTreadPoints(par.treadAngle)
+
+	//деревянная ступень
+	if (type == "timber") {
+		/*рассчитываем координаты точек*/
+		var p0 = basePoints[0]
+		var p1 = basePoints[1]
+		var p2 = basePoints[2]
+		var p3 = basePoints[3]
+		var p4 = basePoints[4]
+		
+		var dxfBasePoint = {
+			x: 0,
+			y: 0,
+		}
+
+		/*вычерчиваем конутр ступени*
+
+		var treadShape = new THREE.Shape();
+			addArc(treadShape, par.dxfArr, p0, treadLowRad, 1.5*Math.PI, (Math.PI/2 + edgeAngle), dxfBasePoint);
+			addLine(treadShape, par.dxfArr, p2, p3, dxfBasePoint);
+			addArc(treadShape, par.dxfArr, p0, stairRad, (treadAngle - extraAngle), -extraAngle, dxfBasePoint);
+			addLine(treadShape, par.dxfArr, p4, p1, dxfBasePoint);
+		*/
+
+		var filletRad = 10;
+		//скругление верхнего угла
+		var filletPar = {
+			line_p1: copyPoint(p2),
+			line_p2: copyPoint(p3),
+			arcCenter: copyPoint(p0),
+			arcRad: stairRad,
+			filletRad: filletRad,
+			topAngle: true,
+		}
+
+		filletPar = calcArcFillet(filletPar);
+		var filletPar1 = filletPar.filletPar[0];
+
+		//скругление нижнего угла
+		var filletPar = {
+			line_p1: copyPoint(p1),
+			line_p2: copyPoint(p4),
+			arcCenter: copyPoint(p0),
+			arcRad: stairRad,
+			filletRad: filletRad,
+			topAngle: false,
+		}
+
+		filletPar = calcArcFillet(filletPar);
+		var filletPar2 = filletPar.filletPar[0];
+
+		/*вычерчиваем конутр ступени*/
+
+		var treadShape = new THREE.Shape();
+		//малая дуга
+		addArc(treadShape, par.dxfArr, p0, treadLowRad, 1.5 * Math.PI, (Math.PI / 2 + edgeAngle), dxfBasePoint);
+		//верхняя линия
+		addLine(treadShape, par.dxfArr, p2, filletPar1.start, dxfBasePoint);
+		//дуга скругления верхнего угла
+		addArc(treadShape, par.dxfArr, filletPar1.center, filletRad, filletPar1.angStart, filletPar1.angEnd, dxfBasePoint);
+		//большая дуга
+		addArc(treadShape, par.dxfArr, p0, stairRad, filletPar1.angEnd, filletPar2.angStart, dxfBasePoint);
+		//дуга скругления нижнего угла
+		addArc(treadShape, par.dxfArr, filletPar2.center, filletRad, filletPar2.angStart, filletPar2.angEnd, dxfBasePoint);
+		addLine(treadShape, par.dxfArr, filletPar2.end, p1, dxfBasePoint);
+
+		/*отверстие*/
+		var hole = new THREE.Path();
+		addCircle(hole, par.dxfArr, p0, holeDiam / 2, dxfBasePoint)
+		treadShape.holes.push(hole);
+
+
+
+		//Направление волокон
+		var trashShape = new THREE.Shape();
+		var pt1 = newPoint_xy(p0, 200, 0)
+		var pt11 = newPoint_xy(pt1, 40, 10)
+		var pt12 = newPoint_xy(pt1, 40, -10)
+		addLine(trashShape, par.dxfArr, pt1, pt11, dxfBasePoint);
+		addLine(trashShape, par.dxfArr, pt1, pt12, dxfBasePoint);
+		var pt2 = newPoint_xy(pt1, 400, 0)
+		var pt21 = newPoint_xy(pt2, -40, 10)
+		var pt22 = newPoint_xy(pt2, -40, -10)
+		addLine(trashShape, par.dxfArr, pt2, pt21, dxfBasePoint);
+		addLine(trashShape, par.dxfArr, pt2, pt22, dxfBasePoint);
+		addLine(trashShape, par.dxfArr, pt1, pt2, dxfBasePoint);
+
+		var text = "Направление волокон"
+		var textHeight = 20;
+		var textBasePoint = newPoint_xy(dxfBasePoint, 210, 30);
+		addText(text, textHeight, par.dxfArr, textBasePoint);
+
+		var sizeA = edgeLength + treadLowRad;
+		var sizeB = distance(p3, p4);
+		//сохраняем параметры для спецификации
+		staircasePartsParams.treadWidth = distance(p3, p4)
+		staircasePartsParams.treadLength = edgeLength + treadLowRad;
+		staircasePartsParams.treadArea = ((p3.y - p2.y) / 2 + (p2.y - p1.y)) * (edgeLength + treadLowRad) / 1000000;
+		staircasePartsParams.treadPaintedArea = staircasePartsParams.treadArea * 2 + (edgeLength * 2 + staircasePartsParams.treadWidth + treadLowRad * Math.PI) * params.treadThickness / 1000000;
+	}
+
+	/*металлическая ступень*/
+
+	if (type == "metal") {
+
+		var deltaAng = Math.PI / 6; //половина угла, на который уменьшается дуга ступени, прилегающая к бобышке
+		var radIn = columnRad + 0.1; //радиус внутренней дуги, примыкающей к бобышке
+		/*рассчитываем координаты точек*/
+		var p0 = {
+			x: 0,
+			y: 0
+		}
+		var p11 = polar(p0, -Math.PI / 2 + deltaAng, radIn); //точка на дуге
+		var p1 = polar(p11, -Math.PI / 2, 5);
+		var p21 = polar(p0, edgeAngle + Math.PI / 2 - deltaAng, radIn) //точка на дуге
+		var p2 = polar(p21, Math.PI / 2 + edgeAngle, 5);
+		var p3 = {
+			x: stairRad * Math.cos(treadAngle - extraAngle),
+			y: stairRad * Math.sin(treadAngle - extraAngle)
+		}
+		var p4 = {
+			x: edgeLength,
+			y: -treadLowRad
+		}
+
+		var dxfBasePoint = {
+			x: 0,
+			y: 0,
+		}
+
+		/*вычерчиваем конутр ступени*/
+
+		var treadShape = new THREE.Shape();
+		addLine(treadShape, par.dxfArr, p1, p11, dxfBasePoint);
+		addArc2(treadShape, par.dxfArr, p0, radIn, (Math.PI / 2 + edgeAngle - deltaAng), -Math.PI / 2 + deltaAng,  false, dxfBasePoint);
+		addLine(treadShape, par.dxfArr, p21, p2, dxfBasePoint);
+		addLine(treadShape, par.dxfArr, p2, p3, dxfBasePoint);
+		addArc2(treadShape, par.dxfArr, p0, stairRad, (treadAngle - extraAngle), -extraAngle, true, dxfBasePoint);
+		addLine(treadShape, par.dxfArr, p4, p1, dxfBasePoint);
+
+		//параметры для передней пластины
+		par.edgeLength = distance(p4, p1)
+		par.p1 = p1;
+		par.p2 = p2;
+		par.ang1 = angle(p1, p4)
+		par.ang2 = angle(p2, p3)
+
+		var sizeA = edgeLength;
+		var sizeB = distance(p3, p4);
+
+	}
+	/*отверстия под стойки*
+
+	//отверстия под первую балясину
+	var holesOffset = 22; //отступ отверстий от внешней кромки ступени
+	var holeDst = 24; //расстояние между отверстиями в уголке
+	var holePosRad = stairRad - holesOffset; //радиус расположения отверстий
+	var dirAng = overlayAngle / 2 - extraAngle //угол направления на балясину
+	var deltAng = holeDst / 2 / holePosRad; //дельта угла из-за того, что в уголке 2 отверстия
+
+	var holeRad = 4;
+	if (type == "timber") holeRad = 2;
+	var center1 = polar(p0, dirAng + deltAng, holePosRad)
+	var center2 = polar(p0, dirAng - deltAng, holePosRad)
+	addRoundHole(treadShape, par.dxfArr, center1, holeRad, dxfBasePoint); //функция в файле drawPrimitives
+	addRoundHole(treadShape, par.dxfArr, center2, holeRad, dxfBasePoint);
+
+	//отверстия под остальные стойки
+	var stepAngle = params.stepAngle / 180 * Math.PI;
+	var balAngle = stepAngle / params.banisterPerStep; //угол между балясинами
+	for (var i = 1; i < params.banisterPerStep + 1; i++) {
+		dirAng = dirAng + balAngle;
+		var center1 = polar(p0, dirAng + deltAng, holePosRad)
+		var center2 = polar(p0, dirAng - deltAng, holePosRad)
+		addRoundHole(treadShape, par.dxfArr, center1, holeRad, dxfBasePoint);
+		addRoundHole(treadShape, par.dxfArr, center2, holeRad, dxfBasePoint);
+	}
+	*/
+	
+	$.each(basePoints.balHoles, function(){
+		addRoundHole(treadShape, par.dxfArr, this, this.rad, dxfBasePoint);
+	})
+
+
+	//подпись
+	var text = "Ступень (вид сверху) "
+	if (params.turnFactor == -1) text = "Ступень (вид снизу) "
+	text += (params.stepAmt - 1) + " шт."
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, 20, -150);
+	addText(text, textHeight, par.dxfArr, textBasePoint);
+
+	par.shape = treadShape;
+
+	//сохраняем данные для спецификации
+	var partName = "vintTread";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				area: 0,
+				paintedArea: 0,
+				name: "Ступень " + params.treadMaterial,
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "area", //единица измерения
+				group: "Каркас",
+			}
+			if (type == "timber") {
+				specObj[partName].metalPaint = false;
+				specObj[partName].timberPaint = true;
+				specObj[partName].division = "timber";
+			}
+		}
+		var area = sizeA * sizeB / 1000000;
+		var name = Math.round(sizeA) + "x" + Math.round(sizeB);
+		if (type == "timber") name += "x" + params.treadThickness;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+		specObj[partName]["area"] += area;
+		specObj[partName]["paintedArea"] += area * 2 + area * 0.1; //к-т 0,1 учитывает площадь торцев
+	}
+
+	return par;
+
+
+} //end of drawVintTreadShape
 
 function drawVintTread(par) {
 
-    par.mesh = new THREE.Object3D();
+	par.mesh = new THREE.Object3D();
+	par.thk = params.treadThickness;
 
-    //верхняя пластина
-    var extrudeOptions = {
-        amount: par.thk,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
+	//верхняя пластина
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
 
-    topPlateParams = drawVintTreadShape(par);
-    var shape = topPlateParams.shape;
-    var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-    geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var topPlate = new THREE.Mesh(geom, par.material);
-    topPlate.rotation.x = -0.5 * Math.PI;
-    topPlate.position.y = -par.thk;
-    par.mesh.add(topPlate);
+	topPlateParams = drawVintTreadShape(par);
+	var shape = topPlateParams.shape;
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var topPlate = new THREE.Mesh(geom, par.material);
+	topPlate.rotation.x = -0.5 * Math.PI;
+	topPlate.position.y = -par.thk;
+	par.mesh.add(topPlate);
 
+	//передние пластины
 
+	if (par.type == "metal") {
+		var frontPlateParams = {
+			length: topPlateParams.edgeLength,
+			thk: 4,
+			dxfArr: par.dxfArr,
+			dxfBasePoint: {
+				x: 2000,
+				y: 0,
+			},
+			material: par.material,
+		}
 
-    //передние пластины
+		//первая пластина
+		frontPlateParams = drawMetalTreadFrontPlate(frontPlateParams)
+		var frontPlate = frontPlateParams.mesh;
+		frontPlate.position.y = -par.thk - frontPlateParams.widthHi - 0.05;
+		frontPlate.position.z = -par.p1.y - frontPlateParams.thk;
+		frontPlate.position.x = par.p1.x;
+		frontPlate.rotation.y = par.ang1;
+		par.mesh.add(frontPlate);
 
-    if (par.type == "metal") {
-        var frontPlateParams = {
-            length: topPlateParams.edgeLength,
-            thk: 4,
-            dxfArr: dxfPrimitivesArr,
-            dxfBasePoint: { x: 2000, y: 0, },
-            material: par.material,
-        }
+		//вторая пластина
+		frontPlateParams.dxfArr = [];
+		frontPlateParams = drawMetalTreadFrontPlate(frontPlateParams)
+		var frontPlate = frontPlateParams.mesh;
+		frontPlate.position.y = -par.thk - frontPlateParams.widthHi - 0.05;
+		frontPlate.position.z = -par.p2.y // - frontPlateParams.thk;
+		frontPlate.position.x = par.p2.x;
+		frontPlate.rotation.y = par.ang2;
+		par.mesh.add(frontPlate);
+	}
 
-        //первая пластина
-        frontPlateParams = drawMetalTreadFrontPlate(frontPlateParams)
-        var frontPlate = frontPlateParams.mesh;
-        frontPlate.position.y = -par.thk - frontPlateParams.widthHi - params.carcasPartsSpacing;
-        frontPlate.position.z = -par.p1.y - frontPlateParams.thk;
-        frontPlate.position.x = par.p1.x;
-        frontPlate.rotation.y = par.ang1;
-        par.mesh.add(frontPlate);
-
-        //вторая пластина
-        frontPlateParams.dxfArr = [];
-        frontPlateParams = drawMetalTreadFrontPlate(frontPlateParams)
-        var frontPlate = frontPlateParams.mesh;
-        frontPlate.position.y = -par.thk - frontPlateParams.widthHi - params.carcasPartsSpacing;
-        frontPlate.position.z = -par.p2.y// - frontPlateParams.thk;
-        frontPlate.position.x = par.p2.x;
-        frontPlate.rotation.y = par.ang2;
-        par.mesh.add(frontPlate);
-    }
-
-
-    return par;
+	return par;
 }
 
 function drawVintPlatform(par) {
 
-    par.mesh = new THREE.Object3D();
-    //верхняя пластина
-    var extrudeOptions = {
-        amount: par.thk,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
+	par.mesh = new THREE.Object3D();
+	par.thk = params.treadThickness;
 
-    topPlateParams = drawVintPlatformShape(par);
+	//верхняя пластина
+	var extrudeOptions = {
+		amount: par.thk - 0.06,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
 
-    var shape = topPlateParams.shape;
-    console.log(shape)
-    var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-    geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-    var topPlate = new THREE.Mesh(geom, par.material);
-    topPlate.rotation.x = -0.5 * Math.PI;
-    topPlate.position.y = -par.thk;
-    if (par.turnFactor == -1) {
-        topPlate.rotation.x = 0.5 * Math.PI;
-        topPlate.position.y += par.thk;
-    }
+	topPlateParams = drawVintPlatformShape(par);
 
-    par.mesh.add(topPlate);
+	var shape = topPlateParams.shape;
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var topPlate = new THREE.Mesh(geom, par.material);
+	topPlate.rotation.x = -0.5 * Math.PI;
+	topPlate.position.y = -par.thk;
+	if (par.turnFactor == -1) {
+		topPlate.rotation.x = 0.5 * Math.PI;
+		topPlate.position.y += par.thk;
+	}
+	topPlate.position.y += 0.03;
 
-
-    //боковые пластины
-
-    if (par.type == "metal") {
-        var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 1000, 0)
-        var length = topPlateParams.edgeLength;
-        var width = 120; //высота ребра
+	par.mesh.add(topPlate);
 
 
-        var shape = new THREE.Shape();
+	//боковые пластины
 
-        var p0 = { x: 0, y: 0 }
-        var p1 = copyPoint(p0);
-        var p2 = newPoint_xy(p1, 0, width);
-        var p3 = newPoint_xy(p2, length, 0);
-        var p4 = newPoint_xy(p3, 0, -width);
+	if (par.type == "metal" && par.platformType == "triangle") {
+		var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 1000, 500);
+		var width = 120; //высота ребра
+		extrudeOptions.amount = 4;
 
-        addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
-        addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
-        addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
-        addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+		// Задняя пластина
+		{	
+			var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 1000);
+			
+			var lengthFix = 0.5;//(extrudeOptions.amount / Math.cos(params.platformAngle * Math.PI / 180)) * Math.sin(params.platformAngle * Math.PI / 180);//Math.acos(topPlateParams.ang1)); // * 3 тк, отступ от края + 2 раза отступ от боковой пластины
+			var length = topPlateParams.rearEdgeLength;
+			var shape = new THREE.Shape();
+			var p0 = {
+				x: lengthFix,
+				y: 0
+			};
+			var p1 = copyPoint(p0);
+			var p2 = newPoint_xy(p1, 0, width);
+			var p3 = newPoint_xy(p2, length - lengthFix * 2, 0);
+			var p4 = newPoint_xy(p3, 0, -width);
+			
+			addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+			addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+			addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+			addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+			
+			//отверстия
+			var sideHoleOffset = 70;
+			var holeAmt = 5;
+			var holeDist = (length - 2 * sideHoleOffset) / (holeAmt - 1);
+			var holeRad = 7;
 
-        //подпись под фигурой
-        var text = "Боковые пластины площадки 2шт"
-        var textHeight = 30;
-        var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
-        addText(text, textHeight, par.dxfArr, textBasePoint)
+			par.isFixPart = true; // болты крепления к стенам
+			par.fixPar = getFixPart(0, 'topFloor'); // параметры крепления к стенам
+			holeRad = par.fixPar.diam / 2 + 1;
+			var holesFix = [];
+			
+			for (var i = 0; i < holeAmt; i++) {
+				var center = newPoint_xy(p0, sideHoleOffset + holeDist * i, width / 2)
+				addRoundHole(shape, par.dxfArr, center, holeRad, dxfBasePoint);
+				holesFix.push(center);
+			}
+			
+			//подпись под фигурой
+			var text = "Задняя пластина площадки 1 шт"
+			var textHeight = 30;
+			var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+			addText(text, textHeight, par.dxfArr, textBasePoint)
+			
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+			
+			var rearPlate = new THREE.Mesh(geometry, par.material);
+			rearPlate.position.y = -par.thk - width - 0.05;
+			rearPlate.position.z = -topPlateParams.p3.y
+			rearPlate.position.x = topPlateParams.p3.x;
+			if (params.turnFactor == 1) translateObject(rearPlate, 0, 0, -extrudeOptions.amount);//Смещаем объект и точку вращения чтобы можно было спокойно вращать объект без модификации положения
+			if (params.turnFactor == -1) {
+				rearPlate.position.z = topPlateParams.p3.y;
+			}
+			
+			rearPlate.rotation.y = topPlateParams.ang3 * par.turnFactor;
 
-        var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+			//rearFlan.add(rearPlate)
+			par.mesh.add(rearPlate);
+			
 
-        //первая пластина
-        var frontPlate = new THREE.Mesh(geometry, par.material);
-        frontPlate.position.y = -par.thk - width - params.carcasPartsSpacing;
-        frontPlate.position.z = -topPlateParams.p1.y - par.thk
-        if (par.turnFactor == -1) frontPlate.position.z = topPlateParams.p1.y// - par.thk;
-        frontPlate.position.x = topPlateParams.p1.x;
-        frontPlate.rotation.y = topPlateParams.ang1 * par.turnFactor;
-        par.mesh.add(frontPlate);
+			//болты крепления к перекрытию
+			if (typeof isFixPats != "undefined" && isFixPats && par.isFixPart) { //глобальная переменная		
+				if (par.fixPar.fixPart !== 'нет') {
+					var rearFlan = new THREE.Object3D();
+					for (var i = 0; i < holesFix.length; i++) {
+						var fix = drawFixPart(par.fixPar).mesh;
+						fix.position.x = p0.x + holesFix[i].x;
+						fix.position.y = p0.y + holesFix[i].y;
+						fix.position.z = -(extrudeOptions.amount * 2) * par.turnFactor;
+						fix.rotation.x = Math.PI / 2 * par.turnFactor;
+						rearFlan.add(fix);
+					}
+				}
+				rearFlan.position.x = rearPlate.position.x;
+				rearFlan.position.y = rearPlate.position.y;
+				rearFlan.position.z = rearPlate.position.z;
+				rearFlan.rotation.y = rearPlate.rotation.y;
+				par.mesh.add(rearFlan);
+			}			
+		}
+		// Боковые пластины
+		{
+			var length = topPlateParams.edgeLength - 0.1;// - (extrudeOptions.amount / Math.acos(topPlateParams.ang1)) - 0.1;//0.5 зазор
+			var width = 120; //высота ребра
+			var shape = new THREE.Shape();
 
-        //вторая пластина
-        var frontPlate = new THREE.Mesh(geometry, par.material);
-        frontPlate.position.y = -par.thk - width - params.carcasPartsSpacing;
-        frontPlate.position.z = -topPlateParams.p2.y //- par.thk
-        frontPlate.rotation.y = topPlateParams.ang2 * par.turnFactor;
-        if (par.turnFactor == -1) {
-            frontPlate.rotation.z = -Math.PI;
-            frontPlate.position.z = topPlateParams.p2.y
-            frontPlate.rotation.y = -topPlateParams.ang2 + Math.PI;
-            frontPlate.position.y = -par.thk - params.carcasPartsSpacing;
-        }
-        frontPlate.position.x = topPlateParams.p2.x;
+			var p0 = {
+				x: 0,
+				y: 0
+			}
+			var p1 = copyPoint(p0);
+			var p2 = newPoint_xy(p1, 0, width);
+			var p3 = newPoint_xy(p2, length, 0);
+			var p4 = newPoint_xy(p3, 0, -width);
 
-        par.mesh.add(frontPlate);
+			addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+			addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+			addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+			addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
 
-        //задняя пластина
-        var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 0)
-        var length = topPlateParams.rearEdgeLength
-        //добавляем зазор от боковых пластин
-        var offset = 20;
-        length += -offset;
-        var shape = new THREE.Shape();
-        var p0 = { x: 0, y: 0 }
-        var p1 = copyPoint(p0);
-        var p2 = newPoint_xy(p1, 0, width);
-        var p3 = newPoint_xy(p2, length, 0);
-        var p4 = newPoint_xy(p3, 0, -width);
+			//подпись под фигурой
+			var text = "Боковые пластины площадки 2шт"
+			var textHeight = 30;
+			var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+			addText(text, textHeight, par.dxfArr, textBasePoint)
 
-        addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
-        addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
-        addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
-        addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 
-        //отверстия
-        var sideHoleOffset = 70;
-        var holeAmt = 5;
-        var holeDist = (length - 2 * sideHoleOffset) / (holeAmt - 1);
-        var holeRad = 7;
+			//первая пластина
+			var frontPlate = new THREE.Mesh(geometry, par.material);
+			frontPlate.position.y = -par.thk - width - 0.05;
+			frontPlate.position.z = -topPlateParams.p1.y * params.turnFactor;
+			frontPlate.position.x = topPlateParams.p1.x;
+			
+			if (params.turnFactor == 1) translateObject(frontPlate, 0, 0, -extrudeOptions.amount);//Смещаем объект и точку вращения чтобы можно было спокойно вращать объект без модификации положения
 
-        for (var i = 0; i < holeAmt; i++) {
-            var center = newPoint_xy(p0, sideHoleOffset + holeDist * i, width / 2)
-            addRoundHole(shape, par.dxfArr, center, holeRad, dxfBasePoint);
-        }
+			frontPlate.rotation.y = topPlateParams.ang1 * par.turnFactor;
+			par.mesh.add(frontPlate);
+
+			//вторая пластина
+			var geometry2 = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry2.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+			var frontPlate2 = new THREE.Mesh(geometry2, par.material);
+			frontPlate2.position.y = -par.thk - width - 0.05;
+			frontPlate2.position.z = -topPlateParams.p2.y * params.turnFactor;
+			frontPlate2.position.x = topPlateParams.p2.x;
+			if (params.turnFactor == -1) {
+				translateObject(frontPlate2, 0, 0, -extrudeOptions.amount);//Смещаем объект и точку вращения чтобы можно было спокойно вращать объект без модификации положения
+			}
+			
+			//коррекрируем угол для очень широких площадок
+			if (topPlateParams.ang2 < 0) topPlateParams.ang2 = Math.PI + topPlateParams.ang2;
+			frontPlate2.rotation.y = topPlateParams.ang2 * par.turnFactor;
+
+			par.mesh.add(frontPlate2);
+		}
+		// Дополнительные пластины
+		{
+			dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 1500)
+			var platformAngle = stairParams.platformEdgeAngle;
+			var platformDepth = par.platformDepth;
+			var treadLowRad = par.treadLowRad;
+			var holeDiam = par.holeDiam;
+			var type = par.type;
+			var columnRad = par.columnDiam / 2 + 0.05; //учитываем зазор для тестирования
+
+			var edgeAmt = 1;
+			if (platformAngle > Math.PI / 3) edgeAmt = 2;
+			var ang2 = platformAngle / (edgeAmt + 1) // * par.turnFactor;
+			var offset = columnRad + 0.5;// Отступ от 0
+			width = 100;
+			//добавляем зазор от боковых пластин
+			var shape = new THREE.Shape();
+			var p0 = {
+				x: 0,
+				y: 0
+			}
+			
+			length = topPlateParams.addEdge1Length - 1;
+			
+			// length -= offset + 0.5;//учитываем бобышку и зазор
+			
+			var p1 = copyPoint(p0);
+			var p2 = newPoint_xy(p1, 0, width);
+			var p3 = newPoint_xy(p2, length, 0);
+			var p4 = newPoint_xy(p3, 0, -width);
+
+			addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+			addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+			addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+			addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+
+			//подпись под фигурой
+			var text = "Ребро жесткости площадки " + edgeAmt + "шт";
+			var textHeight = 30;
+			var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+			addText(text, textHeight, par.dxfArr, textBasePoint)
+
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+			translateObject(geometry, offset, 0, 0);//Смещаем объект и точку вращения чтобы можно было спокойно вращать объект без модификации положения
+
+			//первое ребро
+			var midPlate1 = new THREE.Mesh(geometry, par.material);
+			var addAngle = 0;//2 * Math.asin(extrudeOptions.amount / (2 * (length + columnRad)));//Корректируем угол чтобы компенсировать толщину пластины(формула поиска угла сегмента круга)
+			midPlate1.rotation.y = (ang2 - addAngle) * par.turnFactor;
+			midPlate1.position.y = -par.thk - width - 0.05;
+
+			par.mesh.add(midPlate1);
 
 
-        //подпись под фигурой
-        var text = "Задняя пластина площадки 1 шт"
-        var textHeight = 30;
-        var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
-        addText(text, textHeight, par.dxfArr, textBasePoint)
+			//второе дополнительное ребро
+			if (edgeAmt == 2) {
+				ang2 = ang2 * 2;
+				var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+				geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+				translateObject(geometry, offset, 0, -extrudeOptions.amount);//Смещаем объект и точку вращения чтобы можно было спокойно вращать объект без модификации положения
+				var midPlate2 = new THREE.Mesh(geometry, par.material);
+				midPlate2.position.y = -par.thk - width - 0.05;
+				midPlate2.rotation.y = ang2 * par.turnFactor;
+				par.mesh.add(midPlate2);
+			}
+		}
+	
+	}
 
-        var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-        geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	if (par.type == "metal" && par.platformType == "square") {
+		var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 0)
+		var width = 120; //высота ребра
+		extrudeOptions.amount = 4;
+		
+		//передняя пластина
+		var length = topPlateParams.edgeLength1;
+		var shape = new THREE.Shape();
+		var p0 = {
+			x: 0,
+			y: 0
+		}
+		var p1 = copyPoint(p0);
+		var p2 = newPoint_xy(p1, 0, width);
+		var p3 = newPoint_xy(p2, length, 0);
+		var p4 = newPoint_xy(p3, 0, -width);
 
-        var rearPlate = new THREE.Mesh(geometry, par.material);
-        rearPlate.position.y = -par.thk - width - params.carcasPartsSpacing;
-        rearPlate.position.z = -topPlateParams.p3.y //- par.thk
-        if (par.turnFactor == -1) rearPlate.position.z = topPlateParams.p3.y// - par.thk;
-        rearPlate.position.x = topPlateParams.p3.x;
-        rearPlate.rotation.y = topPlateParams.ang3 * par.turnFactor;
-        //корректируем положение с учетом зазора
-        rearPlate.position.x += offset / 2 * Math.cos(topPlateParams.ang3);
-        rearPlate.position.z += offset / 2 * Math.sin(topPlateParams.ang3);
+		addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+		addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+		addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+		addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
 
-        par.mesh.add(rearPlate);
+		//подпись под фигурой
+		var text = "Передняя пластина площадки 1шт"
+		var textHeight = 30;
+		var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+		addText(text, textHeight, par.dxfArr, textBasePoint)
+
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var frontPlate = new THREE.Mesh(geometry, par.material);
+		frontPlate.position.y = -par.thk - width - 0.05;
+		frontPlate.position.z = -topPlateParams.p1.y - extrudeOptions.amount
+		if (par.turnFactor == -1) frontPlate.position.z = topPlateParams.p1.y;
+		frontPlate.position.x = topPlateParams.p1.x;
+		frontPlate.rotation.y = 0;
+		par.mesh.add(frontPlate);
+
+		//боковая пластина
+		dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 500)
+		var length = topPlateParams.edgeLength2;
+		var sideWidth = width;// - 6;//6 - толщина площадки
+		if (params.railingModel_bal == "Самонесущее стекло") sideWidth += 80;
+		var shape = new THREE.Shape();
+		var p0 = {
+			x: 0,
+			y: 0
+		}
+		var p1 = copyPoint(p0);
+		var p2 = newPoint_xy(p1, 0, sideWidth);
+		var p3 = newPoint_xy(p2, length, 0);
+		var p4 = newPoint_xy(p3, 0, -sideWidth);
+
+		addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+		addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+		addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+		addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+
+		//подпись под фигурой
+		var text = "Боковая пластина площадки 1шт"
+		var textHeight = 30;
+		var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+		addText(text, textHeight, par.dxfArr, textBasePoint)
+		
+		if (params.railingModel_bal == "Самонесущее стекло"){
+			var center1 = newPoint_xy(p0, 5 + 95 - topPlateParams.p2.y, 50); //95 отступ от бкового края стекла(5 подогнано, пока не нашел откуда берется) 50 отступ отверстия от нижнего края стекла 
+			var center2 = newPoint_xy(center1, 0, 100); //50 отступ отверстия от края стекла
+			addRoundHole(shape, par.dxfArr, center1, 9, dxfBasePoint);
+			addRoundHole(shape, par.dxfArr, center2, 9, dxfBasePoint);
+			// console.log(topPlateParams.p2.y + topPlateParams.edgeLength2)
+			if (topPlateParams.p2.y + topPlateParams.edgeLength2 >= params.platformSectionLength - 60) {
+				var center3 = newPoint_xy(center1, (params.platformSectionLength - 41) - 95 * 2, 0); // 41 подогнал, по факту на 1000 получается размер стекла 959 95 отступ отверстия от бокового края стекла
+				var center4 = newPoint_xy(center3, 0, 100); //50 отступ отверстия от края стекла
+				addRoundHole(shape, par.dxfArr, center3, 9, dxfBasePoint);
+				addRoundHole(shape, par.dxfArr, center4, 9, dxfBasePoint);
+			}
+		}
+		
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var sidePlate = new THREE.Mesh(geometry, par.material);
+		sidePlate.position.x = topPlateParams.p2.x;
+		sidePlate.position.y = -par.thk - sideWidth - 0.05;
+		sidePlate.position.z = -topPlateParams.p2.y;
+		if (par.turnFactor == -1) {
+			sidePlate.position.z = topPlateParams.p2.y;
+			sidePlate.position.x = topPlateParams.p2.x + extrudeOptions.amount;
+		}
+
+		sidePlate.rotation.y = Math.PI / 2 * par.turnFactor;
+		par.mesh.add(sidePlate);
+
+		//задняя пластина напротив передней
+
+		var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 1000)
+		var length = topPlateParams.rearEdgeLength1;
+		//добавляем зазор от боковых пластин
+		length += -extrudeOptions.amount * 2;
+		var shape = new THREE.Shape();
+		var p0 = {
+			x: 0,
+			y: 0
+		}
+		var p1 = copyPoint(p0);
+		var p2 = newPoint_xy(p1, 0, width);
+		var p3 = newPoint_xy(p2, length, 0);
+		var p4 = newPoint_xy(p3, 0, -width);
+
+		addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+		addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+		addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+		addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+
+		//отверстия
+		var sideHoleOffset = 70;
+		var holeAmt = 5;
+		var holeDist = (length - 2 * sideHoleOffset) / (holeAmt - 1);
+		var holeRad = 7;
+
+		for (var i = 0; i < holeAmt; i++) {
+			var center = newPoint_xy(p0, sideHoleOffset + holeDist * i, width / 2)
+			addRoundHole(shape, par.dxfArr, center, holeRad, dxfBasePoint);
+		}
 
 
+		//подпись под фигурой
+		var text = "Задняя пластина площадки напротив передней 1 шт"
+		var textHeight = 30;
+		var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+		addText(text, textHeight, par.dxfArr, textBasePoint)
 
-    }
-    return par;
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var rearPlate = new THREE.Mesh(geometry, par.material);
+		rearPlate.position.x = topPlateParams.p3.x + extrudeOptions.amount;
+		rearPlate.position.y = -par.thk - width - 0.05;
+		rearPlate.position.z = -topPlateParams.p3.y;
+		if (par.turnFactor == -1) {
+			rearPlate.position.x = topPlateParams.p3.x + extrudeOptions.amount;
+			rearPlate.position.z = topPlateParams.p3.y - extrudeOptions.amount;
+		}
+
+		rearPlate.rotation.y = 0;
+		par.mesh.add(rearPlate);
+
+		//задняя пластина напротив боковой
+
+		var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 2500, 1500)
+		var length = topPlateParams.rearEdgeLength2
+		//добавляем зазор от боковых пластин
+		length += -extrudeOptions.amount;
+		var shape = new THREE.Shape();
+		var p0 = {
+			x: 0,
+			y: 0
+		}
+		var p1 = copyPoint(p0);
+		var p2 = newPoint_xy(p1, 0, width);
+		var p3 = newPoint_xy(p2, length, 0);
+		var p4 = newPoint_xy(p3, 0, -width);
+
+		addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+		addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+		addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+		addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+
+		//отверстия
+		var sideHoleOffset = 70;
+		var holeAmt = 5;
+		var holeDist = (length - 2 * sideHoleOffset) / (holeAmt - 1);
+		var holeRad = 7;
+
+		for (var i = 0; i < holeAmt; i++) {
+			var center = newPoint_xy(p0, sideHoleOffset + holeDist * i, width / 2)
+			addRoundHole(shape, par.dxfArr, center, holeRad, dxfBasePoint);
+		}
+
+
+		//подпись под фигурой
+		var text = "Задняя пластина площадки напротив боковой 1 шт"
+		var textHeight = 30;
+		var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+		addText(text, textHeight, par.dxfArr, textBasePoint)
+
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+		var rearPlate = new THREE.Mesh(geometry, par.material);
+		rearPlate.position.x = topPlateParams.p5.x - extrudeOptions.amount;
+		rearPlate.position.y = -par.thk - width - 0.05;
+		rearPlate.position.z = -topPlateParams.p5.y - extrudeOptions.amount
+		if (par.turnFactor == -1) {
+			rearPlate.position.x = topPlateParams.p5.x;
+			rearPlate.position.z = topPlateParams.p5.y + extrudeOptions.amount;
+		}
+
+		rearPlate.rotation.y = Math.PI / 2 * par.turnFactor;
+		par.mesh.add(rearPlate);
+
+		// var length = topPlateParams.edgeLength2;
+		var addPlateAmt = Math.floor(topPlateParams.edgeLength2 / 500);
+		
+		if (addPlateAmt > 0) {
+			var addPlateStep = topPlateParams.edgeLength2 / (addPlateAmt + 1);
+			
+			// Дополнительное ребро
+			for (var i = 1; i <= addPlateAmt; i++) {
+				var length = topPlateParams.rearEdgeLength1 - extrudeOptions.amount * 2 - 0.02;
+				var shape = new THREE.Shape();
+				var p0 = {
+					x: 0,
+					y: 0
+				}
+				var p1 = copyPoint(p0);
+				var p2 = newPoint_xy(p1, 0, width);
+				var p3 = newPoint_xy(p2, length, 0);
+				var p4 = newPoint_xy(p3, 0, -width);
+				
+				addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+				addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+				addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+				addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+				
+				//подпись под фигурой
+				var text = "Дополнительная пластина площадки 1шт"
+				var textHeight = 30;
+				var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+				addText(text, textHeight, par.dxfArr, textBasePoint)
+				
+				var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+				geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+				var addPlate = new THREE.Mesh(geometry, par.material);
+				addPlate.position.y = -par.thk - width - 0.05;
+				addPlate.position.z = -topPlateParams.p1.y - extrudeOptions.amount - addPlateStep * i;
+				if (par.turnFactor == -1) addPlate.position.z = topPlateParams.p1.y + addPlateStep * i;
+				addPlate.position.x = topPlateParams.p3.x + extrudeOptions.amount + 0.01;
+				addPlate.rotation.y = 0;
+				par.mesh.add(addPlate);
+			}
+		}
+	}
+
+	//рама под деревянной прямоугольной площадкой
+	
+	if (par.type == "timber" && par.platformType == "square") {
+		par = drawPlatformFrame(par);
+	}
+	
+	if (par.type == "timber" && par.platformType == "triangle" && params.model == 'Винтовая с тетивой') {
+		par = drawTrianglePlatformFrame(par);
+	}
+
+	if (par.type == "timber" && par.platformType == "triangle" && params.model == 'Винтовая') {
+		par = drawTrianglePlatformFlans(par);
+	}
+
+	return par;
 }
 
-function drawBotFlan(par) {
+/**
+ * Функция отрисовывает фланцы для треугольной площадки
+ */
+function drawTrianglePlatformFlans(par) {
+	par.metalFrame = new THREE.Object3D();
 
-    var rad = 120;
-    var thk = 8;
-    var holesAmt = 6;
-    var holeRad = 7;
-    var holePosRad = 100;
-    var shape = new THREE.Shape();
-    var extrudeOptions = {
-        amount: 8,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
+	var platformDepth = par.platformDepth;
 
-    //внешний контур
-    var flanCenter = { x: 0, y: 0 }
-    addCircle(shape, par.dxfArr, flanCenter, rad, par.dxfBasePoint)
+	//угол между ребрами
+	var platformAngle = par.platformAngle;
+	
+	var platformWidth = 2 * platformDepth * Math.tan(platformAngle / 2);
 
-    //отверстия
-    var angleStep = Math.PI * 2 / holesAmt;
-    for (var i = 0; i < holesAmt; i++) {
-        var center = polar(flanCenter, angleStep * i, holePosRad);
-        addRoundHole(shape, par.dxfArr, center, holeRad, par.dxfBasePoint);
-    }
+	// var angle = drawAngleSupport("У5-60х60х100");
+	// translateObject(angle, platformDepth, -params.treadThickness - 0.01, -50);
 
-    //подпись под фигурой
-    var text = "Нижний фланец"
-    var textHeight = 30;
-    var textBasePoint = newPoint_xy(par.dxfBasePoint, -100, -200)
-    addText(text, textHeight, dxfPrimitivesArr, textBasePoint)
+	// angle.rotation.x = Math.PI / 2;
+	// angle.rotation.z = Math.PI / 2;
+	
+	// par.metalFrame.add(angle);
 
-    var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var angle = drawAngleSupport("У2-40х40х90", {pos: 'topFloor'});
+	translateObject(angle, platformDepth, -params.treadThickness - 0.01, -50 + platformWidth / 4);
 
-    par.mesh = new THREE.Mesh(geometry, par.material);
-    par.mesh.rotation.x = -Math.PI / 2
-    return par;
+	angle.rotation.x = Math.PI / 2;
+	angle.rotation.z = Math.PI / 2;
+	
+	par.metalFrame.add(angle);
+
+	var angle = drawAngleSupport("У2-40х40х90", { pos: 'topFloor' });
+	translateObject(angle, platformDepth, -params.treadThickness - 0.01, -50 - platformWidth / 4);
+
+	angle.rotation.x = Math.PI / 2;
+	angle.rotation.z = Math.PI / 2;
+	
+	par.metalFrame.add(angle);
+
+	return par;
+}//end of drawTrianglePlatformFlans
+
+function drawVintPlatformShape(par) {
+
+	/*чертежи площадки с обозначением параметров здесь:
+	http://6692035.ru/drawings/vint/vintPlatform.pdf
+	http://6692035.ru/drawings/vint/square_platform.pdf
+	*/
+
+	var platformAngle = par.platformAngle;
+	var platformDepth = par.platformDepth;
+	var treadLowRad = par.treadLowRad;
+	var holeDiam = par.holeDiam;
+	var type = par.type;
+	var columnRad = par.columnDiam / 2 + 0.05; //учитываем зазор для тестирования
+	var stairRad = params.staircaseDiam / 2;
+	
+	
+
+	//угол между ребрами
+	var extraAngle = calcTriangleParams().extraAngle;
+	var edgeLength = stairRad * Math.cos(extraAngle);
+	var edgeAngle = platformAngle - 2 * extraAngle;
+	
+	//var extraAngle = Math.asin(treadLowRad / L1);
+	//var edgeAngle = platformAngle - 2 * extraAngle;
+	var edgeLength = L1 * Math.cos(extraAngle);
+	
+	var L1 = platformDepth / Math.cos(platformAngle / 2);
+	var platformWidth = 2 * platformDepth * Math.tan(platformAngle / 2);
+	
+	var dxfBasePoint = {
+		x: 0,
+		y: -1500,
+	}
+
+	//сохраняем значеня в глобальный массив параметров
+
+	stairParams.platformEdgeAngle = edgeAngle;
+	stairParams.platformDepth = platformDepth;
+	stairParams.platformWidth = platformWidth;
+	
+	//рассчитываем координаты базовых точек
+	var basePoints = calcVintTreadPoints(par.platformAngle)
+	
+	//точки на задней линии площадки
+	var pr1 = polar(basePoints[0],  edgeAngle / 2, par.platformDepth)
+	var pr2 = polar(pr1,  edgeAngle / 2 + Math.PI / 2, 100);
+	var rearLine = {
+		p1: pr1,
+		p2: pr2,
+	}
+
+	if (type == "timber") {
+		if (par.platformType == "triangle") {
+
+			var p0 = basePoints[0]
+			var p1 = basePoints[1]
+			var p2 = basePoints[2]
+			var p3 = basePoints[3]
+			//корректируем точку
+			p3 = itercection(p2, p3, rearLine.p1, rearLine.p2)
+			
+			var p4 = basePoints[4]
+			//корректируем точку
+			p4 = itercection(p1, p4, rearLine.p1, rearLine.p2)
+			
+			var p7 = basePoints[4];
+			var p6 = newPoint_xy(p7, 0, calcTriangleParams().treadOverlayLength);
+			var p5 = itercection(p6, polar(p6, edgeAngle / 2, 100), rearLine.p1, rearLine.p2)
+			
+			/*отрисовываем контур площадки*/
+
+			var treadShape = new THREE.Shape();
+			addArc(treadShape, dxfPrimitivesArr, p0, treadLowRad, 1.5 * Math.PI, (Math.PI / 2 + edgeAngle), dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p3, p5, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p5, p6, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p6, p7, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p7, p1, dxfBasePoint);
+			
+			//отверстия для крепления балясины			
+			for(var i=0; i<2; i++){
+				addRoundHole(treadShape, par.dxfArr, basePoints.balHoles[i], basePoints.balHoles[i].rad, dxfBasePoint);
+			}
+			
+			var sizeA = p5.x - p1.x + treadLowRad;
+			var sizeB = p3.y - p1.y
+		}
+
+		if (par.platformType == "square") {
+			/*рассчитываем координаты точек*/
+			var p0 = {
+				x: 0,
+				y: 0,
+			}
+			var p1 = {
+				x: 0,
+				y: -treadLowRad,
+			}
+			var p2 = {
+				x: -treadLowRad,
+				y: 0
+			}
+			var p3 = {
+				x: -treadLowRad,
+				y: params.staircaseDiam / 2 + params.platformLedge,
+			}
+			var p4 = {
+				x: params.staircaseDiam / 2 + params.platformLedgeM,
+				y: params.staircaseDiam / 2 + params.platformLedge,
+			}
+			var p5 = {
+				x: params.staircaseDiam / 2 + params.platformLedgeM,
+				y: 0,
+			}
+			var p6 = {
+				x: params.staircaseDiam / 2 - 3,
+				y: 0,
+			}
+			var p7 = {
+				x: params.staircaseDiam / 2 - 3,
+				y: -treadLowRad,
+			}
+
+
+			/*вычерчиваем конутр площадки*/
+
+			var treadShape = new THREE.Shape();
+			addArc(treadShape, dxfPrimitivesArr, p0, treadLowRad, 1.5 * Math.PI, Math.PI, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p4, p5, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p5, p6, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p6, p7, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p7, p1, dxfBasePoint);
+			
+			//отверстие для последней балясины FIX
+			var holeCenter = {
+				x: params.staircaseDiam / 2 + 10,
+				y: -43
+			};
+			var holeSize = 25;
+			var holeRad = 4;
+			var polarDst = holeSize / 2 / Math.sin(Math.PI / 4);
+
+			//круглые отверстия под болты
+			var center1 = newPoint_xy(holeCenter, -10 - 22, -12)
+			var center2 = newPoint_xy(holeCenter, -10 - 22, 12)
+			addRoundHole(treadShape, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+			addRoundHole(treadShape, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+			
+			var sizeA = p4.x - p3.x;
+			var sizeB = p3.y - p1.y
+		}
+		/*отверстие*/
+		var hole = new THREE.Path();
+		addCircle(hole, dxfPrimitivesArr, p0, holeDiam / 2, dxfBasePoint);
+		treadShape.holes.push(hole);
+
+		//Направление волокон
+		var trashShape = new THREE.Shape();
+		var pt1 = newPoint_xy(p0, 200, 0)
+		var pt11 = newPoint_xy(pt1, 40, 10)
+		var pt12 = newPoint_xy(pt1, 40, -10)
+		addLine(trashShape, dxfPrimitivesArr, pt1, pt11, dxfBasePoint);
+		addLine(trashShape, dxfPrimitivesArr, pt1, pt12, dxfBasePoint);
+		var pt2 = newPoint_xy(pt1, 400, 0)
+		var pt21 = newPoint_xy(pt2, -40, 10)
+		var pt22 = newPoint_xy(pt2, -40, -10)
+		addLine(trashShape, dxfPrimitivesArr, pt2, pt21, dxfBasePoint);
+		addLine(trashShape, dxfPrimitivesArr, pt2, pt22, dxfBasePoint);
+		addLine(trashShape, dxfPrimitivesArr, pt1, pt2, dxfBasePoint);
+
+		var text = "Направление волокон"
+		var textHeight = 20;
+		var textBasePoint = newPoint_xy(dxfBasePoint, 210, 30);
+		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
+
+		//сохраняем параметры для спецификации
+		staircasePartsParams.platformWidth = distance(p3, p5)
+		staircasePartsParams.platformLength = platformDepth + treadLowRad;
+		staircasePartsParams.platformArea = (p3.y - p1.y) / 2 * edgeLength / 1000000;
+		staircasePartsParams.platformPaintedArea = staircasePartsParams.platformArea * 2 + (edgeLength * 2 + platformWidth + treadLowRad * Math.PI) * params.treadThickness / 1000000;
+
+
+
+	}
+
+	if (type == "metal") {
+		var deltaAng = Math.PI / 6; //половина угла, на который уменьшается дуга ступени, прилегающая к бобышке
+		var radIn = columnRad + 0.5; //радиус внутренней дуги, примыкающей к бобышке
+
+		if (par.platformType == "triangle") {
+			/*рассчитываем координаты точек*
+			var p0 = {
+				x: 0,
+				y: 0
+			}
+			var p11 = polar(p0, -Math.PI / 2 + deltaAng, radIn); //точка на дуге
+			var p1 = polar(p11, -Math.PI / 2, 5);
+			var p21 = polar(p0, edgeAngle + Math.PI / 2 - deltaAng, radIn) //точка на дуге
+			var p2 = polar(p21, Math.PI / 2 + edgeAngle, 5);
+			var p3 = {
+				x: L1 * Math.cos(platformAngle - extraAngle),
+				y: L1 * Math.sin(platformAngle - extraAngle),
+			}
+			var p4 = {
+				x: edgeLength,
+				y: -treadLowRad,
+			}
+			*/
+			
+			//номинальные точки
+			var p0 = basePoints[0]
+			var p1 = basePoints[1]
+			var p2 = basePoints[2]
+			var p3 = basePoints[3]
+			//корректируем точку
+			p3 = itercection(p2, p3, rearLine.p1, rearLine.p2)
+			
+			var p4 = basePoints[4]
+			//корректируем точку
+			p4 = itercection(p1, p4, rearLine.p1, rearLine.p2)
+			
+			//реальные точки на узкой стороне
+			var p11 = polar(p0, -Math.PI / 2 + deltaAng, radIn); //точка на дуге
+			var p1 = polar(p11, -Math.PI / 2, 5);
+			var p21 = polar(p0, edgeAngle + Math.PI / 2 - deltaAng, radIn) //точка на дуге
+			var p2 = polar(p21, Math.PI / 2 + edgeAngle, 5);
+			
+			
+			var dxfBasePoint = {
+				x: 0,
+				y: -1500,
+			}
+
+			/*отрисовываем контур площадки*/
+
+			var treadShape = new THREE.Shape();
+			addLine(treadShape, dxfPrimitivesArr, p1, p11, dxfBasePoint);
+			addArc2(treadShape, dxfPrimitivesArr, p0, radIn, (Math.PI / 2 + edgeAngle - deltaAng), -Math.PI / 2 + deltaAng, false, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p21, p2, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p4, p1, dxfBasePoint);
+			
+			var thk = 4;
+			
+			var edgeWithOffset = parallel(p4, p1, thk);
+			var edge2WithOffset = parallel(p2, p3, -thk);
+			
+			var rearEdgeWithOffset = parallel(p3,p4, -thk);
+			
+			var rearEdgeStartPoint = itercection(edge2WithOffset.p1, edge2WithOffset.p2, rearEdgeWithOffset.p1, rearEdgeWithOffset.p2);
+			var rearEdgeEndPoint = itercection(edgeWithOffset.p1, edgeWithOffset.p2, rearEdgeWithOffset.p1, rearEdgeWithOffset.p2);
+			var edgeEndPoint = itercection(edgeWithOffset.p1, edgeWithOffset.p2, p3, p4);
+			
+			//параметры для передней пластины
+			par.edgeLength = distance(edgeEndPoint, p1);
+			par.rearEdgeLength = distance(rearEdgeEndPoint, rearEdgeStartPoint);
+			par.p1 = p1;
+			par.p2 = p2;
+			par.p3 = rearEdgeStartPoint;
+			par.ang1 = angle(p1, p4)
+			par.ang2 = angle(p2, p3)
+			par.ang3 = angle(p3, p4)
+			
+			var edgeAmt = 1;
+			if (edgeAngle > Math.PI / 3) edgeAmt = 2;
+			var ang2 = edgeAngle / (edgeAmt + 1);
+			var columnOffset = columnRad + 0.5;
+			
+			var addEdge1StartPoint = polar(p0, ang2, columnOffset);				
+			var addEdge1EndPoint = itercection(p0, polar(addEdge1StartPoint, ang2, 100), rearEdgeWithOffset.p1, rearEdgeWithOffset.p2);
+			par.addEdge1Length = distance(addEdge1StartPoint, addEdge1EndPoint);
+
+			if (params.platformSectionLength > 0 && params.platformSectionLength - 160 < par.addEdge1Length && params.railingModel_bal !== "Самонесущее стекло") {
+				//Отверстия под болты крепления секции ограждения
+				var holeRad = 4;
+				var flanHoleDst = par.railingFlanHoleDst;
+				var polarDst = flanHoleDst / 2 / Math.sin(Math.PI / 4);
+				var sectionLength = params.platformSectionLength - 40 //edgeLength - 160 - 50 + 40;
+				var sectionTurnAngle = edgeAngle
+				//0.015 поправка по углу, подогнано нужно считать
+				var flanCenter = polar(p0, edgeAngle + 0.015, sectionLength)
+				var center1 = polar(flanCenter, Math.PI * 0.25 + sectionTurnAngle, polarDst)
+				var center2 = polar(flanCenter, Math.PI * 0.75 + sectionTurnAngle, polarDst)
+				var center3 = polar(flanCenter, Math.PI * 1.25 + sectionTurnAngle, polarDst)
+				var center4 = polar(flanCenter, Math.PI * 1.75 + sectionTurnAngle, polarDst)
+				addRoundHole(treadShape, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+				addRoundHole(treadShape, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+				addRoundHole(treadShape, dxfPrimitivesArr, center3, holeRad, dxfBasePoint);
+				addRoundHole(treadShape, dxfPrimitivesArr, center4, holeRad, dxfBasePoint);
+			}
+
+			//отверстие для последней балясины
+			if(params.railingModel == "Частые стойки"){
+				/*
+				// var holeCenter = {x: params.staircaseDiam/2 + 10, y: -32};
+				var holeCenter = {
+					x: params.staircaseDiam / 2 + 10,
+					y: -22.5
+				};
+
+				var holeSize = 25;
+				var polarDst = holeSize / 2 / Math.sin(Math.PI / 4);
+				var sectionTurnAngle = 0;
+				
+
+				var ph1 = polar(holeCenter, Math.PI * 0.25 + sectionTurnAngle, polarDst)
+				var ph2 = polar(holeCenter, Math.PI * 0.75 + sectionTurnAngle, polarDst)
+				var ph3 = polar(holeCenter, Math.PI * 1.25 + sectionTurnAngle, polarDst)
+				var ph4 = polar(holeCenter, Math.PI * 1.75 + sectionTurnAngle, polarDst)
+
+				var sqHole = new THREE.Path();
+				addLine(sqHole, dxfPrimitivesArr, ph1, ph2, dxfBasePoint);
+				addLine(sqHole, dxfPrimitivesArr, ph2, ph3, dxfBasePoint);
+				addLine(sqHole, dxfPrimitivesArr, ph3, ph4, dxfBasePoint);
+				addLine(sqHole, dxfPrimitivesArr, ph4, ph1, dxfBasePoint);
+				treadShape.holes.push(sqHole);
+
+				//круглые отверстия под болты
+
+				var holeRad = 4;
+				if (type == "timber") holeRad = 2;
+				var center1 = newPoint_xy(holeCenter, -10 - 22, -12)
+				var center2 = newPoint_xy(holeCenter, -10 - 22, 12)
+				addRoundHole(treadShape, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+				addRoundHole(treadShape, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+				*/
+				//отверстия для крепления балясины			
+				for(var i=0; i<2; i++){
+					addRoundHole(treadShape, par.dxfArr, basePoints.balHoles[i], basePoints.balHoles[i].rad, dxfBasePoint);
+				}
+				
+				//квадратное отверстие
+				var holeSize = 25;
+				var line2 = parallel(basePoints.balHoles[0], basePoints.balHoles[1], -20 - holeSize);
+				var line1 = parallel(basePoints.balHoles[0], basePoints.balHoles[1], -20);
+
+				var sqHole = new THREE.Path();
+
+				addLine(sqHole, dxfPrimitivesArr, line1.p1, line1.p2, dxfBasePoint);
+				addLine(sqHole, dxfPrimitivesArr, line1.p2, line2.p2, dxfBasePoint);
+				addLine(sqHole, dxfPrimitivesArr, line2.p2, line2.p1, dxfBasePoint);
+				addLine(sqHole, dxfPrimitivesArr, line2.p1, line1.p1, dxfBasePoint);
+				treadShape.holes.push(sqHole);
+				
+			}
+			var sizeA = p4.x - p1.x;
+			var sizeB = p3.y - p1.y
+
+		}
+
+		if (par.platformType == "square") {
+			/*рассчитываем координаты точек*/
+			var p0 = {
+				x: 0,
+				y: 0
+			}
+			var p11 = polar(p0, -Math.PI / 2 + deltaAng, radIn); //точка на дуге
+			var p1 = polar(p11, -Math.PI / 2, 5);
+			var p21 = polar(p0, Math.PI - deltaAng, radIn) //точка на дуге
+			var p2 = polar(p21, Math.PI, 5);
+
+			var p3 = {
+				x: p2.x,
+				y: params.staircaseDiam / 2 + params.platformLedge,
+			}
+
+			var p4 = {
+				x: params.staircaseDiam / 2 + params.platformLedgeM,
+				y: params.staircaseDiam / 2 + params.platformLedge,
+			}
+
+			var p5 = {
+				x: params.staircaseDiam / 2 + params.platformLedgeM,
+				y: p1.y,
+			}
+
+			var dxfBasePoint = {
+				x: 0,
+				y: -1500,
+			}
+
+			/*отрисовываем контур площадки*/
+
+			var treadShape = new THREE.Shape();
+			addLine(treadShape, dxfPrimitivesArr, p1, p11, dxfBasePoint);
+			addArc2(treadShape, dxfPrimitivesArr, p0, radIn, (Math.PI - deltaAng), -Math.PI / 2 + deltaAng, false, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p21, p2, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p4, p5, dxfBasePoint);
+			addLine(treadShape, dxfPrimitivesArr, p5, p1, dxfBasePoint);
+
+			//параметры для передней пластины
+			par.edgeLength1 = distance(p5, p1);
+			par.edgeLength2 = distance(p2, p3);
+			par.rearEdgeLength1 = distance(p4, p3);
+			par.rearEdgeLength2 = distance(p4, p5);
+
+			par.p1 = p1;
+			par.p2 = p2;
+			par.p3 = p3;
+			par.p5 = p5;
+
+			par.ang1 = angle(p1, p4)
+			par.ang2 = angle(p2, p3)
+			par.ang3 = angle(p3, p4)
+
+			//длины дополнительных ребер жесткости
+			var pt1 = polar(p0, Math.PI / 6, radIn); //точка на дуге
+			var pt2 = itercection(p0, pt1, p4, p5)
+			par.midEdgeLength1 = distance(pt1, pt2);
+			par.pm1 = pt1;
+
+			var pt1 = polar(p0, Math.PI / 3, radIn); //точка на дуге
+			var pt2 = itercection(p0, pt1, p4, p3)
+			par.midEdgeLength2 = distance(pt1, pt2);
+			par.pm2 = pt1;
+
+			var test = {};
+			test.pt1 = pt1;
+			test.pt1 = pt2;
+			signKeyPoints(test, dxfBasePoint);
+			//	console.log(par.pm2)
+
+
+			//Отверстия под болты крепления секции ограждения
+			if (params.railingSide !== 'нет') {
+				if (params.platformSectionLength > 0 && 
+					params.platformSectionLength < (params.staircaseDiam / 2 + params.platformLedge) && 
+					params.railingModel_bal !== "Самонесущее стекло") {
+					
+					var holeRad = 4;
+					var flanHoleDst = par.railingFlanHoleDst;
+					var polarDst = flanHoleDst / 2 / Math.sin(Math.PI / 4);
+					var sectionLength = params.platformSectionLength - 40;
+					var sectionTurnAngle = Math.PI / 2;
+
+					var flanCenter = polar(p0, sectionTurnAngle, sectionLength)
+					var center1 = polar(flanCenter, Math.PI * 0.25 + sectionTurnAngle, polarDst)
+					var center2 = polar(flanCenter, Math.PI * 0.75 + sectionTurnAngle, polarDst)
+					var center3 = polar(flanCenter, Math.PI * 1.25 + sectionTurnAngle, polarDst)
+					var center4 = polar(flanCenter, Math.PI * 1.75 + sectionTurnAngle, polarDst)
+					addRoundHole(treadShape, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+					addRoundHole(treadShape, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+					addRoundHole(treadShape, dxfPrimitivesArr, center3, holeRad, dxfBasePoint);
+					addRoundHole(treadShape, dxfPrimitivesArr, center4, holeRad, dxfBasePoint);
+				}
+
+				//отверстие для последней балясины
+				if(params.railingModel == "Частые стойки"){
+					var holeCenter = {
+						x: params.staircaseDiam / 2 + 10,
+						y: -27
+					};
+					var holeSize = 25;
+					var polarDst = holeSize / 2 / Math.sin(Math.PI / 4);
+					var sectionTurnAngle = 0;
+
+					var ph1 = polar(holeCenter, Math.PI * 0.25 + sectionTurnAngle, polarDst)
+					var ph2 = polar(holeCenter, Math.PI * 0.75 + sectionTurnAngle, polarDst)
+					var ph3 = polar(holeCenter, Math.PI * 1.25 + sectionTurnAngle, polarDst)
+					var ph4 = polar(holeCenter, Math.PI * 1.75 + sectionTurnAngle, polarDst)
+
+					var sqHole = new THREE.Path();
+					addLine(sqHole, dxfPrimitivesArr, ph1, ph2, dxfBasePoint);
+					addLine(sqHole, dxfPrimitivesArr, ph2, ph3, dxfBasePoint);
+					addLine(sqHole, dxfPrimitivesArr, ph3, ph4, dxfBasePoint);
+					addLine(sqHole, dxfPrimitivesArr, ph4, ph1, dxfBasePoint);
+					treadShape.holes.push(sqHole);
+					
+					//круглые отверстия под болты
+					var holeRad = 4;
+					if (type == "timber") holeRad = 2;
+					var center1 = newPoint_xy(holeCenter, -10 - 22, -12)
+					var center2 = newPoint_xy(holeCenter, -10 - 22, 12)
+					addRoundHole(treadShape, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+					addRoundHole(treadShape, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+				}
+			}
+
+
+			var sizeA = p4.x - p3.x;
+			var sizeB = p3.y - p1.y
+		}
+
+	}
+
+
+	//подпись
+	var text = "Верхняя площадка"
+	if (params.turnFactor == -1) text = "Верхняя площадка (зеркально)"
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, 20, -150);
+	addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
+
+	par.shape = treadShape
+
+
+	//сохраняем данные для спецификации
+	var partName = "vintPlatform";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				area: 0,
+				paintedArea: 0,
+				name: "Площадка треугольная " + params.treadMaterial,
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "area", //единица измерения
+				group: "Каркас",
+			}
+			if (type == "timber") {
+				specObj[partName].metalPaint = false;
+				specObj[partName].timberPaint = true;
+				specObj[partName].division = "timber";
+			}
+		}
+		if (par.platformType == "square") specObj[partName].name = "Площадка прямоугольная " + params.treadMaterial;
+
+		var area = sizeA * sizeB / 1000000;
+		var name = Math.round(sizeA) + "x" + Math.round(sizeB);
+		if (type == "timber") name += "x" + params.treadThickness;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+		specObj[partName]["area"] += area;
+		specObj[partName]["paintedArea"] += area * 2 + area * 0.1; //к-т 0,1 учитывает площадь торцев
+	}
+
+	return par;
+} //end of drawVintPlatformShape
+
+function drawPlatformFrame(par) {
+	var profWidth = 30;
+	var profHeight = 60;
+	var columnRad = params.columnDiam / 2 + 0.05;
+	/*рассчитываем координаты точек*/
+
+	var ang0 = 2 * Math.asin(profWidth / (columnRad * 2))
+
+	var p0 = {
+		x: 0,
+		y: 0
+	}
+	var p1 = {
+		x: -profWidth / 2,
+		y: columnRad * Math.cos(ang0 / 2)
+	}
+	var p2 = {
+		x: profWidth / 2,
+		y: columnRad * Math.cos(ang0 / 2)
+	}
+
+	var p3 = {
+		x: -profWidth / 2,
+		y: params.staircaseDiam / 2 + params.platformLedge,
+	}
+
+	var p4 = {
+		x: params.staircaseDiam / 2 + params.platformLedgeM,
+		y: params.staircaseDiam / 2 + params.platformLedge,
+	}
+
+	var p5 = {
+		x: params.staircaseDiam / 2 + params.platformLedgeM,
+		y: par.columnDiam / 2 + 20,
+	}
+
+	var p6 = {
+		x: profWidth / 2,
+		y: par.columnDiam / 2 + 20,
+	}
+
+	var dxfBasePoint = {
+		x: 2500,
+		y: 0,
+	}
+	//отрисовываем контур площадки
+
+	var treadShape = new THREE.Shape();
+	addLine(treadShape, dxfPrimitivesArr, p1, p3, dxfBasePoint);
+	addLine(treadShape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+	addLine(treadShape, dxfPrimitivesArr, p4, p5, dxfBasePoint);
+	addLine(treadShape, dxfPrimitivesArr, p5, p6, dxfBasePoint);
+	addLine(treadShape, dxfPrimitivesArr, p6, p2, dxfBasePoint);
+	addArc2(treadShape, dxfPrimitivesArr, p0, columnRad, Math.PI / 2 + ang0 / 2,  Math.PI / 2 - ang0 / 2,  false, dxfBasePoint);
+
+	//внутренний контур
+
+
+	//квадратное отверстие
+	ph1 = newPoint_xy(p0, profWidth / 2, columnRad + 20 + profWidth)
+	ph2 = newPoint_xy(p3, profWidth, -profWidth)
+	ph3 = newPoint_xy(p4, -profWidth, -profWidth)
+	ph4 = newPoint_xy(p5, -profWidth, profWidth)
+
+	var sqHole = new THREE.Path();
+	addLine(sqHole, par.dxfArr, ph1, ph4, dxfBasePoint);
+	addLine(sqHole, par.dxfArr, ph4, ph3, dxfBasePoint);
+	addLine(sqHole, par.dxfArr, ph3, ph2, dxfBasePoint);
+	addLine(sqHole, par.dxfArr, ph2, ph1, dxfBasePoint);
+
+	treadShape.holes.push(sqHole);
+
+	var sizeA = distance(ph1, ph2) + profWidth * 2;
+	var sizeB = distance(ph2, ph3) + profWidth * 2;
+
+	//подпись под фигурой
+	var text = "Рама площадки"
+	if (params.turnFactor == -1) text = "Рама площадки (зеркально) "
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+	addText(text, textHeight, par.dxfArr, textBasePoint)
+
+	var extrudeOptions = {
+		amount: profHeight,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+	var geometry = new THREE.ExtrudeGeometry(treadShape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var frame = new THREE.Mesh(geometry, par.metalMaterial);
+	frame.rotation.x = -Math.PI / 2 * par.turnFactor;
+	frame.position.x = 0;
+	frame.position.y = -par.thk - profHeight - 0.05;
+	frame.position.z = 0;
+	if (par.turnFactor == -1) {
+		frame.position.y = -par.thk - 0.05;
+	}
+
+
+	par.metalFrame = new THREE.Object3D();
+	par.metalFrame.add(frame);
+
+	if(ph2.y - ph1.y > 80){
+
+		//опорные фланцы
+		var holeOffset = 15;
+		var flanThk = 4;
+		var flanParams = { //объявление параметров уголка
+			width: 160,
+			height: 40,
+			holeDiam: 8,
+			angleRadUp: 10,
+			angleRadDn: 0,
+			hole2X: holeOffset,
+			hole2Y: holeOffset,
+			hole3X: holeOffset,
+			hole3Y: holeOffset,
+			dxfBasePoint: dxfBasePoint,
+			dxfPrimitivesArr: dxfPrimitivesArr,
+		}
+
+		var shape = drawRectFlan(flanParams).shape;
+		var extrudeOptions = {
+			amount: flanThk,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+
+		var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		// Фланцы
+		{
+			//первый фланец
+			var flan = new THREE.Mesh(geometry, par.metalMaterial);
+			flan.rotation.x = -Math.PI / 2 * par.turnFactor;
+			flan.position.x = (params.staircaseDiam / 2 + params.platformLedgeM - 160) / 2;
+			flan.position.y = -par.thk;
+			if (par.turnFactor == 1) flan.position.y -= flanThk;
+			flan.position.z = -(par.columnDiam / 2 + 20 + profWidth + 0.05) * par.turnFactor;
+			par.metalFrame.add(flan);
+			
+			//второй фланец
+			var flan = new THREE.Mesh(geometry, par.metalMaterial);
+			flan.rotation.x = -Math.PI / 2 * par.turnFactor;
+			flan.rotation.z = Math.PI;
+			flan.position.x = (params.staircaseDiam / 2 + params.platformLedgeM + 160) / 2;
+			flan.position.y = -par.thk;
+			if (par.turnFactor == 1) flan.position.y -= flanThk;
+			flan.position.z = -(params.staircaseDiam / 2 + params.platformLedge - profWidth) * par.turnFactor;
+			par.metalFrame.add(flan);
+			
+			//фланцы на боковых сторонах (перпендикулярных перекрытию)
+			if(params.staircaseDiam / 2 + params.platformLedge > 320){
+				//третий фланец
+				var flan = new THREE.Mesh(geometry, par.metalMaterial);
+				flan.rotation.x = -Math.PI / 2 * par.turnFactor;
+				flan.rotation.z = Math.PI / 2;
+				flan.position.x = (params.staircaseDiam / 2 + params.platformLedgeM - profWidth);
+				flan.position.y = -par.thk;
+				if (par.turnFactor == 1) flan.position.y -= flanThk;
+				flan.position.z = -(params.staircaseDiam / 2 + params.platformLedge + 20 + par.columnDiam / 2 - 160) / 2 * par.turnFactor;
+				par.metalFrame.add(flan);
+				
+				//четвертый фланец
+				var flan = new THREE.Mesh(geometry, par.metalMaterial);
+				flan.rotation.x = -Math.PI / 2 * par.turnFactor;
+				flan.rotation.z = -Math.PI / 2;
+				flan.position.x = profWidth / 2 + 0.05;
+				flan.position.y = -par.thk;
+				if (par.turnFactor == 1) flan.position.y -= flanThk;
+				flan.position.z = -(params.staircaseDiam / 2 + params.platformLedge + 20 + par.columnDiam / 2 + 160) / 2 * par.turnFactor;
+				par.metalFrame.add(flan);
+			}
+		}
+	}
+	//сохраняем данные для спецификации
+	var partName = "platformFrame";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Рама площадки",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+
+		}
+
+		var name = Math.round(sizeA) + "x" + Math.round(sizeB);
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+
+	return par;
+
+} //end of drawPlatformFrame
+
+function drawTrianglePlatformFrame(par) {
+	var profWidth = 30;
+	var profHeight = 60;
+	var columnRad = params.columnDiam / 2 + 0.05;
+	var profileLength = 800;// - columnRad;
+	par.metalFrame = new THREE.Object3D();
+	
+	var platformAngle = params.platformAngle * Math.PI / 180;
+	var platformDepth = par.platformDepth;
+	var treadLowRad = par.treadLowRad;
+	var holeDiam = par.holeDiam;
+	var type = par.type;
+	var columnRad = par.columnDiam / 2 + 0.05; //учитываем зазор для тестирования
+
+	var L1 = platformDepth / Math.cos(platformAngle / 2);
+	var platformWidth = 2 * platformDepth * Math.tan(platformAngle / 2);
+	var extraAngle = Math.asin(treadLowRad / L1);
+	var edgeAngle = platformAngle - 2 * extraAngle - 0.05;//0.05 зазор для того чтобы не было пересечений со стойкой
+	var edgeLength = L1 * Math.cos(extraAngle);
+	var dxfBasePoint = {
+		x: 2500,
+		y: 0,
+	}
+	
+	{
+		// положение профиля относительно 0
+		var offset = platformDepth - profWidth - 0.05;//profileLength * 0.8;
+		// a - сторона равнобедренного треугольника
+		var a = (offset) / Math.cos(edgeAngle / 2);
+		// b - длинна профиля
+		var b = (2 * a) * Math.sin(edgeAngle / 2);
+		
+		var profilePar = {
+			poleProfileY: profWidth,
+			poleProfileZ: profHeight,
+			dxfBasePoint: dxfBasePoint,  //не обязательный. Если не указан, в dxf не выводится
+			length: b - profWidth / Math.cos(edgeAngle / 2) + (profWidth * Math.tan(edgeAngle / 2)) * 2 - 0.05,
+			poleAngle: 0,
+			angEnd: edgeAngle / 2,
+			angStart: -edgeAngle / 2,
+			material: params.materials.metal, //не обязательный
+			dxfArr: dxfPrimitivesArr, //не обязательный
+			partName: '',
+			text: '',
+			sectText: '',
+			roundHoles: [],
+			unit: "banister"
+		}
+		
+		var profile3Par = drawPole3D_4(profilePar);
+		var profile3 = profile3Par.mesh;
+		profile3.rotation.x = Math.PI / 2;
+		profile3.rotation.z =  edgeAngle / 2;
+		translateObject(profile3, -profilePar.length / 2 + profWidth * Math.tan(edgeAngle / 2), offset, 0);
+		par.metalFrame.add(profile3);
+		
+		var edgeProfileLength = (b - profWidth) / (2 * Math.sin(edgeAngle / 2));
+		
+		var profilePar = {
+			poleProfileY: profWidth,
+			poleProfileZ: profHeight,
+			dxfBasePoint: dxfBasePoint,  //не обязательный. Если не указан, в dxf не выводится
+			length: edgeProfileLength,//(platformDepth) / Math.cos(edgeAngle / 2),
+			poleAngle: 0,
+			angEnd: edgeAngle / 2, //не обязательный
+			material: params.materials.metal, //не обязательный
+			dxfArr: dxfPrimitivesArr, //не обязательный
+			partName: '',
+			text: '',
+			sectText: '',
+			roundHoles: [],
+			unit: "banister"
+		}
+		
+		var profile1 = drawPole3D_4(profilePar);
+		profile1.mesh.rotation.x = Math.PI / 2;
+		profile1.mesh.rotation.z = Math.PI / 2 + edgeAngle;
+		translateObject(profile1.mesh, columnRad,-profilePar.poleProfileY / 2, 0);
+		par.metalFrame.add(profile1.mesh);
+		
+		var profile2 = drawPole3D_4(profilePar);
+		profile2.mesh.rotation.x = -Math.PI / 2;
+		profile2.mesh.rotation.z = -Math.PI / 2;
+
+		translateObject(profile2.mesh, columnRad, -profilePar.poleProfileY / 2, -profilePar.poleProfileZ);
+		par.metalFrame.add(profile2.mesh);
+	
+		var flanPar = {
+			length: 100,
+			offset: columnRad + 50,
+			angle: edgeAngle / 2,
+			deltaLen: (profWidth / 2 + 0.2) / Math.cos(edgeAngle / 2),//Корректируем длинну нижней части фланца(смемщаем на половину профиля внутрь(тк изначально фланец залезает на половину профиля))
+		}
+		
+		var flan = drawRadFlan(flanPar).mesh;
+		flan.rotation.x = Math.PI / 2;
+		flan.rotation.z = Math.PI / 2 + edgeAngle / 2;
+		// translateObject(flan, 0, 0, 0);//Смещаем объект и точку вращения чтобы можно было спокойно вращать объект без модификации положения
+		par.metalFrame.add(flan);
+		//Фланцы
+		{
+			var flanThk = 4;
+			var holeOffset = 15;
+			var flanParams = { //объявление параметров уголка
+				width: 160,
+				height: 40,
+				holeDiam: 8,
+				angleRadUp: 10,
+				angleRadDn: 0,
+				hole2X: holeOffset,
+				hole2Y: holeOffset,
+				hole3X: holeOffset,
+				hole3Y: holeOffset,
+				dxfBasePoint: dxfBasePoint,
+				dxfPrimitivesArr: dxfPrimitivesArr,
+			}
+			
+			var shape = drawRectFlan(flanParams).shape;
+			var extrudeOptions = {
+				amount: flanThk,
+				bevelEnabled: false,
+				curveSegments: 12,
+				steps: 1
+			};
+
+			
+			//первый фланец
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+			var flan = new THREE.Mesh(geometry, params.materials.metal);
+			flan.rotation.x = Math.PI / 2;
+			flan.rotation.z = Math.PI / 2;
+			
+			translateObject(flan, edgeProfileLength - flanParams.width - 20, profWidth / 2 + 0.2, 0);
+			par.metalFrame.add(flan);
+			
+			//второй фланец
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+			var flan = new THREE.Mesh(geometry, params.materials.metal);
+			flan.rotation.x = Math.PI / 2;
+			flan.rotation.z = Math.PI / 2;
+			flan.isFlan = true;
+			// flan.geometry.translate(profileLength / 3 - profWidth, profWidth / 2, 0)
+			translateObject(flan, profileLength / 3 - profWidth, profWidth / 2 + 0.2, 0);
+			par.metalFrame.add(flan);
+			
+			
+			//третий фланец
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+			var flan = new THREE.Mesh(geometry, params.materials.metal);
+			flan.rotation.x = Math.PI / 2;
+			flan.rotation.y = Math.PI;
+			flan.rotation.z = Math.PI / 2 - edgeAngle;
+			
+			translateObject(flan, edgeProfileLength - flanParams.width - 20, profWidth / 2 + 0.2, -extrudeOptions.amount);
+			par.metalFrame.add(flan);
+			
+			// четвертый фланец
+			var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+			var flan = new THREE.Mesh(geometry, params.materials.metal);
+			flan.rotation.x = Math.PI / 2;
+			flan.rotation.y = Math.PI;
+			flan.rotation.z = Math.PI / 2 - edgeAngle;
+			
+			translateObject(flan, profileLength / 3 - profWidth, profWidth / 2 + 0.2, -extrudeOptions.amount);
+			par.metalFrame.add(flan);
+		}
+	}
+	
+	par.metalFrame.position.y = -params.treadThickness - 0.05;
+	par.metalFrame.rotation.y = Math.PI / 2 + edgeAngle / 2;//2.15;// - Math.PI / 2;
+	var test = new THREE.Object3D();
+	test.add(par.metalFrame);
+	par.metalFrame = test;
+	
+	var text = "Рама треугольной площадки"
+	if (params.turnFactor == -1) text = "Рама треугольной площадки (зеркально) "
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, 100, -100)
+	addText(text, textHeight, par.dxfArr, textBasePoint)
+	
+	//сохраняем данные для спецификации
+	var partName = "platformFrame";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Рама треугольной площадки",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+
+		}
+
+		// var name = Math.round(sizeA) + "x" + Math.round(sizeB);
+		// if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		// if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		// specObj[partName]["amt"] += 1;
+	}
+
+
+	return par;
+
+} //end of drawTrianglePlatformFrame
+
+/** Функция смещает объект относительно начальной точки(грубо говоря меняем точку вращения)
+* @param object THREE.Object3D / THREE.Mesh / THREE.Geometry
+* @param x
+* @param y
+* @param z
+*/
+function translateObject(object, x, y, z){
+	/*
+		//TODO: Поработать над определением класса
+		MESH определяется как Object3D(видимо наследуется) но не на оборот. 
+		по этому сейчас эта пробелма решена порядком условий
+	*/
+	if (object instanceof THREE.Geometry) {
+		object.translate(x, y, z);
+		return;
+	}
+	if (object instanceof THREE.Mesh) {
+		object.geometry.translate(x, y, z);
+		return;
+	}
+	if (object instanceof THREE.Object3D) {
+		object.translateX(x);
+		object.translateY(y);
+		object.translateZ(z);
+		return;
+	}
+}
+
+/** Функция вращает объект относительно начальной точки
+* @param object THREE.Object3D или THREE.Mesh
+* @param x
+* @param y
+* @param z
+*/
+function rotateObject(object, x, y, z){
+	if ((object instanceof THREE.Object3D) || (object instanceof THREE.Geometry)) {
+		object.rotateX(x || 0);
+		object.rotateY(y || 0);
+		object.rotateX(z || 0);
+	}
+	if (object instanceof THREE.Mesh) {
+		object.geometry.rotateX(x || 0);
+		object.geometry.rotateY(y || 0);
+		object.geometry.rotateX(z || 0);
+	}
+}
+
+/**
+ Функция отрисовывает профиль с скругленным концом(под бобышку)
+*/
+function drawRadProfile(par){
+	var profileWidth = par.profileWidth || 30;
+	var profileHeight = par.profileHeight || 60;
+	var profileLength = par.profileLength || 400;
+	var rad = par.rad || 0;
+	var arcAngle = 2 * Math.asin(profileWidth / (rad * 2));
+	
+	par.ang1 = par.ang1 || 0;
+	par.ang2 = par.ang2 || 0;
+	var p0 = {x: 0,y: 0};
+	// if(!par.ang || par.ang == 0){
+	// 	var p1_1 = {
+	// 		x: -profileWidth / 2,
+	// 		y: rad * Math.cos(arcAngle / 2)
+	// 	}
+	// 	var p1_2 = {
+	// 		x: profileWidth / 2,
+	// 		y: rad * Math.cos(arcAngle / 2)
+	// 	}
+	// 
+	// 	var p2 = newPoint_xy(p1_1, 0, profileLength);
+	// 	var p3 = newPoint_xy(p1_2, 0, profileLength);
+	// 
+	// 	var profileAngle = Math.asin(profileWidth / (par.rad * 2));//Какой угол от 360* занимает профиль
+	// 
+	// 	var treadShape = new THREE.Shape();
+	// 	addLine(treadShape, dxfPrimitivesArr, p1_1, p2, dxfBasePoint);
+	// 	addLine(treadShape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+	// 	addLine(treadShape, dxfPrimitivesArr, p3, p1_2, dxfBasePoint);
+	// 	addLine(treadShape, dxfPrimitivesArr, p1_2, p1_1, dxfBasePoint);
+	// }
+	// if (par.ang) {
+	{
+		var sideLength1 = profileWidth / Math.cos(par.ang1);
+		var sideLength2 = profileWidth / Math.cos(par.ang2);
+		
+		// var p1 = newPoint_xy(p0, profileWidth, 0);
+		// p0 = polar(p1, par.ang1, -sideLength1);
+		// var p2 = newPoint_xy(p1, 0, profileLength - p1.y);
+		
+		
+		// var p1 = polar(p0, par.ang1, sideLength1);
+		// var p3 = newPoint_xy(p0, 0, profileLength);
+		// var p2 = polar(p3, par.ang2, sideLength2);
+		
+		var p0_1 = newPoint_xy(p0, 0, profileLength / 2);
+		var p1 = polar(p0_1, par.ang1, sideLength1);
+		var p2 = newPoint_xy(p0, 0, -profileLength / 2);
+		var p3 = polar(p2, par.ang2, sideLength2);
+		// console.log(par.ang2, sideLength2, p2)
+		
+		// if (par.ang1 < 0) {
+		// 
+		// }else{
+		// 	var p1 = polar(p0, par.ang1, sideLength1);
+		// 	var p2 = newPoint_xy(p1, 0, profileLength - p1.y);
+		// }
+		// if (par.ang2 < 0) {
+		// 	var p3 = newPoint_xy(p2, -profileWidth, 0);
+		// }else{
+		// 	var p3 = polar(p2, par.ang2, -sideLength2);
+		// }
+		
+		// var p3 = newPoint_xy(p0, 0, profileLength - profileWidth * Math.tan(par.ang2));
+
+		// var p3 = polar(p2, par.ang2, profileWidth);
+		// var p4 = newPoint_xy(p3, 0, -profileLength);
+		
+		// var profileAngle = Math.asin(profileWidth / (par.rad * 2));//Какой угол от 360* занимает профиль
+		
+		var treadShape = new THREE.Shape();
+		addLine(treadShape, dxfPrimitivesArr, p0, p0_1, dxfBasePoint);
+		addLine(treadShape, dxfPrimitivesArr, p0_1, p1, dxfBasePoint);
+		addLine(treadShape, dxfPrimitivesArr, p1, p3, dxfBasePoint);
+		addLine(treadShape, dxfPrimitivesArr, p3, p2, dxfBasePoint);
+		addLine(treadShape, dxfPrimitivesArr, p2, p0, dxfBasePoint);
+	}
+	var extrudeOptions = {
+		amount: profileHeight,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+	
+	var geometry = new THREE.ExtrudeGeometry(treadShape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var profile = new THREE.Mesh(geometry, params.materials.metal);
+	profile.rotation.x = Math.PI / 2;
+	var mesh = new THREE.Object3D();
+	mesh.add(profile);
+	par.mesh = mesh;
+	par.geometry = geometry;
+	return par;
+}
+
+function drawRadFlan(par){
+	var dxfBasePoint = {
+		x: 0,
+		y: -1500,
+	}
+	// Точки контура
+	{
+		/*рассчитываем координаты точек*/
+		var p0 = {x: 0,y: 0};
+		// var p1 = newPoint_xy(p0, 0, deltaX / 2);
+		// var p2 = newPoint_xy(p0, 0, -deltaX / 2);
+		var p1 = polar(p0, par.angle, par.offset);
+		var p2 = polar(p0, -par.angle, par.offset);
+				
+		if (par.deltaLen) {
+			p1.y -= par.deltaLen;
+			p2.y += par.deltaLen;
+		}
+		
+		var p3 = polar(p1, par.angle, par.length);
+		var p4 = polar(p2, -par.angle, par.length);
+		
+		var shape = new THREE.Shape();
+		
+		addLine(shape, dxfPrimitivesArr, p1, p3, dxfBasePoint);
+		addLine(shape, dxfPrimitivesArr, p3, p4, dxfBasePoint);
+		addLine(shape, dxfPrimitivesArr, p4, p2, dxfBasePoint);
+		addLine(shape, dxfPrimitivesArr, p2, p1, dxfBasePoint);
+		
+		//Отверстия
+		var holeRad = 4;
+		var holeOffset = 15;//Отступ от грани фланца
+		var center1 = newPoint_xy(getMiddlePoint(p2, p1), holeOffset, 0);
+		addRoundHole(shape, dxfPrimitivesArr, center1, holeRad, dxfBasePoint);
+		var middle = getMiddlePoint(p3, p4);
+		var center2 = newPoint_xy(getMiddlePoint(p3, middle), -holeOffset, 0);
+		addRoundHole(shape, dxfPrimitivesArr, center2, holeRad, dxfBasePoint);
+		var center3 = newPoint_xy(getMiddlePoint(middle, p4), -holeOffset, 0);
+		addRoundHole(shape, dxfPrimitivesArr, center3, holeRad, dxfBasePoint);
+	}
+
+	var extrudeOptions = {
+		amount: 6,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+	
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	par.mesh = new THREE.Mesh(geometry, params.materials.metal);
+	return par;
+}
+
+function drawRoundFlan(par) {
+
+	par.mesh = new THREE.Object3D();
+
+	var rad = 135;
+	var thk = 8;
+	var holesAmt = 6;
+	var holeRad = 7;
+	var holePosRad = 115;
+	var text = "Нижний фланец";
+	var centralHoleRad = 11;
+
+	if (par.partName == "topFlan") {
+		rad = 127 / 2;
+		holesAmt = 4;
+		holeRad = 4;
+		thk = 4;
+		holePosRad = 78.7 / 2;
+		text = "Верхний фланец";
+		centralHoleRad = 13;
+	}
+	var shape = new THREE.Shape();
+	var extrudeOptions = {
+		amount: thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	//внешний контур
+	var flanCenter = {
+		x: 0,
+		y: 0
+	}
+	addCircle(shape, par.dxfArr, flanCenter, rad, par.dxfBasePoint)
+
+	if (par.partName == "botFlan") {
+		par.isFixPart = true; // болты крепления к стенам
+		par.fixPar = getFixPart(0, 'botFloor'); // параметры крепления к стенам
+		holeRad = par.fixPar.diam / 2 + 1;
+	}
+	
+
+	//отверстия
+	var holesFix = [];
+	var angleStep = Math.PI * 2 / holesAmt;
+	for (var i = 0; i < holesAmt; i++) {
+		var center = polar(flanCenter, angleStep * i, holePosRad);
+		addRoundHole(shape, par.dxfArr, center, holeRad, par.dxfBasePoint);
+		holesFix.push(center);
+	}
+
+	//центральное отверстие
+	addRoundHole(shape, par.dxfArr, flanCenter, centralHoleRad, par.dxfBasePoint);
+
+	//подпись под фигурой
+
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(par.dxfBasePoint, -100, -200)
+	addText(text, textHeight, dxfPrimitivesArr, textBasePoint)
+
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var flan = new THREE.Mesh(geometry, par.material);
+	//flan.rotation.x = -Math.PI / 2;
+	par.mesh.add(flan);
+
+	//болты крепления к перекрытию
+	if (typeof isFixPats != "undefined" && isFixPats && par.isFixPart) { //глобальная переменная		
+		if (par.fixPar.fixPart !== 'нет') {
+			for (var i = 0; i < holesFix.length; i++) {
+				var fix = drawFixPart(par.fixPar).mesh;
+				fix.position.x = holesFix[i].x;
+				fix.position.y = holesFix[i].y;
+				fix.position.z = thk * (1 + turnFactor) * 0.5;
+				fix.rotation.x = -Math.PI / 2 * turnFactor;
+				par.mesh.add(fix);
+			}
+		}
+	}
+
+	par.mesh.rotation.x = Math.PI / 2;
+	par.mesh.position.y = thk;
+
+	//сохраняем данные для спецификации
+	if (typeof specObj != 'undefined') {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: text,
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+		var name = "Ф" + rad * 2 + "x" + thk + " " + holesAmt + " отв. Ф" + holeRad * 2;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
 
 
 
 }
 
-function drawPlatformRailingFlan(par) {
-    var size = par.size;
-    var thk = 4;
-    var holeRad = 4;
-    var holeDst = par.holeDst;
-    var rackSize = 40;
+function drawPlatformRailingFlan_(par) {
+	var size = par.size;
+	var thk = 4;
+	var holeRad = 4;
+	var holeDst = par.holeDst;
+	var rackSize = 40;
 
-    var shape = new THREE.Shape();
-    var extrudeOptions = {
-        amount: thk,
-        bevelEnabled: false,
-        curveSegments: 12,
-        steps: 1
-    };
+	var shape = new THREE.Shape();
+	var extrudeOptions = {
+		amount: thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
 
-    //внешний контур
+	//внешний контур
 
-    var p0 = { x: 0, y: 0 }
-    var p1 = copyPoint(p0);
-    var p2 = newPoint_xy(p1, 0, size);
-    var p3 = newPoint_xy(p2, size, 0);
-    var p4 = newPoint_xy(p3, 0, -size);
+	var p0 = {
+		x: 0,
+		y: 0
+	}
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, size);
+	var p3 = newPoint_xy(p2, size, 0);
+	var p4 = newPoint_xy(p3, 0, -size);
 
-    addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
-    addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint);
 
-    //круглые отверстия
-    var holeOffset = (size - holeDst) / 2;
-    var center1 = newPoint_xy(p0, holeOffset, holeOffset)
-    addRoundHole(shape, par.dxfArr, center1, holeRad, par.dxfBasePoint);
-    var center2 = newPoint_xy(center1, 0, holeDst)
-    addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
-    var center2 = newPoint_xy(center1, holeDst, holeDst)
-    addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
-    var center2 = newPoint_xy(center1, holeDst, 0)
-    addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
+	//круглые отверстия
+	var holeOffset = (size - holeDst) / 2;
+	var center1 = newPoint_xy(p0, holeOffset, holeOffset)
+	addRoundHole(shape, par.dxfArr, center1, holeRad, par.dxfBasePoint);
+	var center2 = newPoint_xy(center1, 0, holeDst)
+	addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
+	var center2 = newPoint_xy(center1, holeDst, holeDst)
+	addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
+	var center2 = newPoint_xy(center1, holeDst, 0)
+	addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
 
-    //квадратное отверстие
-    holeOffset = (size - rackSize) / 2;
-    ph1 = newPoint_xy(p0, holeOffset, holeOffset)
-    ph2 = newPoint_xy(ph1, rackSize, 0)
-    ph3 = newPoint_xy(ph1, rackSize, rackSize)
-    ph4 = newPoint_xy(ph1, 0, rackSize)
+	//квадратное отверстие
+	holeOffset = (size - rackSize) / 2;
+	ph1 = newPoint_xy(p0, holeOffset, holeOffset)
+	ph2 = newPoint_xy(ph1, rackSize, 0)
+	ph3 = newPoint_xy(ph1, rackSize, rackSize)
+	ph4 = newPoint_xy(ph1, 0, rackSize)
 
-    var sqHole = new THREE.Path();
-    addLine(sqHole, par.dxfArr, ph1, ph2, par.dxfBasePoint);
-    addLine(sqHole, par.dxfArr, ph2, ph3, par.dxfBasePoint);
-    addLine(sqHole, par.dxfArr, ph3, ph4, par.dxfBasePoint);
-    addLine(sqHole, par.dxfArr, ph4, ph1, par.dxfBasePoint);
+	var sqHole = new THREE.Path();
+	addLine(sqHole, par.dxfArr, ph1, ph2, par.dxfBasePoint);
+	addLine(sqHole, par.dxfArr, ph2, ph3, par.dxfBasePoint);
+	addLine(sqHole, par.dxfArr, ph3, ph4, par.dxfBasePoint);
+	addLine(sqHole, par.dxfArr, ph4, ph1, par.dxfBasePoint);
 
-    shape.holes.push(sqHole);
+	shape.holes.push(sqHole);
 
 
-    //подпись под фигурой
-    var text = "Фланец ограждений"
-    var textHeight = 30;
-    var textBasePoint = newPoint_xy(par.dxfBasePoint, -100, -200)
-    addText(text, textHeight, dxfPrimitivesArr, textBasePoint)
+	//подпись под фигурой
+	var text = "Фланец ограждений"
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(par.dxfBasePoint, -100, -200)
+	addText(text, textHeight, dxfPrimitivesArr, textBasePoint)
 
-    var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-    geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 
-    var flan = new THREE.Mesh(geometry, par.material);
-    flan.rotation.x = -Math.PI / 2
-    flan.position.x = -size / 2
-    flan.position.z = size / 2
+	var flan = new THREE.Mesh(geometry, par.material);
+	flan.rotation.x = -Math.PI / 2
+	flan.position.x = -size / 2
+	flan.position.z = size / 2
 
-    par.mesh = new THREE.Object3D();
-    par.mesh.add(flan);
-    return par;
+	par.mesh = new THREE.Object3D();
+	par.mesh.add(flan);
+	return par;
 
 
 }
+
+function drawMidFix(par) {
+
+	/*
+	profWidth
+	profHeight
+	holderLength
+	*/
+	//функция отрисовывает прямоугольный профиль промежуточного крепления лестинцы к стене
+
+	par.mesh = new THREE.Object3D();
+	var dxfBasePoint = par.dxfBasePoint;
+
+
+	var extrudeOptions = {
+		amount: par.profHeight,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var shape = new THREE.Shape();
+	var p0 = {
+		x: 0,
+		y: 0
+	}
+
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, par.profWidth);
+	var p3 = newPoint_xy(p1, par.holderLength, par.profWidth);
+	var p4 = newPoint_xy(p1, par.holderLength, 0);
+
+	addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+	addLine(shape, par.dxfArr, p4, p1, dxfBasePoint);
+
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var bal = new THREE.Mesh(geometry, par.material);
+	bal.rotation.x = Math.PI / 2;
+	bal.position.x = params.columnDiam / 2 + 5;
+	bal.position.y = 0;
+	if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") bal.position.y = 40 + 8;
+	bal.position.z = -par.profWidth / 2;
+
+	par.mesh.add(bal);
+
+	//подпись под фигурой
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, -100, -50)
+	addText(par.text, textHeight, dxfPrimitivesArr, textBasePoint)
+
+	var flanParams = {
+		dxfBasePoint: dxfBasePoint,
+		dxfArr: par.dxfArr,
+		material: par.material,
+	}
+
+	flanParams = drawMidFixFlan(flanParams);
+	var flan = flanParams.mesh;
+	flan.rotation.x = Math.PI / 2;
+	flan.rotation.y = Math.PI;
+	flan.position.x = 0 //500//params.columnDiam / 2 + 5;
+	flan.position.y = 0;
+	flan.position.z = 0 //500//-par.profWidth/2;
+
+	par.mesh.add(flan);
+
+	//фланец для крепления к стене
+	var flanPar = {
+		height: 140, //ширина фланца
+		width: 140, //длина фланца (высота при вертикальном расположении)
+		holeRad: 7.5,
+		cornerRad: 20,
+		holeX: 20,
+		holeY: 20,
+		dxfBasePoint: dxfBasePoint,
+	};
+	flanPar.noBolts = par.noBolts; //болты не добавляются
+
+	flanPar.isFixPart = true; // болты крепления к стенам
+	var numberFix = par.numberFix;
+	if (numberFix == 5) numberFix = 1;
+	flanPar.fixPar = getFixPart(par.numberFix, 'vint'); // параметры крепления к стенам
+
+	flanPar.holeRad = flanPar.fixPar.diam / 2 + 1;
+
+	flanPar.roundHoleCenters = [];
+
+	//добавляем  отверстия по краям
+	flanPar.roundHoleCenters.push({ x: flanPar.holeX, y: flanPar.holeY, holeData: { zenk: 'no' }, isFixPart: flanPar.isFixPart });
+	flanPar.roundHoleCenters.push({ x: flanPar.holeX, y: flanPar.height - flanPar.holeY, holeData: { zenk: 'no' }, isFixPart: flanPar.isFixPart });
+	flanPar.roundHoleCenters.push({ x: flanPar.width - flanPar.holeX, y: flanPar.height - flanPar.holeY, holeData: { zenk: 'no' }, isFixPart: flanPar.isFixPart });
+	flanPar.roundHoleCenters.push({ x: flanPar.width - flanPar.holeX, y: flanPar.holeY, holeData: { zenk: 'no' }, isFixPart: flanPar.isFixPart });
+
+
+	var flan = drawRectFlan2(flanPar).mesh;
+	flan.position.x = bal.position.x + par.holderLength;
+	flan.position.y = bal.position.y - flanPar.height / 2 - par.profWidth / 2;
+	flan.position.z = bal.position.z - flanPar.width / 2 + par.profWidth / 2;
+	flan.rotation.x = Math.PI / 2;
+	flan.rotation.y = Math.PI / 2;
+
+	par.mesh.add(flan);
+
+
+	//сохраняем данные для спецификации
+	var partName = "midFix";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Кронштейн промежуточного крепления к стене",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+
+		var name = par.profHeight + "x" + par.profWidth + "x" + par.holderLength;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	return par;
+} //end of drawMidFix
+
+function drawMidFixFlan(par) {
+	var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -150);
+	par.thk = 8;
+
+
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var shape = new THREE.Shape();
+	var p0 = {
+		x: 0,
+		y: 0
+	}
+	var rad = params.columnDiam / 2;
+
+	var p11 = {
+		x: -rad * Math.cos(Math.PI / 3),
+		y: rad * Math.sin(Math.PI / 3)
+	}
+	var p21 = {
+		x: -rad * Math.cos(Math.PI / 3),
+		y: -rad * Math.sin(Math.PI / 3),
+	}
+	var p1 = {
+		x: -92.4,
+		y: 20,
+	}
+	var p2 = newPoint_xy(p1, -50, 0);
+	var p3 = newPoint_xy(p2, 0, -40);
+	var p4 = newPoint_xy(p3, 50, 0);
+
+	addLine(shape, par.dxfArr, p1, p2, dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, p4, dxfBasePoint);
+	addLine(shape, par.dxfArr, p4, p21, dxfBasePoint);
+	addArc(shape, par.dxfArr, p0, rad, -Math.PI * 2 / 3, Math.PI * 2 / 3, dxfBasePoint)
+	addLine(shape, par.dxfArr, p11, p1, dxfBasePoint);
+
+	var holeRad = 26 / 2;
+	addRoundHole(shape, par.dxfArr, p0, holeRad, dxfBasePoint); //функция в файле drawPrimitives
+
+
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	par.mesh = new THREE.Mesh(geometry, par.material);
+
+
+	//подпись под фигурой
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(dxfBasePoint, -100, -50)
+	addText("фланец кронштейна", textHeight, dxfPrimitivesArr, textBasePoint)
+
+	return par;
+
+}
+
+function drawCylinder(par) {
+	var radiusTop = par.diam / 2;
+	var radiusBottom = radiusTop;
+	var radialSegments = 36;
+	var heightSegments = 1;
+	var openEnded = false;
+
+
+	var geom = new THREE.CylinderGeometry(radiusTop, radiusBottom, par.height, radialSegments, heightSegments, openEnded)
+	par.mesh = cyl = new THREE.Mesh(geom, par.material);
+
+	//сохраняем данные для спецификации
+	if (typeof specObj != 'undefined') {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Шайба",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+
+		var height = par.height;
+		if (par.partName == "drum") specObj[par.partName].name = "Бобышка";
+		if (par.partName == "middleFlan") {
+			specObj[par.partName].name = "Крышка бобышки";
+			height = 8;
+		}
+
+
+
+		var name = "Ф" + par.diam + "x" + height + " отв. Ф" + par.holeDiam;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
+
+} //end of drawCylinder
+
+function drawCylinder_2(par) {
+	/*
+	var radiusTop = par.diam/2;
+	var radiusBottom = radiusTop;
+	var radialSegments = 36;
+	var heightSegments = 1;
+	var openEnded = false;
+	*/
+
+	par.dxfArr = [];
+	par.dxfBasePoint = {
+		x: 0,
+		y: 0
+	}
+
+	var shape = new THREE.Shape();
+
+	var extrudeOptions = {
+		amount: par.height,
+		bevelEnabled: false,
+		curveSegments: 36,
+		steps: 1
+	};
+
+	//внешний контур
+	var flanCenter = {
+		x: 0,
+		y: 0
+	}
+	addCircle(shape, par.dxfArr, flanCenter, par.diam / 2, par.dxfBasePoint)
+
+
+	//центральное отверстие
+	addRoundHole(shape, par.dxfArr, flanCenter, par.holeDiam / 2, par.dxfBasePoint);
+
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	par.mesh = new THREE.Mesh(geometry, par.material);
+	par.mesh.rotation.x = -Math.PI / 2
+
+	if (!par.partName) return par;
+
+	//сохраняем данные для спецификации
+	if (typeof specObj != 'undefined') {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Шайба",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+
+		var height = par.height;
+		if (par.partName == "drum") specObj[par.partName].name = "Бобышка";
+		if (par.partName == "middleFlan") {
+			specObj[par.partName].name = "Крышка бобышки";
+			height = 8;
+		}
+
+
+
+		var name = "Ф" + par.diam + "x" + Math.round(height) + " отв. Ф" + par.holeDiam;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
+
+} //end of drawCylinder_2
+
+/** функция отрисовывает бобышку с внутренней шайбой и верхней крышкой
+
+*/
+
+function drawDrum(par) {
+	par.shimMesh = new THREE.Object3D();
+
+	var tubeThk = 4;
+	var shimThk = 4 - 0.01;
+
+	var cylParams = {
+		diam: params.columnDiam,
+		holeDiam: params.columnDiam - tubeThk * 2,
+		height: par.height - shimThk,
+		material: params.materials.metal,
+		partName: "",
+	}
+
+	par.tubeMesh = drawCylinder_2(cylParams).mesh;
+
+	//внутренняя шайба снизу
+
+	var cylParams = {
+		diam: params.columnDiam - (tubeThk + 1) * 2,
+		holeDiam: par.holeDiam,
+		height: shimThk,
+		material: params.materials.metal2,
+		partName: ""
+	}
+
+	var botShim = drawCylinder_2(cylParams).mesh;
+	if(!testingMode) par.shimMesh.add(botShim);
+
+	//верхняя шайба
+	var cylParams = {
+		diam: params.columnDiam,
+		holeDiam: 26,
+		height: shimThk,
+		material: params.materials.metal2,
+		partName: ""
+	}
+
+	var topShim = drawCylinder_2(cylParams).mesh;
+	topShim.position.y = par.height - shimThk;
+	par.shimMesh.add(topShim);
+
+	//поясок верхней шайбы шайба
+	var cylParams = {
+		diam: params.columnDiam - (tubeThk + 1) * 2,
+		holeDiam: 26,
+		height: shimThk,
+		material: params.materials.metal2,
+		partName: ""
+	}
+
+	var topShim = drawCylinder_2(cylParams).mesh;
+	topShim.position.y = par.height - shimThk * 2;
+	par.shimMesh.add(topShim);
+	
+	par.partName = "drum";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Бобышка",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+
+		var height = par.height - shimThk;
+
+		var name = "Ф" + params.columnDiam + "x" + Math.round(height) + " отв. Ф" + par.holeDiam;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
+
+} //end of drawDrum
+
+/** функция отрисовывает центральный стержень
+ */
+
+function drawRod(par) {
+
+	par.mesh = new THREE.Object3D();
+	par.diam = 24;
+	par.threadDiam = 20;
+	par.startThreadLen = 50;
+	par.endThreadLen = 100;
+	par.midLen = par.len - par.startThreadLen - par.endThreadLen;
+
+	var radialSegments = 36;
+	var heightSegments = 1;
+	var openEnded = false;
+
+	//резьба в начале	
+	var geom = new THREE.CylinderGeometry(par.threadDiam / 2, par.threadDiam / 2, par.startThreadLen, radialSegments, heightSegments, openEnded)
+	var cyl = new THREE.Mesh(geom, params.materials.metal2);
+	cyl.position.y = par.startThreadLen / 2;
+	par.mesh.add(cyl);
+
+	//тело стержня
+	var geom = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, par.midLen, radialSegments, heightSegments, openEnded)
+	var cyl = new THREE.Mesh(geom, params.materials.metal2);
+	cyl.position.y = par.midLen / 2 + par.startThreadLen;
+	par.mesh.add(cyl);
+
+	//резьба в конце
+
+	var geom = new THREE.CylinderGeometry(par.threadDiam / 2, par.threadDiam / 2, par.endThreadLen, radialSegments, heightSegments, openEnded)
+	var cyl = new THREE.Mesh(geom, params.materials.metal2);
+	cyl.position.y = par.midLen + par.startThreadLen + par.endThreadLen / 2;
+
+	if (!testingMode) par.mesh.add(cyl); //в режиме тестирования не добавляем, чтобы не было пересечений со стйокой балюстрады
+
+
+	//сохраняем данные для спецификации
+	par.partName = "rod";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Центральный стержень",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+
+		var name = "Ф" + par.diam + "x" + par.len + " L1=" + par.startThreadLen + " L2=" + par.endThreadLen;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par;
+
+} //end of drawCylinder
+
+function drawSpiralStripe(par) {
+
+	var drawSpiralStripe = function(u, v, target) {
+
+		var angle = u * par.angle;
+		var rad = par.rad;
+		var height = par.height;
+		var width = par.stripeWidth;
+		var deltaBot = par.stripeWidth - par.botHeight;
+
+		var x = rad * Math.cos(angle);
+		var y = rad * Math.sin(angle) * par.turnFactor;
+		var z = v * width + height * u - deltaBot;
+
+		//срезаем снизу по горизонтали
+		if (z < 0) z = 0;
+
+		//срезаем сверху по горизонтали
+		if (z > height + par.topHeight - deltaBot) z = height + par.topHeight - deltaBot;
+
+		target.set( x, y, z );
+		//return new THREE.Vector3(x, y, z);
+	}
+
+	var geom = new THREE.ParametricGeometry(drawSpiralStripe, 120, 120, false);
+
+	var mesh = new THREE.Mesh(geom, par.material)
+
+	//рассчитываем угол срезанного участка
+	var startCutAngle = (par.stripeWidth - par.botHeight) / par.height * par.angle;
+
+	par.mesh = mesh;
+	par.startCutAngle = startCutAngle;
+	return par;
+
+} //end of drawSpiralStripe
+
+/** функция отрисовывает крышку нижнего фланца
+*/
+
+function drawBotFlanCover(){
+	
+	var holeRad = params.columnDiam / 2 + 1;
+	var flanRad = 270 / 2;
+	var rad = flanRad + 30;
+	var height = 40;
+	var topThk = 10;
+	
+	var points = [];
+    var point = new THREE.Vector3(rad, 0, 0);
+    points.push(point);
+    point = new THREE.Vector3(rad, height, 0);
+    points.push(point);
+	point = new THREE.Vector3(holeRad, height, 0);
+    points.push(point);
+	
+	/* внутренний контур */
+	point = new THREE.Vector3(holeRad, height - topThk, 0);
+    points.push(point);
+	point = new THREE.Vector3(flanRad + 10, height - topThk, 0);
+    points.push(point);
+	point = new THREE.Vector3(flanRad + 10, 0, 0);
+    points.push(point);
+	var point = new THREE.Vector3(rad, 0, 0);
+    points.push(point);
+
+	
+	var latheGeometry = new THREE.LatheGeometry (points, 36, 2, 2 * Math.PI);
+	var cover = new THREE.Mesh( latheGeometry, params.materials.timber);
+	
+	//сохраняем данные для спецификации
+	var partName = "botFlanCover";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Крышка нижнего фланца",
+				metalPaint: false,
+				timberPaint: true,
+				division: "timber",
+				workUnitName: "amt", //единица измерения
+				group: "Ступени",
+			}
+		}
+		var name = "Ф" + rad * 2;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+	
+	return cover;
+}
+
+function getMiddlePoint(p1, p2){
+	var point = {
+		x: (p1.x + p2.x) / 2,
+		y: (p1.y + p2.y) / 2,
+	}
+	return point;
+}
+
+/** функция рассчитывает углы треугольной площадки и ступени
+*/
+
+
+
+function calcTriangleParams(){
+	var par = {};
+	var stairRad = params.staircaseDiam / 2
+	var treadLowRad = 75;
+	
+	//нахлест ступеней
+	par.treadOverlayLength = 60; //длина дуги нахлеста ступеней на внешнем радиусе
+	par.treadOverlayAngle = par.treadOverlayLength / stairRad;
+	
+	//угол ступени
+	par.treadAngle = params.stepAngle / 180 * Math.PI + par.treadOverlayAngle;
+	//угол площадки
+	par.pltAngle = params.platformAngle / 180 * Math.PI;
+	
+	//угол между ребрами
+	par.extraAngle = Math.asin(treadLowRad / stairRad);
+	par.treadEdgeAngle = par.treadAngle - 2 * par.extraAngle;
+	par.pltEdgeAngle = par.pltAngle - 2 * par.extraAngle;
+	
+	return par;
+}
+
+/** функция расситывает базовые точки винтовой ступени
+*/
+
+function calcVintTreadPoints(treadAngle){
+	
+	//локальные переменные
+
+	var treadLowRad = 75;
+	var stairRad = params.staircaseDiam / 2;
+
+	//угол между ребрами ступени
+	var extraAngle = calcTriangleParams().extraAngle;
+	var edgeLength = stairRad * Math.cos(extraAngle);
+	var edgeAngle = treadAngle - 2 * extraAngle;
+
+	var points = {};
+	
+	points[0] = {
+		x: 0,
+		y: 0
+	}
+	points[1] = {
+		x: 0,
+		y: -treadLowRad,
+	}
+	points[2] = {
+		x: -treadLowRad * Math.sin(edgeAngle),
+		y: treadLowRad * Math.cos(edgeAngle)
+	}
+	points[3] = {
+		x: stairRad * Math.cos(treadAngle - extraAngle),
+		y: stairRad * Math.sin(treadAngle - extraAngle)
+	}
+	points[4] = {
+		x: edgeLength,
+		y: -treadLowRad
+	}
+	
+	points.balHoles = [];
+	
+	//отверстия под уголки балясины
+	
+	//отверстия под первую балясину
+	var holesOffset = 22; //отступ отверстий от внешней кромки ступени
+	var holeDst = 24; //расстояние между отверстиями в уголке
+	var holePosRad = stairRad - holesOffset; //радиус расположения отверстий
+	var dirAng = calcTriangleParams().treadOverlayAngle / 2 - extraAngle //угол направления на балясину
+	var deltAng = holeDst / 2 / holePosRad; //дельта угла из-за того, что в уголке 2 отверстия
+
+	var holeRad = 2;
+	if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") holeRad = 4;
+	var center1 = polar(points[0] , dirAng + deltAng, holePosRad)
+	var center2 = polar(points[0] , dirAng - deltAng, holePosRad)
+	center1.rad = center2.rad = holeRad;
+	points.balHoles.push(center1, center2)
+
+	//отверстия под остальные стойки
+	var stepAngle = params.stepAngle / 180 * Math.PI;
+	var balAngle = stepAngle / params.banisterPerStep; //угол между балясинами
+	for (var i = 1; i < params.banisterPerStep + 1; i++) {
+		dirAng = dirAng + balAngle;
+		var center1 = polar(points[0] , dirAng + deltAng, holePosRad)
+		var center2 = polar(points[0] , dirAng - deltAng, holePosRad)
+		center1.rad = center2.rad = holeRad;
+		points.balHoles.push(center1, center2)
+	}
+	
+	
+
+	return points;
+
+}
+
+
+
+
+/*отрисовка болтов крепления к стенам, нижнему и верхнему перекрытию*/
+function drawFixPart(par) {
+	/*
+	diam
+	len
+	headType
+	*/
+
+	par.mesh = new THREE.Object3D();
+	var fixPart = new THREE.Object3D();
+	if (turnFactor == -1) fixPart.rotation.x = Math.PI;
+
+	par.material = new THREE.MeshLambertMaterial({ color: "#0000FF" });
+	par.material = params.materials.bolt;
+	par.dopParams = {};
+
+	var thickness = params.stringerThickness;
+	if (params.calcType == "mono") thickness = params.flanThickness;
+	if (params.calcType == "vint") thickness = 8;
+
+
+	if (par.fixPart == 'химия') {
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		//хим. анкер
+
+		//сохраняем данные для спецификации
+		var partName = "chemAnc"
+		if (typeof specObj != 'undefined' && partName) {
+			if (!specObj[partName]) {
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Анкер химический",
+					metalPaint: false,
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "(эконом)";
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1 / 20;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1 / 20;
+			specObj[partName]["amt"] += 1 / 20;
+		}
+		/*
+		item = {
+			id: "chemAnc",
+			amt: 1/20,
+			discription: "",
+			unit: par.unit,
+			itemGroup: par.itemGroup,
+			};
+		if(item.amt > 0) specObj.addItem(item);
+		specObj["chemAnc"].comment = "монтаж: " + params.isHeating;
+		
+		/*
+		par.dopParams = {
+			name: "Химический анкер, баллон",
+			lenCylinder: 75,
+			diamCylinder: par.diam + 4,
+			material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
+		}
+		var anchor = drawStudF(par);
+		anchor.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
+		fixPart.add(anchor);
+		*/
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'глухари') {
+		//глухарь
+		var screw = drawScrewF(par);
+		fixPart.add(screw);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = par.len / 2 - par.shimAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.shimAmount) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'шпилька насквозь') {
+		//шпилька
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		//гайка
+		nut = drawNutF(par);
+		nut.position.y = - par.len / 2 + 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y + par.nutAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'саморезы') {
+		//глухарь
+		par.dopParams.name = "Саморез";
+		var screw = drawScrewF(par);
+		fixPart.add(screw);
+
+		if (par.fixType !== 'дерево') {
+			//дюбель	
+			par.dopParams = {
+				name: "Дюбель",
+				lenCylinder: 50,
+				diamCylinder: 10,
+				material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
+			}
+			var dowel = drawStudF(par);
+			dowel.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
+			fixPart.add(dowel);
+		}
+
+		fixPart.position.y = (-par.len / 2) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'шпилька-шуруп') {
+		//шпилька
+		par.dopParams.name = "Шпилька-шуруп"
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	//проставка
+	if (par.isSpacer) {
+		for (var i = 1; i <= par.spacerAmt; i++) {
+			par.material = params.materials.bolt;
+			var spacer = drawSpacerF(par);
+			spacer.position.y = -fixPart.position.y * turnFactor - par.spacerAmount * i;
+			if (turnFactor == -1) spacer.position.y -= thickness;
+			fixPart.add(spacer);
+
+			par.mesh.add(fixPart);
+		}
+	}
+
+	//проставка
+	function drawSpacerF(par) {
+		var extrudeOptions = {
+			amount: par.fixSpacerLength,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+
+		var p1 = newPoint_xy(center, -par.spacerWidt / 2, -par.spacerHeigth / 2);
+		var p2 = newPoint_xy(center, -par.spacerWidt / 2, par.spacerHeigth / 2);
+		var p3 = newPoint_xy(center, par.spacerWidt / 2, par.spacerHeigth / 2);
+		var p4 = newPoint_xy(center, par.spacerWidt / 2, -par.spacerHeigth / 2);
+
+		var pointsShape = [p1, p2, p3, p4];
+
+		//создаем шейп
+		var shapePar = {
+			points: pointsShape,
+			dxfArr: dxfArr,
+			dxfBasePoint: dxfBasePoint,
+		}
+		var shape = drawShapeByPoints2(shapePar).shape;
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var shim = new THREE.Mesh(geom, par.material);
+		shim.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "fixSpacer"
+		par.partName += "_M" + par.diam + "-" + par.fixSpacer;
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Проставка",
+					metalPaint: true,
+					timberPaint: false,
+					division: "metal",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "М" + par.diam + "-" + par.spacerWidt + 'x' + par.spacerHeigth + 'x' + par.fixSpacerLength;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.spacerAmount = extrudeOptions.amount;
+
+		return shim;
+	}
+
+	//шпилька или деталь в виде цилиндра
+	function drawStudF(par) {
+		var len = par.len;
+		if (par.dopParams.lenCylinder) len = par.dopParams.lenCylinder;
+		var diam = par.diam;
+		if (par.dopParams.diamCylinder) diam = par.dopParams.diamCylinder;
+		var material = par.material;
+		if (par.dopParams.material) material = par.dopParams.material;
+
+
+		var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
+		var stud = new THREE.Mesh(geometry, material);
+
+		//сохраняем данные для спецификации
+		var nameFix = "Шпилька";
+		if (par.dopParams.name) nameFix = par.dopParams.name;
+
+		par.partName = "stud_M"
+		if (nameFix == 'Шпилька-шуруп') par.partName = "stud_screw_M"
+		if (nameFix != "Шпилька") par.partName += diam;
+
+		//if (nameFix == 'Химический анкер, баллон') par.partName = "chemAnc"
+		if (nameFix == 'Дюбель') par.partName = "dowel" + "_Ф" + diam;
+
+
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: nameFix,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+					discription: "Крепление к стене 1"
+				}
+			}
+			var name = "М" + diam + "x" + len;
+			if (nameFix == "Шпилька") name = diam;
+			//if (nameFix == 'Химический анкер, баллон') name = "Ф" + diam + "x" + len;
+			if (nameFix == 'Дюбель') name = "Ф" + diam + "x" + len;
+			if (nameFix == "Шпилька") {
+				if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += Math.round(len / 1000 * 10) / 10;
+				if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = Math.round(len / 1000 * 10) / 10;
+				specObj[par.partName]["amt"] += Math.round(len / 1000 * 10) / 10;
+			}
+			else {
+				if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+				if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+				specObj[par.partName]["amt"] += 1;
+			}
+
+		}
+
+		return stud;
+	}
+
+	//глухарь
+	function drawScrewF(par) {
+		var screw = new THREE.Object3D();
+
+		//шпилька
+		var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, par.len, 10, 1, false);
+		var stud = new THREE.Mesh(geometry, par.material);
+		screw.add(stud);
+
+		//головка для болтов
+		var extrudeOptions = {
+			amount: par.diam * 0.6,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+		var shape = drawPolygon(polygonParams).shape;
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var head = new THREE.Mesh(geom, par.material);
+		head.rotation.x = -Math.PI / 2;
+		head.position.y = par.len / 2
+		screw.add(head);
+
+		//сохраняем данные для спецификации
+		var nameFix = "Глухарь";
+		if (par.dopParams.name) nameFix = par.dopParams.name;
+
+		var d = '';
+		if (nameFix == "Саморез") d = 'Ф';
+
+		par.partName = "screw"
+		par.partName += "_" + d + par.diam;
+
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: nameFix,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = d + par.diam + "х" + par.len;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.headAmount = extrudeOptions.amount;
+
+		return screw;
+	}
+
+	//гайка
+	function drawNutF(par) {
+		var extrudeOptions = {
+			amount: par.diam * 0.8,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+
+		var shape = drawPolygon(polygonParams).shape;
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var nut = new THREE.Mesh(geom, par.material);
+		nut.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "nut_M"
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Гайка",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = par.diam;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.nutAmount = extrudeOptions.amount;
+
+		return nut;
+	}
+
+	//шайба
+	function drawShimF(par) {
+		var extrudeOptions = {
+			amount: par.diam * 0.2,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+		addCircle(shape, dxfArr, center, par.diam, dxfBasePoint);
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var shim = new THREE.Mesh(geom, par.material);
+		shim.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "shim_M"
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Шайба",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = par.diam;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.shimAmount = extrudeOptions.amount;
+
+		return shim;
+	}
+
+	return par;
+}
+
+/*параметры крепления к стенам, нижнему и верхнему перекрытию*/
+function getFixPart(marshId, wall = 'wall') {
+	//наличие креплений к стене
+	var fixPar = {
+		fixType: 'нет',
+		fixPart: 'нет',
+		fixSpacer: 'нет',
+		diam: 10,
+		len: 100,
+	}
+
+	if (wall == 'wall') {
+		//стена №1
+		if (params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
+			var isWallFix = false;
+			if (params.stairModel == "Прямая") isWallFix = true;
+			if (params.stairModel != "Прямая" && marshId == 3) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType3;
+				fixPar.fixPart = params.fixPart3;
+				fixPar.fixSpacer = params.fixSpacer3;
+				if (params.fixSpacerLength3) fixPar.fixSpacerLength = params.fixSpacerLength3;
+			}
+		}
+
+		//стена №2
+		if (params.fixPart4 != "нет" && params.fixPart4 != "не указано") {
+			var isWallFix = false;
+			if (params.stairModel == "Прямая") fixPar.out = true;
+			if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") &&
+				marshId == 3) isWallFix = true;
+			if ((params.stairModel == "П-образная с забегом" ||
+				params.stairModel == "П-образная с площадкой" ||
+				params.stairModel == "П-образная трехмаршевая") &&
+				marshId == 1) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType4;
+				fixPar.fixPart = params.fixPart4;
+				fixPar.fixSpacer = params.fixSpacer4;
+				if (params.fixSpacerLength4) fixPar.fixSpacerLength = params.fixSpacerLength4;
+			}
+		}
+
+		//стена №3
+		if (params.fixPart5 != "нет" && params.fixPart5 != "не указано") {
+			var isWallFix = false;
+			if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") &&
+				marshId == 1) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType5;
+				fixPar.fixPart = params.fixPart5;
+				fixPar.fixSpacer = params.fixSpacer5;
+				if (params.fixSpacerLength5) fixPar.fixSpacerLength = params.fixSpacerLength5;
+			}
+		}
+
+		//стена №4
+		if (params.fixPart6 != "нет" && params.fixPart6 != "не указано") {
+			var isWallFix = false;
+			if ((params.stairModel == "Г-образная с забегом" || params.stairModel == "Г-образная с площадкой") &&
+				marshId == 1) isWallFix = true;
+			if ((params.stairModel == "П-образная с забегом" ||
+				params.stairModel == "П-образная с площадкой" ||
+				params.stairModel == "П-образная трехмаршевая") &&
+				marshId == 2) isWallFix = true;
+
+			if (isWallFix) {
+				fixPar.fixType = params.fixType6;
+				fixPar.fixPart = params.fixPart6;
+				fixPar.fixSpacer = params.fixSpacer6;
+				if (params.fixSpacerLength6) fixPar.fixSpacerLength = params.fixSpacerLength6;
+			}
+		}
+	}
+
+	//нижнее перекрытие
+	if (wall == 'botFloor') {
+		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
+			fixPar.fixType = params.fixType1;
+			fixPar.fixPart = params.fixPart1;
+			fixPar.fixSpacer = params.fixSpacer1;
+			if (params.fixSpacerLength1) fixPar.fixSpacerLength = params.fixSpacerLength1;
+		}
+	}
+
+	//верхнее перекрытие
+	if (wall == 'topFloor') {
+		if (params.fixPart2 != "нет" && params.fixPart2 != "не указано") {
+			fixPar.fixType = params.fixType2;
+			fixPar.fixPart = params.fixPart2;
+			fixPar.fixSpacer = params.fixSpacer2;
+			if (params.fixSpacerLength2) fixPar.fixSpacerLength = params.fixSpacerLength2;
+		}
+	}
+
+	//верхнее перекрытие
+	if (wall == 'vint') {
+		if (marshId == 1 && params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
+			fixPar.fixType = params.fixType3;
+			fixPar.fixPart = params.fixPart3;
+			fixPar.fixSpacer = params.fixSpacer3;
+			if (params.fixSpacerLength3) fixPar.fixSpacerLength = params.fixSpacerLength3;
+		}
+		if (marshId == 2 && params.fixPart4 != "нет" && params.fixPart4 != "не указано") {
+			fixPar.fixType = params.fixType4;
+			fixPar.fixPart = params.fixPart4;
+			fixPar.fixSpacer = params.fixSpacer4;
+			if (params.fixSpacerLength4) fixPar.fixSpacerLength = params.fixSpacerLength4;
+		}
+		if (marshId == 3 && params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
+			fixPar.fixType = params.fixType5;
+			fixPar.fixPart = params.fixPart5;
+			fixPar.fixSpacer = params.fixSpacer5;
+			if (params.fixSpacerLength5) fixPar.fixSpacerLength = params.fixSpacerLength5;
+		}
+		if (marshId == 4 && params.fixPart3 != "нет" && params.fixPart3 != "не указано") {
+			fixPar.fixType = params.fixType6;
+			fixPar.fixPart = params.fixPart6;
+			fixPar.fixSpacer = params.fixSpacer6;
+			if (params.fixSpacerLength6) fixPar.fixSpacerLength = params.fixSpacerLength6;
+		}
+	}
+
+
+	//определяем параметры крепления в зависимости от типа крепления и типа стены
+	if (fixPar.fixPart == 'глухари') {
+		if (params.model == "ко" && fixPar.fixType == 'дерево') {
+			fixPar.diam = 12;
+			fixPar.len = 200;
+		}
+	}
+
+	if (fixPar.fixPart == 'шпилька насквозь') {
+		if (fixPar.fixType == 'пеноблок' || ~fixPar.fixType.indexOf('кирпич')) {
+			if (params.model == "лт") fixPar.diam = 12;
+			if (params.model == "ко") fixPar.diam = 16;
+		}
+		fixPar.len = 300;
+	}
+
+	if (fixPar.fixPart == 'шпилька-шуруп') {
+		fixPar.diam = 12;
+	}
+
+	if (fixPar.fixPart == 'саморезы') {
+		fixPar.diam = 6;
+		fixPar.len = 60;
+	}
+
+
+	//проставка
+	if (fixPar.fixPart != "не указано" && fixPar.fixPart != "нет" &&
+		fixPar.fixSpacer != "не указано" && fixPar.fixSpacer != "нет") {
+		fixPar.isSpacer = true;
+		fixPar.spacerWidt = 40;
+		fixPar.spacerHeigth = 40;
+		fixPar.spacerAmt = 1;
+
+		if (fixPar.fixSpacer == "100х50") {
+			fixPar.spacerWidt = 100;
+			fixPar.spacerHeigth = 50;
+		}
+		if (fixPar.fixSpacer == "40х40 сдвоен.") {
+			fixPar.spacerAmt = 2;
+		}
+	}
+
+	return fixPar;
+}
+
+
+function drawAngleSupport(par, parDop) {
+    /*исходные данные - модель уголка:
+        У2-40х40х230
+        У2-40х40х200
+        У2-40х40х160
+        У2-40х40х90
+        У4-60х60х100
+        У4-70х70х100
+        У5-60х60х100
+		
+		noBoltsInSide1
+		noBoltsInSide2
+    */
+
+	if (!par.model) {
+		var angleModel = par; //костыль для совместимости, когда в параметрах передавалась только модель
+		par = {};
+		if (parDop && parDop.pos) par.pos = parDop.pos;
+	}
+	else var angleModel = par.model;
+
+
+	//if(!dxfBasePoint.x || !dxfBasePoint.y) dxfBasePoint = {x:0,y:0};
+	var dxfBasePoint = { x: 0, y: 0 };
+
+	var color = 0xC0C0C0;
+
+	var partParams = {
+		height: 40,
+		holeDiam1: 7,
+		holeDiam2: 13,
+		hole1Y: 15,
+		hole2Y: 20,
+		metalThickness: 3
+	}
+
+	if (angleModel == "У2-40х40х230") {
+		partParams.width = 230;
+		partParams.holeDist1 = 200;
+		partParams.holeDist2 = 180;
+		color = 0xFF0000;
+	}
+
+	if (angleModel == "У2-40х40х200") {
+		partParams.width = 200;
+		partParams.holeDist1 = 170;
+		partParams.holeDist2 = 150;
+		color = 0xFFFF00;
+	}
+
+	if (angleModel == "У2-40х40х160") {
+		partParams.width = 160;
+		partParams.holeDist1 = 130;
+		partParams.holeDist2 = 110;
+		color = 0xFF00FF;
+	}
+
+	if (angleModel == "У2-40х40х90") {
+		partParams.width = 90;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 50;
+		color = 0x00FF00;
+	}
+
+	if (angleModel == "У4-60х60х100") {
+		partParams.width = 100;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 60;
+		partParams.height = 60,
+			partParams.holeDiam1 = 13,
+			partParams.holeDiam2 = 13,
+			partParams.hole1Y = 30,
+			partParams.hole2Y = 30,
+			partParams.metalThickness = 8
+		color = 0x004080;
+	}
+
+	if (angleModel == "У4-70х70х100") {
+		partParams.width = 100;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 60;
+		partParams.height = 70,
+			partParams.holeDiam1 = 0,
+			partParams.holeDiam2 = 13,
+			//partParams.hole1Y = 30,
+			partParams.hole2Y = 20,
+			partParams.metalThickness = 8
+		color = 0x800000;
+	}
+
+	if (angleModel == "У5-60х60х100") {
+		partParams.width = 100;
+		partParams.holeDist1 = 60;
+		partParams.holeDist2 = 0;
+		partParams.height = 60,
+			partParams.holeDiam1 = 13,
+			partParams.holeDiam2 = 23,
+			partParams.hole1Y = 30,
+			partParams.hole2Y = 23,
+			partParams.metalThickness = 8
+		color = 0x008040;
+	}
+
+	var metalMaterial = new THREE.MeshLambertMaterial({ color: color, wireframe: false });
+	if (!$sceneStruct.vl_1.realColors) metalMaterial = params.materials.metal;
+
+	// Уголок деталь изгиб
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = 0;
+
+	var shape = drawAngleSupportCentr(partParams.width, partParams.metalThickness);//передаваемые параметры (width, metalThickness)
+
+	var extrudeOptions = {
+		amount: partParams.width,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var angleSupportCentrGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
+	angleSupportCentrGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var angleSupport1 = new THREE.Mesh(angleSupportCentrGeometry, metalMaterial);
+	angleSupport1.position.x = 0;
+	angleSupport1.position.y = 0;
+	angleSupport1.position.z = 0;
+
+	angleSupport1.rotation.x = Math.PI / 2;
+	angleSupport1.rotation.y = Math.PI / 2;
+	angleSupport1.rotation.z = 0;
+
+	//meshes.push(angleSupport1);
+
+	// Уголок деталь полка 1
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = -100;
+	var shape = drawAngleSupportSide(partParams.width, partParams.height, partParams.holeDist1, partParams.hole1Y, partParams.holeDiam1, partParams.metalThickness);//передаваемые параметры (width, height, holeDist, hole1Y, holeDiam, metalThickness)
+
+	/*добавление овальных отверстий*/
+
+	if (angleModel == "У4-70х70х100") {
+
+		var holeWidth = 13;
+
+		/*
+		/*первое отверстие*
+		var hole1 = new THREE.Path();
+		var center1 = { x: 20, y: 19 };
+		var center2 = newPoint_xy(center1, 0, 10);
+		var p1 = newPoint_xy(center1, holeWidth / 2, 0);
+		var p2 = newPoint_xy(center2, holeWidth / 2, 0);
+		var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
+		var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
+		addLine(hole1, dxfPrimitivesArr0, p1, p2, dxfBasePoint)
+		addArc2(hole1, dxfPrimitivesArr0, center2, holeWidth / 2, Math.PI, 0, true, dxfBasePoint)
+		addLine(hole1, dxfPrimitivesArr0, p3, p4, dxfBasePoint)
+		addArc2(hole1, dxfPrimitivesArr0, center1, holeWidth / 2, 0, -Math.PI, false, dxfBasePoint)
+		shape.holes.push(hole1);
+
+		/*второе отверстие*
+		var hole2 = new THREE.Path();
+		var center1 = { x: 80, y: 19 };
+		var center2 = newPoint_xy(center1, 0, 10);
+		var p1 = newPoint_xy(center1, holeWidth / 2, 0);
+		var p2 = newPoint_xy(center2, holeWidth / 2, 0);
+		var p3 = newPoint_xy(center2, -holeWidth / 2, 0);
+		var p4 = newPoint_xy(center1, -holeWidth / 2, 0);
+		addLine(hole2, dxfPrimitivesArr0, p1, p2, dxfBasePoint)
+		addArc2(hole2, dxfPrimitivesArr0, center2, holeWidth / 2, Math.PI, 0, true, dxfBasePoint)
+		addLine(hole2, dxfPrimitivesArr0, p3, p4, dxfBasePoint)
+		addArc2(hole2, dxfPrimitivesArr0, center1, holeWidth / 2, 0, Math.PI, false, dxfBasePoint)
+		shape.holes.push(hole2);
+		*/
+		var rad = 6.5;
+		var clockwise = true;
+		var distOval = 10;
+		var center1 = { x: 20, y: 24 };
+		var center2 = { x: 80, y: 24 };
+
+		//нижнее отверстие
+		addOvalHoleY(shape, [], center1, rad, distOval, dxfBasePoint, clockwise)
+		//верхнее отверстие
+		addOvalHoleY(shape, [], center2, rad, distOval, dxfBasePoint, clockwise)
+	}
+	var extrudeOptions = {
+		amount: partParams.metalThickness,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var angleSupportGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
+	angleSupportGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var angleSupport2 = new THREE.Mesh(angleSupportGeometry, metalMaterial);
+	angleSupport2.position.x = 0;
+	angleSupport2.position.y = partParams.metalThickness * 2;
+	angleSupport2.position.z = 0;
+
+	angleSupport2.rotation.x = 0;
+	angleSupport2.rotation.y = 0;
+	angleSupport2.rotation.z = 0;
+
+	//meshes.push(angleSupport2);
+
+	// Уголок деталь полка 2
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = 100;
+	if (par.pos) {
+		var fixPar = getFixPart(0, par.pos);
+		partParams.holeDiam2 = fixPar.diam + 1;
+	}
+	var shape = drawAngleSupportSide(partParams.width, partParams.height, partParams.holeDist2, partParams.hole2Y, partParams.holeDiam2, partParams.metalThickness);
+
+	var extrudeOptions = {
+		amount: partParams.metalThickness,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var angleSupportGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+
+	angleSupportGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+	var angleSupport3 = new THREE.Mesh(angleSupportGeometry, metalMaterial);
+	angleSupport3.position.x = 0;
+	angleSupport3.position.y = partParams.metalThickness;
+	angleSupport3.position.z = partParams.metalThickness * 2;
+
+	angleSupport3.rotation.x = Math.PI / 2;
+	angleSupport3.rotation.y = 0;
+	angleSupport3.rotation.z = 0;
+
+	//meshes.push(angleSupport3);
+
+	var complexObject1 = new THREE.Object3D();
+	complexObject1.add(angleSupport1);
+	complexObject1.add(angleSupport2);
+	complexObject1.add(angleSupport3);
+
+	complexObject1.position.x = 0;
+	complexObject1.position.y = 0;
+	complexObject1.position.z = 0;
+
+	complexObject1.rotation.x = 0;
+	complexObject1.rotation.y = 0;
+	complexObject1.rotation.z = 0;
+
+	/* болты крепления к нижнему или верхнему перекрытию */
+	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+		if (par.pos) {
+			var fixPar = getFixPart(0, par.pos);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = (partParams.width - partParams.holeDist2) / 2;
+			fix.position.y = 0;
+			fix.position.z = partParams.height - partParams.hole2Y;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += partParams.metalThickness;
+			}
+			complexObject1.add(fix);
+
+			var fix = drawFixPart(fixPar).mesh;
+			fix.position.x = (partParams.width + partParams.holeDist2) / 2;
+			fix.position.y = 0;
+			fix.position.z = partParams.height - partParams.hole2Y;
+			fix.rotation.x = 0;
+			if (turnFactor == -1) {
+				fix.rotation.x = Math.PI;
+				fix.position.y += partParams.metalThickness;
+			}
+			complexObject1.add(fix);
+		}
+	}
+
+	/* болты */
+	var partName = "treadAngle";
+	if (angleModel == "У4-70х70х100" || angleModel == "У4-60х60х100" || angleModel == "У5-60х60х100") partName = "carcasAngle";
+
+	//болты в грани 1
+	if (!par.noBoltsInSide1) par.noBoltsInSide1 = false;	//болты есть
+	if (angleModel == "У4-70х70х100" || angleModel == "У5-60х60х100") par.noBoltsInSide1 = true;
+
+	//болты в грани 2
+	if (!par.noBoltsInSide2) par.noBoltsInSide2 = false; //болты есть
+	if (angleModel != "У4-70х70х100" && angleModel != "У4-60х60х100" && angleModel != "У5-60х60х100")
+		par.noBoltsInSide2 = true;
+
+
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
+		//болты в грани №1
+		var boltPar = {
+			diam: boltDiam,
+			len: boltLen,
+		}
+		if (!testingMode) {
+			if (partName == "treadAngle") boltPar.len = 20;
+			if (partName == "carcasAngle") boltPar.len = 30;
+		}
+
+
+		if (!par.noBoltsInSide1) {
+			var x = (partParams.width - partParams.holeDist2) / 2;
+			var z = partParams.height - partParams.hole2Y;
+			var y = boltPar.len / 2 - boltBulge;
+			if (!par.noBoltsInSide1_1) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.position.x = x;
+				bolt.position.z = z;
+				bolt.position.y = y;
+				complexObject1.add(bolt)
+			}
+
+			if (!par.noBoltsInSide1_2) {
+				var bolt2 = drawBolt(boltPar).mesh;
+				bolt2.position.x = x + partParams.holeDist2;
+				bolt2.position.y = y;
+				bolt2.position.z = z;
+				complexObject1.add(bolt2)
+			}
+		}
+
+		//болты в грани №2
+
+		if (!par.noBoltsInSide2) {
+			var x = (partParams.width - partParams.holeDist1) / 2;
+			var y = partParams.height - partParams.hole1Y;
+			if (angleModel == "У4-70х70х100") y = partParams.height - 35;
+			var z = boltPar.len / 2 - boltBulge;
+			if (!par.noBoltsInSide2_1) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2
+				bolt.position.x = x;
+				bolt.position.y = y;
+				bolt.position.z = z;
+				complexObject1.add(bolt)
+			}
+
+			if (!par.noBoltsInSide2_2) {
+				var bolt2 = drawBolt(boltPar).mesh;
+				bolt2.rotation.x = Math.PI / 2
+				bolt2.position.x = x + partParams.holeDist1;
+				bolt2.position.y = y;
+				bolt2.position.z = z;
+				complexObject1.add(bolt2)
+			}
+		}
+	}
+
+
+	//сохраняем данные для спецификации
+
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Уголок ступени",
+				metalPaint: true,
+				timberPaint: false,
+				division: "stock_2",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+		if (partName == "carcasAngle") specObj[partName].name = "Уголок каркаса";
+
+		var name = angleModel;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	//параметры для позиционирования
+	var dimensions = {
+		width: partParams.width,
+		holeDist1: partParams.holeDist1,
+		holeDist2: partParams.holeDist2,
+		holePos: {
+			x: (partParams.width - partParams.holeDist2) / 2,
+			y: partParams.height - partParams.hole1Y,
+		}
+	}
+	if (angleModel == "У4-70х70х100") dimensions.holePos.y = partParams.height - 35;
+	if (angleModel == "У5-60х60х100") {
+		dimensions.holePos.y = partParams.height - partParams.hole1Y;
+		dimensions.holePos.x = (partParams.width - partParams.holeDist1) / 2
+	}
+
+	if (angleModel == "У2-40х40х230" ||
+		angleModel == "У2-40х40х200" ||
+		angleModel == "У2-40х40х160" ||
+		angleModel == "У2-40х40х90") {
+		dimensions.holePos.y = partParams.height - partParams.hole2Y;
+	}
+
+	complexObject1.dimensions = dimensions;
+
+	return complexObject1
+}
+
+function drawRectFlan2(par) {
+
+	par.mesh = new THREE.Object3D();
+
+	var dxfArr = dxfPrimitivesArr;
+	//если не задана базовая точка, в dxf контур не выводим
+	if (!par.dxfBasePoint) {
+		dxfArr = [];
+		par.dxfBasePoint = { x: 0, y: 0, }
+	}
+	if (!par.thk) par.thk = 8;
+	if (!par.material) par.material = params.materials.metal2
+
+	var p1 = { x: 0, y: 0, };
+	var p2 = newPoint_xy(p1, 0, par.height);
+	var p3 = newPoint_xy(p2, par.width, 0);
+	var p4 = newPoint_xy(p1, par.width, 0);
+
+	var points = [p1, p2, p3, p4];
+
+	//срезанный задний угол для пресснастила
+	if (par.cutAngle) {
+		var p5 = newPoint_xy(p1, 0, 30);
+		points[0].x += 30;
+		points.splice(1, 0, p5)
+	}
+
+	//создаем шейп
+	var shapePar = {
+		points: points,
+		dxfArr: dxfArr,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+	if (par.cornerRad) {
+		shapePar.radOut = par.cornerRad;
+		shapePar.radIn = par.cornerRad;
+	}
+	if (par.drawing) {
+		shapePar.drawing = {
+			name: par.drawing.name,
+			group: par.drawing.group,
+			marshId: par.drawing.marshId,
+			basePoint: par.drawing.basePoint,
+			location: par.drawing.location,
+		}
+		if (par.drawing.isRotate) shapePar.drawing.baseLine = { p1: p1, p2: p2 }
+		if (par.drawing.isCount) shapePar.drawing.isCount = par.drawing.isCount;
+	}
+
+	par.shape = drawShapeByPoints2(shapePar).shape;
+
+	if (par.pathHoles) par.shape.holes.push(...par.pathHoles);
+
+	if (par.roundHoleCenters) {
+		var holesPar = {
+			holeArr: par.roundHoleCenters,
+			dxfBasePoint: par.dxfBasePoint,
+			shape: par.shape,
+		}
+
+		//если есть отверстия для крепления к стене, тогда их добавляем в шейп отдельно, чтобы можно было задать другой радиус
+		if (par.fixPar) {
+			var holes = [];
+			var holesFix = [];
+			for (var i = 0; i < par.roundHoleCenters.length; i++) {
+				if (par.roundHoleCenters[i].isFixPart)
+					holesFix.push(par.roundHoleCenters[i]);
+				else
+					holes.push(par.roundHoleCenters[i]);
+			}
+			holesPar.holeArr = holesFix;
+			holesPar.holeRad = par.fixPar.diam / 2 + 1;
+			addHolesToShape(holesPar);
+
+			holesPar.holeRad = "undefined";
+			holesPar.holeArr = holes;
+		}
+
+		if (par.holeRad) holesPar.holeRad = par.holeRad;
+		addHolesToShape(holesPar);
+
+	}
+
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(par.shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var flan = new THREE.Mesh(geom, par.material);
+	par.mesh.add(flan);
+
+	//болты в отверстиях
+
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //anglesHasBolts - глобальная переменная
+		var boltPar = {
+			diam: boltDiam,
+			len: boltLen,
+		};
+		if (par.roundHoleCenters) {
+			for (var i = 0; i < par.roundHoleCenters.length; i++) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2;
+				bolt.position.x = par.roundHoleCenters[i].x;
+				bolt.position.y = par.roundHoleCenters[i].y;
+				bolt.position.z = boltPar.len / 2 - boltBulge;
+				if (par.mirrowBolts) {
+					bolt.rotation.x = -Math.PI / 2;
+					bolt.position.z = -boltPar.len / 2 + boltBulge + par.thk;
+				}
+				par.mesh.add(bolt);
+			}
+		}
+	}
+
+	//болты крепления к верхнему перекрытию
+	if (typeof isFixPats != "undefined" && isFixPats && par.fixPar) { //глобальная переменная
+		if (par.fixPar.fixPart !== 'нет') {
+			for (var i = 0; i < holesFix.length; i++) {
+				var fix = drawFixPart(par.fixPar).mesh;
+				fix.position.x = holesFix[i].x;
+				fix.position.y = holesFix[i].y;
+				fix.position.z = par.thk * (1 + turnFactor) * 0.5;
+				fix.rotation.x = -Math.PI / 2 * turnFactor;
+				par.mesh.add(fix);
+			}
+		}
+	}
+
+	return par;
+
+}//end of drawRectFlan2

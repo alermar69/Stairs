@@ -103,6 +103,8 @@ function drawRectFlan(flanParams) {
 	/*Прорисовка отверстий*/
 	var hole0Pos = { x: 0, y: 0 }
 
+	flanParams.holesFix = [];
+
 	/*отверстие № 1*/
 	if (flanParams.hole1X && flanParams.hole1Y && flanParams.holeDiam) {
 		var hole1 = new THREE.Path();
@@ -111,6 +113,7 @@ function drawRectFlan(flanParams) {
 		hole1Pos.y = hole1Pos.y + flanParams.hole1Y;
 		addCircle(hole1, dxfPrimitivesArr, hole1Pos, flanParams.holeDiam / 2, dxfBasePoint)
 		shape.holes.push(hole1);
+		flanParams.holesFix.push(hole1Pos);
 	}
 
 	/*отверстие № 2*/
@@ -121,6 +124,7 @@ function drawRectFlan(flanParams) {
 		hole2Pos.y = hole2Pos.y + flanParams.height - flanParams.hole2Y;
 		addCircle(hole2, dxfPrimitivesArr, hole2Pos, flanParams.holeDiam / 2, dxfBasePoint)
 		shape.holes.push(hole2);
+		flanParams.holesFix.push(hole2Pos);
 	}
 
 	/*отверстие № 3*/
@@ -131,6 +135,7 @@ function drawRectFlan(flanParams) {
 		hole3Pos.y = hole0Pos.y + flanParams.height - flanParams.hole3Y;
 		addCircle(hole3, dxfPrimitivesArr, hole3Pos, flanParams.holeDiam / 2, dxfBasePoint)
 		shape.holes.push(hole3);
+		flanParams.holesFix.push(hole3Pos);
 	}
 
 	/*отверстие № 4*/
@@ -141,6 +146,7 @@ function drawRectFlan(flanParams) {
 		hole4Pos.y = hole0Pos.y + flanParams.hole4Y;
 		addCircle(hole4, dxfPrimitivesArr, hole4Pos, flanParams.holeDiam / 2, dxfBasePoint)
 		shape.holes.push(hole4);
+		flanParams.holesFix.push(hole4Pos);
 	}
 
 	/*отверстие № 5*/
