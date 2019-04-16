@@ -240,7 +240,6 @@ function calcHandrailPoints(par, parRacks){
 			}
 		meterHandrailPar = calcHandrailMeterParams(meterHandrailPar);
 	
-	
 		//точки, снятые с тетивы / косоура
 	
 		if(!par.keyPoints) par.keyPoints = {};
@@ -282,7 +281,7 @@ function calcHandrailPoints(par, parRacks){
 			}
 	
 		var marshStart = itercection(p0, newPoint_xy(p0, 0, 100), par.keyPoints.marshBotLineP1, par.keyPoints.marshBotLineP2)
-	
+
 	//нижний поворот
 		if (params.stairModel == "П-образная с забегом" && par.marshId == 2) {
 			par.botEnd = "нет";
@@ -295,7 +294,6 @@ function calcHandrailPoints(par, parRacks){
 			if (par.botConnection) glassPos = newPoint_xy(glassPos, -railingZOffset - stringerSideOffset, 0);
 			if (par.botEnd == "площадка") glassPos.x += params.stringerThickness;
 			if (par.botEnd == "площадка" && params.model == "ко") glassPos.y = marshStart.y;
-	
 	
 			var glassPar = {
 				angleTop: 0,
@@ -365,7 +363,6 @@ function calcHandrailPoints(par, parRacks){
 			var marshSectLen = par.b * par.stairAmt;
 		if(params.startTreadAmt > 0 && par.marshId == 1) glassPos = newPoint_xy(marshStart, params.startTreadAmt * par.b + 20, params.startTreadAmt * par.h)
 	
-	
 			//if (par.stairAmt == 0) marshSectLen = par.keyPoints.botLineP10.x - par.keyPoints.botLineP0.x;
 	
 			//для внутренней стороны марша кроме последнего считаем длину марша через координаты угла косоура
@@ -403,7 +400,11 @@ function calcHandrailPoints(par, parRacks){
 					break;
 					}
 				}
-	
+		//Корректируем длинну стекла если во втором марше 0 ступеней
+		if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 3 && params.stairAmt2 == 0) {
+			glassPos.x += 20 + 22;
+			marshSectLen -= 20 + 22;
+		}
 		var marshLen = marshSectLen;
 		if (params.railingStart !== 0 && par.marshId == 1) marshLen += params.railingStart * par.b;
 			for(var i=0; i< par.racks.length; i++){
@@ -1097,7 +1098,6 @@ function calcHandrailPoints(par, parRacks){
 		*/
 		
 	function setRacksParams(par) {
-	
 		//параметры марша
 		var marshPar = getMarshParams(par.marshId);
 		var prevMarshPar = getMarshParams(marshPar.prevMarshId);

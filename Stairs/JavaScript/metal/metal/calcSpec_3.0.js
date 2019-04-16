@@ -232,16 +232,6 @@ function addTreadItems(){}; //пустая функция для навигац�
 			};
 		if(item.amt > 0) partsList.addItem(item);
 	}
-//гнутые подступенки
-
-	item = {
-		id:  "screw_3x55",
-		amt: getPartAmt("riser_arc") * 4,
-		discription: "Крепление гнутых подступенков снизу",
-		unit: "Крепление подступенков",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0) partsList.addItem(item);
 	
 }
 

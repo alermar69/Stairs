@@ -258,36 +258,53 @@ function drawMiddleStringers(par, marshId){
 	var midstringerBetweenLen = (treadWidth - stringerThickness * midStringerAmt) / (midStringerAmt + 1);
 	if (midStringerAmt > 0) {
 		for (i = 1; i <= midStringerAmt; i++) {
+			if (i == 1) stringerParams.midStringerFirst = true;
+			if (i !== 1) stringerParams.midStringerFirst = false;
 			var midStringer = drawStringer(stringerParams).mesh;
 			midStringer.position.x = -stringerParams.treadFrontOverHang;
 			midStringer.position.z = midstringerBetweenLen * i - params.M / 2 + params.stringerThickness * i;
 			midStringers.push(midStringer);
 			mesh.add(midStringer);
-		}
-	}
 
-	if (midStringers.length > 0) {
-		for (var i = 0; i < midStringers.length; i++) {	
+			//уголки
 			var midAngle = drawCarcasAngles(stringerParams.carcasHoles, sideIn);
-			midAngle.position.x = midStringers[i].position.x;
-			midAngle.position.z = midStringers[i].position.z;
-			if(sideIn == "left") midAngle.position.z += params.stringerThickness;
+			midAngle.position.x = midStringer.position.x;
+			midAngle.position.z = midStringer.position.z;
+			if (sideIn == "left") midAngle.position.z += params.stringerThickness;
 			angles.add(midAngle);
-		}
-	}
-	
-	for (var i = 0; i < midStringers.length; i++) {
-        if (hasTreadFrames()) {
-            par.dxfBasePoint.x += stringerParams.lenX;
-			par.dxfBasePoint.x += 2000;
-			var framePar = {
-				holes: stringerParams.carcasHoles,
-				dxfBasePoint: par.dxfBasePoint,
+
+			//рамки
+			if (hasTreadFrames()) {
+				par.dxfBasePoint.x += stringerParams.lenX;
+				par.dxfBasePoint.x += 2000;
+				var framePar = {
+					holes: stringerParams.carcasHoles,
+					dxfBasePoint: par.dxfBasePoint,
+				}
+				var frames = drawFrames(framePar);
+				frames.position.x = -stringerParams.treadFrontOverHang;
+				frames.position.z = midStringer.position.z - framePar.length / 2;
+				angles.add(frames)
 			}
-			var frames = drawFrames(framePar);
-			frames.position.x = -stringerParams.treadFrontOverHang;
-			frames.position.z = midStringers[i].position.z - framePar.length / 2;
-			angles.add(frames)
+
+			//длинные болты
+			if (drawLongBolts) {
+				var boltPar = {
+					diam: 10,
+					len: 40,
+					headType: "шестигр.",
+				}
+				var longBoltPos = stringerParams.elmIns[stringerParams.key].longBolts;
+				for (var j = 0; j < longBoltPos.length; j++) {
+					var bolt = drawBolt(boltPar).mesh;
+					bolt.rotation.x = Math.PI / 2 * turnFactor;
+					bolt.position.x = longBoltPos[j].x;
+					if (params.model == "лт") bolt.position.x -= 5;
+					bolt.position.y = longBoltPos[j].y;
+					bolt.position.z = midAngle.position.z//params.stringerThickness/2;
+					mesh.add(bolt);
+				}
+			}
 		}
 	}
 
@@ -315,27 +332,6 @@ function drawMiddleStringers(par, marshId){
 	if (params.model == "лт") flans.position.x -= 5;
 	flans.position.z = -params.stringerThickness / 2 - 8;
 	mesh.add(flans);
-
-	//длинные болты
-
-	if (drawLongBolts) {
-		var boltPar = {
-			diam: 10,
-			len: 40,
-			headType: "шестигр.",
-		}
-		var longBoltPos = stringerParams.elmIns[stringerParams.key].longBolts;
-		for (var i = 0; i < longBoltPos.length; i++) {
-			var bolt = drawBolt(boltPar).mesh;
-			bolt.rotation.x = Math.PI / 2 * turnFactor;
-			bolt.position.x = longBoltPos[i].x;
-			if (params.model == "лт") bolt.position.x -= 5;
-			bolt.position.y = longBoltPos[i].y;
-			bolt.position.z = midAngle.position.z//params.stringerThickness/2;
-			mesh.add(bolt);
-		}
-
-	}
 
 	
 	stringerParams.mesh = mesh;
@@ -514,13 +510,15 @@ function drawMarshStringers(par, marshId){
 		var bridgePar = {
 			dxfBasePoint: par.dxfBasePoint,
 			hasDoubleTreadAngles: false,
-			}
-		for (i = 0; i < stringerParams.elmIns["out"].bridges.length; i++) {
+		}
+		var key = 'out'
+		if (params.stairModel == "Прямая") key = 'in';
+		for (i = 0; i < stringerParams.elmIns[key].bridges.length; i++) {
 			//перемычки с двойными уголками
 
 			bridgePar.hasDoubleTreadAngles = false;
 			bridgePar.rotated = false;
-			if (i == stringerParams.elmIns["out"].bridges.length - 1 && marshParams.topTurn == "площадка" && !stringerParams.isWndP && stringerParams.topEndLength > 600) {
+			if (i == stringerParams.elmIns[key].bridges.length - 1 && marshParams.topTurn == "площадка" && !stringerParams.isWndP && stringerParams.topEndLength > 600) {
 				bridgePar.hasDoubleTreadAngles = true;
 				bridgePar.rotated = true;
 				}
@@ -531,13 +529,13 @@ function drawMarshStringers(par, marshId){
 			
 			//нет болтов на внутренней стороне
 			bridgePar.noBoltsOnBridge = false;
-			if (stringerParams.elmIns["out"].bridges[i].noBoltsOnBridge) bridgePar.noBoltsOnBridge = true;
+			if (stringerParams.elmIns[key].bridges[i].noBoltsOnBridge) bridgePar.noBoltsOnBridge = true;
 			if (params.M > 1100 && params.calcType == "vhod") bridgePar.noBoltsOnBridge1 = true;
 
 			var bridge = drawBridge_2(bridgePar).mesh;
 			bridge.rotation.y = -Math.PI / 2;
-			bridge.position.x = stringerParams.elmIns["out"].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
-			bridge.position.y = stringerParams.elmIns["out"].bridges[i].y;
+			bridge.position.x = stringerParams.elmIns[key].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
+			bridge.position.y = stringerParams.elmIns[key].bridges[i].y;
 			bridge.position.z = -params.M/2 + params.stringerThickness;
 			//переворачиваем перемычку
 			if(bridgePar.rotated){
@@ -556,8 +554,8 @@ function drawMarshStringers(par, marshId){
 
 				var bridge = drawBridge_2(bridgePar).mesh;
 				bridge.rotation.y = -Math.PI / 2;
-				bridge.position.x = stringerParams.elmIns["out"].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
-				bridge.position.y = stringerParams.elmIns["out"].bridges[i].y;
+				bridge.position.x = stringerParams.elmIns[key].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
+				bridge.position.y = stringerParams.elmIns[key].bridges[i].y;
 				bridge.position.z = params.stringerThickness / 2;
 				//переворачиваем перемычку
 				if (bridgePar.rotated) {
@@ -582,6 +580,7 @@ function drawMarshStringers(par, marshId){
 			}
 
 		var frames = drawFrames(framePar);
+
 		frames.position.x = -stringerParams.treadFrontOverHang;
 		if (params.calcType == 'vhod') {//Свдигаем к крайнему каркасу для того чтобы не пересечься с средним
 			frames.position.z = params.M / 2 - params.stringerThickness - framePar.length / 2;
@@ -1176,7 +1175,7 @@ function drawStringerHoles(par, typeDop){
 
 			//сохраняем координаты для вставки длинных болтов (кроме отверстий рутелей)
 
-			if (center.noZenk && center.rad < 7) {
+			if (center.noZenk && center.rad < 7 && !center.noBolts) {
 				if(!par.elmIns[par.key].longBolts) par.elmIns[par.key].longBolts = [];
 				par.elmIns[par.key].longBolts.push(center);
 			}
@@ -1435,7 +1434,7 @@ function calcColumnPosHoles(par) {
 				if (marshParams.prevMarshId == 1 && params.inStringerElongationTurn1 == "да") longStringerTop = true;
 				if (marshParams.prevMarshId == 2 && params.inStringerElongationTurn2 == "да") longStringerTop = true;
 
-				if (longStringerTop) holePos[2].x -= 50;
+				if (longStringerTop && holePos[2]) holePos[2].x -= 50;
 			}			
 		};
 		
@@ -1507,6 +1506,8 @@ function calcColumnPosHoles(par) {
 			var stepId = Math.floor(params.stairAmt1 / 2);
 			var divide = ltko_set_divide(par.marshId).divide;
 			if (stepId == divide) stepId -= 1;
+			var rackPos = setRackPos(1);
+			if (rackPos.includes(stepId)) stepId -= 1;
 			var colHole1 = {
 				x: params.b1 * (stepId - 0.5),
 				y: params.h1 * (stepId - 1),

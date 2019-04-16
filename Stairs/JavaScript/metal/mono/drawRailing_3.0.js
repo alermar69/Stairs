@@ -605,6 +605,7 @@ function drawGlassSection(par){
 			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, sectionHeight + glassOffsetY),
 			fixType: params.handrailFixType,
 			sectText: '',
+			isGlassHandrail: true,
 		}
 
 

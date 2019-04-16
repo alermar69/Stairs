@@ -173,7 +173,7 @@ function drawComplexStringer(par) {
 			pt3 = newPoint_xy(pt3, offset, - params.profileHeight + sidePlateOverlayPlatform);
 			pt2 = itercection(pt1, polar(pt1, par.marshAngle, 100), pt3, polar(pt3, 0, 100));
 		}
-		if (par.topEnd == "забег" && par.stairAmt != 1) {
+		if (par.topEnd == "забег" && !(par.stairAmt <= 2 && par.botEnd == "пол")) {
 			var pt3 = par.pointsShape[par.pointsShape.length - 2];
 			var pt4 = par.pointsShape[par.pointsShape.length - 3];
 			pt4 = newPoint_xy(pt4, offset, - params.profileHeight + params.sidePlateOverlay);
@@ -183,7 +183,7 @@ function drawComplexStringer(par) {
             pt2 = itercection(line_1_2.p1, line_1_2.p2, line_2_3.p1, line_2_3.p2);
 			var pt3 = itercection(line_2_3.p1, line_2_3.p2, pt4, polar(pt4, 0, 100));
 		}
-		if (par.topEnd == "забег" && par.stairAmt == 1) {
+		if (par.topEnd == "забег" && (par.stairAmt <= 2 && par.botEnd == "пол")) {
 			//var ang = Math.atan(par.h / (par.pointsShape[3].x - par.pointsShape[2].x));
 			var ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
 			var pt3 = par.pointsShape[par.pointsShape.length - 2];
@@ -1256,7 +1256,7 @@ function drawComplexStringer(par) {
 				var flan = drawFlanPipeBot(flanPar).mesh;
 				flan.position.x = sidePlate2.position.x + params.treadPlateThickness;
 				flan.position.z = sidePlate2.position.z + (flanPar.width + flanPar.widthPipe) / 2 + 3;
-				flan.position.y = sidePlate2.position.y;
+				flan.position.y = sidePlate2.position.y + params.flanThickness;
 				flan.rotation.x = -Math.PI / 2;
 				flan.rotation.y = Math.PI;
 				flan.rotation.z = Math.PI / 2;
@@ -1327,7 +1327,7 @@ function drawComplexStringer(par) {
 					//Фланец соединения промежуточной площадки к стене
 					var i = par.pointsShape.length - 2;
 					if (par.topEnd === "забег") i = par.pointsShape.length - 3;
-					if (par.topEnd === "забег" && par.stairAmt == 1) i = par.pointsShape.length - 2;
+					if (par.topEnd === "забег" && (par.stairAmt <= 2 && par.botEnd == "пол")) i = par.pointsShape.length - 2;
 					dxfBasePoint.y -= dxfStep;
 					var flanPar = {
 						type: "joinProf", //ширина фланца
@@ -1418,6 +1418,80 @@ function drawComplexStringer(par) {
 				flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y - flanPar.height + dy;
 				flan.position.z += sidePlate2.position.z + params.profileWidth / 2 + params.metalThickness;
 				par.flans.add(flan);
+			}
+
+			//верхняя пластина
+			if (par.topEnd !== "пол" && par.topConnection) {
+				if (par.stringerLedge !== 0) {
+					//создаем контур пластины для создания Object3D
+					var p1 = newPoint_xy(p0, 0, -params.stringerThickness / 2);
+					var p2 = newPoint_xy(p1, 0, params.stringerThickness);
+					var p3 = newPoint_xy(p2, par.stringerLedge, 0);
+					var p4 = newPoint_xy(p1, par.stringerLedge, 0);
+
+					var points = [p1, p2, p3, p4];
+
+					//создаем шейп
+					var shapePar = {
+						points: points,
+						dxfArr: dxfPrimitivesArr,
+						dxfBasePoint: par.dxfBasePoint,
+					}
+
+					var shape = drawShapeByPoints2(shapePar).shape;
+
+					var extrudeOptions = {
+						amount: 2,
+						bevelEnabled: false,
+						curveSegments: 12,
+						steps: 1
+					};
+
+					var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+					geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+					var plate = new THREE.Mesh(geom, params.materials.metal);
+					plate.rotation.x = -Math.PI / 2;
+					plate.position.x = par.keyPoints.topPoint.x + params.nose - par.stringerLedge;
+					plate.position.y = par.keyPoints.topPoint.y;
+
+					par.flans.add(plate);
+				}
+			}
+			if (par.botEnd == "площадка" && par.botConnection) {
+				if (par.stringerLedge !== 0) {
+					//создаем контур пластины для создания Object3D
+					var p1 = newPoint_xy(p0, 0, -params.stringerThickness / 2);
+					var p2 = newPoint_xy(p1, 0, params.stringerThickness);
+					var p3 = newPoint_xy(p2, par.stringerLedge, 0);
+					var p4 = newPoint_xy(p1, par.stringerLedge, 0);
+
+					var points = [p1, p2, p3, p4];
+
+					//создаем шейп
+					var shapePar = {
+						points: points,
+						dxfArr: dxfPrimitivesArr,
+						dxfBasePoint: par.dxfBasePoint,
+					}
+
+					var shape = drawShapeByPoints2(shapePar).shape;
+
+					var extrudeOptions = {
+						amount: 2,
+						bevelEnabled: false,
+						curveSegments: 12,
+						steps: 1
+					};
+
+					var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+					geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+					var plate = new THREE.Mesh(geom, params.materials.metal);
+					plate.rotation.x = -Math.PI / 2;
+					plate.position.x = par.stepPoints[1].x + params.nose;
+					plate.position.y = par.stepPoints[1].y;
+
+					par.flans.add(plate);
+				}
 			}
 		}
 	}
@@ -1593,12 +1667,14 @@ function drawPltStringer(par) {
 	    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
 	    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
 	    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
+		var center5 = newPoint_xy(p, 0, params.stringerThickness / 2 - 20 - params.metalThickness);
 
 		par.pointsHole = [];
 		par.pointsHole.push(center1);
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center3);
 		par.pointsHole.push(center4);
+		par.pointsHole.push(center5);
 
 		//внутренняя накладка
 		shapePar.drawing = {

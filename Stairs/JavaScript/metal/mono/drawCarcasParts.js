@@ -2315,14 +2315,14 @@ function drawTurn2TreadPlateHoles(par) {
 	}
 
 	//прямогуольный вырез в центре детали
-	var holeOffset = 15; //отступ края выреза от оси отверстия
-	var pH1 = newPoint_xy(center1, holeOffset, holeOffset);
-	var pH4 = newPoint_xy(center4, -holeOffset, holeOffset);
+	var holeOffset = 5; //отступ края выреза от оси отверстия
+	var pH1 = newPoint_xy(center1, holeOffset, -holeOffset);
+	var pH4 = newPoint_xy(center4, -holeOffset, -holeOffset);
 	if (params.M < 750) {
 		pH1.y -= holeOffset*2;
 		pH4.y -= holeOffset*2;
 	}
-	var line = parallel(center2, center3, -holeOffset);
+	var line = parallel(center2, center3, -holeOffset * 2);
 	var pH2 = itercection(pH1, polar(pH1, Math.PI / 2, 100), line.p1, line.p2);
 	var pH3 = itercection(pH4, polar(pH4, Math.PI / 2, 100), line.p1, line.p2);
 
@@ -2907,6 +2907,7 @@ function drawMonoFlan(par) {
 		//фланец-заглушка
 		var flanPar = {
 			width: params.stringerThickness - 2 * params.metalThickness, //ширина фланца
+			//height: params.stringerThickness - 2 * params.metalThickness, //ширина фланца
 			height: par.height, //длина фланца (высота при вертикальном расположении)
 			holeRad: 7.5,
 			cornerRad: 0,
@@ -3341,7 +3342,7 @@ function drawPlateBolts(par) {
 			//верхние болты
 			var boltPar = {
 				diam: 16,
-				len: 30,
+				len: 40,
 				headType: "шестигр.",
 				}
 
@@ -3798,7 +3799,10 @@ function drawTurn1TreadPlateCabriole(par) {
 	shapesList.push(shape);
 	basePointSvg.x += distance(pv0, pv2) + 100;
 
-	dxfBasePoint.y += distance(pv3, pv2) + 40;
+	//dxfBasePoint.y += distance(pv3, pv2) + 40;
+	var dxfY = dxfBasePoint.y;
+	dxfBasePoint.x += Math.abs(pv3.x) + 40;
+	dxfBasePoint.y += h1 + stringerPlateThickness + 40;
 
 	if (par.isTop) {
 		var shape = new THREE.Shape();
@@ -3859,7 +3863,8 @@ function drawTurn1TreadPlateCabriole(par) {
 		if (par.isBot) basePointSvg.y -= 100;
 	}
 
-	dxfBasePoint.y -= distance(pv3, pv2) + 80;
+	//dxfBasePoint.y -= distance(pv3, pv2) + 80;
+	dxfBasePoint.y = dxfY + h1 + stringerPlateThickness;
 
 	if (par.isBot) {
 		var shape = new THREE.Shape();
@@ -3914,7 +3919,9 @@ function drawTurn1TreadPlateCabriole(par) {
 	}
 
 
-	dxfBasePoint.y += treadPlateHeight + 90 + distance(pv3, pv2);
+	//dxfBasePoint.y += treadPlateHeight + 90 + distance(pv3, pv2);
+	dxfBasePoint.x += distance(pv1, pv3) + 40;
+	dxfBasePoint.y = dxfY;
 
 	if (par.isIn) {
 		par.widthIn = par.step - 25;
@@ -4430,7 +4437,10 @@ function drawTurn2TreadPlateCabriole(par) {
 
 
 	//------------------------------------------------------------------------------------------
-	dxfBasePoint.y += distance(pv1, pv0) + 40;
+	//dxfBasePoint.y += distance(pv1, pv0) + 40;
+	var dxfY = dxfBasePoint.y;
+	dxfBasePoint.x += Math.abs(pv3.x) + 40;
+	dxfBasePoint.y += 40;
 
 	if (par.isTop) {
 		var shape = new THREE.Shape();
@@ -4487,7 +4497,8 @@ function drawTurn2TreadPlateCabriole(par) {
 	}
 
 	//----------------------------------------------------------------------------------------
-	dxfBasePoint.y -= distance(pv1, pv0) - pv4.y + pv0.y + 80;
+	//dxfBasePoint.y -= distance(pv1, pv0) - pv4.y + pv0.y + 80;
+	dxfBasePoint.y = dxfY;
 
 	if (par.isBot) {
 		var shape = new THREE.Shape();
@@ -4549,7 +4560,8 @@ function drawTurn2TreadPlateCabriole(par) {
 
 	//---------------------------------------------------------------------------------------
 
-	dxfBasePoint.y += treadPlateHeight * 2 + 90 + distance(pv1, pv0);
+	//dxfBasePoint.y += treadPlateHeight * 2 + 90// + distance(pv1, pv0);
+	dxfBasePoint.x += distance(pv2, pv3) + 40;
 
 	if (par.isIn) {
 		par.widthIn = par.step - 25;
@@ -5125,7 +5137,10 @@ function drawTurn3TreadPlateCabriole(par) {
 
 	//------------------------------------------------------------------------------------------
 
-	dxfBasePoint.y += distance(pv3, pv2) + 40;
+	//dxfBasePoint.y += distance(pv3, pv2) + 40;
+	var dxfY = dxfBasePoint.y;
+	dxfBasePoint.x += Math.abs(pv3.x) + 40;
+	dxfBasePoint.y += h1 + stringerPlateThickness + 40;
 
 	if (par.isTop) {
 		var shape = new THREE.Shape();
@@ -5177,7 +5192,8 @@ function drawTurn3TreadPlateCabriole(par) {
 	}
 
 	//----------------------------------------------------------------------------------------
-	dxfBasePoint.y -= distance(pv3, pv2) + 80;
+	//dxfBasePoint.y -= distance(pv3, pv2) + 80;
+	dxfBasePoint.y = dxfY + h1 + stringerPlateThickness;
 
 	if (par.isBot) {
 		var shape = new THREE.Shape();
@@ -5232,7 +5248,9 @@ function drawTurn3TreadPlateCabriole(par) {
 
 	//---------------------------------------------------------------------------------------
 
-	dxfBasePoint.y += treadPlateHeight + 90 + distance(pv3, pv2);
+	//dxfBasePoint.y += treadPlateHeight + 90 + distance(pv3, pv2);
+	dxfBasePoint.x += distance(pv1, pv3) + 40;
+	dxfBasePoint.y = dxfY;
 
 	if (par.isIn) {
 		par.widthIn = par.step - 25;

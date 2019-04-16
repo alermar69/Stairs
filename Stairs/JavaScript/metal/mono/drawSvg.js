@@ -234,7 +234,7 @@ function makeSvg() {
 				var marshParams = getMarshParams(key);
                 var count = marshParams.stairAmt;
 			    if (marshParams.botTurn == "пол") count -= 1;
-			    if (marshParams.lastMarsh && marshParams.topTurn == "пол") count -= 1;
+				if (marshParams.lastMarsh && marshParams.topTurn == "пол" && params.topAnglePosition == "под ступенью") count -= 1;
 
 
 				//подпись

@@ -302,12 +302,13 @@ function drawBotStepMk_pltG(par) {
             var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
             var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
             var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
-
+            var center5 = newPoint_xy(p, 0, params.stringerThickness / 2 - 20 - params.metalThickness);
 
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			par.pointsHole.push(center3);
 			par.pointsHole.push(center4);
+			par.pointsHole.push(center5);
 		}
 	}
 
@@ -771,12 +772,14 @@ function drawTopStepMk_pltG(par) {
 		    var center2 = newPoint_xy(p, params.stringerThickness / 2 - 20 - params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
 		    var center3 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, params.stringerThickness / 2 - 20 - params.metalThickness - 5);
 		    var center4 = newPoint_xy(p, -params.stringerThickness / 2 + 20 + params.metalThickness, -params.stringerThickness / 2 + 20 + params.metalThickness);
+		    var center5 = newPoint_xy(p, 0, params.stringerThickness / 2 - 20 - params.metalThickness);
 
 
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			par.pointsHole.push(center3);
 			par.pointsHole.push(center4);
+			par.pointsHole.push(center5);
 		}
 	}
 
@@ -952,7 +955,7 @@ function drawTopStepMk_wnd(par) {
 			p20 = newPoint_xy(p20, lenOut - lengthB1, 0.0);
 		var p21 = polar(p20, ang2, 100.0);  // вторая точка на нижней линии
 
-		if (par.stairAmt == 1 && par.botEnd == "пол") {
+		if (par.stairAmt <= 2 && par.botEnd == "пол") {
 			par.pointsShape.shift();
 			var pt = itercection(p20, p21, par.botUnitStart, polar(par.botUnitStart, 0, 100.0));
 			par.pointsShape.unshift(pt);
@@ -975,7 +978,7 @@ function drawTopStepMk_wnd(par) {
 			par.pointsShape.push(topLineP4);
 		}
 
-		if (par.stairAmt !== 1) par.pointsShape.push(topLineP5);
+		if (!(par.stairAmt <= 2 && par.botEnd == "пол")) par.pointsShape.push(topLineP5);
 	}
 
 	//сохраняем точку для расчета длины

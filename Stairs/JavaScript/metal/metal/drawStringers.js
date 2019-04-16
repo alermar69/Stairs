@@ -247,9 +247,10 @@ function drawStringer(par){
 		}
 
 		//смещяем первую стойку если начало ограждений не с первой ступени
-		if (par.marshId == 1 && params.railingStart !== "0" && par.railingHoles[0]) {
+		if (par.marshId == 1 && params.railingStart !== 0 && par.railingHoles[0]) {
 			par.railingHoles[0].x += par.b * params.railingStart;
 			par.railingHoles[0].y += par.h * params.railingStart;
+			if (params.railingStart >= par.stairAmt) par.railingHoles.shift();
 			if (params.railingModel == "Трап") {
 				par.railingHoles[1].x += par.b * params.railingStart;
 				par.railingHoles[1].y += par.h * params.railingStart;

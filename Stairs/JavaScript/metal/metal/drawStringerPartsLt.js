@@ -324,6 +324,8 @@ function drawBotStepLt_pltG(par) {
 					center1.isTurnRack = true;
 					center1.noDrawHoles = true;
 
+					if (params.rackBottom == "сверху с крышкой") center1 = newPoint_xy(p4, par.b * 0.5, par.rackTopHoleY);
+
 					//дополнительное отверстие для крепления поворотной стойки
 					var center2 = newPoint_xy(p4, pt.x, par.stepHoleY);
 					center2.rad = 3.5;
@@ -457,12 +459,16 @@ function drawBotStepLt_pltG(par) {
 		center1 = newPoint_xy(pt3, 100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt4, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);		
 	}
@@ -525,7 +531,8 @@ function drawBotStepLt_pltPIn(par) {
 	}
 
 	//сохраняем точки контура
-	par.pointsShape.push(botLineP1);
+	//Если botLine.x не меньше p2.x(верхний угол в начале, то добавляем точку)
+	if (botLineP1.x > p2.x) par.pointsShape.push(botLineP1);
 	p1.filletRad = p2.filletRad = 0; //угол тетивы не скругляется
 	par.pointsShape.push(p1);
 	par.pointsShape.push(p2);
@@ -655,8 +662,6 @@ function drawBotStepLt_pltPIn(par) {
 			begX -= frameWidth + 5.0;
 		}
 	}
-
-
 
 	//Отверстия под ограждения
 
@@ -914,12 +919,16 @@ function drawBotStepLt_pltPOut(par) {
 		center1 = newPoint_xy(p1, 100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p2, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 	}
@@ -1093,9 +1102,9 @@ function drawBotStepLt_wndIn(par) {
 			basePoint: newPoint_xy(p0, offsetX, -params.treadThickness),
 		}
 		if (par.stringerLast && par.stairAmt == 0) {
-			holePar.holes[0].x += (params.lastWinderTreadWidth - 86) / 2;
-			if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
-				holePar.holes[0].x -= 14 / 2;
+			//holePar.holes[0].x += (params.lastWinderTreadWidth - 86) / 2;
+			//if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
+			//	holePar.holes[0].x -= 14 / 2;
 		}
 		par.pointsHole.push(...calcWndHoles(holePar));
 	}
@@ -1247,6 +1256,11 @@ function drawBotStepLt_wndOut(par) {
 		var botLineP8 = newPoint_xy(botLineP7, par.b, 0);
 		var botLineP9 = newPoint_xy(botLineP8, 0, par.h);
 
+		if ((par.marshPar.prevMarshId == 1 && params.inStringerElongationTurn1 == 'да') ||
+			(par.marshPar.prevMarshId == 2 && params.inStringerElongationTurn2 == 'да')) {
+			botLineP5.y = botLineP6.y -= 10;
+		}
+
 		if (par.stairAmt > 0) {
 			if (!(par.stairAmt == 1 && par.topEnd == "platformG"))
 				botLinePoints.push(botLineP9, botLineP8);
@@ -1364,9 +1378,9 @@ function drawBotStepLt_wndOut(par) {
 			basePoint: newPoint_xy(p4, offsetX, -(par.stringerLedge + params.treadThickness)),
 		}
 		if (par.stringerLast && par.stairAmt == 0) {
-			holePar.holes[1].x += (params.lastWinderTreadWidth - 86);
-			if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
-				holePar.holes[1].x -= 14;
+			//holePar.holes[1].x += (params.lastWinderTreadWidth - 86);
+			//if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
+			//	holePar.holes[1].x -= 14;
 		}
 		if (par.isWndP) holePar.basePoint.x += -params.marshDist + turnParams.topMarshOffsetX + par.stringerLedge;;
 		par.pointsHole.push(...calcWndHoles(holePar));
@@ -1484,14 +1498,19 @@ function drawBotStepLt_wndOut(par) {
 		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(p4, -150, -200);
+		if (params.stringerType == "ломаная") center1.y += 50;
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
-		center1 = newPoint_xy(p1, 150, -200);
+		center1 = newPoint_xy(p1, 200, -200);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);		
 	}
@@ -1610,10 +1629,8 @@ function drawMiddleStepsLt(par) {
 			var center2 = newPoint_xy(center1, par.holeDist, 0.0);
 			if (par.isMiddleStringer) {
 				center1.isPltPFrame = center2.isPltPFrame = true;
-				center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
+				if (!par.midStringerFirst) center1.noBoltsFrame = center2.noBoltsFrame = true;
                 center1.noZenk = center2.noZenk = true;
-				par.elmIns[par.key].longBolts.push(center1);
-				par.elmIns[par.key].longBolts.push(center2);
 			}
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
@@ -2122,7 +2139,7 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 
 	//совпадают ли отверстия уголка крепления верхнего марша и перемычки
 	var isHolesOverlap = true; //отверстия крепления уголка верхнего марша и перемычки совпадают
-	if (par.stairAmt == 0) isHolesOverlap = false;
+	if (par.stairAmt == 0) isHolesOverlap = false;	
 
 	//позиция отверстий под уголок крепления верхнего марша
 	var turnParams = calcTurnParams(par.marshId);
@@ -2137,7 +2154,8 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 		
 		//на внутренней стороне в перемычке не должно быть болтов на уголке, чтобы не было пересечения с длинными болтами
 		var bridgeBasePoint = newPoint_xy(center1, -38.0, 20.0);
-		if(isHolesOverlap) bridgeBasePoint.noBoltsOnBridge = true;
+		if (isHolesOverlap) bridgeBasePoint.noBoltsOnBridge = true;
+		if (par.stringerLast && params.platformTop == 'увеличенная') bridgeBasePoint.noBoltsOnBridge = false;
 		par.elmIns[par.key].bridges.push(bridgeBasePoint);
 		
 		if (par.key == "in" && !par.stringerLast && isHolesOverlap) center1.noZenk = center2.noZenk = true;
@@ -2421,7 +2439,7 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 				//если на следующем марше повортная стойка, стойку не рисуем и сохраняем сдвиг отверстия до края следующего марша
 				if (par.key == "in" && !par.stringerLast) {
 					if (par.nextMarshPar.hasRailing.in) {
-						center1.noDraw = true;
+						if (params.rackBottom == "сверху с крышкой") center1 = newPoint_xy(p0, par.b * 0.5, par.rackTopHoleY);
 						//сохраняем сдвиг отверстия до края следующего марша (для расчета поручня и ригелей)
 						center1.dxToMarshNext = -(center1.x - p0.x) + par.b + par.turnBotParams.topMarshOffsetX + 5 - 0.1;
 
@@ -2594,12 +2612,16 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 		center1 = newPoint_xy(p2, 150, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(topLineP1, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);		
 	}
@@ -2661,7 +2683,7 @@ function drawTopStepLt_pltPIn(par) {
 	// проступь площадки
 	var topLineP1 = newPoint_xy(ph, par.topEndLength, 0.0);
 	var pt = copyPoint(topLineP1); //правый верхний угол
-	if (!hasTreadFrames())
+	if (!hasTreadFrames() && !par.stringerLast)
 		topLineP1 = newPoint_xy(ph, 73, 0.0);
 
 
@@ -2670,12 +2692,12 @@ function drawTopStepLt_pltPIn(par) {
 
 	if (params.stringerType == "ломаная") {
 		//тетива из двух частей
-		if (!hasTreadFrames()) {
+		if (!hasTreadFrames() && !par.stringerLast) {
 			var topLineP2 = {x: topLineP1.x, y: p1.y - par.stringerWidth};
 			botLinePoints.push(topLineP2);
 			}
 		//цельная тетива
-		if (hasTreadFrames()) {
+		if (hasTreadFrames() || par.stringerLast) {
 			var topLineP2 = newPoint_xy(topLineP1, 0, -par.stringerWidthPlatform + dh)
 			var topLineP4 = newPoint_xy(p1, par.stringerWidth, -par.stringerWidth)
 			var topLineP3 = {x: topLineP4.x, y: topLineP2.y};
@@ -2688,7 +2710,7 @@ function drawTopStepLt_pltPIn(par) {
 		}
 
 	if (params.stringerType != 'ломаная') {
-		if (hasTreadFrames()) {
+		if (hasTreadFrames() || par.stringerLast) {
 			var topLineP2 = newPoint_xy(topLineP1, 0.0, -par.stringerWidthPlatform + dh);
 			topLineP2.filletRad = 0; //нижний угол тетивы не скругляется
 			var topLineP3 = itercection(p20, p21, topLineP2, polar(topLineP2, 0, 100));
@@ -2709,7 +2731,7 @@ function drawTopStepLt_pltPIn(par) {
 	par.pointsShape.push(...botLinePoints);
 
 	//удлинение внутренней тетивы площадки
-	if (!hasTreadFrames()) {
+	if (!hasTreadFrames() && !par.stringerLast) {
 		var pt1 = newPoint_xy(topLineP1, params.stringerThickness, 0);
 		var pt2 = copyPoint(pt);
 		var pt3 = newPoint_xy(pt2, 0.0, -105);
@@ -2744,21 +2766,47 @@ function drawTopStepLt_pltPIn(par) {
 		}
 
 		var lenMiddlePlatform = (params.platformLength_1 + 7) / 2;
-		var centerPlatform = newPoint_xy(pt2, -lenMiddlePlatform - 5, 0);
+		if (par.stringerLast) lenMiddlePlatform = (params.platformLength_3 - 3) / 2;
+		var centerPlatform = newPoint_xy(pt, -lenMiddlePlatform - 5, 0);
+		//var centerPlatform = newPoint_xy(pt2, -lenMiddlePlatform - 5, 0);
 
 		// отверстия под 1 уголок площадки (ближе к маршу)
 		center1 = newPoint_xy(centerPlatform, -(lenMiddlePlatform - 75 - 60) / 2 - holeDist3 / 2, par.stepHoleY + 5 + params.treadThickness);		
 		var center2 = newPoint_xy(center1, holeDist3, 0.0);
-		par.pointsHoleTop.push(center1);
-		par.pointsHoleTop.push(center2);
+		if (par.stringerLast) {
+			par.pointsHole.push(center1);
+			par.pointsHole.push(center2);
+		}
+		else {
+			par.pointsHoleTop.push(center1);
+			par.pointsHoleTop.push(center2);
+		}
+		
 
 		// отверстия под перемычку
 		if (par.topEndLength > 600) {
 			center1 = newPoint_xy(centerPlatform, (params.stringerThickness + 60) / 2, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 			center1.hasAngle = center2.hasAngle = false;
-			par.pointsHoleTop.push(center1);
-			par.pointsHoleTop.push(center2);
+			if (par.stringerLast) {
+				par.pointsHole.push(center1);
+				par.pointsHole.push(center2);
+			}
+			else {
+				par.pointsHoleTop.push(center1);
+				par.pointsHoleTop.push(center2);
+			}
+		}
+
+		// отверстия под перемычку
+		if (par.stringerLast) {
+			var turnParams = calcTurnParams(par.marshId);
+			var topMarshAnlePosX = turnParams.topMarshOffsetX + params.stringerThickness + 30 + par.stringerLedge;
+			center1 = newPoint_xy(ph, topMarshAnlePosX, par.carcasAnglePosY + dh);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
 		}
 
 		// отверстия под 2 уголок площадки (ближе к углу)
@@ -2766,27 +2814,35 @@ function drawTopStepLt_pltPIn(par) {
 		if (stepHoleXside2 > 0.0) {
 			center1 = newPoint_xy(centerPlatform, lenMiddlePlatform / 2 - holeDist3 / 2, par.stepHoleY + 5 + params.treadThickness);
 			center2 = newPoint_xy(center1, holeDist3, 0.0);
-			par.pointsHoleTop.push(center1);
-			par.pointsHoleTop.push(center2);
+			if (par.stringerLast) {
+				par.pointsHole.push(center1);
+				par.pointsHole.push(center2);
+			}
+			else {
+				par.pointsHoleTop.push(center1);
+				par.pointsHoleTop.push(center2);
+			}
 		}
 
 		// отверстия под уголки крепления к поперечному косоуру площадки
 		//уголок спереди
-		center1 = newPoint_xy(ph, 43, -20.0);
-		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
-		center1.hasAngle = center2.hasAngle = true;
-		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
-		par.pointsHole.push(center2);
-		par.pointsHole.push(center1);
+		if (!par.stringerLast) {
+			center1 = newPoint_xy(ph, 43, -20.0);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = true;
+			center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
 
-		//уголок сзади
-		center1 = newPoint_xy(center1, par.holeDistU4 + params.stringerThickness, 0.0);
-		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
-		center1.hasAngle = center2.hasAngle = true;
-		center1.rotated = center2.rotated = true;
-		center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
-		par.pointsHoleTop.push(center2);
-		par.pointsHoleTop.push(center1);
+			//уголок сзади
+			center1 = newPoint_xy(center1, par.holeDistU4 + params.stringerThickness, 0.0);
+			center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+			center1.hasAngle = center2.hasAngle = true;
+			center1.rotated = center2.rotated = true;
+			center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
+			par.pointsHoleTop.push(center1);
+			par.pointsHoleTop.push(center2);
+		}
 	}
 
 	if (hasTreadFrames()) {
@@ -2805,6 +2861,11 @@ function drawTopStepLt_pltPIn(par) {
 		    par.pointsHole.push(center1);
             par.pointsHole.push(center2);
 			center1.noZenk = center2.noZenk = true;
+
+			if (params.platformTop == 'увеличенная' && par.stringerLast) {
+				center1.isPltFrame = center2.isPltFrame = true;
+				center1.isPltPFrame = center2.isPltPFrame = true;
+			}
 		}
 	}
 
@@ -2819,27 +2880,27 @@ function drawTopStepLt_pltPIn(par) {
 	center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 	center1.hasAngle = center2.hasAngle = true;
 	if (!hasTreadFrames()) {
-		par.pointsHoleTop.push(center2);
-		par.pointsHoleTop.push(center1);
+		if (par.stringerLast) {
+			par.pointsHole.push(center2);
+			par.pointsHole.push(center1);
+		}
+		else {
+			par.pointsHoleTop.push(center2);
+			par.pointsHoleTop.push(center1);
+		}
 		}
 	if (hasTreadFrames()) {
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
 	}
 
-	if (params.platformTop == 'увеличенная') {
+	if (par.stringerLast && params.platformTop == 'увеличенная') {
 		center1 = newPoint_xy(ph, 32.0, holePos);
 		if (params.stairType == "нет") center1.y += par.carcasAnglePosY;
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false;
-		if (!hasTreadFrames()) {
-			par.pointsHoleTop.push(center2);
-			par.pointsHoleTop.push(center1);
-		}
-		if (hasTreadFrames()) {
-			par.pointsHole.push(center2);
-			par.pointsHole.push(center1);
-		}
+		par.pointsHole.push(center2);
+		par.pointsHole.push(center1);
 	}
 
 
@@ -3107,12 +3168,16 @@ function drawTopStepLt_pltPOut(par) {
 		center1 = newPoint_xy(p2, 150, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(topLineP1, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 	}
@@ -3618,9 +3683,11 @@ function drawTopStepLt_wndOut(par) {
 	if (par.marshParams.wallFix.out) {
 		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к углу
-		center1 = newPoint_xy(p5, -150, -200);
+		center1 = newPoint_xy(p5, -200, -200);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		//center1.noZenk = true;
 		par.pointsHole.push(center1);
@@ -3628,6 +3695,8 @@ function drawTopStepLt_wndOut(par) {
 		center1 = newPoint_xy(p2, 150, -200);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		//center1.noZenk = true;
 		par.pointsHole.push(center1);		

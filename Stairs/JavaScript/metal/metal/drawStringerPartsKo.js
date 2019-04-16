@@ -320,12 +320,16 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 		center1 = newPoint_xy(pt3, 100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt4, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 	}
@@ -569,12 +573,16 @@ function drawBotStepKo_pltP(par){
 		center1 = newPoint_xy(pt3, 100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p2, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHoleBot.push(center1);
 	}
@@ -984,12 +992,16 @@ function drawBotStepKo_wndOut(par){
 		center1 = newPoint_xy(p2, 150, -150);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p5, -150, -150);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 	}
@@ -1385,6 +1397,7 @@ function drawTopStepKo_pltG(par){
 	
 	// подъем ступени
 	var p2 = newPoint_xy(p1, 0.0, par.h);
+	if (par.stairAmt == 0) p2 = newPoint_xy(p1, 0, 0);
 
 	// проступь
 	var topLineP1 = newPoint_xy(p2, par.topEndLength, 0.0);
@@ -1620,6 +1633,12 @@ function drawTopStepKo_pltG(par){
 	}
 
 	// отверстия под рамки площадки
+	//на лестнице с подступенками делаем рамки короче (что было как рамки на марше)
+	if (params.riserType == "есть") {
+		var frameWidthStep = 20; //точность округления ширины рамок
+		var offset = Math.ceil(params.riserThickness / frameWidthStep) * frameWidthStep;
+		par.stepHoleX2 -= offset;
+	}
 	var pltPar = {
 		len: params.M + calcTurnParams(par.marshId).topMarshOffsetX - (params.M - calcTreadLen()) / 2,//длина площадки
 		lenFrame: pltStringerLen + par.topEndLength,
@@ -1642,6 +1661,7 @@ function drawTopStepKo_pltG(par){
 		//pt0.x += (pltPar.maxWidth + pltPar.partsGap) * i;
 		center1 = newPoint_xy(pt0, par.stepHoleX1, 0);
 		center2 = newPoint_xy(pt0, stepHoleX2, 0);
+		// if (params.M < 900 && i == pltPar.partsAmt - 2) center2.x -= 900 - params.M;
 		pointsHoleTop.push(center1);
 		pointsHoleTop.push(center2);
 	}	
@@ -1726,12 +1746,16 @@ function drawTopStepKo_pltG(par){
 		center1 = newPoint_xy(p2, 150, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt2, -100 , -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 	}
@@ -1961,12 +1985,16 @@ function drawTopStepKo_pltP(par){
 		center1 = newPoint_xy(p2, 150, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt2, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 	}
@@ -2329,6 +2357,8 @@ function drawTopStepKo_wndOut(par){
 		center1 = newPoint_xy(topLineP1, -150, -150);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		//center1.noZenk = true;
 		par.pointsHole.push(center1);
@@ -2336,6 +2366,8 @@ function drawTopStepKo_wndOut(par){
 		center1 = newPoint_xy(p2, 150, -150);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
+		center1.noZenk = true;
+		center1.noBolts = true;
 		center1.wallFix = true;
 		//center1.noZenk = true;
 		par.pointsHole.push(center1);

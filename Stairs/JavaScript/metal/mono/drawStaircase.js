@@ -122,9 +122,6 @@ drawStaircase = function (viewportId, isVisible) {
 	params.starcasePos.rot = moove.rot;
 
 
-	if (params.model == "труба" && params.platformTop == "нет" && params.topAnglePosition == "над ступенью")
-		moove.x -= params.treadPlateThickness;
-
 	//если на верхней площадке есть заднее ограждение, сдвигаем лестницу по оси Х чтобы ограждение не пересекалось с верхним перекрытием
 	if (params.platformTop == "площадка" && params.topPltRailing_5) {
 		if (params.railingModel != "Самонесущее стекло") moove.x -= 40;//40-ширина стойки

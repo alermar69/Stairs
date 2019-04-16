@@ -89,11 +89,12 @@ function drawAdjustableLeg(isAngle) {
 	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
 		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
 			var fixPar = getFixPart(1, 'botFloor');
+			fixPar.thickness = thickness;
 			var holeXY = 15;
 
 			var fix = drawFixPart(fixPar).mesh;
 			fix.position.x = flan.position.x + holeXY;
-			fix.position.y = flan.position.y - thickness;
+			fix.position.y = flan.position.y;
 			fix.position.z = flan.position.z - holeXY;
 			fix.rotation.x = 0;
 			if (turnFactor == -1) {
@@ -104,7 +105,7 @@ function drawAdjustableLeg(isAngle) {
 
 			var fix = drawFixPart(fixPar).mesh;
 			fix.position.x = flan.position.x + flanParams.width - holeXY;
-			fix.position.y = flan.position.y - thickness;
+			fix.position.y = flan.position.y;
 			fix.position.z = flan.position.z - holeXY;
 			fix.rotation.x = 0;
 			if (turnFactor == -1) {
@@ -115,7 +116,7 @@ function drawAdjustableLeg(isAngle) {
 
 			var fix = drawFixPart(fixPar).mesh;
 			fix.position.x = flan.position.x + holeXY;
-			fix.position.y = flan.position.y - thickness;
+			fix.position.y = flan.position.y;
 			fix.position.z = flan.position.z - flanParams.height + holeXY;
 			fix.rotation.x = 0;
 			if (turnFactor == -1) {
@@ -126,7 +127,7 @@ function drawAdjustableLeg(isAngle) {
 
 			var fix = drawFixPart(fixPar).mesh;
 			fix.position.x = flan.position.x + flanParams.width - holeXY;
-			fix.position.y = flan.position.y - thickness;
+			fix.position.y = flan.position.y;
 			fix.position.z = flan.position.z - flanParams.height + holeXY;
 			fix.rotation.x = 0;
 			if (turnFactor == -1) {

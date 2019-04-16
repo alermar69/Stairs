@@ -2313,30 +2313,30 @@ function drawTopFixFlan(length, dxfBasePoint) {
 	flanParams.mesh.add(mesh);
 
 	//болты
-	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
-		var boltPar = {
-			diam: boltDiam,
-			len: boltLen,
-		}
+	//if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
+	//	var boltPar = {
+	//		diam: boltDiam,
+	//		len: boltLen,
+	//	}
 		
-		var x = flanParams.width / 2;
-		var z = -boltPar.len / 2;
-		var y = flanParams.hole1Y;
+	//	var x = flanParams.width / 2;
+	//	var z = -boltPar.len / 2;
+	//	var y = flanParams.hole1Y;
 
-		var bolt = drawBolt(boltPar).mesh;
-		bolt.rotation.x = -Math.PI / 2;
-		bolt.position.x = x;
-		bolt.position.z = z;
-		bolt.position.y = y;
-		flanParams.mesh.add(bolt);
+	//	var bolt = drawBolt(boltPar).mesh;
+	//	bolt.rotation.x = -Math.PI / 2;
+	//	bolt.position.x = x;
+	//	bolt.position.z = z;
+	//	bolt.position.y = y;
+	//	flanParams.mesh.add(bolt);
 
-		var bolt2 = drawBolt(boltPar).mesh;
-		bolt2.rotation.x = -Math.PI / 2;
-		bolt2.position.x = x;
-		bolt2.position.y = flanParams.hole4Y;
-		bolt2.position.z = z;
-		flanParams.mesh.add(bolt2);
-	}
+	//	var bolt2 = drawBolt(boltPar).mesh;
+	//	bolt2.rotation.x = -Math.PI / 2;
+	//	bolt2.position.x = x;
+	//	bolt2.position.y = flanParams.hole4Y;
+	//	bolt2.position.z = z;
+	//	flanParams.mesh.add(bolt2);
+	//}
 	
 	//сохраняем данные для спецификации
 	var partName = "topFlan";
@@ -3417,3 +3417,1446 @@ function drawColumnF(par) {
 	return par;
 }//end of drawColumnF
 
+
+
+//-------------------------------------------------------
+
+/*отрисовка болтов крепления к стенам, нижнему и верхнему перекрытию*/
+function drawFixPart(par) {
+	/*
+	diam
+	len
+	headType
+	*/
+
+	par.mesh = new THREE.Object3D();
+	var fixPart = new THREE.Object3D();
+	if (turnFactor == -1) fixPart.rotation.x = Math.PI;
+
+	if (!anglesHasBolts) return par;
+
+	par.material = new THREE.MeshLambertMaterial({ color: "#0000FF" });
+	par.material = params.materials.bolt;
+	par.dopParams = {};
+
+	var thickness = params.stringerThickness;
+	if (params.calcType == "mono") thickness = params.flanThickness;
+	if (params.calcType == "vint") thickness = 8;	
+	if (par.thickness) thickness = par.thickness;	
+
+
+	if (par.fixPart == 'химия') {
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		if (!testingMode) {
+			//гайка
+			var nut = drawNutF(par);
+			nut.position.y = par.len / 2 - par.nutAmount - 5;
+			fixPart.add(nut);
+
+			//шайба
+			var shim = drawShimF(par);
+			shim.position.y = nut.position.y - par.shimAmount;
+			fixPart.add(shim);
+		}
+		//хим. анкер
+
+		//сохраняем данные для спецификации
+		var partName = "chemAnc"
+		if (typeof specObj != 'undefined' && partName) {
+			if (!specObj[partName]) {
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Анкер химический",
+					metalPaint: false,
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "(эконом)";
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1 / 20;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1 / 20;
+			specObj[partName]["amt"] += 1 / 20;
+		}
+		/*
+		item = {
+			id: "chemAnc",
+			amt: 1/20,
+			discription: "",
+			unit: par.unit,
+			itemGroup: par.itemGroup,
+			};
+		if(item.amt > 0) specObj.addItem(item);
+		specObj["chemAnc"].comment = "монтаж: " + params.isHeating;
+		
+		/*
+		par.dopParams = {
+			name: "Химический анкер, баллон",
+			lenCylinder: 75,
+			diamCylinder: par.diam + 4,
+			material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
+		}
+		var anchor = drawStudF(par);
+		anchor.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
+		fixPart.add(anchor);
+		*/
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'глухари') {
+		//глухарь
+		var screw = drawScrewF(par);
+		fixPart.add(screw);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = par.len / 2 - par.shimAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.shimAmount) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'шпилька насквозь') {
+		//шпилька
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		//гайка
+		nut = drawNutF(par);
+		nut.position.y = - par.len / 2 + 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y + par.nutAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'саморезы') {
+		//глухарь
+		par.dopParams.name = "Саморез";
+		var screw = drawScrewF(par);
+		fixPart.add(screw);
+
+		if (par.fixType !== 'дерево') {
+			//дюбель	
+			par.dopParams = {
+				name: "Дюбель",
+				lenCylinder: 50,
+				diamCylinder: 10,
+				material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
+			}
+			var dowel = drawStudF(par);
+			dowel.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
+			fixPart.add(dowel);
+		}
+
+		fixPart.position.y = (-par.len / 2) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	if (par.fixPart == 'шпилька-шуруп') {
+		//шпилька
+		par.dopParams.name = "Шпилька-шуруп"
+		var stud = drawStudF(par);
+		fixPart.add(stud);
+
+		//гайка
+		var nut = drawNutF(par);
+		nut.position.y = par.len / 2 - par.nutAmount - 5;
+		fixPart.add(nut);
+
+		//шайба
+		var shim = drawShimF(par);
+		shim.position.y = nut.position.y - par.shimAmount;
+		fixPart.add(shim);
+
+		fixPart.position.y = (-par.len / 2 + par.nutAmount + par.shimAmount + 5) * turnFactor + thickness * (1 + turnFactor) * 0.5;
+
+		par.mesh.add(fixPart);
+	}
+
+	//проставка
+	if (par.isSpacer) {
+		for (var i = 1; i <= par.spacerAmt; i++) {
+			par.material = params.materials.bolt;
+			var spacer = drawSpacerF(par);
+			spacer.position.y = -fixPart.position.y * turnFactor - par.spacerAmount * i;
+			if (turnFactor == -1) spacer.position.y -= thickness;
+			fixPart.add(spacer);
+
+			par.mesh.add(fixPart);
+		}
+	}
+
+	//проставка
+	function drawSpacerF(par) {
+		var extrudeOptions = {
+			amount: par.fixSpacerLength,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+
+		var p1 = newPoint_xy(center, -par.spacerWidt / 2, -par.spacerHeigth / 2);
+		var p2 = newPoint_xy(center, -par.spacerWidt / 2, par.spacerHeigth / 2);
+		var p3 = newPoint_xy(center, par.spacerWidt / 2, par.spacerHeigth / 2);
+		var p4 = newPoint_xy(center, par.spacerWidt / 2, -par.spacerHeigth / 2);
+
+		var pointsShape = [p1, p2, p3, p4];
+
+		//создаем шейп
+		var shapePar = {
+			points: pointsShape,
+			dxfArr: dxfArr,
+			dxfBasePoint: dxfBasePoint,
+		}
+		var shape = drawShapeByPoints2(shapePar).shape;
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var shim = new THREE.Mesh(geom, par.material);
+		shim.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "fixSpacer"
+		par.partName += "_M" + par.diam + "-" + par.fixSpacer;
+		if (typeof specObj != 'undefined' && par.partName && par.fixSpacerLength) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Проставка",
+					metalPaint: true,
+					timberPaint: false,
+					division: "metal",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = "М" + par.diam + "-" + par.spacerWidt + 'x' + par.spacerHeigth + 'x' + par.fixSpacerLength;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.spacerAmount = extrudeOptions.amount;
+
+		return shim;
+	}
+
+	//шпилька или деталь в виде цилиндра
+	function drawStudF(par) {
+		var len = par.len;
+		if (par.dopParams.lenCylinder) len = par.dopParams.lenCylinder;
+		var diam = par.diam;
+		if (par.dopParams.diamCylinder) diam = par.dopParams.diamCylinder;
+		var material = par.material;
+		if (par.dopParams.material) material = par.dopParams.material;
+
+
+		var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
+		var stud = new THREE.Mesh(geometry, material);
+
+		//сохраняем данные для спецификации
+		var nameFix = "Шпилька";
+		if (par.dopParams.name) nameFix = par.dopParams.name;
+
+		par.partName = "stud_M"
+		if (nameFix == 'Шпилька-шуруп') par.partName = "stud_screw_M"
+		if (nameFix != "Шпилька") par.partName += diam;
+
+		//if (nameFix == 'Химический анкер, баллон') par.partName = "chemAnc"
+		if (nameFix == 'Дюбель') par.partName = "dowel" + "_Ф" + diam;
+
+
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: nameFix,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+					discription: "Крепление к стене 1"
+				}
+			}
+			var name = "М" + diam + "x" + len;
+			if (nameFix == "Шпилька") name = diam;
+			//if (nameFix == 'Химический анкер, баллон') name = "Ф" + diam + "x" + len;
+			if (nameFix == 'Дюбель') name = "Ф" + diam + "x" + len;
+			if (nameFix == "Шпилька") {
+				if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += Math.round(len / 1000 * 10) / 10;
+				if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = Math.round(len / 1000 * 10) / 10;
+				specObj[par.partName]["amt"] += Math.round(len / 1000 * 10) / 10;
+			}
+			else {
+				if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+				if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+				specObj[par.partName]["amt"] += 1;
+			}
+
+		}
+
+		return stud;
+	}
+
+	//глухарь
+	function drawScrewF(par) {
+		var screw = new THREE.Object3D();
+
+		//шпилька
+		var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, par.len, 10, 1, false);
+		var stud = new THREE.Mesh(geometry, par.material);
+		screw.add(stud);
+
+		//головка для болтов
+		var extrudeOptions = {
+			amount: par.diam * 0.6,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+		var shape = drawPolygon(polygonParams).shape;
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var head = new THREE.Mesh(geom, par.material);
+		head.rotation.x = -Math.PI / 2;
+		head.position.y = par.len / 2
+		screw.add(head);
+
+		//сохраняем данные для спецификации
+		var nameFix = "Глухарь";
+		if (par.dopParams.name) nameFix = par.dopParams.name;
+
+		var d = '';
+		if (nameFix == "Саморез") d = 'Ф';
+
+		par.partName = "screw"
+		par.partName += "_" + d + par.diam;
+
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: nameFix,
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = d + par.diam + "х" + par.len;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.headAmount = extrudeOptions.amount;
+
+		return screw;
+	}
+
+	//гайка
+	function drawNutF(par) {
+		var extrudeOptions = {
+			amount: par.diam * 0.8,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+		var polygonParams = {
+			cornerRad: 0,
+			vertexAmt: 6,
+			edgeLength: par.diam * 0.9815,
+			basePoint: { x: 0, y: 0 },
+			type: "shape",
+			dxfPrimitivesArr: [],
+			dxfBasePoint: { x: 0, y: 0 },
+		}
+
+		var shape = drawPolygon(polygonParams).shape;
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var nut = new THREE.Mesh(geom, par.material);
+		nut.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "nut_M"
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Гайка",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = par.diam;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.nutAmount = extrudeOptions.amount;
+
+		return nut;
+	}
+
+	//шайба
+	function drawShimF(par) {
+		var extrudeOptions = {
+			amount: par.diam * 0.2,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var shape = new THREE.Shape();
+
+		var center = { x: 0, y: 0 };
+		var dxfBasePoint = { x: 0, y: 0 };
+		var dxfArr = [];
+		addCircle(shape, dxfArr, center, par.diam, dxfBasePoint);
+
+		var hole = new THREE.Path();
+		addCircle(hole, dxfArr, center, par.diam / 2 + 1, dxfBasePoint);
+		shape.holes.push(hole);
+
+		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var shim = new THREE.Mesh(geom, par.material);
+		shim.rotation.x = -Math.PI / 2;
+
+		//сохраняем данные для спецификации
+		par.partName = "shim_M"
+		if (typeof specObj != 'undefined' && par.partName) {
+			if (!specObj[par.partName]) {
+				specObj[par.partName] = {
+					types: {},
+					amt: 0,
+					name: "Шайба",
+					metalPaint: (params.paintedBolts == "есть"),
+					timberPaint: false,
+					division: "stock_1",
+					workUnitName: "amt",
+					group: "Крепление к обстановке",
+				}
+			}
+			var name = par.diam;
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+		par.shimAmount = extrudeOptions.amount;
+
+		return shim;
+	}
+
+	return par;
+}
+
+function drawForgedFramePart2(par) {
+
+	/*
+	var pole3DParams = {
+		type: "pole", rack
+		poleProfileY: 40,
+		poleProfileZ: 60,
+		dxfBasePoint: railingSectionParams.dxfBasePointHandrail,
+		len: 1000,
+		poleAngle: 0,
+		angStart
+		angEnd
+		angTop
+		material: params.materials.metal,
+		dxfArr: dxfPrimitivesArr,
+	  monoType: для монокосуров
+	  stepH
+	  nextStepH
+	  holes отверстия для поворотного столба(считаются от нижней части стойки, для более продобной инфы см mono)
+		}
+		*/
+
+
+	par.mesh = new THREE.Object3D();
+	var marshPar = getMarshParams(par.marshId);
+	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+
+	par.stringerSideOffset = 0;
+	if (params.model == "ко") par.stringerSideOffset = params.sideOverHang;
+
+
+	//стойка
+	if (par.type == "rack") {
+		var points = [];
+		var holeCenters = [];
+		//высота верхнего наклонного среза стойки
+		var deltaHeight = par.poleProfileY * Math.tan(par.angTop);
+
+		//верхние точки
+		var p0 = { x: 0, y: 0 };
+		var p1 = newPoint_xy(p0, -par.poleProfileY / 2, par.len - deltaHeight - 0.01);
+		var p2 = newPoint_xy(p1, par.poleProfileY, deltaHeight);
+
+		if (par.angTop < 0) {
+			p1 = newPoint_xy(p0, -par.poleProfileY / 2, par.len);
+			p2 = newPoint_xy(p1, par.poleProfileY, deltaHeight);
+		}
+		points.push(p1, p2);
+
+		par.topCutLen = distance(p1, p2);
+		par.len2 = par.len - deltaHeight;
+		par.angStart = 0;
+		par.angEnd = par.angTop;
+
+		//стойки монокосоуров
+
+		if (params.calcType == 'mono' && !par.isBanister) {
+			p0.y += 90; //костыль для совместимости с лт
+			var botLen = 0;
+			var stepH = par.stepH;
+			var nextStepH = par.nextStepH;
+			var holeDiam = 6;
+			var bottomHoleOffset = 20;
+			var banisterAngleOffset = 16;
+			var banisterFlanThk = 8; //толщина фланца L-образной стойки
+			var sideLenLast = 120; //длина уступа L-образной стойки
+
+			var angleParams = {
+				material: par.material,
+				dxfArr: []
+			}
+
+			if (par.isBotFlan) par.monoType = 'platformRear';
+
+			//расчет длины нижней части стойки (ниже уровня ступени)
+			var botLen = marshPar.h; //длина от верха ступени до низа стойки
+			if (par.monoType == 'middle') botLen += params.treadThickness + bottomHoleOffset + banisterAngleOffset;
+			//if (par.monoType == 'last') botLen = params.treadThickness + bottomHoleOffset + banisterAngleOffset;
+			if (par.monoType == 'last') botLen = params.treadThickness + par.poleProfileY + banisterFlanThk;
+			if (par.monoType == 'turnRackStart') {
+				//Г-образный поворот
+				if (params.stairModel != "П-образная с площадкой" && params.stairModel != "П-образная с забегом") {
+					botLen += params.treadThickness + bottomHoleOffset + banisterAngleOffset + prevMarshPar.h;
+					if (marshPar.botTurn == "забег") botLen += marshPar.h * 2;
+				}
+				//П-образный поворот
+				if (params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная с забегом") {
+					botLen += params.treadThickness + bottomHoleOffset + banisterAngleOffset;
+					if (marshPar.botTurn == "забег") {
+						if (params.marshDist > 40)
+							botLen += marshPar.h * 3;
+						else
+							botLen += marshPar.h * 5;
+					}
+				}
+			}
+			if (par.monoType == 'turnRackEnd') {
+				//Г-образный поворот
+				if (params.stairModel != "П-образная с площадкой" && params.stairModel != "П-образная с забегом") {
+					botLen += params.treadThickness + bottomHoleOffset + banisterAngleOffset + prevMarshPar.h;
+					if (marshPar.botTurn == "забег") botLen += marshPar.h * 3;
+				}
+				//П-образный поворот
+				if (params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная с забегом") {
+					botLen = params.treadThickness + bottomHoleOffset + banisterAngleOffset + marshPar.h;
+				}
+			}
+
+			//нижние точки
+			var p3 = newPoint_xy(p0, par.poleProfileY / 2, -botLen);
+			var p4 = newPoint_xy(p3, -par.poleProfileY, 0);
+			points.push(p3, p4);
+
+			if (par.monoType == 'last') {
+				var pointsDop = [];
+				var pt1 = newPoint_xy(p0, par.poleProfileY / 2, -botLen);
+				var pt2 = newPoint_xy(pt1, sideLenLast, 0);
+				var pt3 = newPoint_xy(pt2, 0, par.poleProfileY);
+				var pt4 = newPoint_xy(pt3, -sideLenLast, 0);
+				pointsDop.push(pt1, pt2, pt3, pt4)
+
+				//создаем шейп
+				var shapeParDop = {
+					points: pointsDop,
+					dxfArr: dxfPrimitivesArr,
+					dxfBasePoint: par.dxfBasePoint,
+				}
+
+				var shapeDop = drawShapeByPoints2(shapeParDop).shape;
+				var extrudeOptionsDop = {
+					amount: par.poleProfileZ,
+					bevelEnabled: false,
+					curveSegments: 12,
+					steps: 1
+				};
+
+				var poleGeometry = new THREE.ExtrudeGeometry(shapeDop, extrudeOptionsDop);
+				poleGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+				var poleDop = new THREE.Mesh(poleGeometry, par.material);
+				poleDop.rotation.y = -Math.PI / 2 * turnFactor;
+				poleDop.position.z = par.poleProfileY / 2;
+				poleDop.position.x = par.poleProfileY / 2 * turnFactor;
+				if (par.railingSide == "right" && turnFactor == 1) poleDop.position.z -= sideLenLast + par.poleProfileY;
+				if (par.railingSide == "left" && turnFactor == -1) poleDop.position.z += sideLenLast + par.poleProfileY;
+
+				par.mesh.add(poleDop);
+			}
+
+			//отверстия под уголки
+
+			//сдвиг первой стойки первого марша, чтобы стойка не пересекала пригласительную ступень
+
+			var isFirstMove = false;
+			if (par.isFirst && params.railingStart != 0) {
+				if (params.startTreadAmt == params.railingStart && (params.arcSide == par.railingSide || params.arcSide == "two"))
+					isFirstMove = true;
+			}
+
+			//верхнее отверстие
+			if (par.monoType != 'last' && par.monoType != 'platformRear') {
+				var center1 = newPoint_xy(p0, 0, -params.treadThickness - banisterAngleOffset);
+				holeCenters.push(center1)
+
+			}
+			//нижнее отверстие
+			if (par.monoType == 'middle') {
+				var center2 = newPoint_xy(center1, 0, -marshPar.h);
+				//уголок первой стойки к пригласительной ступени
+				if (isFirstMove) center2.anglePos = 'слева';
+				holeCenters.push(center2);
+			}
+			if (par.monoType == 'turnRackStart' || par.monoType == 'turnRackEnd') {
+				var rackPar = {
+					marshId: par.marshId,
+					type: par.monoType,
+				}
+				holeCenters = setTurnRackHoles(rackPar).holes;
+				for (var center in holeCenters) {
+					holeCenters[center].y += 90;
+				}
+			}
+
+			//добавлем уголки
+
+			var angPar = {
+				holeCenters: holeCenters,
+				railingSide: par.railingSide,
+				dxfBasePoint: par.dxfBasePoint,
+			}
+			var angles = addRackAngles(angPar).mesh;
+			par.mesh.add(angles);
+
+			//фланцы
+			if (par.monoType == 'first' || par.monoType == 'platformRear') {
+				var flanPar = {
+					dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+				}
+				var botFlan = drawPlatformRailingFlan(flanPar).mesh;
+				botFlan.position.z = par.poleProfileY / 2;
+				botFlan.position.y = p3.y;
+				par.mesh.add(botFlan);
+			}
+			if (par.monoType == 'last') {
+				var flanPar = {
+					dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+				}
+				var botFlan = drawLastRackFlan(flanPar).mesh;
+				botFlan.rotation.y = -Math.PI / 2;
+				botFlan.position.z = -sideLenLast / 2 - 5
+				if (par.railingSide === "left") {
+					botFlan.position.z = sideLenLast / 2 + par.poleProfileY + 5
+					botFlan.rotation.y = Math.PI / 2;
+				}
+				botFlan.position.y = p3.y + par.poleProfileY;
+				par.mesh.add(botFlan);
+			}
+		}
+
+		//стойки лт и ко
+
+		if (params.calcType == 'lt-ko' || params.calcType == 'vhod' || par.isBanister) {
+			var p3 = newPoint_xy(p0, par.poleProfileY / 2, 0);
+			var p4 = newPoint_xy(p3, -par.poleProfileY, 0);
+			points.push(p3, p4);
+
+			var holeDiam = 13;
+			var holeDist = 60;
+
+			//отверстия для бокового крепления
+
+			if (params.rackBottom == "боковое" && !par.isBanister) {
+				//верхнее отверстие
+				var center = { x: 0, y: 90 }
+				//нижнее отверстие
+				var center2 = newPoint_xy(center, 0, -holeDist)
+
+				if (par.isTurnRack && params.model == 'лт') {
+					center.anglePos = turnFactor == 1 ? 'слева' : 'справа';
+					center2.anglePos = turnFactor == 1 ? 'слева' : 'справа';
+				}
+				if (par.isTurnRack && params.model == 'ко') {
+					center.anglePos = turnFactor == 1 ? 'справа' : 'слева';
+					center2.anglePos = turnFactor == 1 ? 'справа' : 'слева';
+				}
+
+				holeCenters.push(center, center2)
+
+
+				//болты
+
+				if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //anglesHasBolts - глобальная переменная
+					if (!(params.model == "ко" && params.rackBottom == "боковое" && !par.isBotFlan && par.isTurnRack && testingMode)) {
+		                /*
+	                    var boltPar = {
+	                         diam: boltDiam,
+	                         len: boltLen,
+	                     }
+	                     */
+						var boltPar = {
+							diam: boltDiam,
+							len: 20,
+							headType: "потай",
+						}
+						if (params.model == "ко") boltPar.headType = "шестигр.";
+
+						var bolt = drawBolt(boltPar).mesh;
+		                /*
+                        bolt.rotation.x = -Math.PI / 2;
+                        bolt.position.x = 0;
+                        bolt.position.y = 90;
+                        bolt.position.z = 2 + 4;
+                        if (par.railingSide == "left") {
+			                bolt.rotation.x = Math.PI / 2;
+			                bolt.position.z = 40 - boltLen / 2 + boltBulge;
+		                }
+			                */
+
+						if (params.model == "лт") {
+							bolt.rotation.x = Math.PI / 2;
+							bolt.position.x = 0;
+							bolt.position.y = 90;
+							bolt.position.z = 2
+
+							if (par.railingSide == "left") {
+								bolt.rotation.x = -Math.PI / 2;
+								bolt.position.z = par.poleProfileY - 2
+							}
+						}
+
+						if (params.model == "ко") {
+							bolt.rotation.x = -Math.PI / 2;
+							bolt.position.x = 0;
+							bolt.position.y = 90;
+							bolt.position.z = 2 + 4 //boltLen / 2 + boltBulge - 4;
+
+							if (par.railingSide == "left") {
+								bolt.rotation.x = Math.PI / 2;
+								bolt.position.z = par.poleProfileY - 2 - 4 // - boltLen / 2 - boltBulge + 4;
+							}
+						}
+
+						par.mesh.add(bolt)
+
+						var bolt2 = drawBolt(boltPar).mesh;
+						bolt2.rotation.x = bolt.rotation.x;
+						bolt2.position.x = 0;
+						bolt2.position.y = 90 - holeDist;
+						bolt2.position.z = bolt.position.z;
+						par.mesh.add(bolt2)
+					}
+				}
+
+				//кронштейн из пластин для КО
+				if (params.model == "ко" && params.rackBottom == "боковое" && !par.isBotFlan) {
+					var holderPar = {
+						railingSide: par.railingSide,
+						dxfBasePoint: par.dxfBasePoint,
+						material: params.materials.metal2,
+					}
+					var holder = drawRackHolder(holderPar).mesh;
+					holder.position.y = 20;
+					if (par.railingSide == "right" || par.marshId == "topPlt") holder.position.z = 40;
+					if (par.isTurnRack) {
+						holder.rotation.y += Math.PI / 2 * turnFactor;
+						holder.position.x += 20;
+						holder.position.z -= 20 * turnFactor;
+					}
+					par.mesh.add(holder);
+				}
+			}
+
+			//фланец балясины
+
+			if (params.rackBottom == "сверху с крышкой" || par.isBanister) {
+				var flanParams = {
+					material: params.materials.metal,
+					dxfArr: dxfPrimitivesArr0,
+					dxfBasePoint: { x: 1000, y: -1000, },
+					size: 76,
+					holeDst: 55,
+				}
+				flanParams = drawPlatformRailingFlan(flanParams)
+				var botFlan = flanParams.mesh;
+				botFlan.position.z = 20;
+				botFlan.position.y = 0;
+				par.mesh.add(botFlan);
+			}
+
+		}
+		//создаем шейп
+		var shapePar = {
+			points: points,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: par.dxfBasePoint,
+			drawing: par.drawing || {},
+		}
+
+		if (par.monoType == 'turnRackStart' || par.monoType == 'turnRackEnd') {
+			shapePar.drawing = { group: 'turnRack', name: 'Поворотный столб марш: ' + par.marshId, yDelta: botLen || 0 };
+		}
+		if (params.calcType == 'mono' && botLen && !par.isBanister) shapePar.drawing.yDelta -= 90;
+
+		var shape = drawShapeByPoints2(shapePar).shape;
+
+
+		//добавляем отверстия
+		var holesPar = {
+			holeArr: holeCenters,
+			dxfBasePoint: par.dxfBasePoint,
+			shape: shape,
+			holeRad: holeDiam / 2,
+		}
+		addHolesToShape(holesPar);
+
+	}//конец стойки
+
+	//наклонная палка
+	if (par.type == "pole") {
+		if (par.vertEnds) {
+			par.angStart = par.poleAngle;
+			par.angEnd = par.poleAngle;
+		}
+		//рассчитываем абсолютные углы
+		var angStart = par.poleAngle + Math.PI / 2 - par.angStart;
+		var angEnd = par.poleAngle + Math.PI / 2 - par.angEnd;
+		var startCutLen = par.poleProfileY / Math.sin(angStart - par.poleAngle)
+		var endCutLen = par.poleProfileY / Math.sin(angEnd - par.poleAngle)
+
+		var p0 = {
+			x: 0,
+			y: 0
+		};
+		var p1 = polar(p0, angStart, startCutLen);
+		var p2 = polar(p1, par.poleAngle, par.len);
+		var p3 = polar(p0, par.poleAngle, par.len);
+
+		var shape = new THREE.Shape();
+		addLine(shape, par.dxfArr, p0, p1, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p3, p0, par.dxfBasePoint);
+
+		shape.drawing = par.drawing;
+		shapesList.push(shape);
+		//сохраняем параметры
+		par.startCutLen = startCutLen;
+		par.endCutLen = endCutLen;
+		par.len2 = par.len
+	}
+
+	var extrudeOptions = {
+		amount: par.poleProfileZ,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var poleGeometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	poleGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var pole = new THREE.Mesh(poleGeometry, par.material);
+
+
+	par.mesh.add(pole);
+
+	//сохраняем данные для спецификации
+	if (par.type == "rack") {
+		var partName = "forgedRack";
+		if (typeof specObj != 'undefined' && partName) {
+			if (!specObj[partName]) {
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					sumLength: 0,
+					name: "Стойка кованой секции",
+				}
+			}
+
+			var name = par.len + "х" + par.poleProfileY + "х" + par.poleProfileZ;
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+		}
+	}
+
+	//сохраняем данные для ведомости заготовок
+	if (typeof poleList != 'undefined') {
+		var poleType = par.poleProfileY + "х" + par.poleProfileZ + " черн.";
+		//формируем массив, если такого еще не было
+		if (!poleList[poleType]) poleList[poleType] = [];
+		var polePar = {
+			len1: Math.round(par.len2),
+			len2: Math.round(par.len),
+			angStart: Math.round(par.angStart * 180 / Math.PI * 10) / 10,
+			angEnd: Math.round(par.angEnd * 180 / Math.PI * 10) / 10,
+			cutOffsetStart: Math.round(par.poleProfileY * Math.tan(par.angStart)),
+			cutOffsetEnd: Math.round(par.poleProfileY * Math.tan(par.angEnd)),
+			poleProfileY: par.poleProfileY,
+			poleProfileZ: par.poleProfileZ,
+		}
+		polePar.len3 = polePar.len1 + polePar.cutOffsetEnd; //максимальная длина палки
+		polePar.text = par.sectText;
+		polePar.description = [];
+		polePar.description.push(polePar.text);
+		polePar.amt = 1;
+
+		poleList[poleType].push(polePar);
+
+	}
+	return par;
+};
+
+function drawWndTreadsMetal(par) {
+
+    /*функция отрисовывает блок забежных ступеней для лестниц ЛТ и КО
+    Исходные данные:
+
+        h: params.h, - подъем ступени
+        dxfBasePoint: dxfBasePoint, - базовая точка вставки контуров ступеней
+        extendTopTurnTread: extendTopTurnTread, - продление верхней забежной ступени для попадания в проём
+
+    Возвращаемое значение:
+    объект  turnSteps = {
+        meshes: treads; - мэши ступеней в виде единого 3D объекта
+        params: treadParams; - массив параметров каждой ступени
+    */
+
+	//параметры марша
+	var marshPar = getMarshParams(par.botMarshId);
+	par.h = marshPar.h_topWnd;
+
+	var hasTurnRack = false;
+	if (params.railingModel == "Деревянные балясины" || params.railingModel == "Дерево с ковкой" || params.railingModel == 'Стекло') {
+		if (params.stairModel == 'Г-образная с забегом' || params.stairModel == 'Г-образная с площадкой') {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.botMarshId == 1) {
+			hasTurnRack = getMarshParams(1).hasRailing.in || getMarshParams(2).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная трехмаршевая' && par.botMarshId == 2) {
+			hasTurnRack = getMarshParams(2).hasRailing.in || getMarshParams(3).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная с забегом' && par.turnId == 1) {
+			hasTurnRack = getMarshParams(1).hasRailing.in;
+		}
+		if (params.stairModel == 'П-образная с забегом' && par.turnId == 2) {
+			hasTurnRack = getMarshParams(3).hasRailing.in;
+		}
+	}
+	var rackSize = 95;
+
+	//параметры поворота
+	var turnPar = calcTurnParams(par.botMarshId);
+
+	par.type = params.model;
+
+	var stepWidthLow_lt = 100;
+	var stepWidthLow_ko = 55;
+
+	var dxfBasePoint = par.dxfBasePoint;
+	var material = params.materials.tread;
+	var treadParams = [];
+	var treads = new THREE.Object3D();
+	var risers = new THREE.Object3D();
+
+	//константы
+	var treadWidth = params.M;
+	var stepWidthLow = 55;
+	if (params.model == "лт") {
+		stepWidthLow = 100;
+		var treadSideOffset = 5;//зазор от торца ступени до тетивы
+		if (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил") treadSideOffset = 0;
+
+		treadWidth = params.M - params.stringerThickness * 2 - treadSideOffset * 2;
+	}
+	var treadZOffset = (params.M - treadWidth) / 2;
+
+	/*забежная ступень 1*/
+
+	//задаем параметры ступени
+
+	treadParams[1] = {
+		treadWidth: treadWidth,
+		innerOffset: 0,
+		outerOffset: 0,
+		edgeAngle: Math.PI / 6,
+		stepWidthLow: stepWidthLow,
+		dxfBasePoint: dxfBasePoint,
+		treadId: 1,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId
+	};
+
+	if (params.riserType == "есть") treadParams[1].stepWidthLow -= params.riserThickness / Math.cos(treadParams[1].edgeAngle)
+
+	var tread1 = drawWndTread1(treadParams[1]).mesh;
+
+	tread1.rotation.x = -Math.PI / 2;
+	tread1.rotation.z = -Math.PI / 2;
+
+	tread1.position.x = 0;
+	tread1.position.x -= 0.02; //корректинуем позицию чтобы не было пересечений
+	tread1.position.y = -params.treadThickness + 0.01;
+	//лотки
+	if (params.stairType == "лотки") tread1.position.y += params.treadThickness - 4 - 0.01;
+
+	tread1.position.z = -(treadParams[1].treadWidth) / 2 * turnFactor;
+
+	treads.add(tread1);
+
+	/*подступенок 1*/
+
+	if (params.riserType == "есть") {
+		var riserPar = {
+			len: treadParams[1].treadWidth,
+			width: marshPar.h,
+			thk: params.riserThickness,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: dxfBasePoint,
+		};
+
+		if (params.stairModel == "П-образная с забегом" && par.turnId == 2) riserPar.width = par.h;
+		if (par.botMarshId == 1 && params.stairAmt1 == 0) riserPar.width -= params.treadThickness;
+
+		//отрисовка
+		riserPar = drawRectRiser(riserPar);
+		riser = riserPar.mesh;
+		riser.rotation.z = Math.PI / 2;
+		riser.rotation.y = Math.PI / 2 * turnFactor;
+		riser.position.x = params.nose// - params.riserThickness;
+		if (params.stairModel == "П-образная с забегом" && par.turnId == 2) riser.position.x = 20 - 0.01;
+		riser.position.y = -riserPar.width - params.treadThickness;
+		riser.position.z = tread1.position.z;
+
+		if (turnFactor < 0) riser.position.x += params.riserThickness;
+
+		risers.add(riser);
+	}
+
+	/*забежная ступень 2*/
+
+	dxfBasePoint = newPoint_xy(dxfBasePoint, 1500, 0);
+
+	//задаем параметры ступени
+	if (par.type == "лт") {
+		treadParams[2] = {
+			treadWidthX: params.M - params.stringerThickness + 100 - treadSideOffset + 5,
+			treadWidthY: params.M - params.stringerThickness * 2 - treadSideOffset * 2 - 0.01,
+			angleX: 30 * Math.PI / 180,
+			angleY: 32.9237 * Math.PI / 180,
+			outerOffsetX: 0,
+			outerOffsetY: 0,
+			innerOffsetX: 100,
+			innerOffsetY: 50,
+			notchDepthX: 0,
+			notchDepthY: 0,
+			dxfBasePoint: dxfBasePoint,
+		};
+	}
+
+	if (par.type == "ко") {
+		treadParams[2] = {
+			treadWidthX: params.M - 25 + 88,
+			treadWidthY: params.M - 0.01,
+			angleX: 30 * Math.PI / 180,
+			angleY: 30 * Math.PI / 180,
+			outerOffsetX: 0,
+			outerOffsetY: 0,
+			innerOffsetX: 88,
+			innerOffsetY: 0,
+			notchDepthX: 0,
+			notchDepthY: 0,
+			dxfBasePoint: dxfBasePoint,
+			hasTurnRack: hasTurnRack,
+			isTread: true,
+		};
+	}
+	//if(params.riserType == "есть") treadParams[2].innerOffsetX -= params.riserThickness / Math.cos(treadParams[2].angleY)
+	if (params.riserType == "есть") {
+		treadParams[2].innerOffsetX -= params.riserThickness / Math.cos(treadParams[2].angleY);
+		treadParams[2].treadWidthX -= params.riserThickness / Math.cos(treadParams[2].angleY);
+	}
+
+	treadParams[2].treadId = 2;
+
+	//отрисовываем ступень
+
+	var tread2 = drawWndTread2(treadParams[2]).mesh;
+	tread2.rotation.x = -Math.PI / 2;
+	tread2.rotation.z = -Math.PI / 2;
+	//позиция считается так, чтобы внешний угол оказался в проектном положении
+	tread2.position.x = -treadParams[2].stepWidthY + params.M + turnPar.topMarshOffsetX - treadZOffset;
+	tread2.position.x -= 0.02; //корректинуем позицию чтобы не было пересечений
+	tread2.position.y = par.h - params.treadThickness + 0.01;
+	//лотки
+	if (params.stairType == "лотки") tread2.position.y += params.treadThickness - 4 - 0.01;
+	tread2.position.z = -(treadParams[1].treadWidth) / 2 * turnFactor;
+	treads.add(tread2);
+
+	/*подступенок 2*/
+
+	if (params.riserType == "есть") {
+		var riserPar = {
+			len: treadParams[1].treadWidth / Math.cos(treadParams[1].edgeAngle),
+			width: par.h,
+			ang: treadParams[1].edgeAngle * turnFactor,
+			thk: params.riserThickness,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: newPoint_xy(dxfBasePoint, 0, -500),
+		};
+		if (hasTurnRack && treadParams[1].riserFix) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+			riserPar.cutWndIn = treadParams[1].riserFix / Math.cos(treadParams[1].edgeAngle) + 0.03;
+		}
+
+		//отрисовка
+		riserPar = drawRectRiser(riserPar);
+		riser = riserPar.mesh;
+
+		riser.rotation.z = Math.PI / 2;
+		riser.rotation.y = (Math.PI / 2 - treadParams[1].edgeAngle) * turnFactor;
+		//базовая точка - внешний дальний угол ступени		
+		riser.position.x = tread1.position.x + treadParams[1].stepWidthHi + 0.01;
+		if (turnFactor == -1) riser.position.x += params.riserThickness / Math.cos(treadParams[1].edgeAngle);
+		riser.position.y = -params.treadThickness + 0.01;
+		riser.position.z = tread1.position.z;
+
+
+		risers.add(riser);
+	}
+
+	/*забежная ступень 3*/
+
+	dxfBasePoint = newPoint_xy(dxfBasePoint, 1000 + treadWidth, 0);
+
+	//задаем параметры ступени
+	treadParams[3] = {
+		treadWidth: treadWidth,
+		innerOffset: 0,
+		outerOffset: 0,
+		edgeAngle: Math.PI / 6,
+		stepWidthLow: stepWidthLow,
+		dxfBasePoint: dxfBasePoint,
+		treadId: 3,
+		hasTurnRack: hasTurnRack,
+		isTread: true,
+		marshId: par.botMarshId,
+		turnId: par.turnId
+	};
+
+	//удлиннение 3 забежной ступени на П-образной с забегом
+	var deltaLen = 0;
+	if (par.plusMarshDist) deltaLen = params.marshDist - 77;
+
+	//удлиннение последней ступени при 0 ступеней в верхнем марше
+	var isLastTread = false;
+	if (params.stairAmt3 == 0) {
+		if (params.stairModel == "Г-образная с забегом") isLastTread = true;
+		if (params.stairModel != "Г-образная с забегом" && par.turnId == 2) isLastTread = true;
+	}
+	if (isLastTread) deltaLen = params.lastWinderTreadWidth - treadParams[3].stepWidthLow;
+
+	treadParams[3].stepWidthLow += deltaLen;
+
+	var tread3 = drawWndTread1(treadParams[3]).mesh;
+	tread3.rotation.x = -Math.PI / 2;
+
+	tread3.position.x = params.M + turnPar.topMarshOffsetX - treadZOffset;
+	tread3.position.y = par.h * 2 - params.treadThickness + 0.01;
+	if (params.stairType == "лотки") tread3.position.y += - 0.02;
+	//для лт позиция считается от переднего угла на внутренней стороне
+	tread3.position.z = (params.M / 2 + treadParams[3].stepWidthLow + turnPar.topMarshOffsetZ) * turnFactor;
+	//для ко позиция считается по свесу
+	if (par.type == "ко") {
+		tread3.position.z = (params.M / 2 + 72 + deltaLen) * turnFactor
+		//if(params.riserType == "есть") tread3.position.z -= params.riserThickness * turnFactor;
+	}
+
+	if (turnFactor == -1) {
+		tread3.rotation.z = Math.PI;
+	}
+
+	tread3.position.z -= 0.01 * turnFactor
+	treads.add(tread3);
+
+	/*подступенок 3*/
+
+	if (params.riserType == "есть") {
+		var riserPar = {
+			len: treadParams[2].treadWidthY / Math.cos(treadParams[2].angleY),
+			width: par.h,
+			ang: treadParams[3].edgeAngle,
+			thk: params.riserThickness,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: newPoint_xy(dxfBasePoint, 0, -500),
+		};
+		if (hasTurnRack) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+			//riserPar.cutWndIn = params.rackSize / Math.cos(treadParams[3].edgeAngle) + 10;
+			riserPar.len -= params.rackSize / Math.cos(treadParams[3].edgeAngle) + 0.5; //0.5 - подогнано чтобы не было пересечения со столбом
+		}
+
+		//отрисовка
+		riserPar = drawRectRiser(riserPar);
+		riser = riserPar.mesh;
+
+		riser.rotation.z = -Math.PI / 2;
+		riser.rotation.y = treadParams[2].angleY;
+
+		//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
+		var offsetX = -(riserPar.len - riserPar.thk * Math.tan(riserPar.ang));
+
+		//if (hasTurnRack) offsetX -= 0.01;
+
+		//смещаем базовую точку на острый угол внешней стороны марша
+		riser.children[0].geometry.translate(offsetX, 0, 0)
+		riser.position.x = tread2.position.x + (treadParams[2].stepWidthY) + 0.01;
+		tread2.position.x -= 0.01; //корректинуем позицию чтобы не было пересечений
+		riser.position.y = (turnFactor > 0 ? riserPar.width : 0) + par.h - params.treadThickness + 0.1;
+		riser.position.z = tread2.position.z + treadParams[2].stepWidthX * turnFactor;
+		if (turnFactor < 0) riser.rotation.x = -Math.PI;
+
+
+		risers.add(riser);
+	}
+
+	/*добавляем к параметрам*/
+
+	par.treads = treads;
+	par.risers = risers;
+	par.params = treadParams;
+
+	//сохряняем данные для спецификации
+
+
+	return par;
+
+} //end of drawWndTreadsMetal
+
+function setRailingParams(par) {
+
+	//получаем параметры марша по его номеру
+	var marshParams = getMarshParams(par.marshId);
+	var nextMarshParams = getMarshParams(marshParams.nextMarshId);
+	var prevMarshParams = getMarshParams(marshParams.prevMarshId);
+
+	//стыковка ограждений
+	par.topConnection = false;
+	par.botConnection = false;
+
+	//стыковка сверху
+	if (params.stairModel != "Прямая") {
+		if (par.marshId != 3) {
+			if (marshParams.hasRailing[par.key] && nextMarshParams.hasRailing[par.key])
+				par.topConnection = true;
+		}
+		//стыковка снизу
+		if (par.marshId != 1) {
+			if (marshParams.hasRailing[par.key] && prevMarshParams.hasRailing[par.key])
+				par.botConnection = true;
+		}
+	}
+
+	//стыковка с задним ограждением верхней площадки
+	if (marshParams.lastMarsh && params.platformTop != "нет") {
+		if (marshParams.hasTopPltRailing[par.key] && params.topPltRailing_5) par.topConnection = true;
+	}
+
+	//стыковка с задним ограждением площадки/забега на П-образной
+	if (params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная с забегом") {
+		if (par.prevMarshId == "1" && params.backRailing_1 == "нет") {
+			par.topConnection = false;
+		}
+		if (par.prevMarshId == "3" && params.backRailing_1 == "нет") {
+			par.botConnection = false;
+		}
+	}
+
+
+	//соответствие стороны ограждения in-out и right-left
+	par.railingSide = marshParams.side[par.key]
+
+	//тип верхнего и нижнего поворота
+	par.topEnd = marshParams.topTurn;
+	par.botEnd = marshParams.botTurn;
+	if (marshParams.topTurn == "пол") par.topEnd = "нет";
+	if (marshParams.botTurn == "пол") par.botEnd = "нет";
+
+
+	//на внутренней стороне марша тип поворота всегда "нет" кроме верхней площадки
+	if (par.key == "in") par.topEnd = par.botEnd = "нет";
+	//если сверху верхняя площадка
+	//получаем данные о наличии ограждений на верхней площадке
+	var topPltRailing = getTopPltRailing(); //функция в файле inputsReading.js
+	if (marshParams.lastMarsh) {
+		par.topEnd = "нет";
+		var isTopPlt = false;
+		if (marshParams.hasTopPltRailing[par.key]) {
+			par.topEnd = "площадка";
+			isTopPlt = true;
+		}
+	}
+	/*
+	if (marshParams.lastMarsh && (params.platformTop == "площадка" || params.platformTop == "увеличенная")) {
+		par.topEnd = "нет";
+		if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой')) {
+			if (topPltRailing[par.key] && !(params.platformTop == 'увеличенная' && par.key == 'in')) {//FIX
+				par.topEnd = "площадка";
+				isTopPlt = true;
+			}
+		}
+		if (params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') {
+			//if (topPltRailing[par.key] && !(params.platformTop == 'увеличенная' && par.key == 'out')) {//FIX
+			if (topPltRailing[par.key]) {//FIX
+				par.topEnd = "площадка";
+				isTopPlt = true;
+			}
+		}
+	}
+	*/
+	if (par.key == 'in' && hasCustomMidPlt(par) && params.middlePltWidth >= params.M + 200 && par.marshId == 3) par.botEnd = "площадка";
+	if (par.key == "in" && hasCustomMidPlt(par) && params.middlePltLength >= params.M + 200 && par.marshId == 1) par.topEnd = "площадка";
+
+	if (params.stairModel == "Прямая с промежуточной площадкой") {
+		par.botEnd = "площадка";
+		par.topEnd = "нет";
+		//костыль - берем параметры 3-го марша, т.к. массивы стоек 1 и 3 марша объединяются, но ограждение отрисовывается с marshId = 1
+		if (getMarshParams(3).hasTopPltRailing[par.key]) {
+			par.topEnd = "площадка";
+		};
+
+	}
+
+	if (params.stairModel == "Прямая горка") {
+		if (par.marshId == 1) {
+			par.botEnd = "нет";
+			par.topEnd = "площадка";
+		}
+	}
+	//секцию ограждений на марше с кол-вом ступеней 0
+	if (par.marshId != 2 && (par.stairAmt == 0 || (par.marshId == 1 && params.railingStart >= par.stairAmt))) {
+		if (par.topEnd == "площадка" && par.botEnd == "площадка" && par.key == "out")
+			par.botEnd = "площадка";
+		else
+			par.botEnd = "нет";
+
+		if (par.marshId == 3 && params.platformTop == "площадка" && par.key == "out")
+			par.topEnd = "площадка";
+		else
+			par.topEnd = "нет";
+	}
+
+	//секцию ограждений на марше с кол-вом ступеней 1
+	if (par.marshId != 2 && par.stairAmt == 1) {
+		if (par.botEnd == "забег") par.botEnd = "нет";
+		if (par.topEnd == "забег") par.topEnd = "нет";
+	}
+
+	//если в марше 0 или 1 ступень, то нижнее ограждение забега является ограждением марша
+	if (marshParams.stairAmt < 2 && par.botEnd == "забег" && params.railingModel != "Самонесущее стекло") {
+		par.botEnd = "нет";
+	}
+
+	//секции ограждений верхней площадки
+
+	if (par.marshId == "topPlt") {
+		par.topEnd = "нет";
+		par.botEnd = "нет";
+		par.isPlatform = true;
+	}
+
+	//длина верхнего участка
+
+	par.platformLengthTop = 0;
+	if (par.topEnd != "нет") par.platformLengthTop = params.M;
+	//для верхней площадки лестницы длина берется из параметров
+	if (isTopPlt) par.platformLengthTop = params.platformLength_3;
+	//для промежуточной площадки П-образной лестницы длина берется из параметров
+	if (par.topEnd == "площадка" && !isTopPlt && params.stairModel == "П-образная с площадкой")
+		par.platformLengthTop = params.platformLength_1 - 45;
+
+	//длина нижнего участка
+
+	par.platformLengthBottom = 0;
+	if (par.botEnd != "нет") par.platformLengthBottom = params.M;
+	//П-образная с площадкой
+	if (par.botEnd == "площадка" && !isTopPlt && params.stairModel == "П-образная с площадкой")
+		par.platformLengthBottom = params.platformLength_1 + 40;
+
+}; //end of setRailingParams

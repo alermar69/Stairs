@@ -27,24 +27,28 @@ function drawFrames(par){
 
 
 			//для средней тетивы входной лестницы убираем болты
-            if (params.calcType == "vhod" && params.M > 1100) {
+			if (params.calcType == "vhod" && params.M > 1100) {
 				if (framePar.isPltPFrame) {
 					framePar.isFrameSideNoBolts2 = true;
 					framePar.isPltPFrame = false;
 				}
 				else {
 					framePar.isFrameSideNoBolts1 = true;
-                }
-            }
-		    if (par.holes[i].noBoltsIn) {
-		        if(turnFactor == 1) framePar.isFrameSideNoBolts2 = true;
-		        if(turnFactor == -1) framePar.isFrameSideNoBolts1 = true;
-            }
-		    if (par.holes[i].noBoltsOut) {
-		        if (turnFactor == 1) framePar.isFrameSideNoBolts1 = true;
-		        if (turnFactor == -1) framePar.isFrameSideNoBolts2 = true;
-		    }
+				}
+			}
+			if (par.holes[i].noBoltsIn) {
+				if(turnFactor == 1) framePar.isFrameSideNoBolts2 = true;
+				if(turnFactor == -1) framePar.isFrameSideNoBolts1 = true;
+			}
+			if (par.holes[i].noBoltsOut) {
+				if (turnFactor == 1) framePar.isFrameSideNoBolts1 = true;
+				if (turnFactor == -1) framePar.isFrameSideNoBolts2 = true;
+			}
 			if (par.holes[i].noBolts) {
+				framePar.isFrameSideNoBolts1 = true;
+				framePar.isFrameSideNoBolts2 = true;
+			}
+			if (par.holes[i].noBoltsFrame) {
 				framePar.isFrameSideNoBolts1 = true;
 				framePar.isFrameSideNoBolts2 = true;
 			}
@@ -78,8 +82,8 @@ function drawFrames(par){
 					platform.position.z = -(framePar.length / 2 - params.M / 2 + params.stringerThickness) * turnFactor;
 				};
 				if (params.calcType == "vhod") {
-					platform.position.z += (framePar.length / 2 + 1) * turnFactor;
-					if (params.M <= 1100) platform.position.z = -3 * turnFactor; 
+					platform.position.z += (framePar.length / 2 + 3 + 1) * turnFactor; //Не понятно, подогнано
+					if (params.M <= 1100) platform.position.z = frame.position.z//-3 * turnFactor; 
 					if (par.isBigPlt) {
 						platform.position.z = (params.M / 2 - framePar.length / 2 - params.stringerThickness - 3) * turnFactor;
 					};
@@ -87,8 +91,7 @@ function drawFrames(par){
 				}
 				frames.add(platform);
 			}
-
-
+			
 			//рамки между маршами для П-образной с площадкой
 			if (params.stairModel == "П-образная с площадкой" && framePar.marshId == 1 && framePar.isPltFrame) {
 			//if (params.stairModel == "П-образная с площадкой" && framePar.marshId == 1 && framePar.isPltFrame && params.marshDist > 200) {
@@ -455,12 +458,33 @@ par.frameParams = {
 
 		var screwHoles = offsetLines(linesPar);
 
+		//сдвигаем и запоминаем отверстия по краям, чтобы гайка не мешала прикручивать саморезы
+		var holesReplace = [];
+		var ang = calcAngleX1(screwHoles[0], screwHoles[3]);
+		holesReplace.push([screwHoles[0], polar(screwHoles[0], ang, 20)]);
+		holesReplace.push([screwHoles[3], polar(screwHoles[3], ang, -20)]);
+
+		var ang = calcAngleX1(screwHoles[1], screwHoles[2]);
+		holesReplace.push([screwHoles[1], polar(screwHoles[1], ang, 20)]);
+		holesReplace.push([screwHoles[2], polar(screwHoles[2], ang, -20)]);
+
+
 		var screwHolesPar = {
 			points: screwHoles,
 			frameId: par.frameId
 		}
 
 		screwHoles = getScrewHoles(screwHolesPar);
+
+		//меняем крайние отверстия, которые сдвинули
+		for (var i = 0; i < screwHoles.length; i++) {
+			for (var j = 0; j < holesReplace.length; j++) {
+				if (screwHoles[i].x == holesReplace[j][0].x && screwHoles[i].y == holesReplace[j][0].y) {
+					screwHoles[i] = holesReplace[j][1];
+					break;
+				}
+			}
+		}
 
 		var holesPar = {
 			holeArr: screwHoles,
@@ -901,12 +925,36 @@ function drawWndFrame2(par){
 
 		var screwHoles = offsetLines(linesPar);
 
+		//сдвигаем и запоминаем отверстия по краям, чтобы гайка не мешала прикручивать саморезы
+		var holesReplace = [];
+		var ang = calcAngleX1(screwHoles[0], screwHoles[3]);
+		holesReplace.push([screwHoles[0], polar(screwHoles[0], ang, 20)]);
+		holesReplace.push([screwHoles[4], polar(screwHoles[4], ang, -20)]);
+
+		var ang = calcAngleX1(screwHoles[4], screwHoles[3]);
+		holesReplace.push([screwHoles[3], polar(screwHoles[3], ang, -20)]);
+
+		var ang = calcAngleX1(screwHoles[1], screwHoles[2]);
+		holesReplace.push([screwHoles[1], polar(screwHoles[1], ang, 20)]);
+		holesReplace.push([screwHoles[2], polar(screwHoles[2], ang, -20)]);
+
+
 		var screwHolesPar = {
 			points: screwHoles,
 			frameId: par.frameId
 		}
 
 		screwHoles = getScrewHoles(screwHolesPar);
+
+		//меняем крайние отверстия, которые сдвинули
+		for (var i = 0; i < screwHoles.length; i++) {
+			for (var j = 0; j < holesReplace.length; j++) {
+				if (screwHoles[i].x == holesReplace[j][0].x && screwHoles[i].y == holesReplace[j][0].y) {
+					screwHoles[i] = holesReplace[j][1];
+					break;
+				}
+			}
+		}
 
 		var holesPar = {
 			holeArr: screwHoles,
@@ -1128,9 +1176,9 @@ function offsetLines(par){
 	var newPoints = [];
 	
 	//линии, параллельные исходным
-	for(var i=0; i < par.lines.length; i++){
+	for (var i = 0; i < par.lines.length; i++) {
 		var line = parallel(par.lines[i].p1, par.lines[i].p2, par.dist);
-		if(par.lines[i].offsetBack) line = parallel(par.lines[i].p1, par.lines[i].p2, -par.dist);
+		if (par.lines[i].offsetBack) line = parallel(par.lines[i].p1, par.lines[i].p2, -par.dist);
 		newLines.push(line);		
 		}
 	
@@ -1529,7 +1577,8 @@ function drawTopFixFrame2(par){
 		height: height - 10 * 2,
 		width: (90 - 40) * 2 + balkWidth,
 		dxfBasePoint: par.dxfBasePoint,
-		}
+		side: 'left'
+}
 	
 	//левый фланец
 	flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -(flanPar.height + 200));
@@ -1542,6 +1591,7 @@ function drawTopFixFrame2(par){
 	
 	//правый фланец
 	flanPar.noText = true; //не нужна подпись
+	flanPar.side = 'right' //не нужна подпись
 	flanPar.dxfBasePoint = newPoint_xy(flanPar.dxfBasePoint, 300, 0);
 	var flan = drawTopFrameFrontFlan(flanPar).mesh;
 	flan.position.x = firstPosition_x + anglesize - angleThickess;
@@ -2053,8 +2103,8 @@ function drawTopFrameFrontFlan(par) {
 		shape.holes.push(hole1);
 
 		//болты крепления к верхнему перекрытию
-		if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
-			if (fixPar.fixPart !== 'нет') {
+		if (typeof isFixPats != "undefined" && isFixPats && par.side == 'left' && (i == 0 || i == par.holesAmt - 1)) { //глобальная переменная
+			if (fixPar.fixPart !== 'нет' && !testingMode) {
 				var fix = drawFixPart(fixPar).mesh;
 				fix.position.x = center.x;
 				fix.position.y = center.y;
@@ -2074,8 +2124,8 @@ function drawTopFrameFrontFlan(par) {
 		shape.holes.push(hole1);
 
 		//болты крепления к верхнему перекрытию
-		if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
-			if (fixPar.fixPart !== 'нет') {
+		if (typeof isFixPats != "undefined" && isFixPats && par.side == 'right' && (i == 0 || i == par.holesAmt - 1)) { //глобальная переменная
+			if (fixPar.fixPart !== 'нет' && !testingMode) {
 				var fix = drawFixPart(fixPar).mesh;
 				fix.position.x = center.x;
 				fix.position.y = center.y;

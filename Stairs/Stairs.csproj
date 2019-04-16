@@ -170,6 +170,7 @@
     <Content Include="JavaScript\temp.js" />
     <Content Include="JavaScript\temp1.js" />
     <Content Include="JavaScript\Temp\calcSpecGeneral.js" />
+    <Content Include="JavaScript\metal\mono\drawBalSect_man_4.0.js" />
     <Content Include="JavaScript\three.js" />
     <Content Include="Web.config" />
   </ItemGroup>
