@@ -201,7 +201,10 @@ function calcHandrailPoints(par, parRacks){
 		var handrailPoints = [];
 		var handrailSlotDepth = 15;
 		var railingZOffset = 20 //зазор от стекла до торца марша
-		if(params.model == "ко") railingZOffset = 5;
+		if (params.model == "ко") {
+			railingZOffset = 5;
+			if (params.handrailFixType == "паз" && params.startVertHandrail == "есть") railingZOffset = 14;
+		}
 		var rutelLength = 50 + stringerSideOffset; //длина рутеля
 		var rutelDiam = 14; //диаметр рутеля
 			var rutelHoleDiam = 18; //диаметр отверстия под рутели
@@ -541,7 +544,7 @@ function calcHandrailPoints(par, parRacks){
 			//точка поручня на последнем стекле
 			if(i == glassLengths.length - 1){
 				var handrailPoint = newPoint_xy(glassPos, 0, glassHeight);
-					handrailPoint = newPoint_x1(handrailPoint, glassPar.width, marshAngle);
+				handrailPoint = newPoint_x1(handrailPoint, glassPar.width + glassDist, marshAngle);
 				handrailPoints.push(handrailPoint);
 				}
 	
@@ -864,7 +867,11 @@ function calcHandrailPoints(par, parRacks){
 	
 			//удлиннение поручня последнего марша
 			if(params.stairModel == "прямая" || par.marshId == 3) {
-				handrailParams.extraLengthEnd += params.topHandrailExtraLength;
+				handrailParams.extraLengthEnd += params.topHandrailExtraLength;				
+				}
+
+				if (params.handrailFixType == "паз" && params.handrailEndType == 'прямые') {
+					handrailParams.extraLengthEnd += handrailSlotDepth * Math.tan(marshAngle);
 				}
 	
 			//вертикальные участки

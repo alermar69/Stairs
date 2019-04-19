@@ -1497,7 +1497,7 @@ function drawBotStepLt_wndOut(par) {
 	if (par.marshParams.wallFix.out) {
 		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
-		center1 = newPoint_xy(p4, -150, -200);
+		center1 = newPoint_xy(p4, -150, -150);
 		if (params.stringerType == "ломаная") center1.y += 50;
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
@@ -1506,7 +1506,7 @@ function drawBotStepLt_wndOut(par) {
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
-		center1 = newPoint_xy(p1, 200, -200);
+		center1 = newPoint_xy(p1, 200, -150);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.noZenk = true;
@@ -1929,15 +1929,15 @@ function drawTopStepLt_floor(par) {
 					var mooveX = topLineP1.x - center1.x - 60;
 					if (params.topAnglePosition == "над ступенью") {
 						mooveX -= 20;
-						if (params.stairType == "лотки" || params.stairType == "дпк" || params.stairType == "рифленая сталь")
-							mooveX += 10;
+						if (params.stairType == "лотки" || params.stairType == "дпк" || params.stairType == "рифленая сталь") mooveX += 10;
 					}
 					center1 = newPoint_x1(center1, mooveX, par.marshAng);
-                }
-			    if (params.topAnglePosition == "под ступенью") {
-			        var mooveX = topLineP1.x - center1.x - 40;
-			        center1 = newPoint_x1(center1, mooveX, par.marshAng);
-			    }
+				}
+				if (params.topAnglePosition == "под ступенью") {
+						var mooveX = topLineP1.x - center1.x - 40;
+						if (params.stairType == "лотки" || params.stairType == "дпк" || params.stairType == "рифленая сталь") mooveX -= 45;
+						center1 = newPoint_x1(center1, mooveX, par.marshAng);
+				}
 			}
 
 			//если отверстие под ограждение пересекается с другим отверстием
@@ -1968,11 +1968,13 @@ function drawTopStepLt_floor(par) {
 		}
 
 		if (params.railingModel == "Самонесущее стекло") {
-
-			// center1 = newPoint_xy(p1, par.a * 0.5 + 5, par.rutelPosY);
-			// center2 = newPoint_xy(center1, 0, -par.rutelDist);
-			// par.railingHoles.push(center1);
-			// par.railingHoles.push(center2);
+			if (par.stairAmt <= 2) {
+				center1 = newPoint_xy(p1, par.a * 0.5 + 5, par.rutelPosY);
+				if (par.stairAmt == 1) center1 = newPoint_xy(p1, topStepWidth - 50, -85);
+				center2 = newPoint_xy(center1, 0, -par.rutelDist);
+				par.railingHoles.push(center1);
+				if (par.stairAmt !== 1) par.railingHoles.push(center2);
+			}
 
 			//сохраняем расстояние до края тетивы для самонесущего стекла
 
@@ -2440,6 +2442,7 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 				if (par.key == "in" && !par.stringerLast) {
 					if (par.nextMarshPar.hasRailing.in) {
 						if (params.rackBottom == "сверху с крышкой") center1 = newPoint_xy(p0, par.b * 0.5, par.rackTopHoleY);
+						center1.noDraw = true;
 						//сохраняем сдвиг отверстия до края следующего марша (для расчета поручня и ригелей)
 						center1.dxToMarshNext = -(center1.x - p0.x) + par.b + par.turnBotParams.topMarshOffsetX + 5 - 0.1;
 

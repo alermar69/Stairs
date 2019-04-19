@@ -243,8 +243,8 @@ function drawLadderHandrail(par) {
 				flan.rotation.x = Math.PI / 2;
 				flan.rotation.y = marshAng;
 				flan.rotation.z = Math.PI / 2;
-				flan.position.x = pos.x - (flanThickness + poleParams.length) * Math.sin(marshAng);
-				flan.position.y = pos.y + (flanThickness + poleParams.length) * Math.cos(marshAng);
+				flan.position.x = pos.x - (flanThickness + poleParams.length + 0.02) * Math.sin(marshAng);
+				flan.position.y = pos.y + (flanThickness + poleParams.length + 0.02) * Math.cos(marshAng);
 				flan.position.z = railingPositionZ;
 				par.mesh.add(flan)
 

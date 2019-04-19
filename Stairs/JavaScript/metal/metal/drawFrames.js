@@ -1226,7 +1226,7 @@ function drawWndTreadFlan(par){
 	var flanHeight = 40;
 	if(par.flanHeight) flanHeight = par.flanHeight;
 	
-	var holeOffset = 20;
+	var holeOffset = 25;
 	var thkTop = 4;
 	
 	var flanPar = {

@@ -169,8 +169,10 @@ function makeSvg() {
 				var basePointTmp = copyPoint(svgPar.basePoint);
 				for (var j = 0; j < shapes.length; j++) {
 					svgPar.shape = shapes[j];
+					svgPar.basePoint.x = basePointTmp.x + svgPar.shape.drawing.pointCurrentSvg.x;
+					svgPar.basePoint.y = basePointTmp.y + svgPar.shape.drawing.pointCurrentSvg.y;
 					drawShapeSvg(svgPar);
-					svgPar.basePoint.y -= svgPar.rect.height + 150;
+					//svgPar.basePoint.y -= svgPar.rect.height + 150;					
 
 					//подпись
 					var textHeight = 15 * dimScale; //высота текста
@@ -181,20 +183,23 @@ function makeSvg() {
 					var b = text.getBBox();
 					text.attr({ x: textPos.x + b.width / 2, });
 				}
+				//svgPar.basePoint.y -= svgPar.rect.height + 150;
 
 				//подпись
 				var textHeight = 30 * dimScale; //высота текста
 				var textPos = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 50)
 				var str = "Сборочный чертеж косоура площадки";
 				if (key == "21") str = "Сборочный чертеж дополнительного косоура площадки"
-				if (key == "22") str = ""
+				if (key == "22") str = "Сборочный чертеж дополнительного косоура площадки"
 				var text = drawText(str, textPos, textHeight, draw)
 				text.attr({ "font-size": textHeight, })
 				var b = text.getBBox();
 				text.attr({ x: textPos.x + b.width / 2, });
 
-				svgPar.basePoint = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 200);
-				if (key == "21") svgPar.basePoint = newPoint_xy(basePointTmp, svgPar.rect.width + 200, 0);
+				svgPar.basePoint.x = basePointTmp.x;
+				svgPar.basePoint.y = svgPar.borderFrame.botLeft.y - 150;
+				//svgPar.basePoint = newPoint_xy(svgPar.borderFrame.botLeft, 0, - 200);
+				//if (key == "21") svgPar.basePoint = newPoint_xy(basePointTmp, svgPar.rect.width + 200, 0);
 			}
 		}
 

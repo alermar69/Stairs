@@ -1122,7 +1122,7 @@ function drawHorPlates(par) {
 	//задаем параметры детали
 	if (par.type == "carcasPlate") {
 		par.cornerRad = 0;
-		par.frontOffset = params.metalThickness + gap;
+		if (par.frontOffset !== 0) par.frontOffset = params.metalThickness + gap;
 		if (par.isTurn2) par.frontOffset = params.flanThickness + gap; //если передняя пластина это фланец соединения косоуров
 		par.width = params.stringerThickness - params.metalThickness * 2;
 		par.thk = params.metalThickness;
@@ -1137,7 +1137,8 @@ function drawHorPlates(par) {
 	}
 
 	//определяем общую длину подложки или пластины
-	par.height = par.step + par.frontOff - gap;
+	par.height = par.step;
+	if (par.frontOffset !== 0) par.height += par.frontOff - gap;
 	if (par.basePointShiftX) par.height += par.basePointShiftX;
 	if (par.backOffHoles) par.height -= par.backOffHoles;
 
@@ -2839,6 +2840,12 @@ function drawMonoFlan(par) {
 	        name: par.name,
 	        group: "carcasFlans",
 	        marshId: par.marshId,
+		}
+	    if (par.groupSvg) flanPar.drawing.group = par.groupSvg;
+	    if (par.isPointSvg) {
+		    flanPar.drawing.isPointSvg = par.isPointSvg;
+		    flanPar.drawing.pointStartSvg = par.pointStartSvg;
+		    flanPar.drawing.pointCurrentSvg = par.pointCurrentSvg;
 	    }
 
 
@@ -2857,7 +2864,7 @@ function drawMonoFlan(par) {
 		}
 
 		//добавляем  отверстия по краям
-		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1;
+		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1.5;
 		addHolesMonoFlan(flanPar);
 
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
@@ -2928,15 +2935,21 @@ function drawMonoFlan(par) {
                 group: "carcasFlans_In",
 				marshId: par.marshId,
 			}
-			if (par.pointCurrentSvg) {
+			if (par.pointCurrentSvg && !par.isPointSvg) {
 				flanPar.drawing.basePoint =
 					newPoint_xy(par.pointCurrentSvg, -par.pointStartSvg.x, -par.pointStartSvg.y);
 			}
 			else {
 				flanPar.drawing.group = "carcasFlans";
 			}
-			if (par.name) flanPar.drawing.name = par.name;
+			if (par.name) flanPar.drawing.name = par.name;			
 			if (par.isCount) flanPar.drawing.isCount = par.isCount;
+			if (par.groupSvg) flanPar.drawing.group = par.groupSvg;
+			if (par.isPointSvg) {
+				flanPar.drawing.isPointSvg = par.isPointSvg;
+				flanPar.drawing.pointStartSvg = par.pointStartSvg;
+				flanPar.drawing.pointCurrentSvg = par.pointCurrentSvg;
+			}
 		}
 
 		flanPar.roundHoleCenters = [];
@@ -3001,7 +3014,7 @@ function drawMonoFlan(par) {
 
 		//добавляем  отверстия по краям
 		flanPar.roundHoleCenters = [];
-		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1;
+		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1.5;
 		addHolesMonoFlan(flanPar);
 
 		//добавляем прямоугольное отверстие под трубу
@@ -3206,7 +3219,11 @@ function drawMonoFlan(par) {
 			flanPar.roundHoleCenters = [];
 			addHolesMonoFlan(flanPar);
 
+			var boltLenTemp = boltLen;
+			boltLen = 40;
+			flanPar.mirrowBolts = true;
 			var flan = drawRectFlan2(flanPar).mesh;
+			boltLen = boltLenTemp;
 		}
 
 		if (params.model == "труба") {
@@ -3231,7 +3248,7 @@ function drawMonoFlan(par) {
 		par.roundHoleCenters.push({ x: par.holeX, y: hole1Y, holeData: {zenk: 'no'}, isFixPart: par.isFixPart });
 		par.roundHoleCenters.push({ x: par.holeX, y: par.height - hole2Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});
 		par.roundHoleCenters.push({ x: par.width - par.holeX, y: par.height - hole2Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});
-		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});
+		par.roundHoleCenters.push({ x: par.width - par.holeX, y: hole1Y, holeData: { zenk: 'no' }, isFixPart: par.isFixPart});		
 	}
 	function flanCentralHoles(length) {
 		//функция возвращает координаты центральных отверстий от центра фланца (для нижнего и верхнего фланцев)
@@ -5544,6 +5561,7 @@ function drawFlanPipeBot(par) {
 	var center2 = newPoint_xy(p7, -holeX, holeY);
 	var center3 = newPoint_xy(p1, holeX, -holeY);
 	var center4 = newPoint_xy(p6, -holeX, -holeY);
+	center1.holeData = center2.holeData = center3.holeData = center4.holeData = { zenk: 'no' };
 	if (par.isWndTurn && par.offsetTopWndHoleY3) {
 		if(turnFactor == 1) center4.y -= par.offsetTopWndHoleY3;
 		if(turnFactor == -1) center3.y -= par.offsetTopWndHoleY3;
@@ -5554,10 +5572,11 @@ function drawFlanPipeBot(par) {
 
 	var holesPar = {
 		holeArr: holeCenters,
-		holeRad: flanParams.fixPar.diam / 2 + 1,
+		holeRad: 9,
 		dxfBasePoint: par.dxfBasePoint,
 		shape: par.shape,
 	}
+	if (par.isBotFloor) holesPar.holeRad = flanParams.fixPar.diam / 2 + 1;
 
 	addHolesToShape(holesPar);
 
@@ -5591,7 +5610,7 @@ function drawFlanPipeBot(par) {
 	}
 
 	//болты крепления к нижнему перекрытию
-	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+	if (typeof isFixPats != "undefined" && isFixPats && par.isBotFloor) { //глобальная переменная
 		if (flanParams.fixPar.fixPart !== 'нет') {
 			for (var i = 0; i < holeCenters.length; i++) {
 				var fix = drawFixPart(flanParams.fixPar).mesh;
@@ -5691,6 +5710,7 @@ function drawFlanPipeTop(par) {
 	//Добавляем отверстия
 	var center1 = newPoint_xy(p1, holeX, -holeY);
 	var center2 = newPoint_xy(p2, -holeX, -holeY);
+	center1.holeData = center2.holeData = { zenk: 'no' };
 
 	var holeCenters = [center1, center2];
 
@@ -5698,6 +5718,7 @@ function drawFlanPipeTop(par) {
 		var center3 = newPoint_xy(p1, holeX, -dy + params.treadThickness + holeY);
 		var center4 = newPoint_xy(p2, -holeX, -dy + params.treadThickness + holeY);
 		var center5 = newPoint_xy(p1, width / 2, - dy / 2 + params.treadThickness - holeY);
+		center3.holeData = center4.holeData = center5.holeData = { zenk: 'no' };
 		holeCenters.push(center3);
 		holeCenters.push(center4);
 		holeCenters.push(center5);
@@ -6445,7 +6466,7 @@ function addLine1(startPoint, endPoint, stringerParams) {
 
 
 /** функция отрисовывает "ломаную" профильную трубу, состоящую из ряда сегментов
-*@params points, offset, profSizeY, profSizeZ, botEndAng, topEndAng, dxfBasePoint, roundHoles
+*@params points, offset, profSizeY, profSizeZ, botEndAng, topEndAng, dxfBasePoint, roundHoles, marshId(для идентификации в ведомостях)
 */
 function drawPolylinePole(par) {
 	par.mesh = new THREE.Object3D();
@@ -6567,6 +6588,7 @@ function drawPolylinePole(par) {
 				material: params.materials.tread,
 				partName: "stringerPart",
 				roundHoles: [],
+				sectText: par.marshId + " марш (деталь:" + i + ")"
 			}
 
 			pole3DParams.dxfBasePoint = newPoint_xy(par.dxfBasePoint, basePoint.x, basePoint.y)

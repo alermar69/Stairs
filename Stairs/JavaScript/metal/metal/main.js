@@ -117,17 +117,6 @@ $(function () {
 	$('#specificationList').show();
 	
 	
-	
-
-	
-		
-
-		
-	//сохранение ведомости заготовок в xls
-	$("#poleList").delegate('#downLoadPoleList', 'click', function(){
-		tableToExcel('partsTable', 'Детали',);
-		})
-		
 	//сворачивание блоков
 	initToggleDivs();
 	

@@ -347,7 +347,8 @@ printWorks2();
     });
 	
 	showDrawingsLinks();
-	printPartsAmt();
+	printPartsAmt(); //функция в файле calcSpecGeneral.js
+	printPoleList(); //функция в файле calcSpecGeneral.js
 	
 } //end of calculateSpec
 

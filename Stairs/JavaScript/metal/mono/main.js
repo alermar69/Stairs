@@ -14,6 +14,7 @@ var balPartsParams = {
 	};
 var isPageChanged = false; // тригер на изменение любого значения на странице
 var workList = {}; //сдельные расценки для цеха
+var poleList = {}; //ведомость резки профилей и поручней
 var isDoorsOpened = false;
 var wrPrice = {}; //глобальный массив цен элементов шкафа
 var wrCost = {}; //глобальный массив себестоимости элементов шкафа

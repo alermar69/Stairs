@@ -112,9 +112,9 @@ function drawStringer(par){
 					par.railing[j] += params.railingStart * 1.0;
 				}
 			}
-
 			par.divide = ltko_set_divide(par.marshId).divide;
-					
+			if (par.railing.includes(par.divide) && params.railingModel == "Самонесущее стекло") par.divide += 1;
+
 			if(!par.isWndP) drawMiddleStepsKo(par);
 
 			/*верх марша*/
@@ -212,6 +212,8 @@ function drawStringer(par){
 		
 		par.bridge = ltko_set_divide(par.marshId).bridges;
 		par.divide = ltko_set_divide(par.marshId).divide;
+		if (par.railing.includes(par.divide)) par.divide -= 1;
+
 		if (par.stairFrame == "нет" && par.marshId != 1 && par.stairAmt > 1 && par.botEnd == "winder")
 			par.bridge.unshift(1);
 		

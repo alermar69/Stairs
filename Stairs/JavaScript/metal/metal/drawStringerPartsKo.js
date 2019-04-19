@@ -343,7 +343,8 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 	par.midUnitEnd = par.botUnitEnd;
 
 	//сохраняем координаты нижнего левого угла тетивы для самонесущего стекла
-	var ph = {x: p2.x, y: p0.y};
+	var ph = { x: p2.x, y: p0.y };
+	if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 3 && params.stairAmt2 == 0) ph.x = 0;
 	par.keyPoints[par.key].botLineP0 = newPoint_xy(ph, 0, -215);//FIX
 	if (par.key == "out")
 		par.keyPoints[par.key].botLineP0.x -= params.M - par.stringerSideOffset;
@@ -989,7 +990,7 @@ function drawBotStepKo_wndOut(par){
 	if (par.marshParams.wallFix.out) {
 		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
-		center1 = newPoint_xy(p2, 150, -150);
+		center1 = newPoint_xy(p2, 200, -150);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.noZenk = true;
@@ -1179,11 +1180,16 @@ function drawMiddleStepsKo(par){
 	//http://6692035.ru/dev/mayorov/metal/image/drawMiddleStepsKo.jpg
 
 	//точки на нижней линии марша для самонесущего стекла
-	var p10 = polar(par.midUnitEnd, (par.marshAng - Math.PI / 2), par.stringerWidth) // первая точка на нижней линии марша
-	var p20 = polar(p10, par.marshAng, -100.0)
+	//var p10 = polar(par.midUnitEnd, (par.marshAng - Math.PI / 2), par.stringerWidth) // первая точка на нижней линии марша
+	//var p20 = polar(p10, par.marshAng, -100.0)
 
-	par.keyPoints[par.key].marshBotLineP1 = newPoint_xy(p10, 0, -215)//FIX
-	par.keyPoints[par.key].marshBotLineP2 = newPoint_xy(p20, 0, -215)
+	//par.keyPoints[par.key].marshBotLineP1 = newPoint_xy(p10, 0, -215)//FIX
+	//par.keyPoints[par.key].marshBotLineP2 = newPoint_xy(p20, 0, -215)
+
+	var p10 = par.pointsShape[0] // первая точка на нижней линии марша
+	var p20 = polar(p10, par.marshAng, -100.0)
+	par.keyPoints[par.key].marshBotLineP1 = copyPoint(p10)//FIX
+	par.keyPoints[par.key].marshBotLineP2 = copyPoint(p20)
 
 }//end of drawMiddleStepsKo
 
@@ -1302,6 +1308,7 @@ function drawTopStepKo_floor(par){
 			//удлиннение последней стойки
             var dyLastRack = calcLastRackDeltaY(); //функция в файле drawRailing_3.0;
 			center1.x += dyLastRack / Math.tan(par.marshAng);
+			if (center1.x + 30 > topLineP1.x) center1 = newPoint_x(center1, -(30 - (topLineP1.x - center1.x)), par.marshAng);
 			//смещаем отверстие чуть назад, чтобы не было пересечения с отверстием рамки
 			if (params.topAnglePosition != "вертикальная рамка"){
 				//if(topLineP1.x > center1.x - 70) center1 = newPoint_x1(center1, -(70 - (topLineP1.x - center1.x)), par.marshAng)
@@ -1645,9 +1652,17 @@ function drawTopStepKo_pltG(par){
 		widthFrame: par.stepHoleX1 + par.stepHoleX2,
 		partsGap: 20
 	}
+	// pltPar.len = params.platformLength_3;
+	// pltPar.widthFrame = 400;
+
 	calcPltPartsParams(pltPar);
 	var stepHoleX2 = par.stepHoleX2;
 	if (pltPar.maxWidth !== pltPar.widthFrame) stepHoleX2 = pltPar.maxWidth - par.stepHoleX1;
+
+	//if(par.stringerLast){
+	//	stepHoleX2 = (params.platformLength_3 - params.nose - 45 * pltPar.partsAmt - pltPar.partsGap * (pltPar.partsAmt - 1)) / pltPar.partsAmt;
+	//	if (params.riserType == 'есть') stepHoleX2 -= params.riserThickness / pltPar.partsAmt;
+	//} 
 
 	// отверстия под первую рамку
 	var center1 = newPoint_xy(p2, par.stepHoleX1, par.stepHoleY);

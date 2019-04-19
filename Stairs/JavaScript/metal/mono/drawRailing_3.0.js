@@ -42,9 +42,10 @@ function calculateGlassPoints(par){
 
 	if(marshPar.botTurn == "площадка" && par.key == "in"){
 		marshFirstDelta = marshTurnParams.topStepDelta;
-		if(params.handrail != "нет"){
-			marshFirstDelta += 60 - par.handrailSlotDepth + 5;
-		}
+		marshFirstDelta += 60 - par.handrailSlotDepth + 5
+		//if(params.handrail != "нет"){
+		//	marshFirstDelta += 60 - par.handrailSlotDepth + 5;
+		//}
 	}
 
 	if(marshPar.botTurn == "забег" && par.key == "in"){
@@ -85,7 +86,8 @@ function calculateGlassPoints(par){
 			handrailPoints.push(startPoint);
 		}
 		if (marshPar.botTurn == 'площадка' && par.key == 'in') {
-			var startPoint = newPoint_xy(marshFirst, 0, -(par.glassHeight + marshPar.h));
+			var startPoint = newPoint_xy(marshFirst, 0, -par.glassHeight);
+			if (prevMarshPar.hasRailing.in) startPoint.y = -par.sectionHeight - prevMarshPar.h * 2 - 15;
 			handrailPoints.push(startPoint);
 		}
 	}
@@ -1962,6 +1964,7 @@ function setTurnRackHoles(par){
 	//верхний уголок
 	var center1 = newPoint_xy(p0, 0, -params.treadThickness - angleHoleOffset);
 	if(params.stairModel == "П-образная с площадкой" && par.type == 'turnRackEnd') center1.anglePos = 'справа';
+	if(params.stairModel == "П-образная с забегом") center1.anglePos = 'сзади';
 		
 	holes.push(center1);
 		
@@ -2183,7 +2186,7 @@ function drawLastRackFlan(par){
 			//верхние болты
 			var boltPar = {
 				diam: 10,
-				len: 20,
+				len: 30,
 				headType: "потай",
 			}
 
