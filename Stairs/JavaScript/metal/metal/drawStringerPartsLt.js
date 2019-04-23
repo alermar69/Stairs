@@ -3424,7 +3424,7 @@ function drawTopStepLt_wndIn(par) {
 	par.keyPoints[par.key].botLineP10 = newPoint_xy(p2, 36, 0);
 
 	//точки на нижней линии марша для самонесущего стекла
-	if (par.stairAmt == 2) {
+	if (par.stairAmt == 2 && par.botEnd !== "floor") {
 		var p10 = polar(par.midUnitEnd,
 			(par.marshAng - Math.PI / 2),
 			par.stringerWidth) // первая точка на нижней линии марша

@@ -1591,11 +1591,15 @@ function calcColumnsPosition(par){
 		columnPosition.bot2 = newPoint_xy(endPoint, dxPlatform + stringerLedge - params.metalThickness, 0);
 		
 		if (params.stairModel == 'П-образная с площадкой' && !par.botConnection) {
-			columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness, 0);
+			//columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness, 0);
+			columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2, 0);
+			columnPosition.bot2.z = params.flanThickness;
 		};
 		if (params.stairModel == 'П-образная с площадкой' && par.botConnection) {
 			// columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness * 4 - 2.5 - params.platformLength_1 / 2 + 220 / 2, 0); // 2.5 пока-что подогнано
-			columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness,0);//-params.stringerThickness / 2 - params.flanThickness * 4 - 2.5 - params.platformLength_1 / 2 + 220 / 2, 0); // 2.5 пока-что подогнано
+			//columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2 - params.flanThickness,0);//-params.stringerThickness / 2 - params.flanThickness * 4 - 2.5 - params.platformLength_1 / 2 + 220 / 2, 0); // 2.5 пока-что подогнано
+			columnPosition.bot2 = newPoint_xy(startPoint, -params.stringerThickness / 2,0);
+			columnPosition.bot2.z = params.flanThickness;
 		};
 		if (params.stairModel == 'П-образная с площадкой' && par.botConnection && params.model == 'труба') {
 			columnPosition.bot2 = newPoint_xy(endPoint, params.platformLength_1 / 2 - 1 + params.flanThickness * 2 + params.metalThickness, 0);//FIX ! 1- подогнано
@@ -3222,6 +3226,7 @@ function drawMonoFlan(par) {
 			var boltLenTemp = boltLen;
 			boltLen = 40;
 			flanPar.mirrowBolts = true;
+			flanPar.dzBolt = 24;
 			var flan = drawRectFlan2(flanPar).mesh;
 			boltLen = boltLenTemp;
 		}

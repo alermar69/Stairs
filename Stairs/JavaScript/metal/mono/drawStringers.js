@@ -293,10 +293,6 @@ function drawComplexStringer(par) {
 		par.mesh2.add(stringerPole);
 	}
 	
-	/*
-		Задаем позиции столбов
-	*/
-	var columnPosition = calcColumnsPosition({pointsShape: par.pointsShape, marshId: par.marshId});
 
 	/*
 		Подложки ступеней
@@ -305,7 +301,9 @@ function drawComplexStringer(par) {
 		par.stepPoints = [];
 		
 		if (par.botEnd == "пол" && par.topEnd == "забег" && par.stairAmt <= 2 && params.model == "сварной")
-            par.pointsShape.unshift(par.pointsShape[par.pointsShape.length - 1]);
+			par.pointsShape.unshift(par.pointsShape[par.pointsShape.length - 1]);
+		if (par.marshId == 2 && params.stairAmt2 == 0 && par.botEnd == "площадка" && par.topEnd == "забег" && params.model == "сварной")
+			par.pointsShape.push(par.pointsShape[0]);
        
 
 		var arr = par.pointsShape.concat();
@@ -525,6 +523,12 @@ function drawComplexStringer(par) {
 		} //конец цикла
 	}
 	
+	/*
+		Задаем позиции столбов
+	*/
+	var columnPosition = calcColumnsPosition({ pointsShape: par.pointsShape, marshId: par.marshId });
+
+
 	/*
 		Фланцы и пластины
 	*/
@@ -759,6 +763,7 @@ function drawComplexStringer(par) {
                 var isDrawBackPlate = true;
                 if (platePar.pStart.x + 5 > platePar.pEnd.x) isDrawBackPlate = false;
                 if (par.botEnd == "пол" && par.topEnd == "забег" && par.stairAmt <= 2) isDrawBackPlate = false;
+				if (par.marshId == 2 && params.stairAmt2 == 0 && par.topEnd == "забег" && par.botEnd == "площадка") isDrawBackPlate = false;
                 if (isDrawBackPlate) {
                     var plate = drawBackPlate(platePar).mesh;
                     plate.position.x = sidePlate2.position.x + par.pointsShape[0].x;
@@ -798,8 +803,11 @@ function drawComplexStringer(par) {
                         platePar.isHolesColonPlatform = holesColumnPlatform(par, true, false);
 
                     //if (par.botEnd == "забег" && par.stairAmt == 1)
-					platePar.pStart = copyPoint(par.pointsShape[1]);if (par.isBigFloor) platePar.pStart = copyPoint(par.pointsShape[2]);// при большой разнице чистового и чернового пола
+					platePar.pStart = copyPoint(par.pointsShape[1]);
+					if (par.isBigFloor) platePar.pStart = copyPoint(par.pointsShape[2]);// при большой разнице чистового и чернового пола
                     var ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
+					if (par.marshId == 2 && params.stairAmt2 == 0 && par.topEnd == "забег" && par.botEnd == "площадка")
+						ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 2]);
                     platePar.pEnd = newPoint_xy(par.pointsShape[0], - params.metalThickness * Math.sin(ang), 0);
 
                     dxfBasePointTemp = copyPoint(platePar.dxfBasePoint);

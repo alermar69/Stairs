@@ -940,8 +940,8 @@ function drawTopStepMk_wnd(par) {
 
         par.pointsShape.push(topLineP3);
 
-        if (params.stairModel == 'П-образная трехмаршевая' && par.marshId == 2 && params.stairAmt2 == 0 && par.botEnd === "площадка") {
-            //par.pointsShape.pop()
+        if (par.marshId == 2 && params.stairAmt2 == 0 && par.botEnd === "площадка") {
+            par.pointsShape.pop()
             //par.pointsShape.shift()
             //var line = parallel(par.midUnitEnd, p3, -par.stringerWidth);
             //var topLineP3 = itercection(line.p1, line.p2, par.pointsShape[0], polar(par.pointsShape[0], 0, 100));
