@@ -2843,8 +2843,8 @@ function drawTopStepLt_pltPIn(par) {
 			center1.hasAngle = center2.hasAngle = true;
 			center1.rotated = center2.rotated = true;
 			center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
-			par.pointsHoleTop.push(center1);
 			par.pointsHoleTop.push(center2);
+			par.pointsHoleTop.push(center1);
 		}
 	}
 

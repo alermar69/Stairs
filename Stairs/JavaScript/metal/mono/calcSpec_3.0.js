@@ -49,13 +49,10 @@ function calcSpec(){
 			timberPaint: partsAmt[partName]["timberPaint"],
 			division: partsAmt[partName]["division"],
 			itemGroup: partsAmt[partName]["group"],
-			}
-		/*	
-		if(itemsPar.itemGroup == "Ограждения") {
-			itemsPar.timberPaintRailing = itemsPar.timberPaint;
-			itemsPar.metalPaintRailing = itemsPar.metalPaint;
-			}
-		*/
+			
+		}
+		if(partsAmt[partName].comment) itemsPar.comment = partsAmt[partName].comment;
+
 		partsList.addSpecObjItems(itemsPar);
 		}
 	

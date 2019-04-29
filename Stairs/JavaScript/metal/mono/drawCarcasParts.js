@@ -54,7 +54,7 @@ function drawColumn(par){
 		var flanPar = {
 			type: "botColon",
 			pointsShape: par.pointsShape,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -500),
+			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -300),
             profSize: par.profSize,
             marshId: par.marshId,
             countColon: par.countColon,
@@ -67,9 +67,7 @@ function drawColumn(par){
 		var text = "Фланец колонны нижний";
 		var textHeight = 30;
 		var textBasePoint = newPoint_xy(flanPar.dxfBasePoint, -50, -50);
-		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
-
-		par.dxfBasePoint.x += par.profSize + 50;
+		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);		
 
 		par.mesh.add(flan);
 	}
@@ -486,12 +484,11 @@ function drawColumn(par){
 
 	//верхний фланец
 	if (par.topFlan) {
-		par.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -500);
 		//нижний фланец
 		var flanPar = {
 			type: "topColon",
 			pointsShape: par.pointsShape,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -500),
+			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 0, -600),
 			profSize: par.profSize,
             topAngle: par.topAngle,
 			marshId: par.marshId,
@@ -545,7 +542,6 @@ function drawColumn(par){
 		specObj[partName]["amt"] += 1;
 	}
 
-	
 
 	return par;
 }
@@ -667,7 +663,7 @@ function getStringerLedge(marshId){
 
 	@returns - рассчитанные параметры для всех столбов марша
 */
-function calcColumnParams(par){
+function calcColumnParams(par, stringerParams){
 	var bot1 = {}; //Первый нижний столб
 	var bot2 = {}; //Нижний столб на пересечении каркасов
 	var middle = {}; //Средний столб находится на середине марша
@@ -686,7 +682,7 @@ function calcColumnParams(par){
 		pointsShape: par.pointsShape,
 		marshId: par.marshId
 	}
-	var columnPosition = calcColumnsPosition(columnPositionParams);
+	var columnPosition = calcColumnsPosition(columnPositionParams, stringerParams);
 	var marshParams = getMarshParams(par.marshId);
 
 	var stringerLedge = getStringerLedge(par.marshId);
@@ -836,6 +832,13 @@ function calcColumnParams(par){
 					top1.isVisible = false;
 			}
 			*/
+			if (params.model == 'труба' && marshParams.topTurn == 'забег') {
+				if (!stringerParams.isKinkTop) {
+					var pEnd = par.pointsShape[par.pointsShape.length - 1];
+					var ang1 = calcAngleX1(par.pointsShape[0], pEnd);
+					var pStart = polar(pEnd, ang1, -(220 + 10) / 2);
+				}
+			}
 			top1.topAngle = calcAngleX1(pStart, pEnd);
 			//Позиция рассчитывается в фун-ии calcColumnsPosition
 			var localPosX = columnPosition.top1.x - pStart.x;//Позиция учитывая только пластину
@@ -1558,7 +1561,7 @@ function drawBackPlate(par) {
 	@return {Object} top2 - координата последней верхней опоры
 */
 
-function calcColumnsPosition(par){
+function calcColumnsPosition(par, stringerParams){
 
 	var columnPosition = {};
 	var marshParams = getMarshParams(par.marshId);
@@ -1631,7 +1634,7 @@ function calcColumnsPosition(par){
 	{
 		// columnPosition.top1
 		startPoint = par.pointsShape[par.pointsShape.length - 1];
-		endPoint = par.pointsShape[par.pointsShape.length - 2];
+		endPoint = par.pointsShape[par.pointsShape.length - 2];		
 		let width = distance(startPoint, endPoint);
 		let ang = calcAngleX1(startPoint, endPoint);
 		let startOffset = width - (dxPlatform + stringerLedge) / Math.cos(ang) + 10;//10 зазор от края
@@ -1654,6 +1657,11 @@ function calcColumnsPosition(par){
 		*/ 
 		if (params.model == 'труба' && marshParams.topTurn == 'забег') {
 			columnPosition.top1 = newPoint_xy(startPoint, 220 / Math.cos(ang) + 10, 0);//Зазор фланца от края
+			if (!stringerParams.isKinkTop) {
+				startPoint = par.pointsShape[par.pointsShape.length - 1];
+				var ang1 = calcAngleX1(par.pointsShape[0],  startPoint);
+				columnPosition.top1 = polar(startPoint, ang1, -(220 + 10) / 2);
+			}
 		}
 		if (params.stairModel == 'П-образная с площадкой' && !par.topConnection) {
 			var stringerThickness = params.stringerThickness;
@@ -2868,7 +2876,7 @@ function drawMonoFlan(par) {
 		}
 
 		//добавляем  отверстия по краям
-		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1.5;
+		flanPar.holeRad = flanPar.fixPar.diamHole / 2;
 		addHolesMonoFlan(flanPar);
 
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
@@ -3018,7 +3026,7 @@ function drawMonoFlan(par) {
 
 		//добавляем  отверстия по краям
 		flanPar.roundHoleCenters = [];
-		flanPar.holeRad = flanPar.fixPar.diam / 2 + 1.5;
+		flanPar.holeRad = flanPar.fixPar.diamHole / 2;
 		addHolesMonoFlan(flanPar);
 
 		//добавляем прямоугольное отверстие под трубу
@@ -3963,6 +3971,7 @@ function drawTurn1TreadPlateCabriole(par) {
 		//var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
 		pt1 = newPoint_xy(p1, par.step, 0);
 		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		if (par.isNotKinkTop) dx -= 20;
 		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
 		var pt3 = polar(pt2, angle1, 100);
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
@@ -4063,6 +4072,7 @@ function drawTurn1TreadPlateCabriole(par) {
 		//var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
 		var pt1 = newPoint_xy(p1, par.step, 0);
 		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		if (par.isNotKinkTop) dx -= 20;
 		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
 		var pt3 = polar(pt2, angle1, 100);
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
@@ -4601,6 +4611,7 @@ function drawTurn2TreadPlateCabriole(par) {
 		var p2 = newPoint_xy(p1, distance(py1, pk1) + dxWidthIn, 0);
 		var pt1 = newPoint_xy(p1, 0, -h1);
 		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		if (par.isNotKinkTop) dx -= 20;
 		var pt2 = newPoint_xy(pt1, dx / Math.sin(par.angleIn1), 0);
 		var pt3 = polar(pt2, par.angleIn1, 100);
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
@@ -4690,6 +4701,7 @@ function drawTurn2TreadPlateCabriole(par) {
 		var p2 = newPoint_xy(p1, distance(py2, pk11) + dxWidthIn - stringerPlateThickness * Math.cos(ang), 0);
 		var pt1 = newPoint_xy(p1, 0, -h1 - ((pk1.y - pk11.y) / Math.tan(Math.PI / 2 - par.angleIn1)) + stringerPlateThickness);
 		var dx = par.sidePlateWidth - par.sidePlateOverlay;// - 10 ? FIX
+		if (par.isNotKinkTop) dx -= 20;
 
 		var pt2 = newPoint_xy(pt1, dx / Math.sin(par.angleIn1), 0);
 		var pt3 = polar(pt2, par.angleIn1, 125);
@@ -4756,7 +4768,7 @@ function drawTurn2TreadPlateCabriole(par) {
 		hole3 = new THREE.Path();
 		addCircle(hole1, dxfPrimitivesArr, center1, 9, dxfBasePoint);
 		addCircle(hole2, dxfPrimitivesArr, center2, 9, dxfBasePoint);
-		addCircle(hole3, dxfPrimitivesArr, center3, 9, dxfBasePoint);
+		if (isHole3) addCircle(hole3, dxfPrimitivesArr, center3, 9, dxfBasePoint);
 		shape.holes.push(hole1);
 		shape.holes.push(hole2);
 		if (isHole3) shape.holes.push(hole3);
@@ -5008,7 +5020,6 @@ function drawTurn3TreadPlateCabriole(par) {
 		if (turnFactor == 1) dxfArr = {};
 
 		var shape = new THREE.Shape();
-		dxfArr = dxfPrimitivesArr;
 		var dxfPoint = newPoint_xy(dxfBasePoint, 0, pv3.y);
 		var pvb0 = copyPoint(pv0);
 		var pvb1 = copyPoint(pv1);
@@ -5287,6 +5298,7 @@ function drawTurn3TreadPlateCabriole(par) {
 		var p2 = newPoint_xy(p1, distance(pi1, pi0) - 25, 0);
 		var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
 		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		if (par.isNotKinkBot) dx -= 20;
 		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
 		var pt3 = polar(pt2, angle1, 100);
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
@@ -5365,6 +5377,7 @@ function drawTurn3TreadPlateCabriole(par) {
 		var p2 = newPoint_xy(p1, distance(pi2, pi00) - 25, 0);
 		var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
 		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		if (par.isNotKinkBot) dx -= 20;
 		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1) + (pi2.y - pi1.y), 0);
 		var pt3 = polar(pt2, angle1, 100);
 		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
@@ -5480,16 +5493,17 @@ function drawTurn3TreadPlateCabriole(par) {
 	
 	@return {object} параметры фланца
 */
-function getFlanParams(type){
+function getFlanParams(type, isWndTurn){
 	switch (type) {
 		case 'flan_pipe_bot'://Фланец крепления к другому маршу/к другому каркасу на трубе
 			var flanParams = {};
 			flanParams.holeX = 30;
 			flanParams.holeY = 20;
 			flanParams.widthPipe = params.profileWidth + 2;
-			flanParams.width = flanParams.widthPipe + flanParams.holeX * 4;
-			flanParams.height = 60 + params.profileHeight;
-			flanParams.heightPipe = params.profileHeight + 1 - params.sidePlateOverlay + 6;
+			flanParams.width = flanParams.widthPipe + flanParams.holeX * 4;			
+			flanParams.height = 60 + params.sidePlateOverlay + params.profileHeight - 7;
+			if (isWndTurn) flanParams.height = 60 + params.profileHeight;
+			flanParams.heightPipe = params.profileHeight - params.sidePlateOverlay + 7;
 			flanParams.holesDist = flanParams.widthPipe + flanParams.holeX * 2;
 			return flanParams;
 			break;
@@ -5516,7 +5530,7 @@ function getFlanParams(type){
  */
  
 function drawFlanPipeBot(par) {
-	var flanParams = getFlanParams('flan_pipe_bot');
+	var flanParams = getFlanParams('flan_pipe_bot', par.isWndTurn);
 	var holeX = par.holeX || flanParams.holeX;
 	var holeY = par.holeY ||flanParams.holeY;
 	par.holeX = holeX;
@@ -5581,7 +5595,7 @@ function drawFlanPipeBot(par) {
 		dxfBasePoint: par.dxfBasePoint,
 		shape: par.shape,
 	}
-	if (par.isBotFloor) holesPar.holeRad = flanParams.fixPar.diam / 2 + 1;
+	if (par.isBotFloor) holesPar.holeRad = flanParams.fixPar.diamHole / 2;
 
 	addHolesToShape(holesPar);
 
@@ -5639,6 +5653,8 @@ function drawFlanPipeBot(par) {
  * ПОСТРОЕНИЕ ВЕРХНЕГО ФЛАНЦА лестницы на трубе
  */
 function drawFlanPipeTop(par) {
+	par.mesh = new THREE.Object3D();
+
 	var holeRad = 8;
 	var holeX = 20;
 	var holeY = 20;
@@ -5658,7 +5674,7 @@ function drawFlanPipeTop(par) {
 	par.isFixPart = true; // болты крепления к стенам
 	par.fixPar = getFixPart(0, 'topFloor'); // параметры крепления к стенам
 
-	holeRad = par.fixPar.diam / 2 + 1;
+	holeRad = par.fixPar.diamHole / 2;
 
 	//рисуем контур фланца
 	if (params.topAnglePosition === "под ступенью") {
@@ -5760,7 +5776,44 @@ function drawFlanPipeTop(par) {
 	var flan = new THREE.Mesh(geom, params.materials.metal2);
 	flan.position.z = par.width / 2;
 	flan.rotation.y = Math.PI / 2;
-	par.mesh = flan;
+	par.mesh.add(flan);
+
+
+	//пластина в отвестие трубы, чтобы закрыть торец трубы
+	var offset = 0.5;
+	var p1 = newPoint_xy(center, -par.widthPipe / 2 + offset, -par.heightPipe / 2 + offset);
+	var p2 = newPoint_xy(center, -par.widthPipe / 2 + offset, par.heightPipe / 2 - offset);
+	var p3 = newPoint_xy(center, par.widthPipe / 2 - offset, par.heightPipe / 2 - offset);
+	var p4 = newPoint_xy(center, par.widthPipe / 2 - offset, -par.heightPipe / 2 + offset);
+
+	//создаем шейп
+	var shapePar = {
+		points: [p1, p2, p3, p4],
+		dxfArr: dxfPrimitivesArr,
+		dxfBasePoint: par.dxfBasePoint,
+	}
+	shapePar.drawing = {
+		name: 'Пластина под торец трубы',
+		group: "carcasFlans",
+		marshId: par.marshId,
+	}
+
+	par.shape = drawShapeByPoints2(shapePar).shape;
+
+	var extrudeOptions = {
+		amount: 2,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(par.shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var flan1 = new THREE.Mesh(geom, params.materials.metal2);
+	flan1.position.x = params.flanThickness - extrudeOptions.amount;
+	flan1.position.z = flan.position.z;
+	flan1.rotation.y = Math.PI / 2;
+	par.mesh.add(flan1);
 
 
 	//болты крепления к верхнему перекрытию
@@ -5776,7 +5829,7 @@ function drawFlanPipeTop(par) {
 				fix.position.y = holeCenters[i].y;
 				fix.position.z = params.flanThickness * (1 + turnFactor) * 0.5;
 				fix.rotation.x = -Math.PI / 2 * turnFactor;
-				par.mesh.add(fix);
+				flan.add(fix);
 			}
 		}
 	}
@@ -5862,7 +5915,7 @@ function drawFlanTop(par) {
 
 	var holesPar = {
 		holeArr: holeCenters,
-		holeRad: par.fixPar.diam / 2 + 1,
+		holeRad: par.fixPar.diamHole / 2,
 		dxfBasePoint: par.dxfBasePoint,
 		shape: par.shape,
 	}
@@ -6381,7 +6434,7 @@ function drawJumperPlatform(par) {
 
 	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !testingMode) { //anglesHasBolts - глобальная переменная)
 			var boltPar = {
-				diam: boltDiam,
+				diam: 10,
 				len: 60,
 				headType: "шестигр.",
 				}

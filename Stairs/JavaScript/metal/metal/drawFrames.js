@@ -230,7 +230,7 @@ function drawWndFrames2(par){
 			wndFrame3.mesh.position.z += (wndSteps[1].in.topMarsh + wndSteps[2].in.topMarsh) * turnFactor;
 			if (par.turnId == "turn1" && (params.stairModel == "П-образная с забегом" || (params.stairModel == "П-образная трехмаршевая" && params.stairAmt2 == 0)))
 				if (!(params.stairModel == "П-образная с забегом" && params.stairAmt3 == 0))
-					wndFrame3.mesh.position.z += (params.marshDist - 57 - 20) * turnFactor
+					wndFrame3.mesh.position.z += (params.marshDist - 57 - 20 + (params.nose - 20)) * turnFactor
 			}
 		
 		obj.add(wndFrame3.mesh);

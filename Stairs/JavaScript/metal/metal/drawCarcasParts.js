@@ -487,24 +487,24 @@ function drawPltStringer(par) {
 	}
 
 	//накладки на заднюю тетиву
-	if (par.key == "rear") {
-		var stringerCoverPar = {
-			points: par.pointsShape,
-			dxfBasePoint: par.dxfBasePoint,
-			radIn: 10, //Радиус скругления внутренних углов
-			radOut: 5, //радиус скругления внешних углов
-			botPoint: copyPoint(p1),
-			topPoint: copyPoint(p3),
-			stringerCoverThickness: 2,
-			railingHoles: par.elmIns[par.key].racks,
-			//markPoints: true,
-		}
-		var stringerCover = drawStringerCover(stringerCoverPar).mesh;
-		if (turnFactor == 1) stringerCover.position.z = -stringerCoverPar.stringerCoverThickness;
-		if (turnFactor == -1) stringerCover.position.z = params.stringerThickness;
+	//if (par.key == "rear") {
+	//	var stringerCoverPar = {
+	//		points: par.pointsShape,
+	//		dxfBasePoint: par.dxfBasePoint,
+	//		radIn: 10, //Радиус скругления внутренних углов
+	//		radOut: 5, //радиус скругления внешних углов
+	//		botPoint: copyPoint(p1),
+	//		topPoint: copyPoint(p3),
+	//		stringerCoverThickness: 2,
+	//		railingHoles: par.elmIns[par.key].racks,
+	//		//markPoints: true,
+	//	}
+	//	var stringerCover = drawStringerCover(stringerCoverPar).mesh;
+	//	if (turnFactor == 1) stringerCover.position.z = -stringerCoverPar.stringerCoverThickness;
+	//	if (turnFactor == -1) stringerCover.position.z = params.stringerThickness;
 
-		par.mesh.add(stringerCover);
-	}
+	//	par.mesh.add(stringerCover);
+	//}
 
 
 	par.carcasHoles = par.pointsHole;
@@ -2186,9 +2186,11 @@ function drawTopFixFlans(par){
 	par.mesh = new THREE.Object3D();
 
 	var marshParams = getMarshParams(3);
+	var parFrames = { marshId: 3};
+	calcFrameParams(parFrames); // рассчитываем параметры рамки
 	
 	var holeOffset = 20; //отступ центра верхнего отверстия от края фланца
-	var botLedge = params.treadThickness + 40; //выступ фланца ниже верхней плоскости ступени, 40 - высота рамки
+	var botLedge = params.treadThickness + parFrames.profHeight; //выступ фланца ниже верхней плоскости ступени, 40 - высота рамки
 	if (params.platformTop == "площадка") botLedge += 20;
 	if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
 		botLedge = params.treadThickness + 50; //выступ фланца ниже верхней плоскости ступени, 50 - высота рамки
@@ -3157,14 +3159,15 @@ return wndSteps;
 function calcPltStringerWidth(){
 	var width = 150;
 	
+	if (params.model == "лт" && params.treadThickness > 40) width += params.treadThickness - 40;
 
 	//увеличение чтобы помещались колонны
-	if(params.columnModel != "нет") width = 200;
+	if (params.columnModel != "нет") width = 200;
 	//опускание соединительного уголка на углу площадки под рамку
 	if (hasTreadFrames()) width = 200;
 
 	//увеличиваем тетиву площадки чтобы помещались 2 рутеля
-	if(params.model == "лт" && params.railingModel == "Самонесущее стекло")	width = 200;
+	if(params.model == "лт" && params.railingModel == "Самонесущее стекло")	width = 200;	
 	
 	//увеличиваем тетивы для подкосов
 	if(params.platformTopColumn != "колонны") width = 200;

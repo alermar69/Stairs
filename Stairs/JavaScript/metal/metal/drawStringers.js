@@ -126,7 +126,7 @@ function drawStringer(par){
 			if (par.topEnd == "winder" && par.key == "out") drawTopStepKo_wndOut(par);
 
 			//смещяем первую стойку если начало ограждений не с первой ступени
-			if (par.marshId == 1 && params.railingStart !== "0" && par.railingHoles[0]) {
+			if (par.marshId == 1 && params.railingStart !== "0" && par.railingHoles[0] && par.marshParams.hasRailing[par.key]) {
 				par.railingHoles[0] = newPoint_xy(par.railingHoles[0], par.b * params.railingStart, par.h * params.railingStart);
 				if (params.railingModel == "Самонесущее стекло") {
 					par.railingHoles[1] = newPoint_xy(par.railingHoles[1], par.b * params.railingStart, par.h * params.railingStart);
@@ -249,7 +249,7 @@ function drawStringer(par){
 		}
 
 		//смещяем первую стойку если начало ограждений не с первой ступени
-		if (par.marshId == 1 && params.railingStart !== 0 && par.railingHoles[0]) {
+		if (par.marshId == 1 && params.railingStart !== 0 && par.railingHoles[0] && par.marshParams.hasRailing[par.key]) {
 			par.railingHoles[0].x += par.b * params.railingStart;
 			par.railingHoles[0].y += par.h * params.railingStart;
 			if (params.railingStart >= par.stairAmt) par.railingHoles.shift();

@@ -1126,6 +1126,11 @@ function calcHandrailPoints(par, parRacks){
 	
 		var racks = par.racks;
 		var parRacks = {};
+
+		//если все стойки находятся на площадке
+		if (racks[0].y == racks[racks.length - 1].y) {			
+			par.isRearPRailing = true;
+		}
 	
 		//костыль для второго марша сдвигаем стойки
 		if (params.stairModel == "Прямая горка") {

@@ -86,6 +86,17 @@ function makeSvg() {
 			//выбираем shapes для сборочного чертежа подложек для трубы
 			if (shape.drawing.group == "treadPlate") {
 				shapesTreadPlateCabriole[marshId].shapes.push(shape);
+				if (marshId == 1 || marshId == 2 || marshId == 3) {
+					var marshParams = getMarshParams(marshId);
+					var count = marshParams.stairAmt;
+					if (marshParams.botTurn == "пол") count -= 1;
+					if (marshParams.lastMarsh && marshParams.topTurn == "пол" && params.topAnglePosition == "под ступенью") count -= 1;
+
+					shapesTreadPlateCabriole[marshId].count = count;
+				}
+				else {
+					shapesTreadPlateCabriole[marshId].count = 1;
+				}
 				isTreadPlateCabriole = true;
 			}
 
@@ -225,6 +236,146 @@ function makeSvg() {
 			borderFrame:
 				{ botLeft: copyPoint(basePoint), topRigth: copyPoint(basePoint) }, //объект для точек границ сборочного чертежа
 		}
+
+		if (shapesTreadPlateCabriole[2]) {
+			if (shapesTreadPlateCabriole[1].shapes.length == shapesTreadPlateCabriole[2].shapes.length) {
+				for (var l = 0; l < shapesTreadPlateCabriole[1].shapes.length; l++) {
+					if (!isShapesEqual(shapesTreadPlateCabriole[1].shapes[l], shapesTreadPlateCabriole[2].shapes[l])) {
+						break;
+					}
+					if (l == shapesTreadPlateCabriole[1].shapes.length - 1) {
+						shapesTreadPlateCabriole[1].count += shapesTreadPlateCabriole[2].count;
+						delete shapesTreadPlateCabriole[2];
+					}
+				}
+			}
+		}
+		if (shapesTreadPlateCabriole[3]) {
+			if (shapesTreadPlateCabriole[1].shapes.length == shapesTreadPlateCabriole[3].shapes.length) {
+				for (var l = 0; l < shapesTreadPlateCabriole[1].shapes.length; l++) {
+					if (!isShapesEqual(shapesTreadPlateCabriole[1].shapes[l], shapesTreadPlateCabriole[3].shapes[l])) {
+						break;
+					}
+					if (l == shapesTreadPlateCabriole[1].shapes.length - 1) {
+						shapesTreadPlateCabriole[1].count += shapesTreadPlateCabriole[3].count;
+						delete shapesTreadPlateCabriole[3];
+					}
+				}
+			}
+		}
+		if (shapesTreadPlateCabriole[2] && shapesTreadPlateCabriole[3]) {
+			if (shapesTreadPlateCabriole[2].shapes.length == shapesTreadPlateCabriole[3].shapes.length) {
+				for (var l = 0; l < shapesTreadPlateCabriole[2].shapes.length; l++) {
+					if (!isShapesEqual(shapesTreadPlateCabriole[2].shapes[l], shapesTreadPlateCabriole[3].shapes[l])) {
+						break;
+					}
+					if (l == shapesTreadPlateCabriole[2].shapes.length - 1) {
+						shapesTreadPlateCabriole[2].count += shapesTreadPlateCabriole[3].count;
+						delete shapesTreadPlateCabriole[3];
+					}
+				}
+			}
+		}
+
+		if (shapesTreadPlateCabriole['1_Turn1TreadPlate'] && shapesTreadPlateCabriole['2_Turn1TreadPlate']) {
+			var treadPlate1 = shapesTreadPlateCabriole['1_Turn1TreadPlate'];
+			var treadPlate2 = shapesTreadPlateCabriole['2_Turn1TreadPlate'];
+			if (treadPlate1.shapes.length == treadPlate2.shapes.length) {
+				for (var l = 0; l < treadPlate1.shapes.length; l++) {
+					if (!isShapesEqual(treadPlate1.shapes[l], treadPlate2.shapes[l])) {
+						break;
+					}
+					if (l == treadPlate1.shapes.length - 1) {
+						shapesTreadPlateCabriole['1_Turn1TreadPlate'].count += shapesTreadPlateCabriole['2_Turn1TreadPlate'].count;
+						delete shapesTreadPlateCabriole['2_Turn1TreadPlate'];
+					}
+				}
+			}
+		}
+		if (shapesTreadPlateCabriole['1_Turn2TreadPlate'] && shapesTreadPlateCabriole['2_Turn2TreadPlate']) {
+			var treadPlate1 = shapesTreadPlateCabriole['1_Turn2TreadPlate'];
+			var treadPlate2 = shapesTreadPlateCabriole['2_Turn2TreadPlate'];
+			if (treadPlate1.shapes.length == treadPlate2.shapes.length) {
+				for (var l = 0; l < treadPlate1.shapes.length; l++) {
+					if (!isShapesEqual(treadPlate1.shapes[l], treadPlate2.shapes[l])) {
+						break;
+					}
+					if (l == treadPlate1.shapes.length - 1) {
+						shapesTreadPlateCabriole['1_Turn2TreadPlate'].count += shapesTreadPlateCabriole['2_Turn2TreadPlate'].count;
+						delete shapesTreadPlateCabriole['2_Turn2TreadPlate'];
+					}
+				}
+			}
+		}
+		if (shapesTreadPlateCabriole['1_Turn3TreadPlate'] && shapesTreadPlateCabriole['2_Turn3TreadPlate']) {
+			var treadPlate1 = shapesTreadPlateCabriole['1_Turn3TreadPlate'];
+			var treadPlate2 = shapesTreadPlateCabriole['2_Turn3TreadPlate'];
+			if (treadPlate1.shapes.length == treadPlate2.shapes.length) {
+				for (var l = 0; l < treadPlate1.shapes.length; l++) {
+					if (!isShapesEqual(treadPlate1.shapes[l], treadPlate2.shapes[l])) {
+						break;
+					}
+					if (l == treadPlate1.shapes.length - 1) {
+						shapesTreadPlateCabriole['1_Turn3TreadPlate'].count += shapesTreadPlateCabriole['2_Turn3TreadPlate'].count;
+						delete shapesTreadPlateCabriole['2_Turn3TreadPlate'];
+					}
+				}
+			}
+		}
+
+		var platforms = []
+		if (shapesTreadPlateCabriole['1_platform']) platforms.push('1_platform')
+		if (shapesTreadPlateCabriole['2_platform']) platforms.push('2_platform')
+		if (shapesTreadPlateCabriole['3_platform']) platforms.push('3_platform')
+		if (platforms.length > 1) {
+			var treadPlate1 = shapesTreadPlateCabriole[platforms[0]];
+			var treadPlate2 = shapesTreadPlateCabriole[platforms[1]];
+			if (treadPlate1.shapes.length == treadPlate2.shapes.length) {
+				for (var l = 0; l < treadPlate1.shapes.length; l++) {
+					if (!isShapesEqual(treadPlate1.shapes[l], treadPlate2.shapes[l])) {
+						var isNotEqualsPlatform1 = true
+						break;
+					}
+					if (l == treadPlate1.shapes.length - 1) {
+						shapesTreadPlateCabriole[platforms[0]].count += shapesTreadPlateCabriole[platforms[1]].count;
+						delete shapesTreadPlateCabriole[platforms[1]];
+					}
+				}
+			}
+			if (platforms.length > 2) {
+				var treadPlate1 = shapesTreadPlateCabriole[platforms[0]];
+				var treadPlate2 = shapesTreadPlateCabriole[platforms[2]];
+				if (treadPlate1.shapes.length == treadPlate2.shapes.length) {
+					for (var l = 0; l < treadPlate1.shapes.length; l++) {
+						if (!isShapesEqual(treadPlate1.shapes[l], treadPlate2.shapes[l])) {
+							var isNotEqualsPlatform2 = true
+							break;
+						}
+						if (l == treadPlate1.shapes.length - 1) {
+							shapesTreadPlateCabriole[platforms[0]].count += shapesTreadPlateCabriole[platforms[2]].count;
+							delete shapesTreadPlateCabriole[platforms[2]];
+						}
+					}
+				}
+			}
+			if (isNotEqualsPlatform1 && isNotEqualsPlatform2) {
+				var treadPlate1 = shapesTreadPlateCabriole[platforms[1]];
+				var treadPlate2 = shapesTreadPlateCabriole[platforms[2]];
+				if (treadPlate1.shapes.length == treadPlate2.shapes.length) {
+					for (var l = 0; l < treadPlate1.shapes.length; l++) {
+						if (!isShapesEqual(treadPlate1.shapes[l], treadPlate2.shapes[l])) {
+							var isNotEqualsPlatform2 = true
+							break;
+						}
+						if (l == treadPlate1.shapes.length - 1) {
+							shapesTreadPlateCabriole[platforms[1]].count += shapesTreadPlateCabriole[platforms[2]].count;
+							delete shapesTreadPlateCabriole[platforms[2]];
+						}
+					}
+				}
+			}
+		}
+
 		for (var key in shapesTreadPlateCabriole) {
 			var shapes = shapesTreadPlateCabriole[key].shapes;			
 
@@ -235,24 +386,18 @@ function makeSvg() {
 					drawShapeSvg(svgPar);
 				}
 
-
-				var marshParams = getMarshParams(key);
-                var count = marshParams.stairAmt;
-			    if (marshParams.botTurn == "пол") count -= 1;
-				if (marshParams.lastMarsh && marshParams.topTurn == "пол" && params.topAnglePosition == "под ступенью") count -= 1;
-
-
 				//подпись
 				var textHeight = 30 * dimScale; //высота текста
 				var textPos = newPoint_xy(svgPar.borderFrame.botLeft, 50, - 50)
-                var str = "Сборочный чертеж подложек " + key + " марша: кол-во - " + count + " шт.";
+                //var str = "Сборочный чертеж подложек " + key + " марша: кол-во - " + count + " шт.";
+				var str = "Сборочный чертеж подложек марша: кол-во - " + shapesTreadPlateCabriole[key].count + " шт.";
 
                 if (key.length > 1 && key.substr(2) == "first") str = "Сборочный чертеж первой подложки первого марша: кол-во - 1шт.";
                 if (key.length > 1 && key.substr(2) == "topLast") str = "Сборочный чертеж последней подложки последнего марша: кол-во - 1шт.";
-                if (key.length > 1 && key.substr(2) == "platform") str = "Сборочный чертеж подложки площадки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
-                if (key.length > 1 && key.substr(2) == "Turn1TreadPlate") str = "Сборочный чертеж первой забежной подложки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
-                if (key.length > 1 && key.substr(2) == "Turn2TreadPlate") str = "Сборочный чертеж второй забежной подложки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
-                if (key.length > 1 && key.substr(2) == "Turn3TreadPlate") str = "Сборочный чертеж третьей забежной подложки " + key.substr(0, 1) + " марша: кол-во - 1шт.";
+				if (key.length > 1 && key.substr(2) == "platform") str = "Сборочный чертеж подложки площадки: кол-во - " + shapesTreadPlateCabriole[key].count + " шт.";
+				if (key.length > 1 && key.substr(2) == "Turn1TreadPlate") str = "Сборочный чертеж первой забежной подложки: кол-во - " + shapesTreadPlateCabriole[key].count + " шт.";
+				if (key.length > 1 && key.substr(2) == "Turn2TreadPlate") str = "Сборочный чертеж второй забежной подложки: кол-во - " + shapesTreadPlateCabriole[key].count + " шт.";
+				if (key.length > 1 && key.substr(2) == "Turn3TreadPlate") str = "Сборочный чертеж третьей забежной подложки: кол-во - " + shapesTreadPlateCabriole[key].count + " шт.";
 				var text = drawText(str, textPos, textHeight, draw)
 				text.attr({ "font-size": textHeight, })
 				var b = text.getBBox();
@@ -657,4 +802,45 @@ function drawSVGTurnRacks(par){
 	moove(turnRacksSet, newPoint_xy(par.basePoint, 0, 0));
 
 	return turnRacksSet;
+}
+
+
+function EqualSizeShapes(shape1, shape2) {
+	//инициализация
+	//$("#svgOutputDiv").html("");
+	//var draw = Raphael("svgOutputDiv", 800, 800);
+	var paper = Raphael(10, 50, 320, 200);
+
+	var obj1 = makeSvgFromShape(shape1, paper);
+	var obj2 = makeSvgFromShape(shape2, paper);
+
+	var b1 = obj1.getBBox()
+	var b2 = obj2.getBBox()
+
+	var isEqual = false;
+	if (Math.round(b1.width) == Math.round(b2.width) && Math.round(b1.height) == Math.round(b2.height))
+		isEqual = true;
+	paper.clear();
+	return isEqual;
+}
+
+function isEq(a, b) {
+
+	if (a == b) return true;
+
+	for (var i in a) {
+		//if(typeof a[i] == "Object" && (a[i].x && a[i].y) && (a[i].x != b[i].x || a[i].y != b[i].y)) return false;
+		if (typeof (a[i]) != "function" && !isEq(a[i], b[i])) return false;
+	}
+	for (var i in b) {
+		//if(typeof b[i] == "Object" && (a[i].x && a[i].y) && (a[i].x != b[i].x || a[i].y != b[i].y)) return false;
+		if (typeof (a[i]) != "function" && !isEq(a[i], b[i])) return false;
+	}
+
+	if (!isNaN(parseFloat(a)) && isFinite(a)) {
+		//if (a.toFixed(3) !== b.toFixed(3)) return false;
+		if (Math.round(a) !== Math.round(b)) return false;
+	}
+
+	return true;
 }

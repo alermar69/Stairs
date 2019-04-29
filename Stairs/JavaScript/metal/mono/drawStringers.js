@@ -133,7 +133,8 @@ function drawComplexStringer(par) {
 			botEndAng = Math.PI / 2;
 			stringerPoints.push(pt0);
 		}
-		if (par.botEnd == "забег" && par.stairAmt > 1) {
+		//if (par.botEnd == "забег" && par.stairAmt > 1) {
+		if (par.botEnd == "забег" && par.isKinkBot) {
 			var pt1 = par.pointsShape[0];
 			var pt2 = par.pointsShape[par.pointsShape.length - 1];
 
@@ -150,7 +151,8 @@ function drawComplexStringer(par) {
 			stringerPoints.push(pt0);
 			stringerPoints.push(pt01);
 		}
-		if (par.botEnd == "забег" && par.stairAmt <= 1) {
+		//if (par.botEnd == "забег" && par.stairAmt <= 1) {
+		if (par.botEnd == "забег" && !par.isKinkBot) {
 			var pt1 = par.pointsShape[0];
 			var pt2 = par.pointsShape[par.pointsShape.length - 1];
 
@@ -173,7 +175,8 @@ function drawComplexStringer(par) {
 			pt3 = newPoint_xy(pt3, offset, - params.profileHeight + sidePlateOverlayPlatform);
 			pt2 = itercection(pt1, polar(pt1, par.marshAngle, 100), pt3, polar(pt3, 0, 100));
 		}
-		if (par.topEnd == "забег" && !(par.stairAmt <= 2 && par.botEnd == "пол")) {
+		//if (par.topEnd == "забег" && !(par.stairAmt <= 2 && par.botEnd == "пол")) {
+		if (par.topEnd == "забег" && par.isKinkTop) {
 			var pt3 = par.pointsShape[par.pointsShape.length - 2];
 			var pt4 = par.pointsShape[par.pointsShape.length - 3];
 			pt4 = newPoint_xy(pt4, offset, - params.profileHeight + params.sidePlateOverlay);
@@ -183,7 +186,8 @@ function drawComplexStringer(par) {
             pt2 = itercection(line_1_2.p1, line_1_2.p2, line_2_3.p1, line_2_3.p2);
 			var pt3 = itercection(line_2_3.p1, line_2_3.p2, pt4, polar(pt4, 0, 100));
 		}
-		if (par.topEnd == "забег" && (par.stairAmt <= 2 && par.botEnd == "пол")) {
+		//if (par.topEnd == "забег" && (par.stairAmt <= 2 && par.botEnd == "пол")) {
+		if (par.topEnd == "забег" && !par.isKinkTop) {
 			//var ang = Math.atan(par.h / (par.pointsShape[3].x - par.pointsShape[2].x));
 			var ang = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
 			var pt3 = par.pointsShape[par.pointsShape.length - 2];
@@ -258,7 +262,7 @@ function drawComplexStringer(par) {
 			polePar.roundHoles.push(hole1, hole2)
 			}
 		if (par.topEnd == "забег" && !(params.stairModel == 'П-образная с забегом' && par.marshId !== 1)){
-			var flanParams = getFlanParams('flan_pipe_bot');
+			var flanParams = getFlanParams('flan_pipe_bot', true);
 			var stairAmt = par.stairAmt;
 			if (par.botEnd == 'забег') {
 				stairAmt -= 1;
@@ -309,7 +313,8 @@ function drawComplexStringer(par) {
 		var arr = par.pointsShape.concat();
 		arr.shift();
 
-		if ((par.botEnd == "забег" && par.stairAmt > 1 && params.model == "труба"))
+		//if ((par.botEnd == "забег" && par.stairAmt > 1 && params.model == "труба"))
+		if ((par.botEnd == "забег" && par.isKinkBot && params.model == "труба"))
 			arr.shift();
 		if (params.model == "труба" && par.botEnd == "площадка") {
 			arr.splice(2, 4); //убираем точки выемки для рамки площадки
@@ -408,6 +413,10 @@ function drawComplexStringer(par) {
 							if (par.stairAmt == 0)
 								platePar.angleIn1 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
 							if (par.stairAmt == 0) platePar.stairAmt = 0;
+							if (!par.isKinkTop) {
+								platePar.angleIn1 = calcAngleX1(par.pointsShape[0],par.pointsShape[par.pointsShape.length - 1]);
+								platePar.isNotKinkTop = true;
+							}
 							var plate = drawTurn2TreadPlateCabriole(platePar).mesh;
 						}else {
 							if (par.topConnection) platePar.step -= par.stringerLedge;
@@ -424,7 +433,11 @@ function drawComplexStringer(par) {
 								platePar.angleIn1 = calcAngleX1(par.pointsShape[par.pointsShape.length - 1], par.pointsShape[par.pointsShape.length - 2]);
 								if (par.isBotPipeHor) platePar.isBotPipeHor = par.isBotPipeHor;
 							}
-							if (par.stairAmt == 0) platePar.stairAmt = 0;						
+							if (par.stairAmt == 0) platePar.stairAmt = 0;	
+							if (!par.isKinkTop) {
+								platePar.angleIn1 = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
+								platePar.isNotKinkTop = true;
+							}
 
 							var plate = drawTurn1TreadPlateCabriole(platePar).mesh;
 						}
@@ -442,9 +455,13 @@ function drawComplexStringer(par) {
 						if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0)
 							platePar.turnSteps = par.turnSteps.params[3];
 						if (params.model == "труба") {
-							if (par.stairAmt == 0)
+							//if (par.stairAmt == 0)
+							if (!par.isKinkBot) {
 								platePar.angleIn3 = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
-							if (par.stairAmt > 0)
+								platePar.isNotKinkBot = true;
+							}
+							//if (par.stairAmt > 0)
+							if (par.isKinkBot)
 								platePar.angleIn3 = calcAngleX1(par.pointsShape[1], par.pointsShape[0]);
 							if (par.topEnd == "пол" && par.stairAmt == 1) { //если ступень последняя
 								platePar.dStep = params.lastWinderTreadWidth - 50;
@@ -526,7 +543,7 @@ function drawComplexStringer(par) {
 	/*
 		Задаем позиции столбов
 	*/
-	var columnPosition = calcColumnsPosition({ pointsShape: par.pointsShape, marshId: par.marshId });
+	var columnPosition = calcColumnsPosition({ pointsShape: par.pointsShape, marshId: par.marshId}, par);
 
 
 	/*
@@ -1307,7 +1324,7 @@ function drawComplexStringer(par) {
 					var flan = flanPar.mesh;
 					//левый верхний угол накладки
 					var topLeftPt = copyPoint(par.pointsShape[2]);
-					if (par.botEnd === "забег") topLeftPt = copyPoint(par.pointsShape[3]);
+					if (par.botEnd === "забег" && par.isKinkBot) topLeftPt = copyPoint(par.pointsShape[3]);
 					if (par.botEnd === "забег" && par.topEnd == "пол" && par.stairAmt == 1) topLeftPt = copyPoint(par.pointsShape[2]);
 					if (par.botEnd === "забег" && par.topEnd == 'забег' && params.stairModel !== 'П-образная трехмаршевая') topLeftPt = copyPoint(par.pointsShape[2]);
 					if (par.botEnd === "площадка") topLeftPt.y += params.treadPlateThickness;
@@ -1346,7 +1363,8 @@ function drawComplexStringer(par) {
 					//Фланец соединения промежуточной площадки к стене
 					var i = par.pointsShape.length - 2;
 					if (par.topEnd === "забег") i = par.pointsShape.length - 3;
-					if (par.topEnd === "забег" && (par.stairAmt <= 2 && par.botEnd == "пол")) i = par.pointsShape.length - 2;
+					//if (par.topEnd === "забег" && (par.stairAmt <= 2 && par.botEnd == "пол")) i = par.pointsShape.length - 2;
+					if (par.topEnd === "забег" && !par.isKinkTop) i = par.pointsShape.length - 2;
 					dxfBasePoint.y -= dxfStep;
 					var flanPar = {
 						type: "joinProf", //ширина фланца
@@ -1367,8 +1385,11 @@ function drawComplexStringer(par) {
 					flan.position.y += sidePlate2.position.y + par.pointsShape[i].y - flanPar.height - (par.pointsShape[i].y - par.pointsShape[i - 1].y);
 					par.flans.add(flan);
 
+					//верхняя пластина
+					dxfBasePoint.x += 300;
 					var deltaLen = 8;//Сдвиг к стене, чтобы закрыть фланец.
-					var len = par.lengthBturn1;
+					//var len = par.lengthBturn1;
+					var len = (params.M - (params.stringerThickness + params.M / 3)) / 2;
 					var width = params.stringerThickness - 8;
 					console.log(par, sidePlate2, par.pointsShape)
 					var p0 = {x: 0, y: 0}
@@ -1383,7 +1404,7 @@ function drawComplexStringer(par) {
 					addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint, 'carcas');
 					addLine(shape, dxfPrimitivesArr, p3, p0, dxfBasePoint, 'carcas');
 
-					var thickness = 8;
+					var thickness = 4;
 					var extrudeOptions = {
 						amount: thickness,
 						bevelEnabled: false,
@@ -1438,6 +1459,7 @@ function drawComplexStringer(par) {
 						var i = par.pointsShape.length - 2;
 						flan.position.x = sidePlate2.position.x + par.pointsShape[i].x + params.flanThickness;
 						flan.position.y = sidePlate2.position.y + par.pointsShape[i].y + 6 + flanPar.height - flanPar.heightPipe + 1;// + 60 +  + ;
+						flan.position.y = sidePlate2.position.y + par.pointsShape[i - 1].y + params.treadPlateThickness;// + 60 +  + ;
 						// flan.position.z = sidePlate2.position.z + 160 + params.flanThickness / 2 + 1;
 						flan.position.z = sidePlate2.position.z + params.metalThickness + params.profileWidth + flanPar.holeX * 2 + 1;// 1 отступ от края отверстия
 						flan.rotation.z = Math.PI;
@@ -1551,6 +1573,7 @@ function drawComplexStringer(par) {
 	/*Опоры*/
 
 	par.dxfBasePoint.y = -8000;
+	par.dxfBasePoint.x += 500;
 	
 	var unitsPos = par.unitsPosObject.turn1; //Точка поворота марша
 	if (par.marshId == 2 && params.stairModel == 'П-образная с забегом') unitsPos = par.unitsPosObject.turn2;
@@ -1566,7 +1589,7 @@ function drawComplexStringer(par) {
 		columnHoles: columnHoles,
 		unitsPos: unitsPos
 	};
-    calcColumnParams(columnParams_all);
+    calcColumnParams(columnParams_all, par);
 
     var countColon = 0;
 	var isSvgBot = true;
@@ -1624,6 +1647,8 @@ function drawComplexStringer(par) {
 			var shape = new THREE.Shape();
 			addLine(shape, dxfPrimitivesArr, pt1, pt2, dxfBasePoint1);
 			addLine(shape, dxfPrimitivesArr, pt3, pt4, dxfBasePoint1);
+
+			par.dxfBasePoint.x += 400;
 		}
 	}
 	
@@ -2045,6 +2070,7 @@ function drawPltStringer(par) {
 		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
 
 		var h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness; // высота задней кромки
+		//var h_1 = 60 - params.treadPlateThickness - 7 + 60; // высота задней кромки
 		var framePlatformWidth = params.M - 300; //ширина рамки площадки
 		var framePlatformThickness = 30; //толщина рамки площадки
 
@@ -2100,9 +2126,11 @@ function drawPltStringer(par) {
 				var pt = newPoint_xy(p0, len2, 0);
 				if (par.stringerLedge) pt.x += par.stringerLedge;
 				var pt5 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
-				var pt6 = newPoint_xy(pt5, 0, -(params.profileHeight - params.sidePlateOverlay));
+				//var pt6 = newPoint_xy(pt5, 0, -(params.profileHeight - params.sidePlateOverlay));
+				var pt6 = newPoint_xy(pt5, 0, -(params.profileHeight - 7));
 				var pt8 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
-				var pt7 = newPoint_xy(pt8, 0, -(params.profileHeight - params.sidePlateOverlay));
+				//var pt7 = newPoint_xy(pt8, 0, -(params.profileHeight - params.sidePlateOverlay));
+				var pt7 = newPoint_xy(pt8, 0, -(params.profileHeight -7));
 
 				par.pointsShape.push(pt5);
 				par.pointsShape.push(pt6);
@@ -2120,9 +2148,9 @@ function drawPltStringer(par) {
 			}
 
 			var pt1 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
-			var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - params.sidePlateOverlay));
+			var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7));
 			var pt4 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
-			var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - params.sidePlateOverlay));
+			var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7));
 
 			par.pointsShape.push(pt1);
 			par.pointsShape.push(pt2);
@@ -2207,7 +2235,8 @@ console.log(shapePar, params.carcasConfig)
 				var pipeFlanParams = getFlanParams('flan_pipe_bot');//Получаем параметры фланца
 				if (params.carcasConfig == '001' || params.carcasConfig == '003') {
 					var holeDist = pipeFlanParams.holesDist; //Расстояние между отверстиями
-					var hole1 = newPoint_xy(pt2, -params.M / 2 - holeDist / 2 + 3 - params.stringerLedge2, -70 - 7 + pipeFlanParams.holeY);//3 - на столько труба не до ходит до края площадки, 70 - длина выступа наклаки под фланец, 7 - наложение накладки на профиль
+					//var hole1 = newPoint_xy(pt2, -params.M / 2 - holeDist / 2 + 3 - params.stringerLedge2, -70 - 7 + pipeFlanParams.holeY);//3 - на столько труба не до ходит до края площадки, 70 - длина выступа наклаки под фланец, 7 - наложение накладки на профиль
+					var hole1 = newPoint_xy(pt3, -params.M / 2 - holeDist / 2 + 3 - params.stringerLedge2, pipeFlanParams.holeY);//3 - на столько труба не до ходит до края площадки, 70 - длина выступа наклаки под фланец, 7 - наложение накладки на профиль
 					var hole2 = newPoint_xy(hole1, holeDist, 0);
 					hole1.rad = hole2.rad = 9;
 					par.pointsHole = [];
@@ -2218,7 +2247,8 @@ console.log(shapePar, params.carcasConfig)
 
 				if (params.carcasConfig == '003' || params.carcasConfig == '004') {
 					var holeDist = pipeFlanParams.holesDist; //Расстояние между отверстиями
-					var hole1 = newPoint_xy(pt1, params.M / 2 - holeDist / 2 - 3 + params.stringerLedge1, -70 - 7 + pipeFlanParams.holeY)//3 - на столько труба не до ходит до края площадки, 70 - длина выступа наклаки под фланец, 7 - наложение накладки на профиль
+					//var hole1 = newPoint_xy(pt1, params.M / 2 - holeDist / 2 - 3 + params.stringerLedge1, -70 - 7 + pipeFlanParams.holeY)//3 - на столько труба не до ходит до края площадки, 70 - длина выступа наклаки под фланец, 7 - наложение накладки на профиль
+					var hole1 = newPoint_xy(pt0, params.M / 2 - holeDist / 2 - 3 + params.stringerLedge1, pipeFlanParams.holeY)//3 - на столько труба не до ходит до края площадки, 70 - длина выступа наклаки под фланец, 7 - наложение накладки на профиль
 					var hole2 = newPoint_xy(hole1, holeDist, 0);
 					hole1.rad = hole2.rad = 9;
 					par.pointsHole = [];
@@ -2271,8 +2301,9 @@ console.log(shapePar, params.carcasConfig)
 				pointsShape: par.pointsShape,
 				dxfBasePoint: par.dxfBasePoint,
 				stringerHeight: p2.y,
+				marshId: par.marshId,
 				marshIdFix: 1,
-			};
+			};			
 			flanPar.noBolts = true; //болты не добавляются
 			flanPar.topEnd = "площадка";
 
@@ -2293,6 +2324,7 @@ console.log(shapePar, params.carcasConfig)
 				marshId: par.marshId,
 				marshIdFix: 3,
 			};
+			flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.length - params.profileWidth - 60 * 2, 0);
 			flanPar.noBolts = true; //болты не добавляются
 			flanPar.topEnd = "площадка";
 

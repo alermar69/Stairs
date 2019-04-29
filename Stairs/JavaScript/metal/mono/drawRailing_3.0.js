@@ -1530,7 +1530,7 @@ function calculateRacks(par){
 	par.topTurn = marshPar.topTurn;
 	par.botTurn = marshPar.botTurn;
 	par.nextMarshPar = nextMarshPar;
-	var rackLen = 800;
+	var rackLen = 750;
 	var rackProfile = 40;
 	var offsetX = 5 + rackProfile / 2; //смещение оси стойки относительно передней кромки ступени
 
@@ -1793,8 +1793,19 @@ function calculateRacks(par){
 
 	//формируем массив racks
 	par.racks = [];
-	if(parRacks.botFirst) par.racks.push(parRacks.botFirst);
-    if (par.stairAmt !== 0 || isWndP || isRearPlatform)par.racks.push(parRacks.marshFirst);
+	if (parRacks.botFirst) par.racks.push(parRacks.botFirst);
+	var isMarshFirst = false;
+	if (par.stairAmt !== 0 || isWndP || isRearPlatform) isMarshFirst = true;
+	if (parRacks.marshFirst.x > parRacks.marshLast.x - 50) isMarshFirst = false;
+
+	if (isMarshFirst) {
+		par.racks.push(parRacks.marshFirst);		
+	}
+	else {
+		parRacks.isNotMarsh = true;
+		if (parRacks.topLast)
+			parRacks.marshLast.holderAng = parRacks.topLast.holderAng = parRacks.angTop;
+	}
 	//сюда вставить добавление средних стоек
 	for (var i = 0; i < rackPos.length; i++){
 		var prevPosition = parseInt(rackPos[i] - 1);
@@ -1841,7 +1852,7 @@ function calcHandrailPoints(par, parRacks){
 		handrailPoints.push(p1);
 		handrailPoints.push(p2);
 	}
-	if(!parRacks.botFirst){
+	if (!parRacks.botFirst && !parRacks.isNotMarsh){
 		var p1 = polar(marshFirst, parRacks.marshFirst.holderAng, -pointOffset);
 		handrailPoints.push(p1);
 	}
@@ -1853,9 +1864,10 @@ function calcHandrailPoints(par, parRacks){
 			var p1 = polar(topLast, parRacks.topLast.holderAng, pointOffset); //todo: сделать стык с поручнем верхнего марша
 		}
 		if(par.topEnd == "забег"){
-			var p1 = polar(topLast, parRacks.topLast.holderAng, pointOffset);
+			var p1 = polar(topLast, parRacks.topLast.holderAng, pointOffset);			
 		}
 		var p2 = itercection(p1, topLast, marshLast, polar(marshLast, parRacks.marshLast.holderAng, 100))
+		if (parRacks.isNotMarsh) p2 = polar(marshLast, parRacks.marshLast.holderAng, -pointOffset);
 		handrailPoints.push(p1);
 		handrailPoints.push(p2);
 	}
@@ -1900,7 +1912,7 @@ function calcRigelPoints(par, parRacks){
 		points.push(basePoint);
 		};
 		
-	if(parRacks.marshFirst){
+	if (parRacks.marshFirst && !parRacks.isNotMarsh){
 		basePoint = newPoint_xy(parRacks.marshFirst, 0, parRacks.marshFirst.len - nominalLen);
 		//делаем ригели на площадке горизонтальными
 		if(par.botEnd == 'площадка' && par.key !== "rear") basePoint.y = points[points.length - 1].y;
@@ -1910,6 +1922,7 @@ function calcRigelPoints(par, parRacks){
 	if(parRacks.marshLast){
 		basePoint = newPoint_xy(parRacks.marshLast, 0, parRacks.marshLast.len - nominalLen);
 		basePoint = polar(basePoint, parRacks.marshLast.holderAng, -15);
+		if (parRacks.isNotMarsh) basePoint = polar(basePoint, parRacks.marshLast.holderAng, +10);
 		if (parRacks.marshLast.noDraw && parRacks.marshLast.dxToMarshNext)
 			basePoint = newPoint_x1(basePoint, -parRacks.marshLast.dxToMarshNext, parRacks.marshLast.holderAng);
 		points.push(basePoint);

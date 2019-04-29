@@ -137,6 +137,7 @@
     <Content Include="JavaScript\metal\mono\drawTreads.js" />
     <Content Include="JavaScript\metal\mono\general\drawRailing.js" />
     <Content Include="JavaScript\metal\mono\personalScripts.js" />
+    <Content Include="JavaScript\metal\mono\inputsReading_2.0.js" />
     <Content Include="JavaScript\metal\railing\drawCarcasParts.js" />
     <Content Include="JavaScript\metal\railing\drawCarcasPartsLib_2.0.js" />
     <Content Include="JavaScript\metal\railing\drawRailing.js" />

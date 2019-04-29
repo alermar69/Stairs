@@ -74,7 +74,6 @@ function drawRack3d_4(par) {
 			if (testingMode) rad1 = 4;
 			var center = { x: 0, y: par.holeYTurnRack - holeDist }
 			addRoundHole(shape, par.dxfArr, center, rad1, par.dxfBasePoint);
-			console.log(testingMode, rad1)
 		}
 	}
 
@@ -417,7 +416,7 @@ function drawRack3d_4(par) {
 		polePar.description = [];
 		polePar.description.push(polePar.text);
 		polePar.amt = 1;
-
+		polePar.material = par.material.name;
 		poleList[poleType].push(polePar);
 
 		//верх комбинированной стойки
@@ -487,7 +486,8 @@ function drawRackHolder(par) {
 		rad: 20,
 	}
 
-	addRoundHole(plateShape, dxfPrimitivesArr, plateHole.center, plateHole.rad, par.dxfBasePoint)
+	if (params.sideOverHang > 50)
+		addRoundHole(plateShape, dxfPrimitivesArr, plateHole.center, plateHole.rad, par.dxfBasePoint)
 
 	var extrudeOptions = {
 		amount: plateThk,
@@ -915,9 +915,9 @@ function drawPole3D_4(par) {
 
 	}
 
-
 	//сохраняем данные для ведомости деталей
 	var addToPoleList = false;
+	var partName = par.partName;
 	if (partName == "handrails" ||
 		partName == "rigels" ||
 		partName == "frameProf" ||
@@ -949,8 +949,10 @@ function drawPole3D_4(par) {
 			len1: Math.round(par.length),
 			len2: Math.round(par.length),
 			len3: Math.round(par.length),
-			angStart: par.angStart,
-			angEnd: par.angEnd,
+			// angStart: par.angStart,
+			// angEnd: par.angEnd,
+			angStart: (par.angStart * 180 / Math.PI).toFixed(1),
+			angEnd: (par.angEnd * 180 / Math.PI).toFixed(1),
 			cutOffsetStart: 0,
 			cutOffsetEnd: 0,
 			poleProfileY: par.poleProfileY,
@@ -962,16 +964,19 @@ function drawPole3D_4(par) {
 		if (partName == "rigels") polePar.text = par.sectText + " ригели";
 		if (partName == "glassProfiles") polePar.text = par.sectText + " профиль стекла"
 		if (partName == "frameProf") polePar.text = " профили прямых рамок"
-		if (partName == "stringerPart") polePar.text = " детали косоура"
+		if (partName == "stringerPart") polePar.text = par.sectText + " детали косоура"
 		if (partName == "column") polePar.text = " колонны"
 
+		var material = par.handrailMatType;
+		if (par.material && !par.handrailMatType) material = par.material.name;
+		if (par.partName == "stringerPart") material = 'metal';
 
 		polePar.description = [];
 		polePar.description.push(polePar.text);
 		polePar.amt = 1;
+		polePar.material = material;
 
 		poleList[poleType].push(polePar);
-
 	}
 
 	return par;
@@ -1695,7 +1700,6 @@ function drawHandrailHolder(par) {
 		specObj[partName]["amt"] += 1;
 	}
 
-	console.log(specObj)
 	return par;
 }
 
@@ -2073,7 +2077,6 @@ function drawBanisterAngle(par) {
 
 
 function drawForgedBanister(type, basePoint, scale, railingMaterial, railingSection, balLen) {
-	console.log("ghgh")
 	if (!basePoint) basePoint = [0, 0, 0];
 	if (!scale) scale = 1;
 	if (!railingMaterial) railingMaterial = new THREE.MeshLambertMaterial({ color: 0xD0D0D0, wireframe: false });
@@ -2566,12 +2569,119 @@ function drawForgedBanister(type, basePoint, scale, railingMaterial, railingSect
 
 }
 
+/**
+ * Функиця отрисовывает часть поручня с скошенными углами
+ * @param {object} par 
+ */
+
+//Pole_5
+function drawHandrailPorfile_4(par) {
+	// par.startAngle = Math.PI / 2;
+	// par.endAngle = Math.PI / 2;
+	// par.startAngle = -Math.PI / 4;//-Math.PI;
+	// par.angleEnd = -Math.PI / 4;//-Math.PI;
+
+	var extrudeOptions = {
+		amount: par.height,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var p0 = {
+		x: 0,
+		y: 0
+	};
+	var p00 = newPoint_xy(p0, par.length, 0);
+
+	var p1 = newPoint_xy(p0, par.profWidth * Math.tan(par.startAngle) / 2, -par.profWidth / 2);
+	var p2 = newPoint_xy(p1, -par.profWidth * Math.tan(par.startAngle), par.profWidth);
+	var p4 = newPoint_xy(p00, -par.profWidth * Math.tan(par.endAngle) / 2, -par.profWidth / 2);
+	var p3 = newPoint_xy(p4, par.profWidth * Math.tan(par.endAngle), par.profWidth);
+
+	var shape = new THREE.Shape();
+	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint);
+
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var pole = new THREE.Mesh(geom, par.material);
+	pole.rotation.x = Math.PI / 2;
+	pole.position.y = par.profHeight;
+	// console.log(par.profHeight)
+	pole.position.z = -50;//par.profWidth / 2;
+	par.mesh.add(pole);
+
+	var leftX = Math.min(p1.x, p2.x)
+	var rightX = Math.max(p3.x, p4.x)
+
+	par.len1 = distance(p2, p3);
+	par.len2 = distance(p4, p1);
+
+	//сохраняем данные для спецификации
+	var partName = "handrails";
+	if (typeof specObj != 'undefined' && partName) {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				sumLength: 0,
+				name: "Поручень",
+				metalPaint: false,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt",
+			}
+		}
+		var name = Math.round(rightX - leftX)
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+		specObj[partName]["sumLength"] += Math.round(par.length) / 1000;
+	}
+
+	//сохраняем данные для ведомости деталей
+
+	if (typeof poleList != 'undefined') {
+		var boardType = par.width + "х" + par.height + " алюм.";
+
+		//формируем массив, если такого еще не было
+		if (!poleList[boardType]) poleList[boardType] = [];
+		var polePar = {
+			len1: Math.round(par.len1),
+			len2: Math.round(par.len2),
+			angStart: Math.round(par.angleStart * 180 / Math.PI * 10) / 10,
+			angEnd: Math.round(-par.angleEnd * 180 / Math.PI * 10) / 10,
+			cutOffsetStart: Math.round(par.width * Math.tan(par.angleStart)),
+			cutOffsetEnd: Math.round(par.width * Math.tan(-par.angleEnd)),
+			poleProfileY: par.width,
+			poleProfileZ: par.height,
+		}
+
+		//максимальная длина палки
+		polePar.len3 = polePar.len1;
+		if (polePar.cutOffsetStart < 0) polePar.len3 += -polePar.cutOffsetStart;
+		if (polePar.cutOffsetEnd > 0) polePar.len3 += polePar.cutOffsetEnd;
+
+		polePar.text = par.sectText + " поручень";
+		polePar.description = [];
+		polePar.description.push(polePar.text);
+		polePar.amt = 1;
+
+		poleList[boardType].push(polePar);
+
+	}
+
+	return par;
+}
 
 function drawHandrail_4(par) {
 
 	//адаптация для отрисовки пристенных поручней
-	if (!par.startAngle) par.startAngle = Math.PI / 2;
-	if (!par.endAngle) par.endAngle = Math.PI / 2;
+	if (!par.startAngle && par.startAngle !== 0) par.startAngle = Math.PI / 2;
+	if (!par.endAngle && par.endAngle !== 0) par.endAngle = Math.PI / 2;
 	if (!par.fixType) par.fixType = "кронштейны";
 	if (!par.poleAngle) par.poleAngle = 0;
 	if (!par.dxfArr) par.dxfArr = dxfPrimitivesArr;
@@ -2579,7 +2689,6 @@ function drawHandrail_4(par) {
 		par.dxfBasePoint = { x: 0, y: 0 };
 		par.dxfArr = [];
 	}
-
 
 	par.mesh = new THREE.Object3D();
 	par.wallOffset = 50; //расстояние от стены до оси поручня
@@ -2613,6 +2722,8 @@ function drawHandrail_4(par) {
 	if (handrailPar.mat == "timber") par.poleMaterial = params.materials.handrail;
 	if (handrailPar.mat == "inox") par.poleMaterial = params.materials.inox;
 
+	if (par.cutBasePlane == 'top') return drawHandrailPorfile_4(par);
+
 	//поручень
 	//рассчитываем абсолютные углы
 	var angStart = par.poleAngle + par.startAngle;
@@ -2632,6 +2743,13 @@ function drawHandrail_4(par) {
 	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
 	addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
 	addLine(shape, par.dxfArr, p3, p0, par.dxfBasePoint);
+
+	//добавляем шейп в глобальный массив для последующего образмеривания
+	if (typeof shapesList != "undefined" && par.drawing) {
+		shape.drawing = par.drawing;
+		shape.drawing.baseLine = { p1: p0, p2: p3 };
+		shapesList.push(shape);
+	}
 
 	par.len = par.length;
 	par.len2 = distance(p3, p0)
@@ -2723,17 +2841,29 @@ function drawHandrail_4(par) {
 				division: handrailPar.mat,
 				workUnitName: "amt",
 				group: "handrails",
+				type_comments: {},
 			}
 			if (handrailPar.mat == "inox") specObj[partName].division = "metal";
 			//if(params.calcType == "timber") specObj[partName].name = "Поручень";
 			if (par.partName == "botPole") specObj[partName].name = "Подбалясная рейка";
 		}
+
 		var name = Math.round(par.profWidth) + "x" + Math.round(par.profHeight) + "х" + Math.round(par.length);
 		if (par.type == "round") name = "Ф" + Math.round(par.profHeight) + "х" + Math.round(par.length);
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["sumLength"] += Math.round(par.length) / 1000;
+
+		if (partName == "handrails" || partName == 'sideHandrails') {
+			var prot = 'нет';
+			if (params.handrailSlots == 'да' && par.unit !== "balustrade") prot = 'есть';
+			if (params.handrailSlots_bal == 'да' && par.unit == "balustrade") prot = 'есть';
+			specObj[partName]["type_comments"][name] = "Сторона " + (par.side == 'out' ? 'внешняя' : 'внутренняя');
+			if (par.unit == "balustrade") specObj[partName]["type_comments"][name] = 'Баллюстрада'
+			if (par.marshId) specObj[partName]["type_comments"][name] = "Марш " + getMarshParams(par.marshId).marshName + "; Сторона " + (par.side == 'out' ? 'внешняя' : 'внутренняя');
+			specObj[partName]["type_comments"][name] += "; Проточки по бокам: " + prot;
+		}
 	}
 
 	//сохраняем данные для ведомости заготовок
@@ -2780,13 +2910,30 @@ function drawHandrail_4(par) {
 			}
 		}
 
+		if (par.startChamfer) polePar.startChamfer = par.startChamfer;
+		if (par.endChamfer) polePar.endChamfer = par.endChamfer;
+
 		polePar.text = par.sectText + " поручень";
+
+		var text = "";
+
+		var prot = 'нет';
+		if (params.handrailSlots == 'да' && par.unit !== "balustrade") prot = 'есть';
+		if (params.handrailSlots_bal == 'да' && par.unit == "balustrade") prot = 'есть';
+		text = "Сторона " + (par.side == 'out' ? 'внешняя' : 'внутренняя');
+		if (par.unit == "balustrade") specObj[partName]["type_comments"][name] = 'Баллюстрада'
+		if (par.marshId) text = "Марш " + getMarshParams(par.marshId).marshName + "; Сторона " + (par.side == 'out' ? 'внешняя' : 'внутренняя');
+		text += "; Проточки по бокам: " + prot;
+
 		polePar.description = [];
-		polePar.description.push(polePar.text);
+		polePar.description.push(polePar.text + "; " + text);
 		polePar.amt = 1;
+		polePar.material = calcHandrailMeterParams({ handrailType: params.handrail }).mat;
+		if (par.unit == 'balustrade') polePar.material = calcHandrailMeterParams({ handrailType: params.handrail_bal }).mat;
 
-		poleList[boardType].push(polePar);
-
+		var partIndex = poleList[boardType].push(polePar);
+		polePar.partIndex = partIndex;
+		if (par.drawing) shape.drawing.partIndex = partIndex;
 	}
 
 	return par;
