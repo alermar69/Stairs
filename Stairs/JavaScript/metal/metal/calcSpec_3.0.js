@@ -326,147 +326,19 @@ function bracesAdd(){}; //пустая функция для навигации
 	if(item.amt > 0) partsList.addItem(item);
 
 	
-//крепления к перекрытиям
-/*
-function floorsMountingItemsAdd(){}; //пустая функция для навигации	
+//крепление плинтусов
+	var tubeAmt = Math.floor(getPartAmt("skirting_hor") / 8);
+	if(tubeAmt < 1) tubeAmt = 1;
+	item = {
+		id:  "silicone",
+		amt: tubeAmt,
+		discription: "Крепление плинтусов",
+		unit: "Ступени",
+		itemGroup: "Ступени",
+		};
+	if(item.amt > 0) partsList.addItem(item);
 	
-	//крепление к нижнему перекрытию
-	var fixParams = {
-		partsList: partsList,
-		fixPart: params.fixPart1,
-		fixSurfaceType: params.fixType1,
-		discription: "Крепление к нижнему перекрытию",
-		unit: "Низ лестницы",
-		itemGroup: "Крепление к обстановке",
-		amt: 4,
-		extraStudLength: params.fixSpacerLength1,
-		studDiam: 10,
-		}
-	if(params.bottomAngleType == "регулируемая опора") {
-		fixParams.fixPart = "саморезы";
-		fixParams.amt = 8;
-		}
-	
-	if(params.isAssembling == "есть") addFixParts(fixParams);
-	
-	//проставка
-	if(params.fixPart1 != "не указано" && params.fixPart1 != "нет" && 
-		params.fixSpacer1 != "не указано" && params.fixSpacer1 != "нет"){
-			item = {
-				id: "fixSpacer1",
-				amt: 2,
-				discription: "Крепление к нижнему перекрытию",
-				unit: "bottomMountingItemsAdd",
-				itemGroup: "Крепление к перекрытиям",
-				};
-			if(item.amt > 0) partsList.addItem(item);					
-			}
-		
-	//крепление колонн
-	if(params.columnModel != "40х40"){
-		var fixParams = {
-			partsList: partsList,
-			fixPart: "саморезы",
-			fixSurfaceType: params.fixType1,
-			discription: "Крепление колонн к перекрытию",
-			unit: "Низ лестницы",
-			itemGroup: "Крепление к обстановке",
-			amt: getPartAmt("column") * 4,
-			extraStudLength: 0,
-			studDiam: 6,
-			}
-		if(params.isAssembling == "есть") addFixParts(fixParams);
-	}
-	
-	//крепление к верхнему перекрытию
-	var fixParams = {
-		partsList: partsList,
-		fixPart: params.fixPart2,
-		discription: "Крепление к верхнему перекрытию",
-		unit: "Верх лестницы",
-		itemGroup: "Крепление к обстановке",
-		amt: 4,
-		extraStudLength: params.fixSpacerLength2,
-		studDiam: 10,
-		}
-	
-	if(params.isAssembling == "есть") addFixParts(fixParams);
-	
-	//проставка
-	if(params.fixPart2 != "не указано" && params.fixPart2 != "нет" && 
-		params.fixSpacer2 != "не указано" && params.fixSpacer2 != "нет"){
-			item = {
-				id: "fixSpacer2",
-				amt: 2,
-				discription: "Крепление к верхнему перекрытию",
-				unit: "topMountingItemsAdd",
-				itemGroup: "Крепление к перекрытиям",
-				};
-			if(item.amt > 0) partsList.addItem(item);					
-			}
-	
-	
-	
-//крепление к стенам
 
-function wallsMountingItemsAdd(){} //пустая функция для навигации
-
-	//стена 1
-	var fixParams={
-		partsList: partsList,
-		amt: params.fixAmt3,
-		discription: "Крепление к стене 1",
-		fixSurfaceType: params.fixType3,
-		fixPart: params.fixPart3,
-		fixSpacer: params.fixSpacer3,
-		fixSpacerLength: params.fixSpacerLength3,
-		fixSpacerId: "fixSpacer3",
-		}
-	wallMountingItemsAdd(fixParams);
-	
-	
-	//стена 2
-	var fixParams={
-		partsList: partsList,
-		amt: params.fixAmt4,
-		discription: "Крепление к стене 2",
-		fixSurfaceType: params.fixType4,
-		fixPart: params.fixPart4,
-		fixSpacer: params.fixSpacer4,
-		fixSpacerLength: params.fixSpacerLength4,
-		fixSpacerId: "fixSpacer4",
-		}
-	wallMountingItemsAdd(fixParams);
-	
-	//стена 3
-	var fixParams={
-		partsList: partsList,
-		amt: params.fixAmt5,
-		discription: "Крепление к стене 3",
-		fixSurfaceType: params.fixType5,
-		fixPart: params.fixPart5,
-		fixSpacer: params.fixSpacer5,
-		fixSpacerLength: params.fixSpacerLength5,
-		fixSpacerId: "fixSpacer5",
-		}
-	 wallMountingItemsAdd(fixParams);
-	
-	//стена 4
-	var fixParams={
-		partsList: partsList,
-		amt: params.fixAmt6,
-		discription: "Крепление к стене 4",
-		fixSurfaceType: params.fixType6,
-		fixPart: params.fixPart6,
-		fixSpacer: params.fixSpacer6,
-		fixSpacerLength: params.fixSpacerLength6,
-		fixSpacerId: "fixSpacer6",
-		}
-	 wallMountingItemsAdd(fixParams);
-
-	//end of wallsMountingItemsAdd	
-	
-*/
 
 // ОГРАЖДЕНИЯ
 	

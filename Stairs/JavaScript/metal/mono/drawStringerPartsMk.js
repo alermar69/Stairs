@@ -215,9 +215,10 @@ function drawBotStepMk_pltG(par) {
 	var p0 = copyPoint(par.stringerBasePoint); //угол площадки
 
 	//высота косоура
+	var dy = params.sidePlateOverlay - 7;
 	var h_1 = par.stringerWidth; // высота косоура
 	if (params.model == "труба")
-		h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness; // высота первого подъема
+		h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness + dy; // высота первого подъема
 
 	p0 = newPoint_xy(p0, -par.botEndLength, -h_1 - params.treadThickness - params.treadPlateThickness); //нижний левый угол
 	if (params.model == "труба") p0.x += params.metalThickness;
@@ -253,10 +254,10 @@ function drawBotStepMk_pltG(par) {
 			pt = newPoint_xy(p0, (params.platformLength_1 + 50) / 2 + par.stringerLedge - params.flanThickness, 0);
 		var pt1 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
 		//var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - params.sidePlateOverlay));
-		var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7));
+		var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7) + dy);
 		var pt4 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
         //var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - params.sidePlateOverlay));
-        var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7));
+		var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7) + dy);
 
 
 		par.pointsShape.push(pt1);
@@ -490,7 +491,13 @@ function drawBotStepMk_wnd(par) {
 	// вторая проступь
 	var p4 = newPoint_xy(p3, lengthB2, 0.0);
 
-	par.isKinkBot = false; // нужен ли излом
+	par.isKinkBot = false; // излома нет 
+	if (params.model == "труба") {
+		if (!(par.topEnd == 'забег' && par.stairAmt == 0)) {
+			var ang2 = Math.atan(par.h / lengthBin);
+			if (Math.abs(par.marshAngle - ang2) > 0.1) par.isKinkBot = true; // излом есть 
+		}		
+	}
 
 	// нижний край косоура
 	if (params.model == "сварной" || !par.isKinkBot) {
@@ -551,7 +558,7 @@ function drawBotStepMk_wnd(par) {
 
 		center1.polygon = center2.polygon = center3.polygon = true; //отверстие квадратное
 		par.pointsHole.push(center1);
-		par.pointsHole.push(center2);
+		if (center2.x - center1.x > 25) par.pointsHole.push(center2);
 		par.pointsHole.push(center3);
 	}
 
@@ -689,9 +696,10 @@ function drawTopStepMk_pltG(par) {
 
 	if (par.stringerLedge1) par.stringerLedge = par.stringerLedge1;
 
+	var dy = params.sidePlateOverlay - 7;
 	var h_1 = par.stringerWidth; // высота задней кромки
 	if (params.model == "труба")
-		h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness; // высота задней кромки
+		h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness + dy; // высота задней кромки
 
 	/*ТОЧКИ КОНТУРА*/
 	var p1 = copyPoint(par.midUnitEnd);
@@ -730,10 +738,10 @@ function drawTopStepMk_pltG(par) {
 		var pt = itercection(topLineP2, polar(topLineP2, 0, 100.0), par.pcenter, polar(par.pcenter, Math.PI / 2, 100.0));
 		var pt1 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
 		//var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - params.sidePlateOverlay));
-		var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7));
+		var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7) + dy);
 		var pt4 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
 		//var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - params.sidePlateOverlay));
-		var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7));
+		var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7) + dy);
 
 		par.pointsShape.push(pt1);
 		par.pointsShape.push(pt2);
@@ -925,6 +933,12 @@ function drawTopStepMk_wnd(par) {
 	par.pointsShape.push(topLineP2);
 
 	par.isKinkTop = false; // нужен ли излом
+	if (params.model == "труба") {
+		if (!(par.botEnd == 'забег' && par.stairAmt == 0)) {
+			var ang2 = Math.atan(par.h / lenOut);
+			if (Math.abs(par.marshAngle - ang2) > 0.1) par.isKinkTop = true; // излом есть 
+		}
+	}
 
 	if (params.model == "сварной") {
 		if (par.stairAmt == 0 && par.botEnd === "забег") {//для П-образной с забегом средний марш
@@ -1048,7 +1062,7 @@ function drawTopStepMk_wnd(par) {
 
 		center1.polygon = center2.polygon = center3.polygon = true; //отверстие квадратное
 		par.pointsHole.push(center1);
-		par.pointsHole.push(center2);
+		if (center2.x - center1.x > 25) par.pointsHole.push(center2);
 		par.pointsHole.push(center3);
 
 		//Отрисовка отверстий под вторую подложку

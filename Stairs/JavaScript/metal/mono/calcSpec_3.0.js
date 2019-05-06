@@ -415,8 +415,18 @@ function showDrawingsLinks(){
 		params.marshMiddleFix_2 == "колонна" || 
 		params.marshMiddleFix_3 == "колонна" ||
 		params.isColumn1 || params.isColumn2 || params.isColumn3 || params.isColumn4){
-			links += "<a href='/drawings/carcas/column_mono.pdf' target='_blank'>Колонны марша</a><br/>";
+			if(params.model == "труба") links += "<a href='/drawings/carcas/column_mono_prof.pdf' target='_blank'>Колонны марша</a><br/>"
+			else links += "<a href='/drawings/carcas/column_mono.pdf' target='_blank'>Колонны марша</a><br/>";
 			}
+	
+	//подложки
+	if(params.model == "труба"){
+		links += "<a href='/drawings/mono/treadPlates.pdf' target='_blank'>Подложки прямых ступеней</a><br/>";
+		if(isWinder){
+			if(turnFactor == 1) links += "<a href='/drawings/mono/treadPlates_wndRight.pdf' target='_blank'>Подложки забежных ступеней (прав)</a><br/>";
+			if(turnFactor == -1) links += "<a href='/drawings/mono/treadPlates_wndLeft.pdf' target='_blank'>Подложки забежных ступеней (лев)</a><br/>";
+		}
+	}
 	
 	 $("#drawings").html(links)
 

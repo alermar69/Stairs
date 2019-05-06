@@ -3011,7 +3011,7 @@ function drawMonoFlan(par) {
 		flanPar.noBolts = true; //болты не добавляются
 		var sidePlateOverlay = params.sidePlateOverlay;
 		if (par.topEnd == 'забег') sidePlateOverlay -= params.flanThickness;
-		if (par.topEnd == "площадка") sidePlateOverlay = 7;
+		if (par.topEnd == "площадка") sidePlateOverlay = 7 + (params.sidePlateOverlay - 7);
 		flanPar.height = 60 - params.treadPlateThickness + params.profileHeight + sidePlateOverlay + 20;
 		if (par.height) flanPar.height = par.height;
 		par.height = flanPar.height;
@@ -3032,9 +3032,10 @@ function drawMonoFlan(par) {
 		//добавляем прямоугольное отверстие под трубу
 
 		var sidePlateOvelayHole = params.sidePlateOverlay;
-		if (par.botEnd == 'площадка') sidePlateOvelayHole = 7;
+		if (par.botEnd == 'площадка') sidePlateOvelayHole = 7 + (params.sidePlateOverlay - 7);
 		var center = { x: flanPar.width / 2, y: flanPar.height - params.profileHeight / 2 - Math.abs(par.stringerHeight) + sidePlateOvelayHole};// - params.profileHeight / 2 - (60 + sidePlateOverlay - params.treadPlateThickness - 7) };//Подогнано 7 везде отступ
 		if (par.topEnd == "площадка") center.y += sidePlateOverlay - params.sidePlateOverlay;
+		if (par.isPlatform) center.y -= (params.sidePlateOverlay - 7);
 		if (!flanPar.pathHoles) flanPar.pathHoles = [];
 		flanPar.pathHoles.push(pathPolygonHole(center, params.profileWidth / 2 + 1, params.profileHeight / 2 + 1, flanPar.dxfBasePoint));
 		par.centerHolePos = center;
@@ -4020,9 +4021,13 @@ function drawTurn1TreadPlateCabriole(par) {
 		var dist = setDistHoleTurn("1", turnParams);
 		center3 = newPoint_xy(p1, dist.in, -20);
 
+		var holesCenter = [center1, center2];
 		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
 		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
-		addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+		if (center3.x - center2.x > 25) {
+			addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+			holesCenter.push(center3)
+		}
 
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -4035,7 +4040,7 @@ function drawTurn1TreadPlateCabriole(par) {
 		if (par.type == "treadPlate") {
 			var boltPar = {
 				type: "подложка труба",
-				holesCenter: [center1, center2, center3],
+				holesCenter: holesCenter,
 			}
 
 			drawPlateBolts(boltPar);
@@ -4110,9 +4115,13 @@ function drawTurn1TreadPlateCabriole(par) {
 		center2 = newPoint_xy(p1, 20, -20);
 		center3 = newPoint_xy(p1, dist.out, -20);
 
+		var holesCenter = [center1, center2];
 		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
 		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
-        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+		if (center3.x - center2.x > 25) {
+			addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+			holesCenter.push(center3)
+		}
 
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
@@ -4125,7 +4134,7 @@ function drawTurn1TreadPlateCabriole(par) {
 		if (par.type == "treadPlate") {
 			var boltPar = {
 				type: "подложка труба",
-				holesCenter: [center1, center2, center3],
+				holesCenter: holesCenter,
 			}
 
 			drawPlateBolts(boltPar);
@@ -5323,9 +5332,13 @@ function drawTurn3TreadPlateCabriole(par) {
 		var dist = setDistHoleTurn("3", turnParams);
 		center3 = newPoint_xy(p1, dist.in + par.strapThickness / 2, -20);
 
+		var holesCenter = [center1, center2];
 		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
 		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
-        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+		if (center3.x - center2.x > 25) {
+			addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+			holesCenter.push(center3)
+		}
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
@@ -5337,7 +5350,7 @@ function drawTurn3TreadPlateCabriole(par) {
 		if (par.type == "treadPlate") {
 			var boltPar = {
 				type: "подложка труба",
-				holesCenter: [center1, center2, center3],
+				holesCenter: holesCenter,
 			}
 
 			drawPlateBolts(boltPar);
@@ -5402,9 +5415,13 @@ function drawTurn3TreadPlateCabriole(par) {
 		center2 = newPoint_xy(p1, 20 - 1.5, -20);
 		center3 = newPoint_xy(p1, dist.out - 1.5, -20);
 
+		var holesCenter = [center1, center2];
 		addOvalHoleX(shape, dxfPrimitivesArr, center1, 6, 10, dxfBasePoint, true);
 		addOvalHoleX(shape, dxfPrimitivesArr, center2, 6, 10, dxfBasePoint, true);
-        addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+		if (center3.x - center2.x > 25) {
+			addOvalHoleX(shape, dxfPrimitivesArr, center3, 6, 10, dxfBasePoint, true);
+			holesCenter.push(center3)
+		}
 
 		var geom = new THREE.ExtrudeGeometry(shape, par.stringerTreadPlateExtrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
@@ -5416,7 +5433,7 @@ function drawTurn3TreadPlateCabriole(par) {
 		if (par.type == "treadPlate") {
 			var boltPar = {
 				type: "подложка труба",
-				holesCenter: [center1, center2, center3],
+				holesCenter: holesCenter,
 			}
 
 			drawPlateBolts(boltPar);

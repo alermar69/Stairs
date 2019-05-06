@@ -19,6 +19,7 @@ function makeSvg() {
 	var shapesTurnRack = [];
 	var railingShapes = [];
 	var glassShapes = [];
+	var handrailShapes = [];
 	var shapesMarsh = {};
 	var shapesPlatform = {};
 	var shapesTreadPlateCabriole = {};
@@ -47,7 +48,8 @@ function makeSvg() {
 
 		if (!shape.drawing) shape.drawing = {};
 
-		if (shape.drawing.group == "turnRack") {
+		if (shape.drawing.group == "handrails") handrailShapes.push(shape);
+			if (shape.drawing.group == "turnRack") {
 			shapesTurnRack.push(shape)
 		}
 
@@ -526,6 +528,24 @@ function makeSvg() {
 			draw: draw,
 		}
 		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
+	}
+
+	if (handrailShapes.length > 0) {
+		var handrailsPar = {
+			draw: draw, 
+			shapes: handrailShapes,
+		}
+		var handrails = drawSVGHandrails(handrailsPar);
+
+		var a4Params = {
+			elements: handrails,
+			basePoint: {x:0, y:basePoint.y},
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
 	}
 	//зум и сдвиг мышкой
 	var panZoom = svgPanZoom('#svgOutputDiv svg', {
@@ -580,9 +600,7 @@ function drawShapeSvg(par) {
 		if (shape.drawing.isTurned) ang *= -1;
 	};
 
-	
 	rotate(obj, ang);
-	
 
 	//описанный прямоугольник
 	var b = obj.getBBox()

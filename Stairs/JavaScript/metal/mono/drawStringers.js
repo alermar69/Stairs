@@ -91,7 +91,7 @@ function drawComplexStringer(par) {
 	//отрисовка профильной трубы
 	if (params.model == "труба") {
 		var botEndAng = 0;
-		var sidePlateOverlayPlatform = 7;
+		var sidePlateOverlayPlatform = 7 + (params.sidePlateOverlay - 7);
 		var offset = params.flanThickness - 3;
 		var stringerPoints = [];
 
@@ -2069,12 +2069,13 @@ function drawPltStringer(par) {
 		var textBasePoint = newPoint_xy(par.dxfBasePoint, -20, -120);
 		addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
 
-		var h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness; // высота задней кромки
+		var dy = params.sidePlateOverlay - 7;
+		var h_1 = 60 + params.sidePlateOverlay - params.treadPlateThickness + dy; // высота задней кромки
 		//var h_1 = 60 - params.treadPlateThickness - 7 + 60; // высота задней кромки
 		var framePlatformWidth = params.M - 300; //ширина рамки площадки
 		var framePlatformThickness = 30; //толщина рамки площадки
 
-		var p0 = { x: 0, y: 0 };
+		var p0 = { x: 0, y: -dy };
 		var p1 = newPoint_xy(p0, 0, h_1);
 		var p2 = newPoint_xy(p1, par.length, 0);
 		var p3 = newPoint_xy(p2, 0, -h_1);
@@ -2127,10 +2128,10 @@ function drawPltStringer(par) {
 				if (par.stringerLedge) pt.x += par.stringerLedge;
 				var pt5 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
 				//var pt6 = newPoint_xy(pt5, 0, -(params.profileHeight - params.sidePlateOverlay));
-				var pt6 = newPoint_xy(pt5, 0, -(params.profileHeight - 7));
+				var pt6 = newPoint_xy(pt5, 0, -(params.profileHeight - 7) + dy);
 				var pt8 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
 				//var pt7 = newPoint_xy(pt8, 0, -(params.profileHeight - params.sidePlateOverlay));
-				var pt7 = newPoint_xy(pt8, 0, -(params.profileHeight -7));
+				var pt7 = newPoint_xy(pt8, 0, -(params.profileHeight -7) + dy);
 
 				par.pointsShape.push(pt5);
 				par.pointsShape.push(pt6);
@@ -2148,9 +2149,9 @@ function drawPltStringer(par) {
 			}
 
 			var pt1 = newPoint_xy(pt, (params.profileWidth + 140 + 2) / 2, 0);
-			var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7));
+			var pt2 = newPoint_xy(pt1, 0, -(params.profileHeight - 7) + dy);
 			var pt4 = newPoint_xy(pt, -(params.profileWidth + 140 + 2) / 2, 0);
-			var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7));
+			var pt3 = newPoint_xy(pt4, 0, -(params.profileHeight - 7) + dy);
 
 			par.pointsShape.push(pt1);
 			par.pointsShape.push(pt2);
@@ -2200,7 +2201,7 @@ console.log(shapePar, params.carcasConfig)
 
 
 
-		sidePlate1.position.y = sidePlate2.position.y = -h_1;
+		sidePlate1.position.y = sidePlate2.position.y = -h_1 + dy;
 		sidePlate1.position.z = (params.stringerThickness / 2 - params.metalThickness)*turnFactor;
 		sidePlate2.position.z = -params.stringerThickness / 2 * turnFactor;
 		sidePlate1.position.z -= params.metalThickness * (1 - turnFactor) * 0.5;
@@ -2270,7 +2271,7 @@ console.log(shapePar, params.carcasConfig)
 
 			stringerPole.position.z = -params.profileWidth / 2;
 			stringerPole.position.x = sidePlate2.position.x;
-			stringerPole.position.y = sidePlate2.position.y;
+			stringerPole.position.y = sidePlate2.position.y + dy;
 			par.mesh2.add(stringerPole);
 		}
 
@@ -2306,6 +2307,7 @@ console.log(shapePar, params.carcasConfig)
 			};			
 			flanPar.noBolts = true; //болты не добавляются
 			flanPar.topEnd = "площадка";
+			flanPar.isPlatform = true;
 
 			var flan = drawMonoFlan(flanPar).mesh;
 			flan.position.x = sidePlate2.position.x - params.flanThickness;
@@ -2327,6 +2329,7 @@ console.log(shapePar, params.carcasConfig)
 			flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.length - params.profileWidth - 60 * 2, 0);
 			flanPar.noBolts = true; //болты не добавляются
 			flanPar.topEnd = "площадка";
+			flanPar.isPlatform = true;
 
 			var flan = drawMonoFlan(flanPar).mesh;
 			flan.position.x = sidePlate2.position.x + p2.x;
