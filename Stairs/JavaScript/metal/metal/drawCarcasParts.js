@@ -1573,133 +1573,135 @@ function drawStringerFlans_all(par) {
 function drawStringerFlan(par) {
 
 	par.mesh = new THREE.Object3D();
-	
-	if (par.topLeft && par.botLeft && par.botRight && par.topRight){
-	
-	var holeOffset = 20; //отступ центра отверстия от края фланца
-	var frontHoleOffset = 20;
-	
-	if(par.key == "middle"){
-		var frontHoleOffset = 30; //отступ переднего края фланца
-		if (hasTreadFrames()) frontHoleOffset = 55;
-		if (params.stairType == "рифленая сталь" || params.stairType == "лотки" || params.stairType == "пресснастил") frontHoleOffset = 30;
-		if(params.stringerType == "прямая") frontHoleOffset = 20;
-		if(params.model == "ко") frontHoleOffset = 45;
+
+	if (par.topLeft && par.botLeft && par.botRight && par.topRight) {
+
+		var holeOffset = 20; //отступ центра отверстия от края фланца
+		var frontHoleOffset = 20;
+
+		if (par.key == "middle") {
+			var frontHoleOffset = 30; //отступ переднего края фланца
+			if (hasTreadFrames()) frontHoleOffset = 55;
+			if (params.stairType == "рифленая сталь" || params.stairType == "лотки" || params.stairType == "пресснастил") frontHoleOffset = 30;
+			if (params.stringerType == "прямая") frontHoleOffset = 20;
+			if (params.model == "ко") frontHoleOffset = 45;
 		}
-	
-	var botRightHole = newPoint_xy(par.botRight, 0, 0);
-	
-	// корректировка нижнего правого угла фланца
-	if ((par.key == "middle")&&(params.stringerType != "ломаная")){
-		botRightHole.x += (par.topRight.x - par.botRight.x) - (par.topRight.y - par.botRight.y) / Math.tan(par.marshAng);
-	}
-	
-	var topLine = parallel(par.topLeft, par.topRight, holeOffset);
-	var botLine = parallel(par.botLeft, botRightHole, -holeOffset);
-	var rightLine = parallel(botRightHole, par.topRight, -holeOffset);
-	var leftLine = parallel(par.botLeft, par.topLeft, frontHoleOffset);
-	
-	var p1 = itercection(botLine.p1, botLine.p2, leftLine.p1, leftLine.p2);
-	var p2 = itercection(topLine.p1, topLine.p2, leftLine.p1, leftLine.p2);
-	var p3 = itercection(topLine.p1, topLine.p2, rightLine.p1, rightLine.p2);
-	var p4 = itercection(botLine.p1, botLine.p2, rightLine.p1, rightLine.p2);
-	
-	var pointsShape = [p1, p2, p3, p4];
 
-	//создаем шейп
-	var shapePar = {
-		points: pointsShape,
-		dxfArr: dxfPrimitivesArr,
-		dxfBasePoint: newPoint_xy(par.dxfBasePoint, par.botRight.x - par.botLeft.x + 100, -(par.topLeft.y - par.botLeft.y) - 100),
-	}
-	par.flanShape = drawShapeByPoints2(shapePar).shape;
+		var botRightHole = newPoint_xy(par.botRight, 0, 0);
 
-	var holesPar = {
-		holeArr: par.holeCenters,
-		dxfBasePoint: shapePar.dxfBasePoint,
-		shape: par.flanShape,
+		// корректировка нижнего правого угла фланца
+		if ((par.key == "middle") && (params.stringerType != "ломаная")) {
+			botRightHole.x += (par.topRight.x - par.botRight.x) - (par.topRight.y - par.botRight.y) / Math.tan(par.marshAng);
 		}
-	addHolesToShape(holesPar);
 
-	var thk = 8.0;
-	var flanExtrudeOptions = {
-		amount: thk,
-		bevelEnabled: false,
-		curveSegments: 12,
-		steps: 1
-	};
+		var topLine = parallel(par.topLeft, par.topRight, holeOffset);
+		var botLine = parallel(par.botLeft, botRightHole, -holeOffset);
+		var rightLine = parallel(botRightHole, par.topRight, -holeOffset);
+		var leftLine = parallel(par.botLeft, par.topLeft, frontHoleOffset);
 
-	var geom = new THREE.ExtrudeGeometry(par.flanShape, flanExtrudeOptions);
-	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	var mesh = new THREE.Mesh(geom, params.materials.metal);	
+		var p1 = itercection(botLine.p1, botLine.p2, leftLine.p1, leftLine.p2);
+		var p2 = itercection(topLine.p1, topLine.p2, leftLine.p1, leftLine.p2);
+		var p3 = itercection(topLine.p1, topLine.p2, rightLine.p1, rightLine.p2);
+		var p4 = itercection(botLine.p1, botLine.p2, rightLine.p1, rightLine.p2);
 
-	par.mesh.add(mesh);
-	
+		var pointsShape = [p1, p2, p3, p4];
 
-	/* болты */	
-
-	if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //глобальная переменная
-		var side = par.side;
-		if (params.stairModel == "Прямая") {
-			if (par.side == "left") side = "right";
-			if (par.side == "right") side = "left";
+		//создаем шейп
+		var shapePar = {
+			points: pointsShape,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: newPoint_xy(par.dxfBasePoint, par.botRight.x - par.botLeft.x + 100, -(par.topLeft.y - par.botLeft.y) - 100),
 		}
-		var boltPar = {
-			diam: boltDiam,
-			len: boltLen,
+		par.flanShape = drawShapeByPoints2(shapePar).shape;
+
+		var holesPar = {
+			holeArr: par.holeCenters,
+			dxfBasePoint: shapePar.dxfBasePoint,
+			shape: par.flanShape,
+		}
+		addHolesToShape(holesPar);
+
+		var thk = 8.0;
+		var flanExtrudeOptions = {
+			amount: thk,
+			bevelEnabled: false,
+			curveSegments: 12,
+			steps: 1
+		};
+
+		var geom = new THREE.ExtrudeGeometry(par.flanShape, flanExtrudeOptions);
+		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+		var mesh = new THREE.Mesh(geom, params.materials.metal);
+
+		par.mesh.add(mesh);
+
+
+		/* болты */
+
+		if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //глобальная переменная
+			var side = par.side;
+			if (params.stairModel == "Прямая") {
+				if (par.side == "left") side = "right";
+				if (par.side == "right") side = "left";
 			}
-		for (var i = 0; i < par.holeCenters.length; i++) {
-			if (!par.holeCenters[i].hasAngle) {
-				if (par.holeCenters[i].headType) boltPar.headType = par.holeCenters[i].headType;
-				else boltPar.headType = false;
-				if (par.holeCenters[i].boltLen) boltPar.len = par.holeCenters[i].boltLen;
-				else boltPar.len = boltLen;
-				var bolt = drawBolt(boltPar).mesh;
-				bolt.rotation.x = Math.PI / 2 * turnFactor;
-				bolt.position.x = par.holeCenters[i].x;
-				bolt.position.y = par.holeCenters[i].y;
-				bolt.position.z = (boltPar.len / 2 - params.stringerThickness) * turnFactor + params.stringerThickness*(1-turnFactor)*0.5;
-				if (side == "right") {				
-					bolt.position.z = (params.stringerThickness * 2 - boltPar.len / 2) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
-					bolt.rotation.x = -Math.PI / 2 * turnFactor;
+			var boltPar = {
+				diam: boltDiam,
+				len: boltLen,
+			}
+			for (var i = 0; i < par.holeCenters.length; i++) {
+				if (!par.holeCenters[i].hasAngle && !par.holeCenters[i].noBolt) {
+					if (par.holeCenters[i].headType) boltPar.headType = par.holeCenters[i].headType;
+					else boltPar.headType = false;
+					if (par.holeCenters[i].boltLen) boltPar.len = par.holeCenters[i].boltLen;
+					else boltPar.len = boltLen;
+					var bolt = drawBolt(boltPar).mesh;
+					bolt.rotation.x = Math.PI / 2 * turnFactor;
+					bolt.position.x = par.holeCenters[i].x;
+					bolt.position.y = par.holeCenters[i].y;
+					bolt.position.z = (boltPar.len / 2 - params.stringerThickness) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
+					if (par.holeCenters[i].dz) bolt.position.z += par.holeCenters[i].dz;
+					if (side == "right") {
+						bolt.position.z = (params.stringerThickness * 2 - boltPar.len / 2) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
+						bolt.rotation.x = -Math.PI / 2 * turnFactor;
+						if (par.holeCenters[i].dz) bolt.position.z -= par.holeCenters[i].dz;
+					}
+					par.mesh.add(bolt)
 				}
-				par.mesh.add(bolt)
 			}
 		}
-	}
-				
-	//сохраняем данные для спецификации
-	var flanWidth = Math.round(distance(p1, p2))
-	var flanLen = Math.round(p3.x - p1.x)
-	var partName = "stringerFlan";
-	if (typeof specObj !='undefined'){
-		if (!specObj[partName]){
-			specObj[partName] = {
-				types: {},
-				amt: 0,
-				name: "Фланец соединения косоуров",
-				area: 0,
-				paintedArea: 0,
-				metalPaint: true,
-				timberPaint: false,
-				division: "metal",
-				workUnitName: "area", //единица измерения
-				group: "Каркас",
+
+		//сохраняем данные для спецификации
+		var flanWidth = Math.round(distance(p1, p2))
+		var flanLen = Math.round(p3.x - p1.x)
+		var partName = "stringerFlan";
+		if (typeof specObj != 'undefined') {
+			if (!specObj[partName]) {
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Фланец соединения косоуров",
+					area: 0,
+					paintedArea: 0,
+					metalPaint: true,
+					timberPaint: false,
+					division: "metal",
+					workUnitName: "area", //единица измерения
+					group: "Каркас",
 				}
+			}
+			var name = flanLen + "x" + flanWidth;
+			var area = flanLen * flanWidth / 1000000;
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+			specObj[partName]["area"] += area;
+			specObj[partName]["paintedArea"] += area * 2;
 		}
-		var name = flanLen + "x" + flanWidth;
-		var area = flanLen * flanWidth / 1000000;
-		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-		specObj[partName]["amt"] += 1;
-		specObj[partName]["area"] += area;
-		specObj[partName]["paintedArea"] += area * 2;
-	}				
-		
-	return par.mesh;
+
+		return par.mesh;
 	}
 	return null;
-	
+
 } //end of drawStringerFlan
 
 /*
@@ -2196,6 +2198,7 @@ function drawTopFixFlans(par){
 		botLedge = params.treadThickness + 50; //выступ фланца ниже верхней плоскости ступени, 50 - высота рамки
 	if (params.topAnglePosition == "под ступенью") botLedge += 100;
 	if (params.topAnglePosition == "над ступенью") botLedge = -10;
+	if (params.calcType == 'vhod' && params.staircaseType == "Готовая") botLedge = 181;
 	
 	par.flanLen = holeOffset + botLedge;
 	if (params.topFlanHolesPosition) par.flanLen += params.topFlanHolesPosition;

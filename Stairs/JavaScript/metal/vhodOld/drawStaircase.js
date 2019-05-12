@@ -47,6 +47,7 @@ drawStaircase = function(viewportId, isVisible) {
 	specObj = partsAmt; //задаем объект, куда будут сохраняться данные для спецификации
 	poleList = {};
 	railingParams = {};
+	shapesList = [];
 
 
 	/*удаляем контуры*/
@@ -154,8 +155,7 @@ drawStaircase = function(viewportId, isVisible) {
 	//if(treadsObj.wndPar2) carcasPar.turnStepsParams = treadsObj.wndPar2;
 	if (wndFramesPar) carcasPar.wndFramesHoles = wndFramesPar.wndFramesHoles;
 
-	if (params.staircaseType == "На заказ") var carcasObj = drawCarcas(carcasPar);
-	if (params.staircaseType == "Готовая") var carcasObj = drawCarcasStock(carcasPar);
+	var carcasObj = drawCarcas(carcasPar);
 
 	model.add(carcasObj.mesh, "carcas");
 	model.add(carcasObj.angles, "angles");
@@ -193,10 +193,17 @@ drawStaircase = function(viewportId, isVisible) {
 
 	//сдвигаем и поворачиваем лестницу чтобы верхний марш был вдоль оси Х
 	var moove = calcStaircaseMoove(treadsObj.lastMarshEnd);
-
+	//if (params.stairModel == "Прямая" && !(params.platformTop == "площадка" || params.platformTop == 'увеличенная')) {
+	//	moove.x -= -params.b1 + params.a1 + 5 + 8;
+	//}
+	//if (params.stairModel == "Прямая с промежуточной площадкой") {
+	//	moove.x *= turnFactor;
+	//	if (!(params.platformTop == "площадка" || params.platformTop == 'увеличенная'))
+	//		moove.x -= -params.b1 + params.a1;
+	//}
 	//сохраняем позицию лестницы для позиционирования шкафа
 	params.starcasePos = moove;
-	params.starcasePos.rot = moove.rot + params.stairCaseRotation / 180 * Math.PI;
+	params.starcasePos.rot = moove.rot;
 	for (var i = 0; i < model.objects.length; i++) {
 		var obj = model.objects[i].obj;
 		//позиционируем

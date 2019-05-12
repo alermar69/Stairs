@@ -64,6 +64,7 @@ function drawAdjustableLeg(isAngle) {
 	//задаем позицию фланца
 	flan.position.x = 0//angle.position.x + (flanParams.width - 100) / 2;
 	flan.position.y = -40
+	if (params.calcType == "vhod" && params.staircaseType == "Готовая") flan.position.y += 10;
 	flan.position.z = flanParams.width - 13//angle.position.z -40 + flanParams.height / 2;
 	flan.rotation.x = Math.PI * 1.5;
 	flan.castShadow = true;
@@ -78,6 +79,7 @@ function drawAdjustableLeg(isAngle) {
 	var bolt = new THREE.Mesh(geometry, params.materials.metal);
 	bolt.position.x = flan.position.x + flanParams.width / 2;
 	bolt.position.y = boltLen / 2 - 40
+	if (params.calcType == "vhod" && params.staircaseType == "Готовая") bolt.position.y += 10;
 	bolt.position.z = (flan.position.z - flanParams.height / 2);
 	bolt.rotation.x = 0.0;
 	bolt.rotation.y = 0.0;

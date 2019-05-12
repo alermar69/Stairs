@@ -1,6 +1,6 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetTitle("Расчет входных лестниц v.4.1");
+$APPLICATION->SetTitle("Расчет входных лестниц v.3.6");
 ?>
 
 <h1 id = "mainTitle">Расчет входных лестниц</h1>
@@ -17,14 +17,34 @@ $APPLICATION->SetTitle("Расчет входных лестниц v.4.1");
 		<option value="mono"  >mono</option>
 		<option value="geometry">geometry</option>
 	</select>
-	<input type="text" value="4.1" id = "calcVersion">
+	<input type="text" value="3.6" id = "calcVersion">
 </div>
 
 <!-- Форма параметров заказа-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/orderForm.php" ?>
 
-<!-- Блоки для вывода данных на странице, файлы заказа, чертежи-->
-<?php include $_SERVER['DOCUMENT_ROOT']."/manufacturing/general/include_areas/output.php" ?>
+<!-- визуализация -->
+<div id="visualisation">
+	<h2 class="raschet" onclick="recalculate();">Общий вид лестницы:</h2>
+	<div id="WebGL-output"><canvas>Для отображения содержимого откройте страницу в Гугл Хром</canvas></div>
+
+	
+	<div id="Stats-output" style="display: none;"></div>
+</div>
+
+<div class="noPrint">
+	<button onclick="exportToDxf(dxfPrimitivesArr);">Экспорт контуров в dxf</button>
+	<button onclick="exportToObj($['vl_1']);">Экспорт сцены в OBJ</button>
+	<button onclick="saveCanvasImg(0)">Сохранить png</button>
+	<button id="toggleAll">Свернуть все</button>
+
+	<!-- тестирование -->
+	<?php include $_SERVER['DOCUMENT_ROOT']."/manufacturing/general/testing/pagePart.php" ?>
+
+	<!-- файлы заказа и типовые чертежи -->
+	<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/orderFiles/orderFiles.php" ?>
+	
+</div>
 
 <!-- форма параметров проемов каркаса-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/vhod/forms/carcas_form.php" ?>
@@ -58,29 +78,34 @@ $APPLICATION->SetTitle("Расчет входных лестниц v.4.1");
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
-	<script type="text/javascript" src="/manufacturing/metal/drawFrames.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawStringerPartsKo.js"></script>
-	<!--<script type="text/javascript" src="/manufacturing/metal/drawStaircase.js"></script>-->
-	<script type="text/javascript" src="/manufacturing/metal/drawCarcasParts.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawCarcasPartsLib_2.0.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawStringerPartsLt.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawCarcas.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawStringers.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawRailing_3.0.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
 	
+	
+
+	<script type="text/javascript" src="/dev/mayorov/metal/drawFrames.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawStringerPartsKo.js"></script>
+	<!--<script type="text/javascript" src="/manufacturing/metal/drawStaircase.js"></script>-->
+	<script type="text/javascript" src="/dev/mayorov/metal/drawCarcasParts.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawCarcasPartsLib_2.0.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawStringerPartsLt.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawCarcas.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawStringers.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawRailing_3.0.js"></script>
+	<!--<script type="text/javascript" src="/dev/mayorov/metal/sideHandrail.js"></script>-->
 
 	<!--визуализация-->
 	<script type="text/javascript" src="drawStaircase.js"></script>
-	<script type="text/javascript" src="drawVhodStock.js"></script>
-	<script type="text/javascript" src="/manufacturing/metal/drawSvg.js"></script>
+	<script type="text/javascript" src="/calculator/geometry/calcGeomParams2.js"></script>
 
 <!--файлы с едиными функциями (сейчас в работе)-->
-	<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
+	
 	<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
-	<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>	
-	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
+	
+	
     
 	<!-- автотесты -->
 	<script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
@@ -89,7 +114,9 @@ $APPLICATION->SetTitle("Расчет входных лестниц v.4.1");
     <script type="text/javascript" src="/manufacturing/general/testing/debug/testHelper.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/debug/testReport.js"></script>
     <script type="text/javascript" src="/manufacturing/general/testing/debug/testSamples.js"></script>
-
+	
+	
+	
 
 
 	<!--расчет спецификации-->

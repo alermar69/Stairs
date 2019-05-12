@@ -65,7 +65,7 @@ function createPartsList_vl(){
 
 //Фланец крепления к перекрытию 
 	list.fk15_flange = {
-		name: "Фланец крепления к верхнему перекрытию ФК-15",//"Фланец крепления к верхнему перекрытию",
+		name: "Фланец крепления к верхнему перекрытию",
 		amtName: "шт.",
 		metalPaint: true,
 		timberPaint: false,
@@ -450,7 +450,7 @@ function createPartsList_vl(){
 		};
 		
 	list.handrailConnector = {
-		name: 'Соед. пластина поручня 40х60',//"Соединительная пластина поручня",
+		name: "Соединительная пластина поручня",
 		amtName: "шт.",
 		metalPaint: true,
 		timberPaint: false,
@@ -851,7 +851,7 @@ if(params.staircaseType == "Готовая"){
 		unit: "Марш",
 		itemGroup: "Каркас"
 		};
-	if(item.amt > 0 && params.stairType != "нет") partsList.addItem(item);
+	if(item.amt > 0) partsList.addItem(item);
 	
 	
 	
@@ -914,9 +914,7 @@ if(params.staircaseType == "Готовая"){
 		};
 	if(item.amt > 0) partsList.addItem(item);
 	
-	var mebBoltAmt = (frameAmt_600 + frameAmt_800 + frameAmt_1000) * 4;
-	if(params.stairType == "нет") mebBoltAmt = 0;
-	
+		var mebBoltAmt = (frameAmt_600 + frameAmt_800 + frameAmt_1000) * 4;
 	item = {
 		id: "boltMeb_M6x35",
 		amt: mebBoltAmt,
@@ -1279,37 +1277,6 @@ if(params.staircaseType == "Готовая"){
 
 	function addStandartPltItems(){}; //пустая функция для навигации
 	
-	
-	//колонны площадки
-		
-	var colAmt = 0;
-	if(params.platformTop == "площадка"){
-		if(params.isColumnTop1) colAmt += 1;
-		if(params.isColumnTop2) colAmt += 1;
-		if(params.isColumnTop3) colAmt += 1;
-		if(params.isColumnTop4) colAmt += 1;
-		}
-		
-	if(params.topStepColumns == "есть" && params.platformTop == "нет") colAmt += 2;
-	
-	item = {
-		id: "column",
-		amt: colAmt,
-		discription: "Колонна площадки",
-		unit: "Площадка",
-		itemGroup: "Площадка"
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	
-	item = {
-		id: "plasticPlug_40_40",
-		amt: colAmt,
-		discription: "Заглушки низа опор площадки",
-		unit: "Площадка",
-		itemGroup: "Площадка"
-		};
-	if(item.amt > 0) partsList.addItem(item);
-		
 	//площадка
 	if(params.platformTop == "площадка"){
 	
@@ -1459,7 +1426,7 @@ if(params.staircaseType == "Готовая"){
 			unit: "Площадка",
 			itemGroup: "Площадка"
 			};
-		if(item.amt > 0 && params.stairType != "нет") partsList.addItem(item);
+		if(item.amt > 0) partsList.addItem(item);
 		
 		//метизы крепления рамок
 
@@ -1521,7 +1488,6 @@ if(params.staircaseType == "Готовая"){
 		if(item.amt > 0) partsList.addItem(item);
 		
 		var mebBoltAmt = (frameAmt_600 + frameAmt_800 + frameAmt_1000) * 4;
-		if(params.stairType == "нет") mebBoltAmt = 0;
 		item = {
 			id: "boltMeb_M6x35",
 			amt: mebBoltAmt,
@@ -1550,6 +1516,35 @@ if(params.staircaseType == "Готовая"){
 		if(item.amt > 0) partsList.addItem(item);
 	
 	
+		
+		//колонны площадки
+		
+		var colAmt = 0;
+		
+		if(params.isColumnTop1) colAmt += 1;
+		if(params.isColumnTop2) colAmt += 1;
+		if(params.isColumnTop3) colAmt += 1;
+		if(params.isColumnTop4) colAmt += 1;
+		
+		
+		item = {
+			id: "column",
+			amt: colAmt,
+			discription: "Колонна площадки",
+			unit: "Площадка",
+			itemGroup: "Площадка"
+			};
+		if(item.amt > 0) partsList.addItem(item);
+		
+		item = {
+			id: "plasticPlug_40_40",
+			amt: colAmt,
+			discription: "Заглушки низа опор площадки",
+			unit: "Площадка",
+			itemGroup: "Площадка"
+			};
+		if(item.amt > 0) partsList.addItem(item);
+		
 		
 		//заднее крепление площадки
 	
@@ -1685,7 +1680,6 @@ if(params.staircaseType == "Готовая"){
 		var isLeftRailing = false;
 		
 		//правая лестница
-		
 		if(params.turnSide == "правое") {
 			//правая сторона
 			if(params.railingSide_1 == "внешнее" || params.railingSide_1 == "две" ){
@@ -1707,14 +1701,11 @@ if(params.staircaseType == "Готовая"){
 				}
 			
 			}
-		
+
 		var pltRailingAmt = 0;
-		if(params.topPltRailing_3) pltRailingAmt += 1;
-		if(params.topPltRailing_4) pltRailingAmt += 1;
-		var rackAmt = pltRailingAmt * 2;
-		if(isRightRailing) rackAmt -= 1;
-		if(isLeftRailing) rackAmt -= 1;
-		
+		if(isLeftRailing) pltRailingAmt += 1;
+		if(isRightRailing) pltRailingAmt += 1;
+		var rackAmt = pltRailingAmt;
 		var rigelAmt = pltRailingAmt * params.rigelAmt;
 		railingConnectionAmt += pltRailingAmt;
 		
@@ -2034,3 +2025,5 @@ function showDrawingsLinks_vl(){
 
 
 }//end of showDrawingsLinks
+
+

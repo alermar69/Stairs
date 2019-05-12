@@ -26,8 +26,6 @@ var poleList = {}; //ведомость резки профилей и пору�
 var layers = {};
 var anglesHasBolts = true; //отрисовывать болты уголков
 var drawLongBolts = true; //отрисовывать длинные болты, соединяющие два уголка через тетиву насквозь
-var shapesList = [];
-var isFixPats = true; //отрисовывать болты крепления к стенам, к нижнему и верхнему перекрытию
 
 $(function() {
 	//добавляем видовые экраны на страницу
@@ -70,7 +68,6 @@ $(function() {
 
 
 	recalculate = function() {
-		shapesList = []; //Очищаем
 		getAllInputsValues(params);
 		changeAllForms();
 		drawStaircase('vl_1', true);
@@ -83,42 +80,102 @@ $(function() {
 		if(params.staircaseType == "Готовая" )calcSpec_vl();
 		//printWorks(); //функция в файле /calculator/general/works.js
 		drawCustomDimensions('vl_1');
-		checkSpec();
 		}
 
-	
+	changeAllForms = function() {
+		getAllInputsValues(params);
+		changeFormsGeneral();
+		changeFormCarcas();
+		changeFormRailing();
+		changeFormBanisterConstruct();
+		changeFormAssembling();
+		$('.installation_man').show();
+
+	}
 
 	//пересчитываем лестницу
 	recalculate();
-	
+	//вешаем перерисовку стен на измененние инпутов формы параметров стен
+	$('.tabs').delegate('input,select,textarea', 'change', function() {
+		getAllInputsValues(params);
+		drawTopFloor();
+		redrawWalls();
+	});
+	$('.form_table,.tabs').delegate('input,select,textarea', 'change', changeAllForms);
+
+	//вешаем пересчет на все заголовки разделов
+	$('.raschet').click(function() {
+		recalculate();
+	});
+//перерисовка пользовательских размеров
+	$('#dimParamsTable').delegate('input,select,textarea', 'change', function(){
+		changeFormDim();
+		drawCustomDimensions('vl_1');
+		});
+
+
 	//скрываем ненужные блоки
 	$("#mainImages").hide();
 	$("#marshRailingImages2D").hide();
 	//$("#cost").hide();
 	$('#specificationList').show();
 
+	configDinamicInputs = function() {
+		changeFormBanister();
+		changeFormTopFloor();
+		changeFormLedges();
+		changeAllForms();
+		//setHandrailParams_bal();
+		// configSectInputs();//FIX
+		// configBoxInputs();//FIX
+		addDimRows();
+	}
+
+	var orderName = $.urlParam('orderName');
+	if(orderName){
+		$('#orderName').val(orderName);
+		_loadFromBD('content', '/calculator/general/db_data_exchange/dataExchangeXml_2.1.php', orderName)
+		var comLink = $("#comLink").attr("href") + "?orderName=" + orderName;
+		$("#comLink").attr("href", comLink); //устаналиваем значение
+		var montLink = $("#montLink").attr("href") + "?orderName=" + orderName;
+		$("#montLink").attr("href", montLink); //устаналиваем значение
+		var oldVerLink = $("#oldVerLink").attr("href") + "?orderName=" + orderName;
+		$("#oldVerLink").attr("href", oldVerLink); //устаналиваем значение
+	}
 	
+	$("#showPass").click(function(){
+		alert("Логин: demo Пароль: demo_pass Как посмотреть модель: https://youtu.be/8zySuZ2spzg ")		
+		});
+
+	//сохранение ведомости заготовок в xls
+	$("#poleList").delegate('#downLoadPoleList', 'click', function() {
+		tableToExcel('partsTable', 'Детали', );
+	})
+
 	//сворачивание блоков
 	initToggleDivs();
 });
 
-changeAllForms = function() {
+
+function changeAllForms() {
 	getAllInputsValues(params);
 	changeFormsGeneral();
 	changeFormCarcas();
 	changeFormRailing();
 	changeFormBanisterConstruct();
+	//changeOffer();
+	//complectDescription();
 	changeFormAssembling();
+	changeFormWr();
 	$('.installation_man').show();
 }
-	
+
 function configDinamicInputs() {
 	changeFormBanister();
 	changeFormTopFloor();
 	changeFormLedges();
 	changeAllForms();
-	//setHandrailParams_bal();
-	// configSectInputs();//FIX
-	// configBoxInputs();//FIX
+	configSectInputs();
+	configBoxInputs();
 	addDimRows();
 }
