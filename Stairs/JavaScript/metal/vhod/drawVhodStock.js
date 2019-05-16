@@ -457,6 +457,11 @@ function drawStringerStock(par) {
 	if (params.platformTop == 'нет') {
 		center1.hasAngle = center2.hasAngle = true;
 		center1.pos = center2.pos = "topFloor";
+		if (params.topStepColumns == "есть") {
+			center1.boltLen = center2.boltLen = 40;
+			center1.noBoltsInSide2 = center2.noBoltsInSide2 = true;
+			par.colPoint1 = copyPoint(center1);
+		}
 	}
 	else {
 		center1.isTopFlanHole = center2.isTopFlanHole = true;
@@ -528,7 +533,7 @@ function drawStringerStock(par) {
 		par.pointsHoleTop.push(center1);
 		if (!par.isMiddleStringer) {
 			if ((params.isColumnTop1 && par.key == 'in') || (params.isColumnTop3 && par.key == 'out')) {
-				center1.noZenk = center2.noZenk = true;
+				center1.boltLen = center2.boltLen = 40;
 				center1.noBoltsInSide2 = center2.noBoltsInSide2 = true;
 			}
 		}
@@ -663,7 +668,7 @@ function drawStringerStock(par) {
 			len: boltLen,
 		};
 		for (var i = 0; i < par.carcasHoles.length; i++) {
-			if (par.carcasHoles[i].isFrame || par.carcasHoles[i].noZenk) {
+			if (par.carcasHoles[i].isFrame || par.carcasHoles[i].noZenk || par.carcasHoles[i].boltLen) {
 				if (par.carcasHoles[i].noZenk) {
 					boltPar.len = 40;
 					boltPar.headType = "шестигр.";
@@ -672,6 +677,9 @@ function drawStringerStock(par) {
 					boltPar.len = 30;
 					boltPar.headType = "потай";
 				}
+				if (par.carcasHoles[i].boltLen)
+					boltPar.len = par.carcasHoles[i].boltLen;
+
 				var bolt = drawBolt(boltPar).mesh;
 				bolt.rotation.x = Math.PI / 2;
 				bolt.position.x = par.carcasHoles[i].x;
@@ -703,22 +711,58 @@ function drawStringerStock(par) {
 			specObj[partName] = {
 				types: {},
 				amt: 0,
-				name: name,
+				name: "Тетива",
 				area: 0,
 				paintedArea: 0,
 				metalPaint: true,
 				timberPaint: false,
-				division: "metal",
+				division: "stock_2",
 				workUnitName: "area", //единица измерения
 				group: "Каркас",
 			}
 		}
-		var stringerNname = (par.key === 'out' ? 'внешн. ' : 'внутр. ') + par.marshId + " марш";
 
-		for (var i = 0; i < par.partsLen.length; i++) {
-			var name = stringerNname + " L=" + Math.round(par.partsLen[i]);
-			var area = 300 * par.partsLen[i] / 1000000;
+		if (par.key === 'out') {
+			var name = "Т-180-" + params.stairAmt1 + " бок (комплект 2 шт)";	
+			var area = 300 * par.partsLen[par.partsLen.length - 1] / 1000000;
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;		
+			specObj[partName]["area"] += area;
+			specObj[partName]["paintedArea"] += area * 2;
+		}		
 
+		if (par.isMiddleStringer) {
+			var name = "Т-180-" + params.stairAmt1 + " сред";
+			var area = 300 * par.partsLen[par.partsLen.length - 1] / 1000000;
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+			specObj[partName]["area"] += area;
+			specObj[partName]["paintedArea"] += area * 2;
+		}		
+	}
+
+	var partName = "pltStringer";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Пластина",
+				area: 0,
+				paintedArea: 0,
+				metalPaint: true,
+				timberPaint: false,
+				division: "stock_2",
+				workUnitName: "area", //единица измерения
+				group: "Каркас",
+			}
+		}
+
+		if (par.key === 'out' && params.platformTop !== 'нет') {
+			var name = "190х" + (params.topPltLength_stock - 300) + " краш. (комплект 2шт)";
+			var area = (params.topPltLength_stock - 300) * 190 / 1000000;
 			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 			specObj[partName]["amt"] += 1;
@@ -726,6 +770,15 @@ function drawStringerStock(par) {
 			specObj[partName]["paintedArea"] += area * 2;
 		}
 
+		if (par.isMiddleStringer && params.platformTop !== 'нет') {
+			var name = "165х" + (params.topPltLength_stock - 300) + " краш.";
+			var area = (params.topPltLength_stock - 300) * 165 / 1000000;
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+			specObj[partName]["area"] += area;
+			specObj[partName]["paintedArea"] += area * 2;
+		}
 	}
 
 	return par;
@@ -906,17 +959,15 @@ function drawTreadFrameStock(par) {
 			specObj[partName] = {
 				types: {},
 				amt: 0,
-				name: "Рамка прямая",
+				name: "Рамка под ДПК",
 				metalPaint: true,
 				timberPaint: false,
-				division: "metal",
+				division: "stock_2",
 				workUnitName: "amt", //единица измерения
 				group: "Каркас",
 			}
 		}
-		var name = Math.round(par.length) + "x" + Math.round(par.width) + "x" + par.profHeight;
-		if (par.profBridgeAmt > 0) name += " перемычки " + profPar.poleProfileY + "х" + profPar.poleProfileZ + " " + par.profBridgeAmt + " шт.";
-		else name += " без перемычек";
+		var name = par.length + "мм";
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
@@ -937,6 +988,34 @@ function drawColumnsStock(par) {
 
 	var mesh = new THREE.Object3D();
 
+	if (params.platformTop == 'нет' && params.topStepColumns == "есть") {
+		var colParams = {
+			key: 'in',
+			length: par.colPoint1.y - 89, //переопределяется в цикле
+			profWidth: 40,
+			profHeight: 40,
+			material: params.materials.metal,
+			dxfArr: dxfPrimitivesArr,
+			dxfBasePoint: par.dxfBasePoint,
+			text: "",
+		}
+
+		colParams = drawColumnStock(colParams);
+		var col1 = colParams.mesh;
+		col1.position.x = par.colPoint1.x - 5;
+		col1.position.z = - params.M / 2 + params.stringerThickness + 8;
+		mesh.add(col1);
+		colParams.dxfBasePoint.x += 200;
+
+		colParams = drawColumnStock(colParams);
+		var col1 = colParams.mesh;
+		col1.position.x = par.colPoint1.x - 5;
+		col1.position.z = +params.M / 2 - params.stringerThickness - 8;
+		col1.rotation.y = Math.PI;
+		mesh.add(col1);
+		colParams.dxfBasePoint.x += 200;
+	}
+
 	if (params.platformTop !== 'нет' && params.topPltColumns != "нет") {
 		var colParams = {
 			key: 'in',
@@ -950,7 +1029,7 @@ function drawColumnsStock(par) {
 		}
 
 		if (params.isColumnTop1) {
-			colParams = drawColumnF(colParams);
+			colParams = drawColumnStock(colParams);
 			var col1 = colParams.mesh;
 			col1.position.x = par.colPoint1.x - 5;
 			col1.position.z = - params.M / 2 + params.stringerThickness + 8;
@@ -958,7 +1037,7 @@ function drawColumnsStock(par) {
 			colParams.dxfBasePoint.x += 200;
 		}
 		if (params.isColumnTop2) {
-			colParams = drawColumnF(colParams);
+			colParams = drawColumnStock(colParams);
 			var col1 = colParams.mesh;
 			col1.position.x = par.colPoint2.x - 5 + 40;
 			col1.position.z = - params.M / 2 + params.stringerThickness + 8;
@@ -966,7 +1045,7 @@ function drawColumnsStock(par) {
 			colParams.dxfBasePoint.x += 200;
 		}
 		if (params.isColumnTop3) {
-			colParams = drawColumnF(colParams);
+			colParams = drawColumnStock(colParams);
 			var col1 = colParams.mesh;
 			col1.position.x = par.colPoint1.x - 5;
 			col1.position.z = +params.M / 2 - params.stringerThickness - 8;
@@ -975,7 +1054,7 @@ function drawColumnsStock(par) {
 			colParams.dxfBasePoint.x += 200;
 		}
 		if (params.isColumnTop4) {
-			colParams = drawColumnF(colParams);
+			colParams = drawColumnStock(colParams);
 			var col1 = colParams.mesh;
 			col1.position.x = par.colPoint2.x - 5 + 40;
 			col1.position.z = +params.M / 2 - params.stringerThickness - 8;
@@ -1140,13 +1219,13 @@ function drawTopPltStringerStock(par) {
 	
 
 	//сохраняем данные для спецификации
-	var partName = "pltStringer";
+	var partName = "rearStringer";
 	if (typeof specObj != 'undefined') {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
 				amt: 0,
-				name: "Тетива площадки",
+				name: "Задняя тетива площадки",
 				area: 0,
 				paintedArea: 0,
 				metalPaint: true,
@@ -1154,6 +1233,7 @@ function drawTopPltStringerStock(par) {
 				division: "metal",
 				workUnitName: "area", //единица измерения
 				group: "Каркас",
+				comment: "изготавливается на заказ",
 			}
 		}
 		var name = params.M + "x" + 190;
@@ -1168,577 +1248,98 @@ function drawTopPltStringerStock(par) {
 	return par;
 } //end of drawTopPltStringerStock
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function drawStringerFlan(par) {
-
-	par.mesh = new THREE.Object3D();
-
-	if (par.topLeft && par.botLeft && par.botRight && par.topRight) {
-
-		var holeOffset = 20; //отступ центра отверстия от края фланца
-		var frontHoleOffset = 20;
-
-		if (par.key == "middle") {
-			var frontHoleOffset = 30; //отступ переднего края фланца
-			if (hasTreadFrames()) frontHoleOffset = 55;
-			if (params.stairType == "рифленая сталь" || params.stairType == "лотки" || params.stairType == "пресснастил") frontHoleOffset = 30;
-			if (params.stringerType == "прямая") frontHoleOffset = 20;
-			if (params.model == "ко") frontHoleOffset = 45;
-		}
-
-		var botRightHole = newPoint_xy(par.botRight, 0, 0);
-
-		// корректировка нижнего правого угла фланца
-		if ((par.key == "middle") && (params.stringerType != "ломаная")) {
-			botRightHole.x += (par.topRight.x - par.botRight.x) - (par.topRight.y - par.botRight.y) / Math.tan(par.marshAng);
-		}
-
-		var topLine = parallel(par.topLeft, par.topRight, holeOffset);
-		var botLine = parallel(par.botLeft, botRightHole, -holeOffset);
-		var rightLine = parallel(botRightHole, par.topRight, -holeOffset);
-		var leftLine = parallel(par.botLeft, par.topLeft, frontHoleOffset);
-
-		var p1 = itercection(botLine.p1, botLine.p2, leftLine.p1, leftLine.p2);
-		var p2 = itercection(topLine.p1, topLine.p2, leftLine.p1, leftLine.p2);
-		var p3 = itercection(topLine.p1, topLine.p2, rightLine.p1, rightLine.p2);
-		var p4 = itercection(botLine.p1, botLine.p2, rightLine.p1, rightLine.p2);
-
-		var pointsShape = [p1, p2, p3, p4];
-
-		//создаем шейп
-		var shapePar = {
-			points: pointsShape,
+/**
+ * Колона под площадкой для входной лестницы с фланцем с овальными отверстиями
+ * с фланцем
+ var columnParams = {
+			length: stairAmtP * h1,
+			profWidth: profWdth,
+			profHeight: profHeight,
+			material: metalMaterial,
+			flanMaterial: flanMaterial,
 			dxfArr: dxfPrimitivesArr,
-			dxfBasePoint: newPoint_xy(par.dxfBasePoint, par.botRight.x - par.botLeft.x + 100, -(par.topLeft.y - par.botLeft.y) - 100),
-		}
-		par.flanShape = drawShapeByPoints2(shapePar).shape;
-
-		var holesPar = {
-			holeArr: par.holeCenters,
-			dxfBasePoint: shapePar.dxfBasePoint,
-			shape: par.flanShape,
-		}
-		addHolesToShape(holesPar);
-
-		var thk = 8.0;
-		var flanExtrudeOptions = {
-			amount: thk,
-			bevelEnabled: false,
-			curveSegments: 12,
-			steps: 1
-		};
-
-		var geom = new THREE.ExtrudeGeometry(par.flanShape, flanExtrudeOptions);
-		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-		var mesh = new THREE.Mesh(geom, params.materials.metal);
-
-		par.mesh.add(mesh);
-
-
-		/* болты */
-
-		if (typeof anglesHasBolts != "undefined" && anglesHasBolts && !par.noBolts) { //глобальная переменная
-			var side = par.side;
-			if (params.stairModel == "Прямая") {
-				if (par.side == "left") side = "right";
-				if (par.side == "right") side = "left";
+			dxfBasePoint: {x:-200, y:0},
+			dxfBasePointStep: dxfBasePointStep,
+			dir: "left",
 			}
-			var boltPar = {
-				diam: boltDiam,
-				len: boltLen,
-			}
-			for (var i = 0; i < par.holeCenters.length; i++) {
-				if (!par.holeCenters[i].hasAngle && !par.holeCenters[i].noBolt) {
-					if (par.holeCenters[i].headType) boltPar.headType = par.holeCenters[i].headType;
-					else boltPar.headType = false;
-					if (par.holeCenters[i].boltLen) boltPar.len = par.holeCenters[i].boltLen;
-					else boltPar.len = boltLen;
-					var bolt = drawBolt(boltPar).mesh;
-					bolt.rotation.x = Math.PI / 2 * turnFactor;
-					bolt.position.x = par.holeCenters[i].x;
-					bolt.position.y = par.holeCenters[i].y;
-					bolt.position.z = (boltPar.len / 2 - params.stringerThickness) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
-					if (par.holeCenters[i].dz) bolt.position.z += par.holeCenters[i].dz;
-					if (side == "right") {
-						bolt.position.z = (params.stringerThickness * 2 - boltPar.len / 2) * turnFactor + params.stringerThickness * (1 - turnFactor) * 0.5;
-						bolt.rotation.x = -Math.PI / 2 * turnFactor;
-						if (par.holeCenters[i].dz) bolt.position.z -= par.holeCenters[i].dz;
-					}
-					par.mesh.add(bolt)
-				}
-			}
-		}
+ */
+function drawColumnStock(par) {
+	var flanThickness = 8.0;
 
-		//сохраняем данные для спецификации
-		var flanWidth = Math.round(distance(p1, p2))
-		var flanLen = Math.round(p3.x - p1.x)
-		var partName = "stringerFlan";
-		if (typeof specObj != 'undefined') {
-			if (!specObj[partName]) {
-				specObj[partName] = {
-					types: {},
-					amt: 0,
-					name: "Фланец соединения косоуров",
-					area: 0,
-					paintedArea: 0,
-					metalPaint: true,
-					timberPaint: false,
-					division: "metal",
-					workUnitName: "area", //единица измерения
-					group: "Каркас",
-				}
-			}
-			var name = flanLen + "x" + flanWidth;
-			var area = flanLen * flanWidth / 1000000;
-			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-			specObj[partName]["amt"] += 1;
-			specObj[partName]["area"] += area;
-			specObj[partName]["paintedArea"] += area * 2;
-		}
+	var shape = new THREE.Shape();
 
-		return par.mesh;
-	}
-	return null;
+	// внешний контур
+	var p0 = { x: 0, y: 0 };
+	var p1 = copyPoint(p0);
+	var p2 = newPoint_xy(p1, 0, par.length);
+	var p3 = newPoint_xy(p1, par.profWidth, par.length);
+	var p4 = newPoint_xy(p1, par.profWidth, 0);
+	addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
+	addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint);
 
-} //end of drawStringerFlan
-
-/*функция отрисовки регулируемой опоры*/
-function drawAdjustableLeg(isAngle) {
-	dxfBasePoint = { x: 0, y: 0 }
-	var leg = new THREE.Object3D();
-
-	if (isAngle == undefined) {
-		var angle = drawAngleSupport("У5-60х60х100");
-		angle.position.x = 0;
-		angle.position.y = 0;
-		angle.position.z = 0;
-		angle.castShadow = true;
-		//if(side == "left") angle.rotation.y = Math.PI;
-		leg.add(angle);
-	}
-	//нижний фланец
-	var dxfBasePoint = { "x": 1000.0, "y": 2000.0 };
-	var flanParams = {};
-	flanParams.width = 100.0;
-	flanParams.height = 100.0;
-	flanParams.holeDiam = 7;
-	flanParams.holeDiam5 = 22.0;
-	flanParams.angleRadUp = 10.0;
-	flanParams.angleRadDn = 10.0;
-	flanParams.hole1X = 15.0;
-	flanParams.hole1Y = 15.0;
-	flanParams.hole2X = 15.0;
-	flanParams.hole2Y = 15.0;
-	flanParams.hole3X = 15.0;
-	flanParams.hole3Y = 15.0;
-	flanParams.hole4X = 15.0;
-	flanParams.hole4Y = 15.0;
-	flanParams.hole5X = flanParams.width / 2;
-	flanParams.hole5Y = flanParams.height / 2;
-	flanParams.dxfBasePoint = dxfBasePoint;
-	flanParams.dxfPrimitivesArr = [];
-
-	if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
-		var fixPar = getFixPart(1, 'botFloor');
-		flanParams.holeDiam = fixPar.diam + 1;
-	}
-
-	//добавляем фланец
-	drawRectFlan(flanParams);
-	var flanShape = flanParams.shape;
-
-	var thickness = 4;
 	var extrudeOptions = {
-		amount: thickness,
+		amount: par.profHeight,
 		bevelEnabled: false,
 		curveSegments: 12,
 		steps: 1
 	};
-
-	var geometry = new THREE.ExtrudeGeometry(flanShape, extrudeOptions);
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	var flan = new THREE.Mesh(geometry, params.materials.metal);
+	var col = new THREE.Mesh(geometry, params.materials.metal);
 
-	//задаем позицию фланца
-	flan.position.x = 0//angle.position.x + (flanParams.width - 100) / 2;
-	flan.position.y = -40
-	if (params.calcType == "vhod" && params.staircaseType == "Готовая") flan.position.y += 10;
-	flan.position.z = flanParams.width - 13//angle.position.z -40 + flanParams.height / 2;
-	flan.rotation.x = Math.PI * 1.5;
-	flan.castShadow = true;
-	//добавлЯем фланец в сцену
-	leg.add(flan);
+	//par.mesh = col;
+	var grp = new THREE.Object3D();
+	col.position.x = -par.profWidth / 2;
+	col.position.z = flanThickness
+	if (par.dir == "right") col.position.z = -par.profWidth - flanThickness;
+	grp.add(col);
+
+	// фланец
+	var flan = drawColFlan(par);
+	flan.position.x = -par.profHeight / 2;
+	flan.position.y = par.length - 46.0;
+	flan.position.z = 0//par.dir == "left" ? 0.0 : par.profHeight - flanThickness;
+	if (par.dir == "right") flan.position.z = - flanThickness;
+	flan.rotation.x = 0.0;
+	flan.rotation.y = 0.0;
+	flan.rotation.z = 0.0;
+	grp.add(flan);
 
 
-
-	var boltLen = 100;
-	if (testingMode) boltLen = 65;
-	var geometry = new THREE.CylinderGeometry(10, 10, boltLen, 10, 1, false);
-	var bolt = new THREE.Mesh(geometry, params.materials.metal);
-	bolt.position.x = flan.position.x + flanParams.width / 2;
-	bolt.position.y = boltLen / 2 - 40
-	if (params.calcType == "vhod" && params.staircaseType == "Готовая") bolt.position.y += 10;
-	bolt.position.z = (flan.position.z - flanParams.height / 2);
-	bolt.rotation.x = 0.0;
-	bolt.rotation.y = 0.0;
-	bolt.rotation.z = 0.0;
-	bolt.castShadow = true;
-	leg.add(bolt);
-
-	/* болты крепления к нижнему перекрытию */
-	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
-		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
-			var fixPar = getFixPart(1, 'botFloor');
-			fixPar.thickness = thickness;
-			var holeXY = 15;
-
-			var fix = drawFixPart(fixPar).mesh;
-			fix.position.x = flan.position.x + holeXY;
-			fix.position.y = flan.position.y;
-			fix.position.z = flan.position.z - holeXY;
-			fix.rotation.x = 0;
-			if (turnFactor == -1) {
-				fix.rotation.x = Math.PI;
-				fix.position.y += thickness;
-			}
-			leg.add(fix);
-
-			var fix = drawFixPart(fixPar).mesh;
-			fix.position.x = flan.position.x + flanParams.width - holeXY;
-			fix.position.y = flan.position.y;
-			fix.position.z = flan.position.z - holeXY;
-			fix.rotation.x = 0;
-			if (turnFactor == -1) {
-				fix.rotation.x = Math.PI;
-				fix.position.y += thickness
-			}
-			leg.add(fix);
-
-			var fix = drawFixPart(fixPar).mesh;
-			fix.position.x = flan.position.x + holeXY;
-			fix.position.y = flan.position.y;
-			fix.position.z = flan.position.z - flanParams.height + holeXY;
-			fix.rotation.x = 0;
-			if (turnFactor == -1) {
-				fix.rotation.x = Math.PI;
-				fix.position.y += thickness;
-			}
-			leg.add(fix);
-
-			var fix = drawFixPart(fixPar).mesh;
-			fix.position.x = flan.position.x + flanParams.width - holeXY;
-			fix.position.y = flan.position.y;
-			fix.position.z = flan.position.z - flanParams.height + holeXY;
-			fix.rotation.x = 0;
-			if (turnFactor == -1) {
-				fix.rotation.x = Math.PI;
-				fix.position.y += thickness
-			}
-			leg.add(fix);
-		}
-	}
+	par.mesh = grp;
 
 	//сохраняем данные для спецификации
-	var partName = "adjustableLeg";
+	var partName = "column";
 	if (typeof specObj != 'undefined') {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
 				amt: 0,
-				name: "Регулируемая опора",
+				sumLength: 0,
+				name: "Опора площадки ",
 				metalPaint: true,
 				timberPaint: false,
 				division: "stock_2",
 				workUnitName: "amt", //единица измерения
 				group: "Каркас",
+				comment: "длина с запасом 100мм. Подрезать на монтаже по месту",
 			}
 		}
-		var name = "120";
+		var stairAmt = params.stairAmt1;
+		if (params.platformTop == "площадка") stairAmt = params.stairAmt1 + 1;
+
+		var name = "A=960 (6 ступ.)";
+		if (stairAmt == 2) name = "A=240 (2 ступ.)";
+		if (stairAmt == 3) name = "A=420 (3 ступ.)";
+		if (stairAmt == 4) name = "A=600 (4 ступ.)";
+		if (stairAmt == 5) name = "A=780 (5 ступ.)";
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 	}
 
-	return leg;
-}
-
-
-function drawBolt(par) {
-	/*
-	diam
-	len
-	headType
-	*/
-
-	par.mesh = new THREE.Object3D();
-	if (!par.headType) {
-		par.headType = "потай";
-		if (par.len == 40 || params.boltHead == "hexagon") par.headType = "шестигр.";
-	}
-
-	var headHeight = 4;
-
-	var boltColor = "#808080"; //серый для странных болтов	
-	if (par.len == 20) boltColor = "#FF0000"; //красный
-	if (par.len == 30) boltColor = "#0000FF"; //синий
-	if (par.len == 40) boltColor = "#00FF00"; //зеленый
-
-	var boltMaterial = new THREE.MeshLambertMaterial({ color: boltColor });
-	if (!$sceneStruct.vl_1.realColors) {
-		boltMaterial = params.materials.bolt;
-	}
-	var boltLen = par.len;
-	if ($sceneStruct.vl_1.boltHead && !testingMode && par.headType != "шестигр.") boltLen -= headHeight;
-
-	var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, boltLen, 10, 1, false);
-	var bolt = new THREE.Mesh(geometry, boltMaterial);
-	if ($sceneStruct.vl_1.boltHead && !testingMode && par.headType != "шестигр.") bolt.position.y += headHeight / 2;
-	par.mesh.add(bolt);
-
-
-	if (!$sceneStruct.vl_1.realColors) {
-		if (params.paintedBolts == "есть") boltMaterial = params.materials.metal;
-	}
-	//головка для шестигранных болтов
-	if (!testingMode && $sceneStruct.vl_1.boltHead && par.headType == "шестигр.") {
-		var headHeight = par.diam * 0.6;
-
-
-		var polygonParams = {
-			cornerRad: 0,
-			vertexAmt: 6,
-			edgeLength: par.diam * 0.9815,
-			basePoint: { x: 0, y: 0 },
-			type: "shape",
-			dxfPrimitivesArr: [],
-			dxfBasePoint: { x: 0, y: 0 },
-		}
-
-
-		var shape = drawPolygon(polygonParams).shape;
-
-		var extrudeOptions = {
-			amount: headHeight,
-			bevelEnabled: false,
-			curveSegments: 12,
-			steps: 1
-		};
-
-		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-
-		var head = new THREE.Mesh(geom, boltMaterial);
-		head.rotation.x = -Math.PI / 2;
-		//	head.position.x = -polygonParams.edgeLength / 2;
-		//	head.position.z = polygonParams.edgeLength * Math.cos(Math.PI / 6);
-		//head.position.y = par.len / 2// + par.diam / 2;
-		head.position.y = -par.len / 2 - headHeight;
-		par.mesh.add(head);
-	}
-
-	//головка для болтов в потай
-	if ($sceneStruct.vl_1.boltHead && par.headType != "шестигр.") {
-		var shape = new THREE.Shape();
-		addCircle(shape, [], { x: 0, y: 0 }, par.diam, { x: 0, y: 0 })
-
-		//шестигранное отверстие
-		var polygonParams = {
-			cornerRad: 0,
-			vertexAmt: 6,
-			edgeLength: par.diam * 0.4,
-			basePoint: { x: 0, y: 0 },
-			type: "path",
-			dxfPrimitivesArr: [],
-			dxfBasePoint: { x: 0, y: 0 },
-		}
-		//polygonParams.basePoint = newPoint_xy(polygonParams.basePoint, -polygonParams.edgeLength / 2, -polygonParams.edgeLength * Math.cos(Math.PI / 6))
-
-		var path = drawPolygon(polygonParams).path;
-
-		shape.holes.push(path);
-
-		var extrudeOptions = {
-			amount: headHeight,
-			bevelEnabled: false,
-			curveSegments: 12,
-			steps: 1
-		};
-
-		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-
-		//var geometry = new THREE.CylinderGeometry(par.diam, par.diam, headThk, 30, 1, false);
-		var head = new THREE.Mesh(geom, boltMaterial);
-		head.rotation.x = -Math.PI / 2;
-		head.position.y = -par.len / 2 - headHeight * 0.1;
-		par.mesh.add(head);
-
-		//заглушка дна чтобы не просвечивал белый материал
-		var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, 0.1, 10, 1, false);
-		var cyl = new THREE.Mesh(geometry, boltMaterial);
-		cyl.position.y = -par.len / 2 + headHeight;
-		par.mesh.add(cyl);
-
-	}
-	if (!par.noNut && !testingMode) {
-
-		//шайба
-		var shimParams = { diam: par.diam }
-		var shim = drawShim(shimParams).mesh;
-		shim.position.y = 1;
-		par.mesh.add(shim);
-
-		//гайка
-		var nutParams = { diam: par.diam }
-		var nut = drawNut(nutParams).mesh;
-		nut.position.y = shim.position.y + shimParams.shimThk;
-		par.mesh.add(nut);
-	}
-
-
-	//сохраняем данные для спецификации
-	par.partName = "bolt"
-	if (par.diam != 10) par.partName += "M" + par.diam;
-	if (typeof specObj != 'undefined' && par.partName) {
-		if (!specObj[par.partName]) {
-			specObj[par.partName] = {
-				types: {},
-				amt: 0,
-				name: "Болт",
-				metalPaint: (params.paintedBolts == "есть"),
-				timberPaint: false,
-				division: "stock_1",
-				workUnitName: "amt",
-				group: "Метизы",
-			}
-		}
-		var headName = "шестигр. гол.";
-		if (par.headType == "потай") headName = "потай внутр. шестигр."
-		if (par.headType == "пол. гол. крест") headName = par.headType;
-		var name = "М" + par.diam + "х" + par.len + " " + headName;
-		if (par.headType == "меб.") name = "мебельный М" + par.diam + "х" + par.len;
-		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
-		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
-		specObj[par.partName]["amt"] += 1;
-	}
 
 	return par;
-
-}
-
-function calcLastRackDeltaY(unit, marshId) {
-	if (!marshId) marshId = 3;
-	if (params.stairModel == 'Прямая') marshId = 1;
-
-	var marshParams = getMarshParams(marshId);
-
-	var dyLastRack = 0;
-	if (params.platformTop == "нет") {
-		if (params.model == "лт") {
-			if (params.topAnglePosition == "под ступенью" ||
-				params.topAnglePosition == "рамка верхней ступени") {
-				dyLastRack = 65;
-				if (params.stairType == "дпк") {
-					dyLastRack = (marshParams.a - 80 - marshParams.b / 2) * Math.tan(marshParams.ang);
-				}
-			}
-			if (params.topAnglePosition == "над ступенью") {
-				if ((marshParams.a - marshParams.b) > 50)
-					dyLastRack = (marshParams.a - marshParams.b - 20) * Math.tan(marshParams.ang);
-			}
-		}
-		if (params.model == "ко") {
-			var dyLastRack = 50;
-			if (params.topAnglePosition == "вертикальная рамка") dyLastRack = 100;
-		}
-	}
-	if (params.calcType == 'mono') {
-		dyLastRack = (marshParams.a - 50 - 95) * Math.tan(marshParams.ang);
-	}
-
-	if (params.stairModel == 'Прямая горка' && params.calcType == 'vhod') dyLastRack = 0;
-
-	if (unit == "wnd_ko") {
-		var offsetX = params.nose - 5 + 0.1;
-		if (params.riserType == "есть") offsetX += params.riserThickness;
-
-		dyLastRack = marshParams.h * (0.5 - offsetX / marshParams.b);
-	}
-
-	if (params.rackBottom == "сверху с крышкой") dyLastRack = 0;
-	if (params.calcType == 'vhod' && params.staircaseType == "Готовая") dyLastRack = 0;
-
-	return dyLastRack;
-}
-
-function drawTopFixFlans(par) {
-	par.mesh = new THREE.Object3D();
-
-	var marshParams = getMarshParams(3);
-	var parFrames = { marshId: 3 };
-	calcFrameParams(parFrames); // рассчитываем параметры рамки
-
-	var holeOffset = 20; //отступ центра верхнего отверстия от края фланца
-	var botLedge = params.treadThickness + parFrames.profHeight; //выступ фланца ниже верхней плоскости ступени, 40 - высота рамки
-	if (params.platformTop == "площадка") botLedge += 20;
-	if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
-		botLedge = params.treadThickness + 50; //выступ фланца ниже верхней плоскости ступени, 50 - высота рамки
-	if (params.topAnglePosition == "под ступенью") botLedge += 100;
-	if (params.topAnglePosition == "над ступенью") botLedge = -10;
-	if (params.calcType == 'vhod' && params.staircaseType == "Готовая") botLedge = 181;
-
-	par.flanLen = holeOffset + botLedge;
-	if (params.topFlanHolesPosition) par.flanLen += params.topFlanHolesPosition;
-	var lastRise = 0;
-	if (params.platformTop !== "площадка") {
-		var lastRise = params.h3;
-		if (params.stairModel == 'Прямая') lastRise = params.h1;
-	}
-
-	var sideOffset = params.stringerThickness;
-	if (params.model == "ко") sideOffset += params.sideOverHang;
-
-	var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 200, -500);
-
-	//левый фланец
-	var flan1 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
-	flan1.position.x = -params.M / 2 + sideOffset;
-	flan1.position.y = -lastRise - botLedge;
-	//if (params.stairType == "дпк") flan1.position.z = 8;
-	if (marshParams.stairAmt == 0 && marshParams.botTurn == "забег") {
-		if (params.model == "лт") flan1.position.z += params.lastWinderTreadWidth - marshParams.nose;
-		if (params.model == "ко") flan1.position.z += params.lastWinderTreadWidth - 55;
-	}
-	flan1.position.z += 0.01;
-	par.mesh.add(flan1);
-
-	dxfBasePoint.x += 300;
-
-	//правый фланец
-	var flan2 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
-	flan2.position.x = params.M / 2 - 100 - sideOffset;
-	flan2.position.y = flan1.position.y;
-	//if (params.stairType == "дпк") flan2.position.z = 8;
-	if (marshParams.stairAmt == 0 && marshParams.botTurn == "забег") {
-		if (params.model == "лт") flan2.position.z += params.lastWinderTreadWidth - marshParams.nose;
-		if (params.model == "ко") flan2.position.z += params.lastWinderTreadWidth - 55;
-	}
-	flan2.position.z += 0.01;
-	par.mesh.add(flan2);
-
-	return par;
-}
+}//end of drawColumnStock

@@ -79,8 +79,7 @@ $(function() {
 		redrawWalls();
 		drawBanister();
 		//crateWorksList(); //функция в файле /calculator/general/works.js
-		if(params.staircaseType == "На заказ" )calculateSpec();
-		if(params.staircaseType == "Готовая" )calcSpec_vl();
+		calculateSpec();
 		//printWorks(); //функция в файле /calculator/general/works.js
 		drawCustomDimensions('vl_1');
 		checkSpec();

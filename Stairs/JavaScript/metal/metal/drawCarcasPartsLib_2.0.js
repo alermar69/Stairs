@@ -87,6 +87,25 @@ function drawAdjustableLeg(isAngle) {
 	bolt.castShadow = true;
 	leg.add(bolt);
 
+	//гайка
+	if (!testingMode) {
+		var nutParams = { diam: 20 }
+		var nut = drawNut(nutParams).mesh;
+		nut.position.y = bolt.position.y - 2;
+		if (params.calcType == "vhod" && params.staircaseType == "Готовая") nut.position.y -= 10;
+		nut.position.x = bolt.position.x;
+		nut.position.z = bolt.position.z;
+		leg.add(nut);
+
+		var nutParams = { diam: 20 }
+		var nut = drawNut(nutParams).mesh;
+		nut.position.y = bolt.position.y - 26;
+		if (params.calcType == "vhod" && params.staircaseType == "Готовая") nut.position.y -= 10;
+		nut.position.x = bolt.position.x;
+		nut.position.z = bolt.position.z;
+		leg.add(nut);
+	}
+
 	/* болты крепления к нижнему перекрытию */
 	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
 		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
@@ -403,28 +422,41 @@ function drawColFlan(columnParams) {
     addLine(flanShape, dxfPrimitivesArr, p1, p0, dxfBasePoint);
     addLine(flanShape, dxfPrimitivesArr, p0, p2, dxfBasePoint);
     addLine(flanShape, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-    addArc(flanShape, dxfPrimitivesArr, ptc2, 8.0, 0, Math.PI * 0.5, dxfBasePoint)
+    addArc2(flanShape, dxfPrimitivesArr, ptc2, 8.0, Math.PI * 0.5, 0, false, dxfBasePoint)
     addLine(flanShape, dxfPrimitivesArr, newPoint_xy(ptc2, 0.0, 8.0), newPoint_xy(ptc1, 0.0, 8.0), dxfBasePoint);
-    addArc(flanShape, dxfPrimitivesArr, ptc1, 8.0, Math.PI * 0.5, Math.PI, dxfBasePoint);
+	addArc2(flanShape, dxfPrimitivesArr, ptc1, 8.0, Math.PI, Math.PI * 0.5, false, dxfBasePoint);
 
     var holes = flanShape.holes;
+ /*
+	    // отверстия
+	    var hole1 = new THREE.Path();
+	    var hole2 = new THREE.Path();
+	    var center1 = newPoint_xy(p1, 20.0, -8.0);
+	    var center2 = newPoint_xy(center1, 0.0, -60.0);
+	    addLine(hole1, dxfPrimitivesArr, newPoint_xy(center1, -6.0, 0.0), newPoint_xy(center1, -6.0, -20.0), dxfBasePoint);
+	    addArc(hole1, dxfPrimitivesArr, newPoint_xy(center1, 0.0, -20.0), 6.0, Math.PI, Math.PI * 2.0, dxfBasePoint)
+	    addLine(hole1, dxfPrimitivesArr, newPoint_xy(center1, 6.0, -20.0), newPoint_xy(center1, 6.0, 0.0), dxfBasePoint);
+	    addArc(hole1, dxfPrimitivesArr, center1, 6.0, 0, Math.PI, dxfBasePoint);
+    
+	    addLine(hole2, dxfPrimitivesArr, newPoint_xy(center2, -6.0, 0.0), newPoint_xy(center2, -6.0, -20.0), dxfBasePoint);
+	    addArc(hole2, dxfPrimitivesArr, newPoint_xy(center2, 0.0, -20.0), 6.0, Math.PI, Math.PI * 2.0, dxfBasePoint)
+	    addLine(hole2, dxfPrimitivesArr, newPoint_xy(center2, 6.0, -20.0), newPoint_xy(center2, 6.0, 0.0), dxfBasePoint);
+	    addArc(hole2, dxfPrimitivesArr, center2, 6.0, 0, Math.PI, dxfBasePoint);
+	    holes.push(hole1);
+	    holes.push(hole2);
+ */
+    //верхнее отверстие
+    var center = {
+	    x: 20,
+	    y: 136,
+    }
+    var distOval = 20;
+    var clockwise = true;
+    addOvalHoleY(flanShape, dxfPrimitivesArr, center, 6.5, distOval, dxfBasePoint, clockwise)
 
-    // отверстия
-    var hole1 = new THREE.Path();
-    var hole2 = new THREE.Path();
-    var center1 = newPoint_xy(p1, 20.0, -8.0);
-    var center2 = newPoint_xy(center1, 0.0, -60.0);
-    addLine(hole1, dxfPrimitivesArr, newPoint_xy(center1, -6.0, 0.0), newPoint_xy(center1, -6.0, -20.0), dxfBasePoint);
-    addArc(hole1, dxfPrimitivesArr, newPoint_xy(center1, 0.0, -20.0), 6.0, Math.PI, Math.PI * 2.0, dxfBasePoint)
-    addLine(hole1, dxfPrimitivesArr, newPoint_xy(center1, 6.0, -20.0), newPoint_xy(center1, 6.0, 0.0), dxfBasePoint);
-    addArc(hole1, dxfPrimitivesArr, center1, 6.0, 0, Math.PI, dxfBasePoint);
-
-    addLine(hole2, dxfPrimitivesArr, newPoint_xy(center2, -6.0, 0.0), newPoint_xy(center2, -6.0, -20.0), dxfBasePoint);
-    addArc(hole2, dxfPrimitivesArr, newPoint_xy(center2, 0.0, -20.0), 6.0, Math.PI, Math.PI * 2.0, dxfBasePoint)
-    addLine(hole2, dxfPrimitivesArr, newPoint_xy(center2, 6.0, -20.0), newPoint_xy(center2, 6.0, 0.0), dxfBasePoint);
-    addArc(hole2, dxfPrimitivesArr, center2, 6.0, 0, Math.PI, dxfBasePoint);
-    holes.push(hole1);
-    holes.push(hole2);
+    //нижнее отверстие 
+    var center2 = newPoint_xy(center, 0, -60);
+    addOvalHoleY(flanShape, dxfPrimitivesArr, center2, 6.5, distOval, dxfBasePoint, clockwise)
 
     var flanThickness = 8.0;
     var flanExtrudeOptions = {
