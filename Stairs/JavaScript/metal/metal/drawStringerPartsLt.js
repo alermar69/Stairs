@@ -327,10 +327,10 @@ function drawBotStepLt_pltG(par) {
 					if (params.rackBottom == "сверху с крышкой") center1 = newPoint_xy(p4, par.b * 0.5, par.rackTopHoleY);
 
 					//дополнительное отверстие для крепления поворотной стойки
-					var center2 = newPoint_xy(p4, pt.x, par.stepHoleY);
+					var center2 = newPoint_xy(p4, pt.x, -params.treadThickness / 2 - par.stringerLedge);
 					center2.rad = 3.5;
 					center2.noRack = true; // отверстие не учитывается при построении заграждения
-					center2.noHole1 = true; //первое отверстие делать не надо
+					center2.noHole2 = true; //первое отверстие делать не надо
 					par.railingHoles.push(center2);
 				} 
 
@@ -1632,6 +1632,8 @@ function drawMiddleStepsLt(par) {
 				if (!par.midStringerFirst) center1.noBoltsFrame = center2.noBoltsFrame = true;
                 center1.noZenk = center2.noZenk = true;
 			}
+			center1.partName = 'treadFix';
+			center2.partName = 'treadFix';
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			var angleHoleX1 = center1.x;
@@ -1912,6 +1914,30 @@ function drawTopStepLt_floor(par) {
 
 	/*ОТВЕРСТИЯ*/
 
+	// отверстия под верхний крепежный уголок
+	var angleOffset;
+
+	if (params.topAnglePosition == "под ступенью" || par.isMiddleStringer) angleOffset = -(par.stringerLedge + params.treadThickness + calcTreadFixHeight() + 20 + topLedgeHeight); //20 - отступ отверстия от края уголка
+	if (params.topAnglePosition == "над ступенью" && !par.isMiddleStringer) angleOffset = 85 - topLedgeHeight;
+	if (params.topAnglePosition == "вертикальная рамка") angleOffset = -(params.treadThickness / 2 + 50 + (params.treadThickness - 40) / 2);	// 20 = половина толщины ступени, 50 = расстояние от верхней грани рамки до середины верхнего овального отверстия
+
+	if (params.topAnglePosition == "под ступенью" || params.topAnglePosition == "над ступенью") {
+		center1 = newPoint_xy(topLineP1, -35 - (params.topFlan == "есть" ? 8 : 0), angleOffset);
+		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
+		center1.hasAngle = center2.hasAngle = true;
+		center1.pos = center2.pos = "topFloor";
+		par.pointsHole.push(center2);
+		par.pointsHole.push(center1);
+	}
+	if (params.topAnglePosition == "вертикальная рамка") {
+		center1 = newPoint_xy(topLineP1, -20.0, angleOffset);
+		center2 = newPoint_xy(center1, 0.0, -(par.h - 50 * 2));
+		center1.hasAngle = center2.hasAngle = false;
+		center1.pos = center2.pos = "topFrame";
+		par.pointsHole.push(center2);
+		par.pointsHole.push(center1);
+	}
+
 	//Отверстия под ограждения
 	if (par.hasRailing) {
 
@@ -1942,16 +1968,40 @@ function drawTopStepLt_floor(par) {
 
 			//если отверстие под ограждение пересекается с другим отверстием
 			if (par.pointsHole && params.rackBottom != "сверху с крышкой") {
-				for (var i = 0; i < par.pointsHole.length - 1; i++) {
-					if (par.pointsHole[i].x > (center1.x - 20) && par.pointsHole[i].x < (center1.x + 20)) {
-						if (par.pointsHole[i].y > (center1.y - 20) && par.pointsHole[i].y < (center1.y + 20)) {
-							var centerTemp = copyPoint(center1);
-							center1.x = par.pointsHole[i].x - 20;
-							center1.y -= (Math.abs(centerTemp.x - center1.x)) * Math.tan(par.marshAng);
+				var center2 = newPoint_xy(center1, 0, -60);
+				flag = true;
+				while (flag) {
+					if (findItercectionHoles(center1, par)) {
+						if (findItercectionHoles(center2, par)) {
+							center1 = newPoint_xy(center2, 0, 60);
+							flag = false;
+						}
+					}
+					else {
+						if (findItercectionHoles(center2, par)) {
+							center1 = newPoint_xy(center2, 0, 60);
+							if (findItercectionHoles(center1, par)) {
+								flag = false;
+							}
+						}
+						else {
+							flag = false;
 						}
 					}
 				}
 			}
+			//if (par.pointsHole && params.rackBottom != "сверху с крышкой") {
+			//	var center2 = newPoint_xy(center1, 0, -60);
+			//	for (var i = 0; i < par.pointsHole.length - 1; i++) {
+			//		if (par.pointsHole[i].x > (center1.x - 20) && par.pointsHole[i].x < (center1.x + 20)) {
+			//			if (par.pointsHole[i].y > (center1.y - 20) && par.pointsHole[i].y < (center1.y + 20)) {
+			//				var centerTemp = copyPoint(center1);
+			//				center1.x = par.pointsHole[i].x - 20;
+			//				center1.y -= (Math.abs(centerTemp.x - center1.x)) * Math.tan(par.marshAng);
+			//			}
+			//		}
+			//	}
+			//}
 
 
 			par.railingHoles.push(center1);
@@ -1984,29 +2034,7 @@ function drawTopStepLt_floor(par) {
 
 	}
 
-	// отверстия под верхний крепежный уголок
-	var angleOffset;
 	
-	if (params.topAnglePosition == "под ступенью" || par.isMiddleStringer) angleOffset = -(par.stringerLedge + params.treadThickness + calcTreadFixHeight() + 20 + topLedgeHeight); //20 - отступ отверстия от края уголка
-	if (params.topAnglePosition == "над ступенью" && !par.isMiddleStringer) angleOffset = 85 - topLedgeHeight;
-	if (params.topAnglePosition == "вертикальная рамка") angleOffset = -(params.treadThickness / 2 + 50 + (params.treadThickness - 40) / 2);	// 20 = половина толщины ступени, 50 = расстояние от верхней грани рамки до середины верхнего овального отверстия
-
-	if (params.topAnglePosition == "под ступенью" || params.topAnglePosition == "над ступенью") {
-		center1 = newPoint_xy(topLineP1, -35 - (params.topFlan == "есть" ? 8 : 0), angleOffset);
-		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
-		center1.hasAngle = center2.hasAngle = true;
-		center1.pos = center2.pos = "topFloor";
-		par.pointsHole.push(center2);
-		par.pointsHole.push(center1);
-	}
-	if (params.topAnglePosition == "вертикальная рамка") {
-		center1 = newPoint_xy(topLineP1, -20.0, angleOffset);
-		center2 = newPoint_xy(center1, 0.0, -(par.h - 50 * 2));
-		center1.hasAngle = center2.hasAngle = false;
-		center1.pos = center2.pos = "topFrame";
-		par.pointsHole.push(center2);
-		par.pointsHole.push(center1);
-	}
 
 
 	//сохраняем координаты угла тетивы для самонесущего стекла
@@ -2186,11 +2214,13 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 			var holeDist = par.holeDistU2_200;
 			}
 
-		var stepHoleXside1 = (par.topEndLength / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
-		center1 = newPoint_xy(p2, stepHoleXside1, par.stepHoleY);
-		center2 = newPoint_xy(center1, holeDist, 0.0);
-		par.pointsHole.push(center1);
-		par.pointsHole.push(center2);
+		if (par.topEndLength > 500) {
+			var stepHoleXside1 = (par.topEndLength / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
+			center1 = newPoint_xy(p2, stepHoleXside1, par.stepHoleY);
+			center2 = newPoint_xy(center1, holeDist, 0.0);
+			par.pointsHole.push(center1);
+			par.pointsHole.push(center2);
+		}
 
 		// отверстия под перемычку 2
 		if(par.topEndLength > 600){
@@ -2445,12 +2475,17 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 						center1.noDraw = true;
 						//сохраняем сдвиг отверстия до края следующего марша (для расчета поручня и ригелей)
 						center1.dxToMarshNext = -(center1.x - p0.x) + par.b + par.turnBotParams.topMarshOffsetX + 5 - 0.1;
-
+						
 						//отверстия для крепления поворотной стойки следущего марша
 						var center2 = newPoint_xy(p0, par.b + par.turnBotParams.topMarshOffsetX - 40 / 2 + 5, par.stepHoleY);
 						center2.y -= setTurnRacksParams(par.marshId + 1, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
 						center2.noRack = true;// отверстие не учитывается при построении заграждения
 						par.railingHoles.push(center2);
+
+						if (par.botEnd == "winder") {
+							center1.x -= 1;
+							center2.x -= 1;
+						}
 					}
 				}
 
@@ -4275,3 +4310,19 @@ function calcTreadFixHeight(){
 	return treadFixHeight;
 } //end of calcTreadFixHeight
 
+
+/** функция ищет пересечение отверстия в массиве уже созданных отверстий
+*/
+function findItercectionHoles(center, par) {
+	for (var i = 0; i < par.pointsHole.length; i++) {
+		if (par.pointsHole[i].x > (center.x - 20) && par.pointsHole[i].x < (center.x + 20)) {
+			if (par.pointsHole[i].y > (center.y - 20) && par.pointsHole[i].y < (center.y + 20)) {
+				var centerTemp = copyPoint(center);
+				center.x = par.pointsHole[i].x - 20;
+				center.y -= (Math.abs(centerTemp.x - center.x)) * Math.tan(par.marshAng);
+				return true;
+			}
+		}
+	}
+	return false;
+} //end of findItercectionHoles

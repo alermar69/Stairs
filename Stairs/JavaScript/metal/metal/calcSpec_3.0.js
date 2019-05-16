@@ -1,17 +1,3 @@
-function createPartsList(){
-	
-    var list = {
-		addItem: addItem, //функция в файле /manufacturing/general/calc_spec/calcSpec.js
-		addSpecObjItems: addSpecObjItems, //функция в файле /manufacturing/general/calc_spec/calcSpec.js
-		};
-	
-	//общие позиции для всех лестницы
-	addGeneralItems(list); //функция в файле /calculator/general/calcSpec.js
-
-return list;
-	
-	
-}//end of createPartsList
 
 
 // функция расчёта спецификации
@@ -97,7 +83,9 @@ for(var partName in partsAmt){
 		division: partsAmt[partName]["division"],
 		itemGroup: partsAmt[partName]["group"],
 		comment: "",
-		}
+	}
+	if(partsAmt[partName].comment) itemsPar.comment = partsAmt[partName].comment;
+
 	/*
 	if(itemsPar.itemGroup == "Ограждения") {
 		itemsPar.timberPaintRailing = itemsPar.timberPaint;
@@ -125,7 +113,7 @@ for(var partName in partsAmt){
 	}
 
 function addCarcasItems(){}; //пустая функция для навигации
-
+/*
 //гайки регулируемых опор
 	item = {
 		id: "nut_M20",
@@ -135,7 +123,7 @@ function addCarcasItems(){}; //пустая функция для навигац
 		itemGroup: "Каркас",
 		};
 	if(item.amt > 0) partsList.addItem(item);
-	
+*/	
 function addTreadItems(){}; //пустая функция для навигации
 
 //ступени
@@ -149,65 +137,65 @@ function addTreadItems(){}; //пустая функция для навигац�
 	if(treadPar.fixPart == "scotch") fixPartAmt = getPartAmt("tread") * 2 * params.M / 1000;
 	
 	
-	item = {
-		id: treadPar.fixPartId,
-		amt: fixPartAmt,
-		discription: "Крепление ступеней",
-		unit: "Крепление ступеней",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
+	// item = {
+	// 	id: treadPar.fixPartId,
+	// 	amt: fixPartAmt,
+	// 	discription: "Крепление ступеней",
+	// 	unit: "Крепление ступеней",
+	// 	itemGroup: "Ступени",
+	// 	};
+	// if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 
-	if(treadPar.fixPart == "boltMeb"){
-		item = {
-			id:  "nut_M6",
-			amt: fixPartAmt,
-			discription: "Крепление ступеней",
-			unit: "Крепление ступеней",
-			itemGroup: "Ступени",
-			};
-		if(item.amt > 0) partsList.addItem(item);
+	// if(treadPar.fixPart == "boltMeb"){
+	// 	item = {
+	// 		id:  "nut_M6",
+	// 		amt: fixPartAmt,
+	// 		discription: "Крепление ступеней",
+	// 		unit: "Крепление ступеней",
+	// 		itemGroup: "Ступени",
+	// 		};
+	// 	if(item.amt > 0) partsList.addItem(item);
 
-		item = {
-			id:  "shim_M6",
-			amt: fixPartAmt,
-			discription: "Крепление ступеней",
-			unit: "Крепление ступеней",
-			itemGroup: "Ступени",
-			};
-		if(item.amt > 0) partsList.addItem(item);
-		}
+	// 	item = {
+	// 		id:  "shim_M6",
+	// 		amt: fixPartAmt,
+	// 		discription: "Крепление ступеней",
+	// 		unit: "Крепление ступеней",
+	// 		itemGroup: "Ступени",
+	// 		};
+	// 	if(item.amt > 0) partsList.addItem(item);
+	// 	}
 
 //забежные ступени
 
-	item = {
-		id: treadPar.fixPartId,
-		amt: getPartAmt("wndTread") * 6,
-		discription: "Крепление забежных ступеней",
-		unit: "Крепление ступеней",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
+	// item = {
+	// 	id: treadPar.fixPartId,
+	// 	amt: getPartAmt("wndTread") * 6,
+	// 	discription: "Крепление забежных ступеней",
+	// 	unit: "Крепление ступеней",
+	// 	itemGroup: "Ступени",
+	// 	};
+	// if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 
-	item = {
-		id: treadPar.fixPartId,
-		amt: getPartAmt("wndTreadMid") * 6,
-		discription: "Крепление забежных ступеней",
-		unit: "Крепление ступеней",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
+	// item = {
+	// 	id: treadPar.fixPartId,
+	// 	amt: getPartAmt("wndTreadMid") * 6,
+	// 	discription: "Крепление забежных ступеней",
+	// 	unit: "Крепление ступеней",
+	// 	itemGroup: "Ступени",
+	// 	};
+	// if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 	
 //пригласительные ступени
 
-	item = {
-		id: treadPar.fixPartId,
-		amt: getPartAmt("startTread") * 8,
-		discription: "Крепление забежных ступеней",
-		unit: "Крепление ступеней",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
+	// item = {
+	// 	id: treadPar.fixPartId,
+	// 	amt: getPartAmt("startTread") * 8,
+	// 	discription: "Крепление забежных ступеней",
+	// 	unit: "Крепление ступеней",
+	// 	itemGroup: "Ступени",
+	// 	};
+	// if(item.amt > 0 && treadPar.fixPartId) partsList.addItem(item);
 	
 	
 //подступенки
@@ -327,17 +315,18 @@ function bracesAdd(){}; //пустая функция для навигации
 
 	
 //крепление плинтусов
-	var tubeAmt = Math.floor(getPartAmt("skirting_hor") / 8);
-	if(tubeAmt < 1) tubeAmt = 1;
-	item = {
-		id:  "silicone",
-		amt: tubeAmt,
-		discription: "Крепление плинтусов",
-		unit: "Ступени",
-		itemGroup: "Ступени",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	
+	if(getPartAmt("skirting_hor")){
+		var tubeAmt = Math.floor(getPartAmt("skirting_hor") / 8);
+		if(tubeAmt < 1) tubeAmt = 1;
+		item = {
+			id:  "silicone",
+			amt: tubeAmt,
+			discription: "Крепление плинтусов",
+			unit: "Ступени",
+			itemGroup: "Ступени",
+			};
+		if(item.amt > 0) partsList.addItem(item);
+	}
 
 
 // ОГРАЖДЕНИЯ
@@ -364,29 +353,7 @@ function balustradeItemsAdd(){}; //функция для навигации
 
 	
 function addMetiz(){};
-	//болты
-	
-	item = {
-		id: "nut_M10",
-		amt: getPartAmt("bolt"),
-		discription: "Гайки",
-		unit: "Метизы",
-		itemGroup: "Каркас",		
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["nut_M10"].comment = "Рассчитано по болтам";
-	   
-	item = {
-		id: "shim_M10",
-		amt: getPartAmt("bolt"),
-		discription: "Шайбы",
-		unit: "Метизы",
-		itemGroup: "Каркас",
-		comment: "Рассчитано по болтам",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["shim_M10"].comment = "Рассчитано по болтам";
-	
+
 	if(params.isPlasticCaps == "есть"){
 		item = {
 			id: "plasticCap_M10",
@@ -455,6 +422,7 @@ function showDrawingsLinks(){
 	
 	var stairType = "timber";
 	if(params.stairType == "рифленая сталь") stairType = "metal";
+	if(params.stairType == "лотки") stairType = "metal";
 	if(params.stairType == "рифленый алюминий") stairType = "metal";
 	if(params.stairType == "дпк") stairType = "dpc";
 	if(params.stairType == "стекло") stairType = "glass";

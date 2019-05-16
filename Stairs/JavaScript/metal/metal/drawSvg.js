@@ -79,7 +79,26 @@ function makeSvg(){
 		}
 		var lists = setA4(a4Params);
 	}
+
+	if (sortedShapes.handrails) {
+		var handrailsPar = {
+			draw: draw, 
+			shapes: sortedShapes.handrails,
+		}
+		var handrails = drawSVGHandrails(handrailsPar);
+
+		var a4Params = {
+			elements: handrails,
+			basePoint: {x:2500, y:4000},
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
+	}
 	
+	
+
 	/**
 		* Отрисовывает стекла с размерами
 		* @param par Поля объекта:
@@ -264,7 +283,8 @@ function makeSvg(){
 		obj.setClass("parts");
 		
 		//зеркалим объект если это есть в его параметрах
-		if(this.drawing && this.drawing.mirrow) mirrow(obj, "y")
+		if(this.drawing && this.drawing.mirrow) mirrow(obj, "y");
+		if(this.drawing && this.drawing.mirrow) obj.setClass("parts is_mirrored");
 		
 		//угол поворота
 		var ang = 0;

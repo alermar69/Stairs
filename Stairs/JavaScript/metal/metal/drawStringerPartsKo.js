@@ -1011,7 +1011,7 @@ function drawBotStepKo_wndOut(par){
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
-		center1 = newPoint_xy(p5, -150, -100);
+		center1 = newPoint_xy(p5, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.noZenk = true;
@@ -1665,7 +1665,7 @@ function drawTopStepKo_pltG(par){
 		widthFrame: par.stepHoleX1 + par.stepHoleX2,
 		partsGap: 20
 	}
-	// pltPar.len = params.platformLength_3;
+	if(par.marshParams.lastMarsh) pltPar.len = params.platformLength_3;
 	// pltPar.widthFrame = 400;
 
 	calcPltPartsParams(pltPar);

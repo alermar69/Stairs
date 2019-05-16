@@ -43,6 +43,8 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <!--себестоимость-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/cost.php" ?>
 
+<!-- всплывающее окошко с информацией о детали -->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/partInfo.php" ?>
 
 </div> <!--end of .content-->
 
@@ -60,10 +62,6 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 
 <script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 <script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
-<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
-<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 
 <!--визуализация-->
 	<script type="text/javascript" src="drawStaircase.js"></script>
@@ -73,22 +71,21 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 	<script type="text/javascript" src="drawStringerPartsLt.js"></script>
 	<script type="text/javascript" src="drawStringerPartsKo.js"></script>
 	<script type="text/javascript" src="ladderRailing.js"></script>
-	
+	<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
 	<script type="text/javascript" src="drawCarcas.js"></script>
 
 	<script type="text/javascript" src="drawFrames.js"></script>
 	<script type="text/javascript" src="drawStringers.js"></script>
-	
-
-	<script type="text/javascript" src="/dev/mayorov/startTreads/drawTreads.js"></script>
+	<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 	
 	<script type="text/javascript" src="drawSvg.js"></script>
 
 <!--файлы с едиными функциями (сейчас в работе)-->
 	
 	<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
 	
-	
+	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
     
 	<!-- автотесты -->
@@ -105,7 +102,6 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <script type="text/javascript" src="calcSpec_3.0.js"></script>
 
 <!--оболочки-->
-<script type="text/javascript" src="personalScripts.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 

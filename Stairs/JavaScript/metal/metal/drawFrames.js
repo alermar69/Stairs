@@ -486,6 +486,19 @@ par.frameParams = {
 			}
 		}
 
+		screwHoles.forEach(function(hole){
+			var screwId = "treadScrew";//screw_6x32
+			var screwPar = {
+				id: screwId,
+				description: "Крепление ступеней",
+				group: "Ступени"
+			}
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = hole.y;
+			screw.position.z = hole.x;
+			par.mesh.add(screw);
+		});
+
 		var holesPar = {
 			holeArr: screwHoles,
 			dxfBasePoint: shapePar.dxfBasePoint,
@@ -938,7 +951,6 @@ function drawWndFrame2(par){
 		holesReplace.push([screwHoles[1], polar(screwHoles[1], ang, 20)]);
 		holesReplace.push([screwHoles[2], polar(screwHoles[2], ang, -20)]);
 
-
 		var screwHolesPar = {
 			points: screwHoles,
 			frameId: par.frameId
@@ -955,6 +967,19 @@ function drawWndFrame2(par){
 				}
 			}
 		}
+
+		screwHoles.forEach(function(hole){
+			var screwId = "treadScrew";//screw_6x32
+			var screwPar = {
+				id: screwId,
+				description: "Крепление ступеней",
+				group: "Ступени"
+			}
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = hole.y;
+			screw.position.z = hole.x;
+			par.mesh.add(screw);
+		});
 
 		var holesPar = {
 			holeArr: screwHoles,
@@ -1679,6 +1704,7 @@ function drawTreadFrame2(par){
 	// создаем рамку
 	var frame = new THREE.Object3D();
 
+	if (params.stairType == "лотки") par.profHeight += params.treadThickness;
 	
 	// определяем параметры профиля
 	var profPar = {
@@ -1734,6 +1760,7 @@ function drawTreadFrame2(par){
 		pole.position.z = 0;
 		frame.add(pole);
 	}
+
 	// определяем параметры бокового фланца
 	var flanPar = {
 		width: 40,
@@ -1745,7 +1772,10 @@ function drawTreadFrame2(par){
 		dxfBasePoint: par.dxfBasePoint,
 	};
 	
-	if(params.stairType == "лотки") flanPar.width = par.profHeight;
+	if (params.stairType == "лотки") {
+		par.profHeight -= params.treadThickness;
+		flanPar.width = par.profHeight;
+	}
 	
 	var flanSideWidth = flanPar.width;
 
@@ -1766,7 +1796,6 @@ function drawTreadFrame2(par){
 		flanPar.height = marshPar.a * 1.0;
 		flanPar.thk = 3;
 		par.holeDist = calcPresParams(marshPar.a).holeDist;
-		console.log(flanPar.height, par.holeDist)
 		hole1 = {
 			x: 15,
 			y: marshPar.a - 30,
@@ -1827,20 +1856,25 @@ function drawTreadFrame2(par){
 		holeRad: 4,
 		noBolts: true,
 		dxfBasePoint: par.dxfBasePoint,
+		hasScrews: true
 	};
+	// if (params.stairType == 'дпк') {
+	// 	flanPar.noBolts = false;
+	// 	flanPar.hasScrews = false;
+	// }
 
 	flanPar.dxfBasePoint = newPoint_xy(flanPar.dxfBasePoint, 0, flanPar.height + 150);
 	
 	// определяем параметры первого отверстия фланца
 	var hole1 = {
 		x: flanPar.width / 2,
-		y: flanPar.holeOffset
+		y: flanPar.holeOffset,
 	};
 
 	// определяем параметры второго отверстия фланца
 	var hole2 = {
 		x: flanPar.width / 2,
-		y: flanPar.height - flanPar.holeOffset
+		y: flanPar.height - flanPar.holeOffset,
 	};
 
 	// добавляем параметры отверстий в свойства фланца
@@ -1852,6 +1886,7 @@ function drawTreadFrame2(par){
 		// определяем параметры средних отверстий фланца
 		var hole3 = newPoint_xy(hole1, 0, holeDist);
 		var hole4 = newPoint_xy(hole3, 0, holeDist);
+
 		// добавляем параметры отверстий в свойства фланца
 		flanPar.roundHoleCenters.push(hole3, hole4);
 	}
@@ -1971,8 +2006,10 @@ function drawTreadFrame2(par){
 			frame.position.z += par.deltaZ / 2;
 		}
 	}
+	
 	mesh.add(frame);
 
+	addSpecIdToChilds(mesh, partName + name);
 
 	return mesh;
 
