@@ -57,7 +57,7 @@ drawStaircase = function (viewportId, isVisible) {
 	if (params.turnSide == "правое") turnFactor = 1;
 	if (params.turnSide == "левое") turnFactor = -1;
 
-
+	if (testingMode) isFixPats = false;
 
 /*** СТУПЕНИ НА ВСЕ ЛЕСТНИЦЫ ***/
 
@@ -119,7 +119,7 @@ drawStaircase = function (viewportId, isVisible) {
 
 	//сохраняем позицию лестницы для позиционирования шкафа
 	params.starcasePos = moove;
-	params.starcasePos.rot = moove.rot;
+	params.starcasePos.rot = moove.rot + params.stairCaseRotation / 180 * Math.PI;
 
 
 	//если на верхней площадке есть заднее ограждение, сдвигаем лестницу по оси Х чтобы ограждение не пересекалось с верхним перекрытием

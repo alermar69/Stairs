@@ -64,7 +64,7 @@ function calcSpec(){
 	
 
 //крепления к перекрытиям
-
+/*
 function floorsMountingItemsAdd(){}; //пустая функция для навигации	
 	
 	//крепление к нижнему перекрытию
@@ -208,7 +208,7 @@ function wallsMountingItemsAdd(){} //пустая функция для нави
 	 wallMountingItemsAdd(fixParams);
 
 	//end of wallsMountingItemsAdd	
-
+*/
 	
 // ОГРАЖДЕНИЯ
 	
@@ -235,70 +235,7 @@ function balustradeItemsAdd(){}; //функция для навигации
 	
 function addMetiz(){};
 	//болты
-	
-	item = {
-		id: "nut_M10",
-		amt: getPartAmt("bolt"),
-		discription: "Гайки",
-		unit: "Метизы",
-		itemGroup: "Каркас",		
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["nut_M10"].comment = "Рассчитано по болтам";
-	   
-	item = {
-		id: "shim_M10",
-		amt: getPartAmt("bolt"),
-		discription: "Шайбы",
-		unit: "Метизы",
-		itemGroup: "Каркас",
-		comment: "Рассчитано по болтам",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["shim_M10"].comment = "Рассчитано по болтам";
-	
-	item = {
-		id: "nut_M8",
-		amt: getPartAmt("boltM8"),
-		discription: "Гайки",
-		unit: "Метизы",
-		itemGroup: "Каркас",		
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["nut_M8"].comment = "Рассчитано по болтам";
-	   
-	item = {
-		id: "shim_M8",
-		amt: getPartAmt("boltM8"),
-		discription: "Шайбы",
-		unit: "Метизы",
-		itemGroup: "Каркас",
-		comment: "Рассчитано по болтам",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["shim_M8"].comment = "Рассчитано по болтам";
-	
-	item = {
-		id: "nut_M12",
-		amt: getPartAmt("boltM12"),
-		discription: "Гайки",
-		unit: "Метизы",
-		itemGroup: "Каркас",		
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["nut_M12"].comment = "Рассчитано по болтам";
-	   
-	item = {
-		id: "shim_M12",
-		amt: getPartAmt("boltM12"),
-		discription: "Шайбы",
-		unit: "Метизы",
-		itemGroup: "Каркас",
-		comment: "Рассчитано по болтам",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["shim_M12"].comment = "Рассчитано по болтам";
-	
+
 	item = {
 		id: "capNut_M16",
 		amt: getPartAmt("boltM16"),

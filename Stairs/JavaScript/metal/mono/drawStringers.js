@@ -698,6 +698,30 @@ function drawComplexStringer(par) {
 										flan.rotation.x = Math.PI / 2;
 										flan.rotation.z = -Math.PI / 2;
 										par.mesh2.add(flan);
+
+										//сохраняем данные для спецификации
+										var partName = "treadPlate1";
+										if (typeof specObj != 'undefined') {
+											if (!specObj[partName]) {
+												specObj[partName] = {
+													types: {},
+													amt: 0,
+													area: 0,
+													name: "Пластина",
+													metalPaint: true,
+													timberPaint: false,
+													division: "metal",
+													workUnitName: "amt", //единица измерения
+													group: "Каркас",
+												}
+											}
+											var name = Math.round(width) + "х" + Math.round(len) + "х" + Math.round(thickness);
+											var area = width * len / 1000000;
+											if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+											if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+											specObj[partName]["amt"] += 1;
+											specObj[partName]["area"] += area;
+										}
 									}
 								}
 								//пластина первой забежной ступени
@@ -1391,7 +1415,7 @@ function drawComplexStringer(par) {
 					//var len = par.lengthBturn1;
 					var len = (params.M - (params.stringerThickness + params.M / 3)) / 2;
 					var width = params.stringerThickness - 8;
-					console.log(par, sidePlate2, par.pointsShape)
+
 					var p0 = {x: 0, y: 0}
 					var p1 = newPoint_xy(p0, width, 0);
 					var p2 = newPoint_xy(p1, 0, len)
@@ -2160,7 +2184,7 @@ function drawPltStringer(par) {
 
 			shapePar.points = par.pointsShape;
 		}
-console.log(shapePar, params.carcasConfig)
+
 		par.stringerShape = drawShapeByPoints2(shapePar).shape;
 
 		//отверстия под фланец соединения косоуров
@@ -2312,7 +2336,7 @@ console.log(shapePar, params.carcasConfig)
 			var flan = drawMonoFlan(flanPar).mesh;
 			flan.position.x = sidePlate2.position.x - params.flanThickness;
 			flan.position.y = sidePlate2.position.y + p2.y - flanPar.height;
-			console.log(p2, '----------------------------------------------------------')
+
 			par.flans.add(flan);
 		}
 
@@ -2692,7 +2716,6 @@ function calcStringerPar(par) {
 	// par.topEndLength = 1050 - 167;
 	//костыль для совместимости со старыми функциями
 	par.dxfBasePointGap = 100;
-//console.log(par.topConnection, par.marshId)
 	return par;
 }
 

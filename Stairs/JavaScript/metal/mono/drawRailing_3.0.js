@@ -608,6 +608,7 @@ function drawGlassSection(par){
 			fixType: params.handrailFixType,
 			sectText: '',
 			isGlassHandrail: true,
+			marshId: par.marshId
 		}
 
 
@@ -1011,6 +1012,7 @@ function drawRacksMono(par){
             key: par.key,
             isFirstFlan: racks[i].isFirstFlan,
             isBotFlan: par.isBotFlan,
+			isTopWinder: racks[i].isTopWinder,
         }
 
         if (par.isBotFlan) rackParams.type = 'platformRear'
@@ -1182,7 +1184,17 @@ function drawRackMono(par){
 		}
 		//размер для спецификации
 		var sizeA = botLen + center1.y;
-		if(par.type == 'middle') sizeA = distance(center1, center2)
+		if (par.type == 'middle') sizeA = distance(center1, center2)
+
+		//нижнее отверстие
+		if (par.isTopWinder) {
+			var center3 = newPoint_xy(center1, 0, marshPar.h);
+			holeCenters.push(center3);
+
+			var center4 = newPoint_xy(center3, 0, marshPar.h);
+			center4.anglePos = 'справа';
+			holeCenters.push(center4);
+		}
 		
 		}
 	if(par.type == 'turnRackStart' || par.type == 'turnRackEnd'){
@@ -1490,7 +1502,7 @@ function drawRackMono(par){
 					group: "Ограждения",
 				};
 			}
-			console.log(rackLen)
+
 			var name = ""
 			if(par.type == 'first') name += " начальной с фланцем ";
 			if(par.type == 'last') name += " L-образной ";
@@ -1630,6 +1642,7 @@ function calculateRacks(par){
 		if (params.stairModel != "П-образная с площадкой" && params.stairModel != "П-образная с забегом") {
 			//не отрисовываем последнюю стойку если есть стыковка с верхней секцией
 			if (nextMarshPar.hasRailing.in) parRacks.marshLast.noDraw = true;
+			if (!nextMarshPar.hasRailing.in) parRacks.marshLast.isTopWinder = true;
 		}
 		//п-образный поворот
 		if (params.stairModel == "П-образная с площадкой" || params.stairModel == "П-образная с забегом") {
@@ -1684,7 +1697,8 @@ function calculateRacks(par){
 		};
 		if(par.topEnd == "забег"){
 			// parRacks.angTop = marshPar.ang;			
-			parRacks.topLast.x = parRacks.marshLast.x + params.M - 100 - 70;
+			//parRacks.topLast.x = parRacks.marshLast.x + params.M - 100 - 70;
+			parRacks.topLast.x = parRacks.marshLast.x + params.M - 70;
 			parRacks.topLast.y += marshPar.h_topWnd;
 			var handrailTurnPoint = polar(parRacks.marshLast, marshPar.ang, par.handrailTurnOffset)
 			parRacks.topLast.holderAng = angle(handrailTurnPoint, parRacks.topLast);

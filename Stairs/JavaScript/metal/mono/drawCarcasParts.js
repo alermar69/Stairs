@@ -1047,8 +1047,20 @@ function drawHorPlate(par) {
 		par.holes = [center1, center2, center3, center4];
 		par.holeRad = 5;
 
+		var screwPar = {
+			id: "treadScrew", //screw_6x32ewId,
+			description: "Крепление ступеней",
+			group: "Ступени"
+		}
+
 		for (var i = 0; i < par.holes.length; i++) {
 			addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
+
+			//саморезы
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = par.holes[i].y;
+			screw.position.z = par.holes[i].x;
+			par.mesh.add(screw)
 		}
 	}
 
@@ -1262,8 +1274,20 @@ function drawHorPlates(par) {
 			par.holes = [center1, center2, center3, center4];
 			par.holeRad = 5;
 
+			//var screwPar = {
+			//	id: "treadScrew", //screw_6x32ewId,
+			//	description: "Крепление ступеней",
+			//	group: "Ступени"
+			//}
+
 			for (var i = 0; i < par.holes.length; i++) {
 				addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, dxfBasePoint);
+
+				////саморезы
+				//var screw = drawScrew(screwPar).mesh;
+				//screw.position.x = par.holes[i].y;
+				//screw.position.z = par.holes[i].x + (par.height + gapPlates) * i;
+				//par.mesh.add(screw)
 			}
 		}
 
@@ -1285,6 +1309,21 @@ function drawHorPlates(par) {
 			if (par.type == "treadPlate") {
 				plate.position.x += (par.height + gapPlates) * j;
 				if (j > 0) plate.position.x += par.frontOffset;
+
+				var screwPar = {
+					id: "treadScrew", //screw_6x32ewId,
+					description: "Крепление ступеней",
+					group: "Ступени"
+				}
+
+				for (var i = 0; i < par.holes.length; i++) {
+					//саморезы
+					var screw = drawScrew(screwPar).mesh;
+					screw.position.x = par.holes[i].y + (par.height + gapPlates) * j;
+					screw.position.z = par.holes[i].x ;
+					if (j > 0) screw.position.x += par.frontOffset;
+					par.mesh.add(screw)
+				}
 			}
 
 			par.mesh.add(plate);
@@ -1805,8 +1844,20 @@ function drawTurnPlate1(par) {
 	//Отмечаем тип зенковки, для свг
 	par.holes.forEach(function(element) {element.holeData = {zenk: 'no'}});
 
+	var screwPar = {
+		id: "treadScrew", //screw_6x32ewId,
+		description: "Крепление ступеней",
+		group: "Ступени"
+	}
+
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
+
+		//саморезы
+		var screw = drawScrew(screwPar).mesh;
+		screw.position.x = par.holes[i].y;
+		screw.position.z = par.holes[i].x;
+		par.mesh.add(screw)
 	}
 
 
@@ -1945,10 +1996,22 @@ function drawTurnPlate3(par){
 	par.holeRad = 5;
 
 	//Отмечаем тип зенковки, для свг
-	par.holes.forEach(function(element) {element.holeData = {zenk: 'no'}});
+	par.holes.forEach(function (element) { element.holeData = { zenk: 'no' } });
+
+	var screwPar = {
+		id: "treadScrew", //screw_6x32ewId,
+		description: "Крепление ступеней",
+		group: "Ступени"
+	}
 
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
+
+		//саморезы
+		var screw = drawScrew(screwPar).mesh;
+		screw.position.x = par.holes[i].y;
+		screw.position.z = par.holes[i].x;
+		par.mesh.add(screw)
 	}
 
 
@@ -2134,10 +2197,22 @@ function drawTurnPlate2(par) {
 	par.holeRad = 5;
 		
 	//Отмечаем тип зенковки, для свг
-	par.holes.forEach(function(element) {element.holeData = {zenk: 'no'}});
+	par.holes.forEach(function (element) { element.holeData = { zenk: 'no' } });
+
+	var screwPar = {
+		id: "treadScrew", //screw_6x32ewId,
+		description: "Крепление ступеней",
+		group: "Ступени"
+	}
 
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
+
+		//саморезы
+		var screw = drawScrew(screwPar).mesh;
+		screw.position.x = par.holes[i].y;
+		screw.position.z = par.holes[i].x;
+		par.mesh.add(screw)
 	}
 
 
@@ -2411,7 +2486,13 @@ function drawTreadPlateCabriole2(par) {
 		dxfPrimitivesArr: dxfPrimitivesArr
 	};
 
-	var shape = drawRectFlan(flanParams).shape;	
+	var shape = drawRectFlan(flanParams).shape;
+
+	//запоминаем цетры отверстий для создание саморезов
+	var holesScrew = [];
+	for (var i = 0; i < shape.holes.length; i++) {
+		holesScrew.push(shape.holes[i].currentPoint);
+	}	
 
 	flanParams.dxfPrimitivesArr = [];
 	var shapeNo = drawRectFlan(flanParams).shape;
@@ -2465,6 +2546,21 @@ function drawTreadPlateCabriole2(par) {
 
 	plate.position.y = params.treadPlateThickness;
 	plate.position.z = par.treadPlateWidth / 2;
+
+	var screwPar = {
+		id: "treadScrew", //screw_6x32ewId,
+		description: "Крепление ступеней",
+		group: "Ступени"
+	}
+
+	for (var i = 0; i < holesScrew.length; i++) {
+		//саморезы
+		var screw = drawScrew(screwPar).mesh;
+		screw.rotation.x = Math.PI / 2;
+		screw.position.x = holesScrew[i].x - params.metalThickness;
+		screw.position.y = holesScrew[i].y;
+		plate.add(screw)
+	}
 
     treadPlate.add(plate);
 
@@ -2744,7 +2840,7 @@ function drawMonoFlan(par) {
 		var flanPar = {
 			width: params.stringerThickness + 110.0, //ширина фланца
 			height: pEnd.x - pStart.x + 10, //длина фланца (высота при вертикальном расположении)
-			holeRad: 7.5,
+			holeRad: 6.5,
 			cornerRad: 20,
 			holeX: 20,
 			holeY: 20,
@@ -2764,6 +2860,7 @@ function drawMonoFlan(par) {
 
 		flanPar.isFixPart = true; // болты крепления к стенам
 		flanPar.fixPar = getFixPart(0, 'botFloor'); // параметры крепления к стенам
+		flanPar.fixPar.diamHole = 15;
 
 		flanPar.roundHoleCenters = [];
 
@@ -2793,7 +2890,7 @@ function drawMonoFlan(par) {
 		var flanPar = {
 			width: params.stringerThickness - 2 * params.metalThickness, //ширина фланца
 			height: pEnd.x - pStart.x - 2 * params.metalThickness, //длина фланца (высота при вертикальном расположении)
-			holeRad: 7.5,
+			holeRad: 6.5,
 			cornerRad: 0,
 			holeX: 50,
 			holeY: 20,
@@ -2832,7 +2929,7 @@ function drawMonoFlan(par) {
 		var flanPar = {
 			height: params.stringerThickness, //ширина фланца
 			width: params.stringerThickness + 110, //длина фланца (высота при вертикальном расположении)
-			holeRad: 7.5,
+			holeRad: 6.5,
 			cornerRad: 20,
 			holeX: 20,
 			holeY: 20,
@@ -2847,6 +2944,7 @@ function drawMonoFlan(par) {
 		if (par.marshIdFix) marshIdFix = par.marshIdFix;
 		flanPar.isFixPart = true; // болты крепления к стенам
 		flanPar.fixPar = getFixPart(marshIdFix); // параметры крепления к стенам
+		flanPar.fixPar.diamHole = 15;
 
 	    flanPar.drawing = {
 	        name: par.name,
@@ -2876,7 +2974,6 @@ function drawMonoFlan(par) {
 		}
 
 		//добавляем  отверстия по краям
-		flanPar.holeRad = flanPar.fixPar.diamHole / 2;
 		addHolesMonoFlan(flanPar);
 
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -flanPar.width - 100);
@@ -2928,7 +3025,7 @@ function drawMonoFlan(par) {
 			width: params.stringerThickness - 2 * params.metalThickness, //ширина фланца
 			//height: params.stringerThickness - 2 * params.metalThickness, //ширина фланца
 			height: par.height, //длина фланца (высота при вертикальном расположении)
-			holeRad: 7.5,
+			holeRad: 6.5,
 			cornerRad: 0,
 			holeX: 20,
 			holeY: 20,
@@ -3065,7 +3162,7 @@ function drawMonoFlan(par) {
 		var flanPar = {
 			height: params.stringerThickness, //ширина фланца
 			width: params.stringerThickness + 110.0, //длина фланца (высота при вертикальном расположении)
-			holeRad: 7.5,
+			holeRad: 6.5,
 			cornerRad: 20,
 			holeX: 20,
 			holeY: 20,
@@ -3075,6 +3172,7 @@ function drawMonoFlan(par) {
 
 		flanPar.isFixPart = true; // болты крепления к стенам
 		flanPar.fixPar = getFixPart(0, 'topFloor'); // параметры крепления к стенам
+		flanPar.fixPar.diamHole = 15;
 
 		if (params.platformTop != "площадка") {
 			flanPar.height = par.pointsShape[par.pointsShape.length - 2].y - par.pointsShape[par.pointsShape.length - 1].y;
@@ -3103,7 +3201,7 @@ function drawMonoFlan(par) {
 
 
 		if (params.topAnglePosition == "под ступенью") {			
-			//добавляем  отверстия по краям
+			//добавляем  отверстия по краям			
 			addHolesMonoFlan(flanPar);			
 			var flan = drawRectFlan2(flanPar).mesh;
 		}
@@ -3124,7 +3222,7 @@ function drawMonoFlan(par) {
 		var flanPar = {
 			width: params.stringerThickness - 2 * params.metalThickness, //ширина фланца
 			height: params.stringerThickness - 2 * params.metalThickness - 5, //длина фланца (высота при вертикальном расположении)
-			holeRad: 7.5,
+			holeRad: 6.5,
 			cornerRad: 0,
 			holeX: 20,
 			holeY: 50,
@@ -3153,6 +3251,7 @@ function drawMonoFlan(par) {
 		flanPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, flanPar.width + 100);
 		var boltBulgeTemp = boltBulge;
 		boltBulge = 14;
+		flanPar.dzBolt = -6;
 
 		var flan = drawRectFlan2(flanPar).mesh;
 		flan.position.z = flanPar.width / 2;
@@ -3747,6 +3846,20 @@ function drawTurn1TreadPlateCabriole(par) {
 		tread1.rotation.z = toRadians(270);
 
 		treadPlate.add(tread1);
+
+		//саморезы
+		var holes = [center1, center2, center3, center4];
+		var screwPar = {
+			id: "treadScrew", //screw_6x32ewId,
+			description: "Крепление ступеней",
+			group: "Ступени"
+		}
+		for (var i = 0; i < holes.length; i++) {
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = holes[i].y + stringerPlateThickness;
+			screw.position.z = -holes[i].x;
+			treadPlate.add(screw)
+		}
 	}
 
 	//для правой лестницы зеркалим чертеж для svg и dxf
@@ -4386,6 +4499,20 @@ function drawTurn2TreadPlateCabriole(par) {
 		tread1.rotation.z = toRadians(90);
 
 		treadPlate.add(tread1);
+
+		//саморезы
+		var holes = [center1, center2, center3, center4, center5];
+		var screwPar = {
+			id: "treadScrew", //screw_6x32ewId,
+			description: "Крепление ступеней",
+			group: "Ступени"
+		}
+		for (var i = 0; i < holes.length; i++) {
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = holes[i].y// + stringerPlateThickness;
+			screw.position.z = holes[i].x;
+			treadPlate.add(screw)
+		}
 	}
 
 	//для левой лестницы зеркалим чертеж для svg и dxf
@@ -5020,6 +5147,20 @@ function drawTurn3TreadPlateCabriole(par) {
 		tread1.rotation.z = toRadians(90);
 
 		treadPlate.add(tread1);
+
+		//саморезы
+		var holes = [center1, center2, center3, center4];
+		var screwPar = {
+			id: "treadScrew", //screw_6x32ewId,
+			description: "Крепление ступеней",
+			group: "Ступени"
+		}
+		for (var i = 0; i < holes.length; i++) {
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = -holes[i].y;
+			screw.position.z = -holes[i].x;
+			treadPlate.add(screw)
+		}
 	}
 
 	// создаем shape для dxf и svg
@@ -5591,6 +5732,7 @@ function drawFlanPipeBot(par) {
 
 	flanParams.isFixPart = true; // болты крепления к стенам
 	flanParams.fixPar = getFixPart(0, 'botFloor'); // параметры крепления к стенам
+	flanParams.fixPar.diamHole = 15;
 
 	//Добавляем отверстия
 	var center1 = newPoint_xy(p0, holeX, holeY);
@@ -5690,6 +5832,7 @@ function drawFlanPipeTop(par) {
 
 	par.isFixPart = true; // болты крепления к стенам
 	par.fixPar = getFixPart(0, 'topFloor'); // параметры крепления к стенам
+	par.fixPar.diamHole = 15;
 
 	holeRad = par.fixPar.diamHole / 2;
 
@@ -5858,7 +6001,7 @@ function drawFlanPipeTop(par) {
  * ПОСТРОЕНИЕ ВЕРХНЕГО ФЛАНЦА лестницы на сварном коробе
  */
 function drawFlanTop(par) {
-	var holeRad = 8;
+	var holeRad = 7.5;
 	var holeX = 20;
 	var holeY = 20;
 

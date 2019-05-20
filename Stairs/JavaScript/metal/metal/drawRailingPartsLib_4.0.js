@@ -74,6 +74,7 @@ function drawRack3d_4(par) {
 			if (testingMode) rad1 = 4;
 			var center = { x: 0, y: par.holeYTurnRack - holeDist }
 			addRoundHole(shape, par.dxfArr, center, rad1, par.dxfBasePoint);
+			addLeader("Справа", 30, 70, 60, par.dxfArr, center, par.dxfBasePoint);
 		}
 	}
 
@@ -178,8 +179,9 @@ function drawRack3d_4(par) {
 		var bolts = new THREE.Object3D();
 		var boltPar = {
 			diam: boltDiam,
-			len: 20,
+			len: 30,
 			headType: "потай",
+			noNut: true,
 		}
 		if (params.model == "ко") boltPar.headType = "шестигр.";
 
@@ -188,11 +190,11 @@ function drawRack3d_4(par) {
 			bolt.rotation.x = Math.PI / 2;
 			bolt.position.x = 0;
 			bolt.position.y = 0;
-			bolt.position.z = 2
+			bolt.position.z = 2 + 5
 
 			if (par.railingSide == "left") {
 				bolt.rotation.x = -Math.PI / 2;
-				bolt.position.z = profSize - 2
+				bolt.position.z = profSize - 2 - 5
 			}
 		}
 
@@ -220,6 +222,7 @@ function drawRack3d_4(par) {
 		//на поворотной стойке для лт добавляем дополнительный болт крепления и поворачиваем болты
 		if (par.holeYTurnRack) {
 			boltPar.diam = 6;
+			boltPar.len = 20;
 			boltPar.headType = "пол. гол. крест"
 
 			var bolt2 = drawBolt(boltPar).mesh;
@@ -486,8 +489,9 @@ function drawRackHolder(par) {
 		rad: 20,
 	}
 
-	if (params.sideOverHang > 50)
+	if (params.sideOverHang > 50) {
 		addRoundHole(plateShape, dxfPrimitivesArr, plateHole.center, plateHole.rad, par.dxfBasePoint)
+	}
 
 	var extrudeOptions = {
 		amount: plateThk,
@@ -768,10 +772,12 @@ function drawPole3D_4(par) {
 		var basePoint = { x: -24, y: par.length + 25, z: 24 };
 		var material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
 
+		var holesOffset = params.rackSize - 24 * 2;
+
 		if (bolts.includes(1)) {
 			var geometry = new THREE.CylinderGeometry(4, 4, 50, 32);
 			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x - 32;
+			cylinder.position.x = basePoint.x - holesOffset;
 			cylinder.position.y = basePoint.y;
 			cylinder.position.z = basePoint.z;
 			par.mesh.add(cylinder);
@@ -791,25 +797,25 @@ function drawPole3D_4(par) {
 			var cylinder = new THREE.Mesh(geometry, material);
 			cylinder.position.x = basePoint.x;
 			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z + 32;
+			cylinder.position.z = basePoint.z + holesOffset;
 			par.mesh.add(cylinder);
 		}
 
 		if (bolts.includes(4)) {
 			var geometry = new THREE.CylinderGeometry(4, 4, 50, 32);
 			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x - 32;
+			cylinder.position.x = basePoint.x - holesOffset;
 			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z + 32;
+			cylinder.position.z = basePoint.z + holesOffset;
 			par.mesh.add(cylinder);
 		}
 
 		if (bolts.includes(5)) {
 			var geometry = new THREE.CylinderGeometry(7, 7, 50, 32);
 			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x - 16;
+			cylinder.position.x = basePoint.x - holesOffset / 2;
 			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z + 16;
+			cylinder.position.z = basePoint.z + holesOffset / 2;
 			par.mesh.add(cylinder);
 		}
 
@@ -1607,47 +1613,6 @@ function drawHandrailHolder(par) {
 		addLine(trashShape, dxfPrimitivesArr, p1, p2, par.dxfBasePoint);
 	}
 
-	//лодочка верхняя
-	/*
-	var len = 60;
-	var wid = 20;
-	var holeRad = 3;
-	var holeDist = 45;
-	var rad = wid / 2;
-	var dxfArr = [];
-	var dxfBasePoint = { x: 0, y: 0, }
-
-	var shape = new THREE.Shape();
-
-	var p0 = { x: 0, y: 0 };
-	var p1 = newPoint_xy(p0, -len / 2 + rad, -rad);
-	var p2 = newPoint_xy(p0, -len / 2 + rad, rad);
-	var p3 = newPoint_xy(p0, len / 2 - rad, rad);
-	var p4 = newPoint_xy(p0, len / 2 - rad, -rad);
-	var center1 = newPoint_xy(p0, -len / 2 + rad, 0);
-	var center2 = newPoint_xy(p0, len / 2 - rad, 0);
-	var holeCenter1 = newPoint_xy(p0, -holeDist / 2, 0);
-	var holeCenter2 = newPoint_xy(p0, holeDist / 2, 0);
-
-	addArc2(shape, dxfArr, center1, rad, 1.5 * Math.PI, 0.5 * Math.PI, true, dxfBasePoint);
-	addLine(shape, dxfArr, p2, p3, dxfBasePoint);
-	addArc2(shape, dxfArr, center2, rad, 0.5 * Math.PI, -0.5 * Math.PI, true, dxfBasePoint);
-	addLine(shape, dxfArr, p4, p1, dxfBasePoint);
-
-	addRoundHole(shape, dxfArr, holeCenter1, holeRad, dxfBasePoint);
-	addRoundHole(shape, dxfArr, holeCenter2, holeRad, dxfBasePoint);
-
-	var extrudeOptions = {
-		amount: flanThk,
-		bevelEnabled: false,
-		curveSegments: 12,
-		steps: 1
-	};
-
-	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	var flan = new THREE.Mesh(geometry, params.materials.inox);
-	*/
 	var flan = drawHolderFlan().mesh;
 
 	flan.rotation.x = -Math.PI / 2;
@@ -1669,6 +1634,19 @@ function drawHandrailHolder(par) {
 		par.mesh.add(flan2)
 	}
 
+	//гайка М8
+	if (!par.isHor && params.banisterMaterial == "40х40 черн." && !testingMode) {
+		//параметры гайки
+		var nutParams = {
+			diam: 8,
+			isSelfLock: true,
+		}
+
+		var nut = drawNut(nutParams).mesh;
+		nut.position.y = -10;
+		par.mesh.add(nut)
+
+	}
 
 
 	//сохраняем данные для спецификации
@@ -1774,7 +1752,31 @@ function drawHolderFlan(par) {
 
 	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-	par.mesh = new THREE.Mesh(geometry, par.material);
+	par.mesh = new THREE.Object3D();
+	var mesh = new THREE.Mesh(geometry, par.material);
+	par.mesh.add(mesh);
+
+	var screwId = "timberHandrailScrew";
+	if (handrailPar.mat == 'metal') screwId = 'metalHandrailScrew';
+
+	var screwPar = {
+		id: screwId,
+		description: "Крепление поручней",
+		group: "Ограждения"
+	}
+
+	var screw = drawScrew(screwPar).mesh;
+	screw.position.x = holeCenter1.x;
+	screw.position.z = holeCenter1.y;
+	screw.rotation.x = Math.PI / 2;
+	par.mesh.add(screw)
+
+	var screw2 = drawScrew(screwPar).mesh;
+	screw2.position.x = holeCenter2.x;
+	screw2.position.z = holeCenter2.y;
+	screw2.rotation.x = Math.PI / 2;
+
+	par.mesh.add(screw2)
 
 	return par;
 }
@@ -2582,7 +2584,7 @@ function drawHandrailPorfile_4(par) {
 	// par.angleEnd = -Math.PI / 4;//-Math.PI;
 
 	var extrudeOptions = {
-		amount: par.height,
+		amount: par.poleProfileY,
 		bevelEnabled: false,
 		curveSegments: 12,
 		steps: 1
@@ -2610,7 +2612,6 @@ function drawHandrailPorfile_4(par) {
 	var pole = new THREE.Mesh(geom, par.material);
 	pole.rotation.x = Math.PI / 2;
 	pole.position.y = par.profHeight;
-	// console.log(par.profHeight)
 	pole.position.z = -50;//par.profWidth / 2;
 	par.mesh.add(pole);
 
@@ -2619,6 +2620,61 @@ function drawHandrailPorfile_4(par) {
 
 	par.len1 = distance(p2, p3);
 	par.len2 = distance(p4, p1);
+
+	//добавляем шейп в глобальный массив для последующего образмеривания
+	if (typeof shapesList != "undefined" && par.drawing) {
+		shape.drawing = par.drawing;
+		shape.drawing.baseLine = { p1: p1, p2: p4 };
+
+		var angStart = par.poleAngle + par.startAngle;
+		var angEnd = par.poleAngle + par.endAngle;
+
+		if (Math.abs(par.startAngle) !== 0) {
+			shape.drawing.startAngle = { center: copyPoint(p2) };
+
+			var len = 160;
+
+			var angP1 = polar(p2, -angStart, len);
+			var angP2 = polar(p2, par.poleAngle + Math.PI / 2, -len);
+
+			shape.drawing.startAngle.p1 = angP2;
+			shape.drawing.startAngle.p2 = angP1;
+
+			if (par.startAngle < 0) {
+
+				shape.drawing.startAngle.center = copyPoint(p1);
+				var angP1 = polar(p1, -angStart, len);
+				var angP2 = polar(p1, par.poleAngle + Math.PI / 2, len);
+
+				shape.drawing.startAngle.p1 = angP2;
+				shape.drawing.startAngle.p2 = angP1;
+			}
+		}
+
+		if (Math.abs(par.endAngle) !== 0) {
+			shape.drawing.endAngle = { center: copyPoint(p4) };
+
+			var len = 160;
+			var angP1 = polar(p4, angEnd, -len);
+			var angP2 = polar(p4, par.poleAngle + Math.PI / 2, len);
+
+			shape.drawing.endAngle.p1 = angP1;
+			shape.drawing.endAngle.p2 = angP2;
+
+			if (par.endAngle > 0) {
+
+				shape.drawing.endAngle.center = copyPoint(p3);
+
+				var angP1 = polar(p3, angEnd, -len);
+				var angP2 = polar(p3, par.poleAngle + Math.PI / 2, -len);
+
+				shape.drawing.endAngle.p1 = angP2;
+				shape.drawing.endAngle.p2 = angP1;
+			}
+		}
+
+		shapesList.push(shape);
+	}
 
 	//сохраняем данные для спецификации
 	var partName = "handrails";
@@ -2670,7 +2726,10 @@ function drawHandrailPorfile_4(par) {
 		polePar.description.push(polePar.text);
 		polePar.amt = 1;
 
-		poleList[boardType].push(polePar);
+		// poleList[boardType].push(polePar);
+		var partIndex = poleList[boardType].push(polePar);
+		polePar.partIndex = partIndex;
+		if (par.drawing) shape.drawing.partIndex = partIndex;
 
 	}
 
@@ -2747,7 +2806,53 @@ function drawHandrail_4(par) {
 	//добавляем шейп в глобальный массив для последующего образмеривания
 	if (typeof shapesList != "undefined" && par.drawing) {
 		shape.drawing = par.drawing;
+
+		shape.drawing.startCutX = p0.x - p1.x;
+		shape.drawing.endCutX = p3.x - p2.x;
+
 		shape.drawing.baseLine = { p1: p0, p2: p3 };
+		if (Math.abs(par.startAngle) !== Math.PI / 2) {
+			shape.drawing.startAngle = { center: copyPoint(p0) };
+
+			var len = Math.abs(startCutLen) + 130;
+			var angP1 = polar(p0, angStart, -len);
+			var angP2 = polar(p0, par.poleAngle + Math.PI / 2, -len * Math.sin(angStart));
+
+			shape.drawing.startAngle.p1 = angP2;
+			shape.drawing.startAngle.p2 = angP1;
+
+			if (Math.abs(par.startAngle) < Math.PI / 2) {
+				var len = Math.abs(startCutLen) + 130;
+				shape.drawing.startAngle.center = copyPoint(p1);
+				var angP1 = polar(p1, angStart, len);
+				var angP2 = polar(p1, par.poleAngle + Math.PI / 2, len * Math.sin(angStart));
+
+				shape.drawing.startAngle.p1 = angP1;
+				shape.drawing.startAngle.p2 = angP2;
+			}
+		}
+
+		if (Math.abs(par.endAngle) !== Math.PI / 2) {
+			shape.drawing.endAngle = { center: copyPoint(p3) };
+
+			var len = Math.abs(endCutLen) + 130;
+			var angP1 = polar(p3, angEnd, len);
+			var angP2 = polar(p3, par.poleAngle + Math.PI / 2, len * Math.sin(angEnd));
+
+			shape.drawing.endAngle.p1 = angP1;
+			shape.drawing.endAngle.p2 = angP2;
+
+			if (par.endAngle < Math.PI / 2) {
+				shape.drawing.endAngle.center = copyPoint(p2);
+
+				var angP1 = polar(p2, angEnd, -len);
+				var angP2 = polar(p2, par.poleAngle + Math.PI / 2, -len * Math.sin(angEnd));
+
+				shape.drawing.endAngle.p1 = angP2;
+				shape.drawing.endAngle.p2 = angP1;
+			}
+		}
+
 		shapesList.push(shape);
 	}
 
@@ -2933,7 +3038,7 @@ function drawHandrail_4(par) {
 
 		var partIndex = poleList[boardType].push(polePar);
 		polePar.partIndex = partIndex;
-		if (par.drawing) shape.drawing.partIndex = partIndex;
+		if (shape.drawing) shape.drawing.partIndex = partIndex;
 	}
 
 	return par;

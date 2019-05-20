@@ -160,6 +160,12 @@ function makeSvg() {
 			var b = text.getBBox();
 			text.attr({ x: textPos.x + b.width / 2, })
 
+			textPos.y -= 100;
+			var text = drawText("Все отверстия без зенковки", textPos, textHeight, draw)
+			text.attr({ "font-size": textHeight, })
+			var b = text.getBBox();
+			text.attr({ x: textPos.x + b.width / 2, })
+
 			basePoint.y = svgPar.borderFrame.botLeft.y - objDst - 500;
 			if (params.model == "сварной") basePoint.y -= 500;
 		}
