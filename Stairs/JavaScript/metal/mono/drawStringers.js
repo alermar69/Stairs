@@ -1378,6 +1378,43 @@ function drawComplexStringer(par) {
 					flan.position.x = sidePlate2.position.x + par.pointsShape[1].x - params.flanThickness;
 					flan.position.y = sidePlate2.position.y + par.pointsShape[1].y - flanPar.height - (par.pointsShape[1].y - par.pointsShape[2].y);
 					par.flans.add(flan);
+
+					//верхняя пластина
+					dxfBasePoint.x += 300;
+					var deltaLen = 8;//Сдвиг к стене, чтобы закрыть фланец.
+					//var len = par.lengthBturn1;
+					var len = (params.M - (params.stringerThickness + params.M / 3)) / 2;
+					if (par.botEnd == 'площадка') len = params.M / 2 - (params.M - 300) / 2;
+					var width = params.stringerThickness - 8;
+
+					var p0 = { x: 0, y: 0 }
+					var p1 = newPoint_xy(p0, width, 0);
+					var p2 = newPoint_xy(p1, 0, len)
+					var p3 = newPoint_xy(p2, -width, 0)
+
+					var shape = new THREE.Shape();
+
+					addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint, 'carcas');
+					addLine(shape, dxfPrimitivesArr, p1, p2, dxfBasePoint, 'carcas');
+					addLine(shape, dxfPrimitivesArr, p2, p3, dxfBasePoint, 'carcas');
+					addLine(shape, dxfPrimitivesArr, p3, p0, dxfBasePoint, 'carcas');
+
+					var thickness = 4;
+					var extrudeOptions = {
+						amount: thickness,
+						bevelEnabled: false,
+						curveSegments: 12,
+						steps: 1
+					};
+					var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+					geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+					var flan = new THREE.Mesh(geometry, params.materials.metal2);
+					flan.position.x = sidePlate2.position.x + par.pointsShape[2].x;
+					flan.position.y = sidePlate2.position.y + par.pointsShape[2].y;
+					flan.position.z = width / 2;
+					flan.rotation.x = Math.PI / 2;
+					flan.rotation.z = -Math.PI / 2;
+					par.flans.add(flan);
 				}
 			}
 			
@@ -1414,6 +1451,7 @@ function drawComplexStringer(par) {
 					var deltaLen = 8;//Сдвиг к стене, чтобы закрыть фланец.
 					//var len = par.lengthBturn1;
 					var len = (params.M - (params.stringerThickness + params.M / 3)) / 2;
+					if (par.topEnd == 'площадка') len = params.M / 2 - (params.M - 300) / 2;
 					var width = params.stringerThickness - 8;
 
 					var p0 = {x: 0, y: 0}
@@ -1516,81 +1554,8 @@ function drawComplexStringer(par) {
 				flan.position.y = sidePlate2.position.y + par.pointsShape[par.pointsShape.length - 2].y - flanPar.height + dy;
 				flan.position.z += sidePlate2.position.z + params.profileWidth / 2 + params.metalThickness;
 				par.flans.add(flan);
-			}
+			}			
 
-			//верхняя пластина
-			if (par.topEnd == "площадка" && par.topConnection) {
-				if (par.stringerLedge !== 0) {
-					//создаем контур пластины для создания Object3D
-					var p1 = newPoint_xy(p0, 0, -params.stringerThickness / 2);
-					var p2 = newPoint_xy(p1, 0, params.stringerThickness);
-					var p3 = newPoint_xy(p2, par.stringerLedge, 0);
-					var p4 = newPoint_xy(p1, par.stringerLedge, 0);
-
-					var points = [p1, p2, p3, p4];
-
-					//создаем шейп
-					var shapePar = {
-						points: points,
-						dxfArr: dxfPrimitivesArr,
-						dxfBasePoint: par.dxfBasePoint,
-					}
-
-					var shape = drawShapeByPoints2(shapePar).shape;
-
-					var extrudeOptions = {
-						amount: 2,
-						bevelEnabled: false,
-						curveSegments: 12,
-						steps: 1
-					};
-
-					var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-					geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-					var plate = new THREE.Mesh(geom, params.materials.metal);
-					plate.rotation.x = -Math.PI / 2;
-					plate.position.x = par.keyPoints.topPoint.x + params.nose - par.stringerLedge;
-					plate.position.y = par.keyPoints.topPoint.y;
-
-					par.flans.add(plate);
-				}
-			}
-			if (par.botEnd == "площадка" && par.botConnection) {
-				if (par.stringerLedge !== 0) {
-					//создаем контур пластины для создания Object3D
-					var p1 = newPoint_xy(p0, 0, -params.stringerThickness / 2);
-					var p2 = newPoint_xy(p1, 0, params.stringerThickness);
-					var p3 = newPoint_xy(p2, par.stringerLedge, 0);
-					var p4 = newPoint_xy(p1, par.stringerLedge, 0);
-
-					var points = [p1, p2, p3, p4];
-
-					//создаем шейп
-					var shapePar = {
-						points: points,
-						dxfArr: dxfPrimitivesArr,
-						dxfBasePoint: par.dxfBasePoint,
-					}
-
-					var shape = drawShapeByPoints2(shapePar).shape;
-
-					var extrudeOptions = {
-						amount: 2,
-						bevelEnabled: false,
-						curveSegments: 12,
-						steps: 1
-					};
-
-					var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-					geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-					var plate = new THREE.Mesh(geom, params.materials.metal);
-					plate.rotation.x = -Math.PI / 2;
-					plate.position.x = par.stepPoints[1].x + params.nose;
-					plate.position.y = par.stepPoints[1].y;
-
-					par.flans.add(plate);
-				}
-			}
 		}
 	}
 	

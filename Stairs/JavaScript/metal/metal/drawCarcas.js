@@ -449,12 +449,13 @@ function drawMarshStringers(par, marshId){
 				diam: 10,
 				len: 40,
 				headType: "шестигр.",
-				nutOffset: 40 - 20 - 9,
+				nutOffset: -40 + 20 + 12,
+				headShim: true,
 			}			
 			var longBoltPos = stringerParams.elmIns[stringerParams.key].longBolts;
 			for(var i=0; i<longBoltPos.length; i++){
 				var bolt = drawBolt(boltPar).mesh;
-				bolt.rotation.x = Math.PI / 2 * turnFactor;
+				bolt.rotation.x = -Math.PI / 2 * turnFactor;
 				bolt.position.x = longBoltPos[i].x;
 				if(params.model == "лт") bolt.position.x -= 5;
 				bolt.position.y = longBoltPos[i].y;

@@ -55,13 +55,13 @@ function calcSpec(){
 
 		partsList.addSpecObjItems(itemsPar);
 		}
-	
+/*	
 	//крепление ступеней к каркасу
 	var treadFixItems = calcTreadFixMetiz();
 		for(var i=0; i<treadFixItems.length; i++){
 		partsList.addItem(treadFixItems[i]);
 		}
-	
+*/	
 
 //крепления к перекрытиям
 /*

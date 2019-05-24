@@ -1665,7 +1665,10 @@ function drawTopStepKo_pltG(par){
 		widthFrame: par.stepHoleX1 + par.stepHoleX2,
 		partsGap: 20
 	}
-	if(par.marshParams.lastMarsh) pltPar.len = params.platformLength_3;
+	if (par.marshParams.lastMarsh) {
+		pltPar.len = params.platformLength_3;
+		if (params.platformRearStringer == 'есть') pltPar.lenFrame -= 60;
+	}
 	// pltPar.widthFrame = 400;
 
 	calcPltPartsParams(pltPar);

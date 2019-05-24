@@ -2152,12 +2152,12 @@ function drawLastRackFlan(par){
 		dxfBasePoint: par.dxfBasePoint,
 		radOut: 10,
     }
-    shapePar.drawing = {
-        name: "Фланец стойки ограждения",
-        group: "carcasFlans",
-        marshId: 3,
-        isCount: true,//указывает что надо будет потом подсчитать общее количество
-    }
+    //shapePar.drawing = {
+    //    name: "Фланец стойки ограждения",
+    //    group: "carcasFlans",
+    //    marshId: 3,
+    //    isCount: true,//указывает что надо будет потом подсчитать общее количество
+    //}
 
 	var shape = drawShapeByPoints2(shapePar).shape;
 	

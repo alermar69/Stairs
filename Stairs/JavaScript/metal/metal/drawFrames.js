@@ -487,7 +487,7 @@ par.frameParams = {
 		}
 
 		screwHoles.forEach(function(hole){
-			var screwId = "treadScrew";//screw_6x32
+			var screwId = "screw_6x32";
 			var screwPar = {
 				id: screwId,
 				description: "Крепление ступеней",
@@ -969,7 +969,7 @@ function drawWndFrame2(par){
 		}
 
 		screwHoles.forEach(function(hole){
-			var screwId = "treadScrew";//screw_6x32
+			var screwId = "screw_6x32";
 			var screwPar = {
 				id: screwId,
 				description: "Крепление ступеней",

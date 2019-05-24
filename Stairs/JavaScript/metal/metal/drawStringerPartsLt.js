@@ -1169,10 +1169,11 @@ function drawBotStepLt_wndIn(par) {
 					center1.noDrawHoles = true;
 
 					//дополнительное отверстие для крепления поворотной стойки
-					var center2 = newPoint_xy(p2, pt.x, par.stepHoleY + 5);
+					var center2 = newPoint_xy(p2, pt.x, -params.treadThickness / 2 - par.stringerLedge);
+					//var center2 = newPoint_xy(p2, pt.x, par.stepHoleY + 5);
 					center2.rad = 3.5;
 					center2.noRack = true; // отверстие не учитывается при построении заграждения
-					center2.noHole1 = true; //первое отверстие делать не надо
+					center2.noHole2 = true; //первое отверстие делать не надо
 					par.railingHoles.push(center2);
 				}
 			}
