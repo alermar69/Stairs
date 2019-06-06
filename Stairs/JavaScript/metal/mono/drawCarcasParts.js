@@ -541,6 +541,7 @@ function drawColumn(par){
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 	}
+	par.mesh.specId = partName + name;
 
 
 	return par;
@@ -1116,6 +1117,7 @@ function drawHorPlate(par) {
 			specObj[partName]["amt"] += 1;
 			specObj[partName]["area"] += area;
 		}
+		par.mesh.specId = partName + name;
 	}
 	return par;
 
@@ -1280,7 +1282,6 @@ function drawHorPlates(par) {
 			par.holes = [center1, center2, center3, center4];
 			par.holeRad = 5;
 
-
 			for (var i = 0; i < par.holes.length; i++) {
 				addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, dxfBasePoint);
 			}
@@ -1364,6 +1365,7 @@ function drawHorPlates(par) {
 				specObj[partName]["amt"] += 1;
 				specObj[partName]["area"] += area;
 			}
+			par.mesh.specId = partName + name;
 		}
 	} //конец цикла перебора деталей
 
@@ -1901,7 +1903,8 @@ function drawTurnPlate1(par) {
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["area"] += area;
-		}
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 
@@ -2057,7 +2060,8 @@ function drawTurnPlate3(par){
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["area"] += area;
-		}
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 
@@ -2248,7 +2252,8 @@ function drawTurnPlate2(par) {
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["area"] += area;
-		}
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 
@@ -2800,24 +2805,25 @@ function drawTreadPlateCabriole2(par) {
 	par.mesh = treadPlate;
 
 	var partName = "treadPlateWld";
-		if (typeof specObj != 'undefined'){
-			if (!specObj[partName]){
-				specObj[partName] = {
-					types: {},
-					amt: 0,
-					name: "Подложка сварная прямой ступени",
-					metalPaint: true,
-					timberPaint: false,
-					division: "metal",
-					workUnitName: "amt", //единица измерения
-					group: "Каркас",
-				}
+	if (typeof specObj != 'undefined'){
+		if (!specObj[partName]){
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Подложка сварная прямой ступени",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
 			}
-			var name = Math.round(flanParams.width) + "х" + Math.round(flanParams.height) + "х" + Math.round(par.h + params.treadPlateThickness);
-			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-			specObj[partName]["amt"] += 1;
 		}
+		var name = Math.round(flanParams.width) + "х" + Math.round(flanParams.height) + "х" + Math.round(par.h + params.treadPlateThickness);
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 }
@@ -3425,6 +3431,7 @@ function drawMonoFlan(par) {
 			specObj[partName]["amt"] += 1;
 			specObj[partName]["area"] += area;
 		}
+		par.mesh.specId = partName + name;
 	}
 
 	return par;
@@ -4305,25 +4312,25 @@ function drawTurn1TreadPlateCabriole(par) {
 	par.mesh = treadPlate;
 
 	var partName = "treadPlateWldWnd";
-		if (typeof specObj != 'undefined'){
-			if (!specObj[partName]){
-				specObj[partName] = {
-					types: {},
-					amt: 0,
-					name: "Подложка сварная забежная",
-					metalPaint: true,
-					timberPaint: false,
-					division: "metal",
-					workUnitName: "amt", //единица измерения
-					group: "Каркас",
-				}
+	if (typeof specObj != 'undefined'){
+		if (!specObj[partName]){
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Подложка сварная забежная",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
 			}
-			var name = sizeA + "х" + sizeB + "х" + Math.round(par.h + params.treadPlateThickness);
-			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-			specObj[partName]["amt"] += 1;
 		}
-
+		var name = sizeA + "х" + sizeB + "х" + Math.round(par.h + params.treadPlateThickness);
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 }
@@ -4991,24 +4998,25 @@ function drawTurn2TreadPlateCabriole(par) {
 	par.mesh = treadPlate;
 
 	var partName = "treadPlateWldWnd";
-		if (typeof specObj != 'undefined'){
-			if (!specObj[partName]){
-				specObj[partName] = {
-					types: {},
-					amt: 0,
-					name: "Подложка сварная забежная",
-					metalPaint: true,
-					timberPaint: false,
-					division: "metal",
-					workUnitName: "amt", //единица измерения
-					group: "Каркас",
-				}
+	if (typeof specObj != 'undefined'){
+		if (!specObj[partName]){
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Подложка сварная забежная",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
 			}
-			var name = sizeA + "х" + sizeB + "х" + Math.round(par.h + params.treadPlateThickness);
-			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-			specObj[partName]["amt"] += 1;
 		}
+		var name = sizeA + "х" + sizeB + "х" + Math.round(par.h + params.treadPlateThickness);
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 }
@@ -5638,24 +5646,25 @@ function drawTurn3TreadPlateCabriole(par) {
 	par.mesh = treadPlate;
 
 	var partName = "treadPlateWldWnd";
-		if (typeof specObj != 'undefined'){
-			if (!specObj[partName]){
-				specObj[partName] = {
-					types: {},
-					amt: 0,
-					name: "Подложка сварная забежная",
-					metalPaint: true,
-					timberPaint: false,
-					division: "metal",
-					workUnitName: "amt", //единица измерения
-					group: "Каркас",
-				}
+	if (typeof specObj != 'undefined'){
+		if (!specObj[partName]){
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Подложка сварная забежная",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
 			}
-			var name = sizeA + "х" + sizeB + "х" + Math.round(par.h + params.treadPlateThickness);
-			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-			specObj[partName]["amt"] += 1;
 		}
+		var name = sizeA + "х" + sizeB + "х" + Math.round(par.h + params.treadPlateThickness);
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+	par.mesh.specId = partName + name;
 
 	return par;
 } //конец функции отрисовки подложки первой забежной ступени
@@ -5676,7 +5685,6 @@ function getFlanParams(type, isWndTurn){
 			flanParams.height = 60 + params.sidePlateOverlay + params.profileHeight - 7;
 			if (isWndTurn) flanParams.height = 60 + params.profileHeight;
 			flanParams.heightPipe = params.profileHeight + 1;
-			//if (isWndTurn) flanParams.heightPipe = params.profileHeight - params.sidePlateOverlay + 7;
 			flanParams.holesDist = flanParams.widthPipe + flanParams.holeX * 2;
 			return flanParams;
 			break;
@@ -5836,11 +5844,12 @@ function drawFlanPipeTop(par) {
 	par.width = par.widthPipe + holeX * 4;
 	if (params.topAnglePosition === "над ступенью") par.width = 300;
 
-	var dy = params.topHolePos + params.treadThickness + 20;
-	if (params.topAnglePosition === "под ступенью")
-		dy = 20 + 20 - params.treadThickness;
+	var dy = 0;
+	if (params.topAnglePosition === "над ступенью") dy = params.topHolePos + params.treadThickness + 20;
+
 	par.heightPipe = params.profileHeight / Math.cos(par.marshAngle) + 2 + (params.flanThickness - 3) * Math.tan(par.marshAngle);
 	par.height = par.heightPipe + 20 * 2 + dy;
+	if (params.topAnglePosition === "под ступенью") par.height += 20;
 
 	var height = par.height + 20;
 	var width = par.width;

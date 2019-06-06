@@ -244,22 +244,112 @@ function drawSpiralRailing(par) {
 		var rackDistY = stepHeight * (stairAmt - topRackOffset) / (rackAmt - 1);
 		var banisterProfileSize = 40;
 		var longBanisterLength = railingHeight + 150;
-		var banisterPositionRad = rad + banisterProfileSize / 2 + 2;
-		if (par.side == "in") banisterPositionRad = rad - banisterProfileSize / 2 - 2;
+		//var banisterPositionRad = rad + banisterProfileSize / 2 + 2;
+		//      if (par.side == "in") banisterPositionRad = rad - banisterProfileSize / 2 - 2;
 
-		var geom = new THREE.BoxGeometry(banisterProfileSize, longBanisterLength, banisterProfileSize);
+		var banisterPositionRad = params.staircaseDiam / 2 + 0.1;
 
-		for (var i = 0; i < rackAmt; i++) {
-			var longBanister = new THREE.Mesh(geom, params.materials.metal);
-			banistrPositionAngle = -rackAngleDist * i * turnFactor;
-			longBanister.rotation.y = -banistrPositionAngle;
-			longBanister.position.x = banisterPositionRad * Math.cos(banistrPositionAngle);
-			longBanister.position.y = longBanisterLength / 2 + rackDistY * i;
-			longBanister.position.z = banisterPositionRad * Math.sin(banistrPositionAngle);
-			longBanister.castShadow = true;
-			railingSection.add(longBanister);
+		var dxfBasePoint = { x: 0, y: 1000 }
+
+		var rackParams = {
+			len: longBanisterLength,
+			railingSide: "",
+			showPins: true,
+			showHoles: true,
+			isBotFlan: false,
+			material: params.materials.metal_railing,
+			dxfBasePoint: dxfBasePoint,
+			dxfArr: dxfPrimitivesArr,
+			realHolder: true, //точно отрисовываем кронштейн поручня
+			//holderAng: stairParams.stairCaseAngle,
+			holderAng: (stairAmt + 1.5) * stepAngle,
+			sectText: '',
+			marshId: 1,
+			key: "out",
 		}
+		var modelTemp = params.model;
+		params.model = 'лт';
+		for (var i = 0; i < rackAmt; i++) {
+			if (i == 0) rackParams.len = longBanisterLength - 40;
+			if (i != 0) rackParams.len = longBanisterLength;
 
+			rackParams = drawRack3d_4(rackParams);
+
+			var rack = rackParams.mesh;
+			banistrPositionAngle = -rackAngleDist * i * turnFactor;
+			rack.position.x = banisterPositionRad * Math.cos(banistrPositionAngle);
+			rack.position.y = rackDistY * i + 50;
+			if (i == 0) rack.position.y += 40;
+			rack.position.z = banisterPositionRad * Math.sin(banistrPositionAngle);
+			rack.rotation.y = Math.PI / 2 - banistrPositionAngle;
+			rack.castShadow = true;
+			railingSection.add(rack);
+		}
+		params.model = modelTemp;
+
+
+		//уголки для крепления ступеней
+		if (true) {
+			var angleGap = 0.1; //зазор чтобы проходили тесты
+			var angleParams = {
+				material: params.materials.metal2,
+				dxfArr: [],
+			}
+
+			var banisterBottomOverhang = 36; //выступ балясини ниже нижней поверхности ступени
+
+			var banisterPositionRad = params.staircaseDiam / 2 + 0.1;
+			var banistrPositionAngle;
+
+			posY = stepHeight - params.treadThickness - banisterBottomOverhang;
+
+			for (var i = 0; i < stairAmt + 1; i++) {
+				var shimDelta = 0;
+				//учитываем регулировочную шайбу
+				if (i <= params.regShimAmt) {
+					posY += regShimThk;
+					if (par.stairType == 'metal') shimDelta = -regShimThk;
+				}
+
+				angleParams = drawBanisterAngle(angleParams);
+				var angle = angleParams.mesh;
+
+				banistrPositionAngle = (-stepAngle * i * turnFactor);
+				angle.rotation.y = -banistrPositionAngle - Math.PI / 2;
+				angle.position.x = banisterPositionRad * Math.cos(banistrPositionAngle);
+				angle.position.y = posY + shimDelta - 0.1 + 20 - angleParams.holeOffset;
+				angle.position.z = banisterPositionRad * Math.sin(banistrPositionAngle) + 0.1;
+				angle.castShadow = true;
+				railingSection.add(angle);
+				//--------------------------------------------
+
+				angleParams = drawBanisterAngle(angleParams);
+				var angle = angleParams.mesh;
+				banistrPositionAngle = (-stepAngle * (i + 1) * turnFactor + banistrPositionAngle0);
+				angle.rotation.y = -banistrPositionAngle - Math.PI / 2;
+				angle.position.x = (banisterPositionRad) * Math.cos(banistrPositionAngle);
+				angle.position.y = posY + shimDelta - 0.1 + 20 - angleParams.holeOffset;
+				angle.position.z = banisterPositionRad * Math.sin(banistrPositionAngle);
+				angle.castShadow = true;
+				railingSection.add(angle);
+
+				//-----------------------------------
+
+
+				angleParams = drawBanisterAngle(angleParams);
+				var angle = angleParams.mesh;
+				var banistrPositionAngle = -stepAngle * i * turnFactor - stepAngle / 2 * turnFactor;
+				angle.rotation.y = -banistrPositionAngle - Math.PI / 2;
+				angle.position.x = banisterPositionRad * Math.cos(banistrPositionAngle);
+				angle.position.y = posY + shimDelta - 0.1 + 20 - angleParams.holeOffset;
+				angle.position.z = banisterPositionRad * Math.sin(banistrPositionAngle);
+				angle.castShadow = true;
+				railingSection.add(angle);
+
+				posY += stepHeight;
+			}
+
+		} //конец частых стоек
 	}
 
 	/*ригели*/
@@ -333,10 +423,17 @@ function drawSpiralRailing(par) {
 		endOffset: 0.25,
 		partName: "spiralHandrail",
 	}
-
+	if (par.model == "Частые стойки") {
+		handrailParams.poleRad += 10;
+		handrailParams.posY += 20 / Math.cos((stairAmt + 1.5) * stepAngle) + 15;
+	}
 	if (par.model != "Частые стойки") {
 		handrailParams.startOffset = 0.25;
 		handrailParams.endOffset = 0.1;
+	}
+	if (par.model == "Ригели" || par.model == "Стекло на стойках") {
+		handrailParams.posY += 50;
+		handrailParams.poleRad += 20;
 	}
 
 	if (handrailMaterial == "Нержавейка" || handrailMaterial == "Алюминий")

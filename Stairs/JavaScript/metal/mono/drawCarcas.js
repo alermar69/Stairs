@@ -278,3 +278,4 @@ function setRackPos(marshId) {
 	return rackPos;
 
 } //end of setRackPos
+

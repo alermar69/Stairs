@@ -41,7 +41,11 @@ $APPLICATION->SetTitle("Расчет винтовых лестниц v.2.1");
 <!--себестоимость-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/vint/forms/cost.php" ?>
 
-</div> <!--end of .content-->
+<!-- всплывающее окошко с информацией о детали -->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/partInfo.php" ?>
+
+
+</div> <!--end of .content--> 
 
 <!-- спецификация, расчет трудоемкости и сдельной оплаты -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/manufacturing/general/calc_spec/pagePart.php" ?>

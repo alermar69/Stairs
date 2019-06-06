@@ -93,7 +93,7 @@ var angles = [];
 		//drawStaircase('vl_2', true);
 		//drawStaircase('vl_3', true);
 		//drawBanister();
-		drawWardrobeMarsh1('vl_1', true);
+		//drawWardrobeMarsh1('vl_1', true);
 		drawTopFloor();
 		redrawWalls();
 		drawBanister();
@@ -109,8 +109,8 @@ var angles = [];
 		//расчет спецификации
 		//crateWorksList(); //функция в файле /calculator/general/works.js
 		calcSpec();
-		checkSpec();
-		drawWardrobeMarsh1('vl_1', true);	
+		if(!testingMode) checkSpec();
+		//drawWardrobeMarsh1('vl_1', true);	
 
 		//calculateBanisterSpec(); //функция в файле calcSpecBanister.js
 	}

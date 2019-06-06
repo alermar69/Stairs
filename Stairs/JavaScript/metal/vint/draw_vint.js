@@ -1,5 +1,9 @@
 //глобальные переменные для тестирования
 var testingMode = false;
+var boltDiam = 10;
+var boltBulge = 8;
+var boltLen = 30;
+var turnFactor = 1;
 
 var stairParams = {};
 

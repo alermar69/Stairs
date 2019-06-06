@@ -337,79 +337,79 @@ function railingItemsAdd_nav(){};
 /*** ОГРАЖДЕНИЕ ЛЕСТНИЦЫ ***/
 
 //функция в файле /manufacturing/general/calc_spec/calcSpec.js
-var railingSpecPar = {
-	unit: "staircase",
-	}
-railingSpecPar = railingItemsAdd(railingSpecPar);
+//var railingSpecPar = {
+//	unit: "staircase",
+//	}
+//railingSpecPar = railingItemsAdd(railingSpecPar);
 
 
-for(var i=0; i<railingSpecPar.items.length; i++){
-	partsList.addItem(railingSpecPar.items[i]);
-	}
+//for(var i=0; i<railingSpecPar.items.length; i++){
+//	partsList.addItem(railingSpecPar.items[i]);
+//	}
 
 
 /*верхний узел балясин*/
 
-	//кронштейны поручня
-	var totalBalAmt = getPartAmt("bal");
+	////кронштейны поручня
+	//var totalBalAmt = getPartAmt("bal");
 
-    item = {
-        id: "bracket",
-        amt: totalBalAmt,
-        discription: "Крепление поручня",
-        unit: "Крепление поручня к балясине",
-        itemGroup: "Ограждения"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+ //   item = {
+ //       id: "bracket",
+ //       amt: totalBalAmt,
+ //       discription: "Крепление поручня",
+ //       unit: "Крепление поручня к балясине",
+ //       itemGroup: "Ограждения"
+ //   };
+ //   if(item.amt > 0) partsList.addItem(item);
 	
 
-	//болты
+	////болты
 	
-	var boltAmt = getPartAmt("bal")// + getPartAmt("balAngle");
+	//var boltAmt = getPartAmt("bal")// + getPartAmt("balAngle");
 
-    item = {
-        id: "boltHex_M6x30",
-        amt: boltAmt,
-        discription: "Крепление кронштейнов к балясинам",
-        unit: "Крепление поручня к балясине",
-        itemGroup: "Ограждения"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+ //   item = {
+ //       id: "boltHex_M6x30",
+ //       amt: boltAmt,
+ //       discription: "Крепление кронштейнов к балясинам",
+ //       unit: "Крепление поручня к балясине",
+ //       itemGroup: "Ограждения"
+ //   };
+ //   if(item.amt > 0) partsList.addItem(item);
 
-	//шайбы
+	////шайбы
 
-    item = {
-        id: "shim_M6",
-        amt: boltAmt,
-        discription: "Крепление кронштейнов к балясинам",
-       unit: "Крепление поручня к балясине",
-        itemGroup: "Ограждения"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+ //   item = {
+ //       id: "shim_M6",
+ //       amt: boltAmt,
+ //       discription: "Крепление кронштейнов к балясинам",
+ //      unit: "Крепление поручня к балясине",
+ //       itemGroup: "Ограждения"
+ //   };
+ //   if(item.amt > 0) partsList.addItem(item);
 
-	//гайки
+	////гайки
 
 
-    item = {
-        id: "nut_M6",
-        amt: boltAmt,
-        discription: "Крепление кронштейнов к балясинам",
-       unit: "Крепление поручня к балясине",
-        itemGroup: "Ограждения"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+ //   item = {
+ //       id: "nut_M6",
+ //       amt: boltAmt,
+ //       discription: "Крепление кронштейнов к балясинам",
+ //      unit: "Крепление поручня к балясине",
+ //       itemGroup: "Ограждения"
+ //   };
+ //   if(item.amt > 0) partsList.addItem(item);
 
-	//шурупы крепления поручня
-	if ((params.handrailMaterial == "ПВХ") || (params.handrailMaterial == "Дуб")){
-        item = {
-            id: "timberHandrailScrew",
-            amt: totalBalAmt * 2,
-            discription: "Крепление поручня к балясинам",
-           unit: "Крепление поручня к балясине",
-            itemGroup: "Ограждения"
-        };
-        if(item.amt > 0) partsList.addItem(item);
-    }
+	////шурупы крепления поручня
+	//if ((params.handrailMaterial == "ПВХ") || (params.handrailMaterial == "Дуб")){
+ //       item = {
+ //           id: "timberHandrailScrew",
+ //           amt: totalBalAmt * 2,
+ //           discription: "Крепление поручня к балясинам",
+ //          unit: "Крепление поручня к балясине",
+ //           itemGroup: "Ограждения"
+ //       };
+ //       if(item.amt > 0) partsList.addItem(item);
+ //   }
 
 
 /*поручень на лестнице*/

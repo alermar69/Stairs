@@ -722,6 +722,7 @@ function drawComplexStringer(par) {
 											specObj[partName]["amt"] += 1;
 											specObj[partName]["area"] += area;
 										}
+										flan.specId = partName + name;
 									}
 								}
 								//пластина первой забежной ступени
@@ -1379,7 +1380,7 @@ function drawComplexStringer(par) {
 					flan.position.y = sidePlate2.position.y + par.pointsShape[1].y - flanPar.height - (par.pointsShape[1].y - par.pointsShape[2].y);
 					par.flans.add(flan);
 
-					//верхняя пластина
+					//верхняя пластина-------------------------------------------
 					dxfBasePoint.x += 300;
 					var deltaLen = 8;//Сдвиг к стене, чтобы закрыть фланец.
 					//var len = par.lengthBturn1;
@@ -1541,9 +1542,8 @@ function drawComplexStringer(par) {
                     name: "Фланец крепления к перекрытию",
 				};
 
-				var dy = params.topHolePos + params.treadThickness + 20;
-				if (params.topAnglePosition === "под ступенью")
-					dy = 20 + 20 - params.treadThickness;
+				var dy = 0;
+				if (params.topAnglePosition === "над ступенью") dy = params.topHolePos + params.treadThickness + 20;
 
 				flanPar.marshAngle = par.marshAngle;
 
@@ -1555,7 +1555,6 @@ function drawComplexStringer(par) {
 				flan.position.z += sidePlate2.position.z + params.profileWidth / 2 + params.metalThickness;
 				par.flans.add(flan);
 			}			
-
 		}
 	}
 	
@@ -1675,6 +1674,7 @@ function drawComplexStringer(par) {
 		specObj[partName]["area"] += area;
 		specObj[partName]["sumLength"] += stringerLen / 1000;		
 	}
+	par.mesh2.specId = partName + name;
 
 	par.dxfBasePoint = copyPoint(dxfBasePoint2);
 
@@ -2378,6 +2378,7 @@ function drawPltStringer(par) {
 		specObj[partName]["area"] += area;
 		specObj[partName]["sumLength"] += par.length / 1000;		
 	}
+	par.mesh2.specId = partName + name;
 
 	return par;
 }

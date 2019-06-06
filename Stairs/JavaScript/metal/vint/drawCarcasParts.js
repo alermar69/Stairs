@@ -182,9 +182,9 @@ function drawBal(par) {
 
 	//отверстие под средний уголок
 	if (par.type != "middle" && par.base !== 'stringer') {
-		var center2 = newPoint_xy(center1, 0, par.holeDst);
+		var center2 = newPoint_xy(center1, 0, par.holeDst + 2);
 		addRoundHole(shape, par.dxfArr, center2, par.holeRad, dxfBasePoint); //функция в файле drawPrimitives
-	}
+    }
 
 	//отверстие под кронштейн поручня
 	if (par.topHole == "yes") {
@@ -199,21 +199,33 @@ function drawBal(par) {
 	bal.position.x = -par.size / 2;
 	bal.position.y = 0;
 	bal.position.z = -par.size;
-	par.mesh.add(bal);
+    par.mesh.add(bal);   
 
 	//подпись под фигурой
 	var textHeight = 30;
 	var textBasePoint = newPoint_xy(dxfBasePoint, -100, -50)
-	addText(par.text, textHeight, dxfPrimitivesArr, textBasePoint)
+    addText(par.text, textHeight, dxfPrimitivesArr, textBasePoint)
 
-	/*уголки*/
+    //кронштейн поручня
+    if (par.topHole == "yes") {
+	    var holder = drawHolderVint();
+
+	    holder.rotation.y = -Math.PI / 2;
+	    holder.position.x = center3.x;
+	    holder.position.y = center3.y;
+
+	    bal.add(holder);
+    }
+
+    /*уголки*/
 
 	var angleGap = 0.1; //зазор чтобы проходили тесты
 
 	var angleParams = {
 		material: par.angMaterial,
 		dxfArr: [],
-	}
+    }
+    if (par.type == "first") angleParams.noBolts = true;
 
 	//нижний уголок
 	angleParams = drawBanisterAngle(angleParams);
@@ -230,13 +242,15 @@ function drawBal(par) {
 	par.mesh.add(angle);
 
 	//верхний уголок
+    angleParams.noBolts = false;
 	if (par.type != "middle" && par.base !== 'stringer') {
 		angleParams = drawBanisterAngle(angleParams);
 		var angle = angleParams.mesh;
 		angle.position.z = angleGap;
 		angle.position.y = par.botHoleOffset + par.holeDst - angleParams.holeOffset + par.angleShift;
 		par.mesh.add(angle);
-	}
+    }
+   
 
 	//сохраняем данные для спецификации
 	var partName = "bal";
@@ -527,8 +541,8 @@ function drawVintTreadShape(par) {
 	*/
 	
 	$.each(basePoints.balHoles, function(){
-		addRoundHole(treadShape, par.dxfArr, this, this.rad, dxfBasePoint);
-	})
+        addRoundHole(treadShape, par.dxfArr, this, this.rad, dxfBasePoint);           
+    })
 
 
 	//подпись
@@ -598,7 +612,28 @@ function drawVintTread(par) {
 	var topPlate = new THREE.Mesh(geom, par.material);
 	topPlate.rotation.x = -0.5 * Math.PI;
 	topPlate.position.y = -par.thk;
-	par.mesh.add(topPlate);
+    par.mesh.add(topPlate);
+
+    //---------------------------
+    ////рассчитываем координаты базовых точек
+    //var basePoints = calcVintTreadPoints(par.treadAngle)
+    //var angleParams = {
+    //    material: par.angMaterial,
+    //    dxfArr: [],
+    //}
+    //for (var i = 0; i < basePoints.balHoles.length / 2; i++) {
+    //    var c1 = basePoints.balHoles[i];
+    //    var c2 = basePoints.balHoles[i + 1];
+    //    var ang = calcAngleX1(c1, c2);
+    //    angleParams = drawBanisterAngle(angleParams)
+    //    var angle = angleParams.mesh;
+    //    angle.rotation.y = ang;
+    //    angle.position.x = c1.x;
+    //    angle.position.z = c1.y;
+    //    par.mesh.add(angle);
+    //    i++;
+    //}
+    //-------------------------------------
 
 	//передние пластины
 
@@ -747,13 +782,13 @@ function drawVintPlatform(par) {
 						fix.position.z = -(extrudeOptions.amount * 2) * par.turnFactor;
 						fix.rotation.x = Math.PI / 2 * par.turnFactor;
 						rearFlan.add(fix);
-					}
+                    }
+                    rearFlan.position.x = rearPlate.position.x;
+                    rearFlan.position.y = rearPlate.position.y;
+                    rearFlan.position.z = rearPlate.position.z;
+                    rearFlan.rotation.y = rearPlate.rotation.y;
+                    par.mesh.add(rearFlan);
 				}
-				rearFlan.position.x = rearPlate.position.x;
-				rearFlan.position.y = rearPlate.position.y;
-				rearFlan.position.z = rearPlate.position.z;
-				rearFlan.rotation.y = rearPlate.rotation.y;
-				par.mesh.add(rearFlan);
 			}			
 		}
 		// Боковые пластины
@@ -3197,3 +3232,239 @@ function calcVintTreadPoints(treadAngle){
 	return points;
 
 }
+
+
+/*Функция отрисовки кронштейна крепления поручня для частых стоек*/
+function drawHolderVint() {
+
+	var dxfBasePoint = { x: 0, y: 0 };
+	var basePoint = { x: -20, y: 12.5 }; //устанавливаем базавую точку кронштейна в отверстие для болта
+
+	var color = 0xC0C0C0;
+
+	var length = 40;
+	var thk = 1.5;
+
+
+	var metalMaterial = new THREE.MeshLambertMaterial({ color: color, wireframe: false });
+	if (!$sceneStruct.vl_1.realColors) metalMaterial = params.materials.metal;
+
+
+	// Кронштейн деталь бок
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = -100;
+
+	var holderSupport2 = drawHolderVintSide();
+	holderSupport2.rotation.z = -Math.PI / 2;
+	holderSupport2.position.x = -thk;
+	holderSupport2.position.y = basePoint.y;
+	holderSupport2.position.z = basePoint.x;
+
+
+	// Кронштейн деталь бок
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = 100;
+
+	var holderSupport4 = drawHolderVintSide();
+	holderSupport4.position.x = 24 - thk - thk;
+	holderSupport4.rotation.z = -Math.PI / 2;
+	holderSupport4.position.y = basePoint.y;
+	holderSupport4.position.z = basePoint.x;
+
+	// Кронштейн деталь вверх
+	dxfBasePoint.x = 0;
+	dxfBasePoint.y = 100;
+
+	var holderSupport5 = drawHolderVintTop();
+	holderSupport5.position.x = thk - thk;
+	holderSupport5.position.y = basePoint.y;
+	holderSupport5.position.z = basePoint.x;
+
+	var complexObject1 = new THREE.Object3D();
+	complexObject1.add(holderSupport2);
+	complexObject1.add(holderSupport4);
+	complexObject1.add(holderSupport5);
+
+	//complexObject1.rotation.x = -stairParams.stairCaseAngle;
+	var stepAngle = params.stepAngle / 180 * Math.PI;
+	complexObject1.rotation.x = -(stairParams.stairAmt + 1.5) * stepAngle;
+
+
+	// шурупы крепления поручня
+	var partName = "timberHandrailScrew";
+	if ((params.handrailMaterial == "ПВХ") || (params.handrailMaterial == "Дуб")) {
+		var screwPar = {
+			id: "screw_4x32",
+			description: "Крепление поручня к балясинам",
+			group: "Ограждения"
+		}
+
+		var screw = drawScrew(screwPar).mesh;
+
+		screw.rotation.y = Math.PI / 2
+		screw.position.z = -12;
+		screw.position.y = 12.5;
+		screw.position.x = 10.5;
+		complexObject1.add(screw)
+
+		var screw2 = drawScrew(screwPar).mesh;
+		screw2.rotation.y = Math.PI / 2
+		screw2.position.z = 12;
+		screw2.position.y = 12.5;
+		screw2.position.x = 10.5;
+		complexObject1.add(screw2)
+	}
+
+	//болт крепление кронштейна к балясине
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
+		var boltPar = {
+			diam: 6,
+			len: 30,
+			headType: "внутр. шестигр. плоск. гол.",
+		}
+
+		var bolt = drawBolt(boltPar).mesh;
+		bolt.position.x = 10;
+		bolt.rotation.z = -Math.PI / 2;
+		complexObject1.add(bolt)
+	}
+
+
+	//сохраняем данные для спецификации
+	var partName = "bracket";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Кронштейн поручня",
+				metalPaint: true,
+				timberPaint: false,
+				division: "stock_2",
+				workUnitName: "amt", //единица измерения
+				group: "Ограждения",
+			}
+		}
+
+		var name = "П-образный для стойки 20х20";
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	//complexObject1.specId = partName + name;
+	//$.each(complexObject1.children, function () {
+	//    this.specId = partName + name;
+	//})
+
+	var complexObject2 = new THREE.Object3D();
+	complexObject2.add(complexObject1)
+
+	addSpecIdToChilds(complexObject2, partName + name);
+
+	return complexObject2
+}
+
+/*функция отрисовки боковой части кронштейна крепления поручня для частых стоек*/
+function drawHolderVintSide() {
+	var dxfBasePoint = { x: 0, y: 0 };
+
+	var thk = 1.5;
+
+	var mesh = new THREE.Object3D();
+
+	//создаем контур пластины для создания Object3D
+	var p0 = { x: 0, y: 0 };
+	var p1 = newPoint_xy(p0, 0, 10);
+	var p2 = newPoint_xy(p0, 12.5, 22.5);
+	var p3 = newPoint_xy(p2, 15, 0);
+	var p5 = newPoint_xy(p0, 40, 0);
+	var p4 = newPoint_xy(p5, 0, 10);
+
+	p0.filletRad = p5.filletRad = 0;
+	var points = [p0, p1, p2, p3, p4, p5];
+
+	//создаем шейп
+	var shapePar = {
+		points: points,
+		dxfArr: [],
+		dxfBasePoint: dxfBasePoint,
+		radOut: 3, //радиус скругления внешних углов
+	}
+
+	var shape = drawShapeByPoints2(shapePar).shape;
+
+	var center = newPoint_xy(p0, 20, 12.5);
+	addRoundHole(shape, [], center, 3.5, dxfBasePoint);
+
+	var extrudeOptions = {
+		amount: thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var plate = new THREE.Mesh(geom, params.materials.metal);
+	plate.rotation.x = -Math.PI / 2;
+	plate.rotation.z = -Math.PI / 2;
+
+	mesh.add(plate);
+
+	return mesh;
+
+} //end of drawHolderVintSide
+
+/*функция отрисовки верхней части кронштейна крепления поручня для частых стоек*/
+function drawHolderVintTop() {
+	var dxfBasePoint = { x: 0, y: 0 };
+
+	var thk = 1.5;
+
+	var mesh = new THREE.Object3D();
+
+	//создаем контур пластины для создания Object3D
+	var p0 = { x: 0, y: 0 };
+	var p1 = newPoint_xy(p0, 0, 21);
+	var p2 = newPoint_xy(p1, 40, 0);
+	var p3 = newPoint_xy(p2, 0, -21);
+
+	var points = [p0, p1, p2, p3];
+
+	//создаем шейп
+	var shapePar = {
+		points: points,
+		dxfArr: [],
+		dxfBasePoint: dxfBasePoint,
+		radOut: 0, //радиус скругления внешних углов
+	}
+
+	var shape = drawShapeByPoints2(shapePar).shape;
+
+	var center = newPoint_xy(p0, 8, 10.5);
+	addRoundHole(shape, [], center, 2.5, dxfBasePoint);
+
+	var center = newPoint_xy(p3, -8, 10.5);
+	addRoundHole(shape, [], center, 2.5, dxfBasePoint);
+
+	var extrudeOptions = {
+		amount: thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var plate = new THREE.Mesh(geom, params.materials.metal);
+	plate.rotation.x = -Math.PI / 2;
+	plate.rotation.z = -Math.PI / 2;
+
+	mesh.add(plate);
+
+	return mesh;
+
+} //end of drawHolderVintTop
+
+

@@ -1,3 +1,5 @@
+var testingMode = false
+
 /** функция отрисовывает стойку 40х40 с кронштейном поручня
 /*@params: len, 
 /*@returns par.mesh
@@ -31,7 +33,9 @@ function drawRack3d_4(par) {
 	*/
 
 	if (!par.layer) par.layer = "railing";
-	if (!par.material) par.material = params.materials.metal;
+	if (!par.material) par.material = params.materials.metal_railing;
+	var rackModel = params.banisterMaterial;
+	if (specObj.unit == "banister") rackModel = params.banisterMaterial_bal;
 
 	var len = par.len;
 	var profSize = 40;
@@ -42,7 +46,7 @@ function drawRack3d_4(par) {
 
 	var timberPartLen = 600;
 	var botLen = len - topLen - timberPartLen;
-	if (params.banisterMaterial != "40х40 нерж+дуб") botLen = len;
+	if (rackModel != "40х40 нерж+дуб") botLen = len;
 
 	//тело стойки
 	var p0 = { x: 0, y: 0 }
@@ -58,10 +62,10 @@ function drawRack3d_4(par) {
 	addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint, par.layer);
 	addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint, par.layer);
 
+	var holeDist = 60;
 	//отверстия
 	if (par.showHoles) {
 		var rad = 6.5;
-		var holeDist = 60;
 		//верхнее отверстие
 		var center = { x: 0, y: 0 }
 		addRoundHole(shape, par.dxfArr, center, rad, par.dxfBasePoint);
@@ -72,10 +76,46 @@ function drawRack3d_4(par) {
 		if (par.holeYTurnRack) {
 			var rad1 = 3;
 			if (testingMode) rad1 = 4;
-			var center = { x: 0, y: par.holeYTurnRack - holeDist }
-			addRoundHole(shape, par.dxfArr, center, rad1, par.dxfBasePoint);
+			var turnRackCenter = { x: 0, y: par.holeYTurnRack - holeDist }
+			addRoundHole(shape, par.dxfArr, turnRackCenter, rad1, par.dxfBasePoint);
 			addLeader("Справа", 30, 70, 60, par.dxfArr, center, par.dxfBasePoint);
+
+			var plugParams = {
+				id: "stainlessPlug_16",
+				width: 16,
+				height: 16,
+				description: "Заглушка отверстия поворотной стойки",
+				group: "Ограждения",
+				isCirclePlug: true,
+				type: "inox",
+			}
+			var plug = drawPlug(plugParams);
+			plug.position.z += profSize;
+			plug.rotation.x = Math.PI / 2
+			plug.position.y = turnRackCenter.y;
+			if (!testingMode) par.mesh.add(plug);
 		}
+	}
+
+
+	if (params.rackBottom == "боковое" && !par.isBotFlan) {
+		var rackFlan = drawRackFlan(profSize);
+		rackFlan.position.y -= holeDist / 2;
+		rackFlan.position.z += 2;
+		if (par.key == "out") rackFlan.position.z += profSize - 2 - 2;
+		if (!testingMode) par.mesh.add(rackFlan);
+
+		var plugParams = {
+			id: "plasticPlug_40_40",
+			width: 40,
+			height: 40,
+			description: "Заглушка низа стойки",
+			group: "Ограждения"
+		}
+		var rackBotPlug = drawPlug(plugParams);
+		rackBotPlug.position.z += profSize / 2;
+		rackBotPlug.position.y -= topLen - holeDist / 2 + 1;
+		if (!testingMode) par.mesh.add(rackBotPlug);
 	}
 
 	var extrudeOptions = {
@@ -98,7 +138,7 @@ function drawRack3d_4(par) {
 	par.mesh.add(rack);
 
 	//части комбинированной балясины
-	if (params.banisterMaterial == "40х40 нерж+дуб") {
+	if (rackModel == "40х40 нерж+дуб") {
 
 		//вставка
 
@@ -139,7 +179,6 @@ function drawRack3d_4(par) {
 		par.mesh.add(rack);
 
 	}
-
 
 	//кронштейн поручня
 
@@ -223,14 +262,17 @@ function drawRack3d_4(par) {
 		if (par.holeYTurnRack) {
 			boltPar.diam = 6;
 			boltPar.len = 20;
-			boltPar.headType = "пол. гол. крест"
+			boltPar.headType = "пол. гол. крест";
+			boltPar.noNut = false;
 
 			var bolt2 = drawBolt(boltPar).mesh;
-			bolt2.rotation.x = bolt.rotation.x;
-			bolt2.position.x = 0;
-			bolt2.position.y = par.holeYTurnRack - holeDist;
-			bolt2.position.z = bolt.position.z;
-			bolts.add(bolt2)
+			boltPar.noNut = true;
+			bolt2.rotation.x = Math.PI / 2;
+			bolt2.rotation.z = -Math.PI / 2;
+			bolt2.position.x += profSize / 2;
+			bolt2.position.z += profSize / 2;
+			bolt2.position.y = turnRackCenter.y;
+			if (!testingMode) bolts.add(bolt2);
 
 			bolts.rotation.y += Math.PI / 2 * turnFactor;
 			bolts.position.z += profSize / 2;
@@ -269,6 +311,8 @@ function drawRack3d_4(par) {
 			size: 76,
 			holeDst: 55,
 		}
+		if (par.unit == 'balustrade') flanParams.unit = 'balustrade';
+
 		flanParams = drawPlatformRailingFlan(flanParams)
 		var botFlan = flanParams.mesh;
 		botFlan.position.z = 20;
@@ -276,9 +320,14 @@ function drawRack3d_4(par) {
 		par.mesh.add(botFlan);
 	}
 
+	if ((rackModel == "40х40 нерж+дуб" || rackModel == "40х40 нерж.") && !testingMode) {
+		var topPlug = drawRackPlug(par.material)
+		topPlug.position.z += 20;
+		topPlug.position.y = len - 90 + 1;
+		par.mesh.add(topPlug);
+	}
+
 	//сохраняем данные для спецификации
-	var banisterMaterial = params.banisterMaterial;
-	if (specObj.unit == "banister") banisterMaterial = params.banisterMaterial_bal;
 
 	var partName = "racks";
 	if (typeof specObj != 'undefined') {
@@ -294,19 +343,24 @@ function drawRack3d_4(par) {
 				group: "Ограждения",
 			}
 			if (par.isBotFlan) specObj[partName].name = "Стойка фланц. L =";
-			if (banisterMaterial == "40х40 черн.") specObj[partName].metalPaint = true;
-			if (banisterMaterial == "40х40 нерж+дуб") {
+			if (rackModel == "40х40 черн.") specObj[partName].metalPaint = true;
+			if (rackModel == "40х40 нерж+дуб") {
 				specObj[partName].timberPaint = true;
 				specObj[partName].division = "timber";
 				specObj[partName].group = "timberBal";
 			}
+			if (params.calcType == 'vhod' && params.staircaseType == 'Готовая') specObj[partName].name = "Стойка краш.";
+			if (params.calcType == 'vhod' && params.staircaseType == 'Готовая' && par.material.name == 'inox') specObj[partName].name = "Стойка нерж.";
 		}
 		var name = Math.round(par.len);
-		if (banisterMaterial == "40х40 черн.") name += " черн.";
-		if (banisterMaterial == "40х40 нерж.") name += " нерж.";
-		if (banisterMaterial == "40х40 нерж+дуб") name += " комб.";
+		if (rackModel == "40х40 черн.") name += " черн.";
+		if (rackModel == "40х40 нерж.") name += " нерж.";
+		if (rackModel == "40х40 нерж+дуб") name += " комб.";
 		if (par.holderAng == 0) name += " штырь прямой"
-		else name += " штырь с шарниром"
+		else name += " штырь с шарниром";
+
+		if (params.calcType == 'vhod' && params.staircaseType == 'Готовая') name = Math.round(par.len) + " мм. 40х40 бок. крепление";
+		if (params.calcType == 'vhod' && params.staircaseType == 'Готовая' && par.material.name == 'inox') name += " 304";
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
@@ -315,7 +369,7 @@ function drawRack3d_4(par) {
 
 	//окончания комбинированных стоек
 
-	if (params.banisterMaterial == "40х40 нерж+дуб") {
+	if (rackModel == "40х40 нерж+дуб") {
 		//верх стойки
 		var partName = "combRackTop";
 		if (typeof specObj != 'undefined') {
@@ -354,7 +408,7 @@ function drawRack3d_4(par) {
 				};
 			}
 
-			var name = ""
+			var name = 0;
 			if (par.isBotFlan) name = "фланц. "
 			name += "L=" + Math.round(par.len - topLen - timberPartLen);
 
@@ -365,29 +419,6 @@ function drawRack3d_4(par) {
 
 	}
 
-	//заглушка Ф16
-	if (par.holeYTurnRack) {
-		var partName = "stainlessPlug_16";
-		if (typeof specObj != 'undefined') {
-			if (!specObj[partName]) {
-				specObj[partName] = {
-					types: {},
-					amt: 0,
-					name: "Заглушка нерж.",
-					metalPaint: false,
-					timberPaint: false,
-					division: "metal",
-					workUnitName: "amt", //единица измерения
-					group: "Ограждения",
-				};
-			}
-
-			var name = "Ф16"
-			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-			specObj[partName]["amt"] += 1;
-		}
-	}
 
 	//сохраняем данные для ведомости заготовок
 
@@ -395,9 +426,9 @@ function drawRack3d_4(par) {
 
 	if (typeof poleList != 'undefined') {
 		var poleType = profSize + "х" + profSize;
-		if (params.banisterMaterial == "40х40 черн.") poleType += " черн.";
-		if (params.banisterMaterial == "40х40 нерж.") poleType += " нерж.";
-		if (params.banisterMaterial == "40х40 нерж+дуб") poleType += " нерж.";
+		if (rackModel == "40х40 черн.") poleType += " черн.";
+		if (rackModel == "40х40 нерж.") poleType += " нерж.";
+		if (rackModel == "40х40 нерж+дуб") poleType += " нерж.";
 
 		//формируем массив, если такого еще не было
 		if (!poleList[poleType]) poleList[poleType] = [];
@@ -414,7 +445,7 @@ function drawRack3d_4(par) {
 		}
 
 		polePar.text = "стойки";
-		if (params.banisterMaterial == "40х40 нерж+дуб") polePar.text += "(низ)"
+		if (rackModel == "40х40 нерж+дуб") polePar.text += "(низ)"
 		if (par.sectText) polePar.text += " " + par.sectText;
 		polePar.description = [];
 		polePar.description.push(polePar.text);
@@ -423,7 +454,7 @@ function drawRack3d_4(par) {
 		poleList[poleType].push(polePar);
 
 		//верх комбинированной стойки
-		if (params.banisterMaterial == "40х40 нерж+дуб") {
+		if (rackModel == "40х40 нерж+дуб") {
 			var polePar = {
 				len1: topLen,
 				len2: topLen,
@@ -448,6 +479,272 @@ function drawRack3d_4(par) {
 
 	return par;
 }//end of drawRack3d_4
+
+/**
+ * Отрисовывает закладную стойки
+ */
+function drawRackFlan(profSize) {
+	var geometry = new THREE.BoxGeometry(profSize / 2, 80, 2);
+	var flan = new THREE.Mesh(geometry, params.materials.metal);
+
+	var partName = "banisterInnerFlange";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Закладная стойки",
+				metalPaint: true,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock2",
+				workUnitName: "amt",
+				group: "Ограждения",
+				purposes: ["Закладная стойки ограждения"]
+			}
+			if (params.calcType == "mono") specObj[partName].purposes = ["Закладная под фланец L-образной стойки ограждения"]
+		}
+
+		var name = 0;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	flan.specId = partName;
+
+	return flan;
+}
+
+/**
+ * Отрисовывает пластиковую заглушку
+ * @param {object} par 
+ *- par.width - ширина
+ *- par.height - высота
+ *- par.thk - толщина (не обязательно, по умолчанию 2)
+ *- par.id - ид спецификации
+ *- par.description - описание
+ *- par.group - группа спецификации
+ *- par.isCirclePlug - круглая заглушка
+ *- par.type - тип заглушки: plastic || inox || timber
+ */
+function drawPlug(par) {
+	par.material = params.materials.metal;
+	if (par.type == "inox") par.material = params.materials.inox;
+	if (par.type == "timber") par.material = params.materials.handrail;
+
+	if (par.isCirclePlug) {
+		var geometry = new THREE.CylinderGeometry(par.width / 2, par.height / 2, par.thk || 2, 32);
+		if (par.type == "timber") {
+			var maxDiam = par.width + 9;
+			if (par.width == 10) maxDiam = 14;
+			if (par.width == 12) maxDiam = 16;
+
+			var geometry = new THREE.CylinderGeometry(maxDiam / 2, maxDiam / 2, 2, 32);
+		}
+	}
+	else {
+		var geometry = new THREE.BoxGeometry(par.width, par.thk || 2, par.height);
+	}
+	var plug = new THREE.Mesh(geometry, par.material);
+
+	//сохраняем данные для спецификации
+
+	var plugColor = "ЧЕРНАЯ";
+	if (params.metalPaint == "порошок") {
+		if (params.carcasColor == "белый") plugColor = "БЕЛАЯ";
+	}
+
+	var partName = "plug"
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Заглушка",
+				metalPaint: false,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Ограждения",
+				purposes: []
+			}
+			if (par.group) specObj[partName].group = par.group;
+
+		}
+		if (par.description) {
+			if (specObj[partName].purposes.indexOf(par.description) == -1) specObj[partName].purposes.push(par.description);
+		}
+
+		var name = "пласт. " + par.height + "х" + par.width + " " + plugColor;
+		if (par.type == "inox") {
+			name = "нерж. " + par.width + "х" + par.height;
+			if (par.isCirclePlug) name = "нерж. Ф" + par.width;
+		}
+		if (par.type == "timber") {
+			name = "дер. грибок для отв.Ф" + par.width + " " + getTimberPlugType(params.handrailsMaterial);
+		}
+
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	plug.specId = partName + name;
+
+	return plug;
+}
+
+/**
+ * Отрисовывает заглушку с переданным диаметром
+ * @param {number} plugDiam - диаметр заглушки
+ */
+function drawTimberPlug(plugDiam) {
+	var par = {
+		width: plugDiam,
+		description: "Заглушка деревянная",
+		group: "handrails",
+		isCirclePlug: true,
+		type: "timber",
+	}
+	par.material = params.materials.handrail;
+
+
+	var maxDiam = par.width + 9;
+	if (par.width == 10) maxDiam = 14;
+	if (par.width == 12) maxDiam = 16;
+
+	var geometry = new THREE.CylinderGeometry(maxDiam / 2, maxDiam / 2, 2, 32);
+
+
+
+	var plug = new THREE.Mesh(geometry, par.material);
+
+	//сохраняем данные для спецификации
+
+
+	var partName = "timberPlug"
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Заглушка",
+				metalPaint: false,
+				timberPaint: true,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Ограждения",
+				purposes: []
+			}
+			if (par.group) specObj[partName].group = par.group;
+
+		}
+		if (par.description) {
+			if (specObj[partName].purposes.indexOf(par.description) == -1) specObj[partName].purposes.push(par.description);
+		}
+
+		name = "дер. грибок для отв.Ф" + par.width + " " + getTimberPlugType(params.handrailsMaterial);
+
+
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	plug.specId = partName + name;
+
+	return plug;
+}
+
+/**
+ * Функция отрисовывает ригеледержатель
+ * @param {object} par 
+ *- par.id - ид спецификации
+ *- par.description - описание
+ *- par.group - группа спецификации
+ *- par.size - размер для отрисовки
+*/
+
+function drawRigelHolder(par) {
+	var size = par.size + 5;
+	var geometry = new THREE.CylinderGeometry(size / 2, size / 2, 40, 32);
+	var holder = new THREE.Mesh(geometry, params.materials.inox);
+
+	var partName = par.id;
+
+	//Формируем список со всей фурнитурой, чтобы достать от туда имя
+	var partsList = {};
+	addGeneralItems(partsList);
+
+	var name = null;
+	if (partsList[par.id]) name = partsList[par.id].name;
+	if (!name) name = "Ригеледержатель Ф" + par.size;
+
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: name,
+				metalPaint: true,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock2",
+				workUnitName: "amt",
+				group: "Ограждения",
+				purposes: []
+			}
+			if (par.group) specObj[partName].group = par.group;
+		}
+		if (par.description) {
+			if (specObj[partName].purposes.indexOf(par.description) == -1) specObj[partName].purposes.push(par.description);
+		}
+
+		var name = 0;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	holder.specId = partName;
+
+	return holder;
+}
+
+/**
+ * Отрисовывает заглушку для нержавеющих стоек
+ * @param {*} material 
+ */
+function drawRackPlug(material) {
+	var geometry = new THREE.BoxGeometry(40, 2, 40);
+	var mesh = new THREE.Mesh(geometry, material);
+
+	var partName = "handrailHolderBase";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Крепление поручня к стойкам",
+				metalPaint: true,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Ограждения",
+			}
+		}
+
+		var name = 0;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	return mesh;
+}
 
 /** функция отрисовывает боковой кронштейн стойки для крепления к каркасу на КО
 */
@@ -843,6 +1140,54 @@ function drawPole3D_4(par) {
 	}
 	handrailPar = calcHandrailMeterParams(handrailPar); //функция в файле priceLib.js
 
+	//Заглушки ригелей
+	if (par.partName == "rigels") {
+		var rigelPlugId = "plasticPlug_20_20";
+		var plugSize = 20;
+		if (par.type == "round" && par.poleProfileY == 12) {
+			rigelPlugId = "stainlessPlug_12";
+			plugSize = 12;
+		}
+		if (par.type == "round" && par.poleProfileY == 16) {
+			rigelPlugId = "stainlessPlug_16";
+			plugSize = 16;
+		}
+		var plugParams = {
+			id: rigelPlugId,
+			width: plugSize,
+			height: plugSize,
+			description: "Заглушка ригеля",
+			group: "Ограждения"
+		}
+		if (rigelPlugId !== "plasticPlug_20_20") {
+			plugParams.isCirclePlug = true;
+			plugParams.type = "inox";
+		}
+		var zOffset = plugParams.width / 2;
+
+		if (par.rigelStartPlug) {
+			var plugBasePoint = p1;
+			plugBasePoint = polar(plugBasePoint, par.poleAngle + Math.PI / 2, -plugParams.height / 2);
+			var startPlug = drawPlug(plugParams);
+			startPlug.position.x = plugBasePoint.x;
+			startPlug.position.y = plugBasePoint.y;
+			startPlug.position.z = zOffset;
+			startPlug.rotation.z = par.poleAngle + Math.PI / 2;
+			if (!testingMode) par.mesh.add(startPlug);
+		}
+
+		if (par.rigelEndPlug) {
+			var plugBasePoint = p2;
+			plugBasePoint = polar(plugBasePoint, par.poleAngle + Math.PI / 2, -plugParams.height / 2);
+			var endPlug = drawPlug(plugParams);
+			endPlug.position.x = plugBasePoint.x;
+			endPlug.position.y = plugBasePoint.y;
+			endPlug.position.z = zOffset;
+			endPlug.rotation.z = par.poleAngle + Math.PI / 2;
+			if (!testingMode) par.mesh.add(endPlug);
+		}
+	}
+
 	var partName = par.partName;
 	if (typeof specObj != 'undefined' && partName && partName != "frameProf" && partName != "stringerPart") {
 		if (!specObj[partName]) {
@@ -879,6 +1224,7 @@ function drawPole3D_4(par) {
 					specObj[partName].metalPaint = false;
 					specObj[partName].name = "Ригель нерж.";
 				}
+				if (params.calcType == 'vhod' && params.staircaseType == 'Готовая') specObj[partName].name = "Ригель " + params.rigelMaterial;
 			}
 			if (partName == "ladderBal") {
 				specObj[partName].name = "Стойка ограждения с фланцем";
@@ -913,6 +1259,8 @@ function drawPole3D_4(par) {
 		}
 		var name = Math.round(par.poleProfileZ) + "x" + Math.round(par.poleProfileY) + "х" + Math.round(par.length);
 		if (par.type == "round") name = "Ф" + Math.round(par.poleProfileY) + "х" + Math.round(par.length);
+		if (params.calcType == 'vhod' && params.staircaseType == 'Готовая') name = "L=" + Math.round(par.length) + "мм";
+
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
@@ -1542,6 +1890,8 @@ function drawHandrailHolder(par) {
 
 	par.mesh = new THREE.Object3D();
 	if (typeof testingMode == "undefined") testingMode = false;
+	var rackModel = params.banisterMaterial;
+	if (specObj.unit == "banister") rackModel = params.banisterMaterial_bal;
 
 	var botPartLen = 53;
 	var topPartLen = 17;
@@ -1635,17 +1985,38 @@ function drawHandrailHolder(par) {
 	}
 
 	//гайка М8
-	if (!par.isHor && params.banisterMaterial == "40х40 черн." && !testingMode) {
+	if (!par.isHor && rackModel == "40х40 черн." && !testingMode && params.railingModel != "Кованые балясины") {
 		//параметры гайки
 		var nutParams = {
 			diam: 8,
 			isSelfLock: true,
 		}
+		if (params.calcType == 'vhod') nutParams.isSelfLock = false;
 
 		var nut = drawNut(nutParams).mesh;
 		nut.position.y = -10;
 		par.mesh.add(nut)
+	}
+	if (params.railingModel == "Кованые балясины") {
+		//параметры гайки
+		var nutParams = {
+			diam: 6,
+			isCap: true,
+		}
+		var shimParams = {
+			diam: 6
+		}
 
+		var nut = drawNut(nutParams).mesh;
+		nut.position.y = -12;
+		nut.rotation.y = -par.angTop;
+		par.mesh.add(nut);
+
+		//шайба
+		var shim = drawShim(shimParams).mesh;
+		shim.position.y = -8;
+		shim.rotation.y = -par.angTop;
+		par.mesh.add(shim);
 	}
 
 
@@ -1678,6 +2049,8 @@ function drawHandrailHolder(par) {
 		specObj[partName]["amt"] += 1;
 	}
 
+	addSpecIdToChilds(par.mesh, partName + name);
+
 	return par;
 }
 
@@ -1686,6 +2059,8 @@ function drawHandrailHolder(par) {
 
 function drawHolderFlan(par) {
 	if (!par) par = {};
+	var rackModel = params.banisterMaterial;
+	if (specObj.unit == "banister") rackModel = params.banisterMaterial_bal;
 
 	//рассчитываем параметры поручня
 	var handrailPar = {
@@ -1705,12 +2080,14 @@ function drawHolderFlan(par) {
 	handrailPar = calcHandrailMeterParams(handrailPar); //функция в файле priceLib.js
 
 	par.material = params.materials.inox;
+
 	par.holderFlanId = "handrailHolderFlanPlane";
 	if (handrailPar.handrailModel == "round") par.holderFlanId = "handrailHolderFlanArc";
 	if (params.railingModel == "Кованые балясины" ||
 		params.railingModel == "Трап" ||
-		params.banisterMaterial == "40х40 черн.") {
+		rackModel == "40х40 черн.") {
 		par.holderFlanId = "holderFlan";
+		if (params.handrail == "40х20 черн." || params.handrail == "ПВХ") par.holderFlanId = "handrailHolderFlanPlane";
 		par.material = params.materials.metal_railing;
 	}
 
@@ -1758,6 +2135,7 @@ function drawHolderFlan(par) {
 
 	var screwId = "timberHandrailScrew";
 	if (handrailPar.mat == 'metal') screwId = 'metalHandrailScrew';
+	if (handrailPar.mat == 'inox') screwId = 'metalHandrailScrew';
 
 	var screwPar = {
 		id: screwId,
@@ -1775,8 +2153,59 @@ function drawHolderFlan(par) {
 	screw2.position.x = holeCenter2.x;
 	screw2.position.z = holeCenter2.y;
 	screw2.rotation.x = Math.PI / 2;
+	par.mesh.add(screw2);
 
-	par.mesh.add(screw2)
+	var vintId = "vint_M6x10";
+	if (params.railingModel == "Кованые балясины") vintId = "vint_M6x70";
+	var vintPar = {
+		id: vintId,
+		description: "Крепление лодочки к штырю",
+		group: "Ограждения"
+	}
+
+	var midpoint = { x: Math.floor((holeCenter1.x + holeCenter2.x) / 2), y: Math.floor((holeCenter1.y + holeCenter2.y) / 2) };
+	var vint = drawVint(vintPar).mesh;
+	vint.position.x = midpoint.x;
+	// vint.position.z = midpoint.y;
+	vint.position.z = -vintPar.len / 2 + 2;
+	vint.rotation.x = Math.PI / 2;
+	par.mesh.add(vint);
+
+	// item = {
+	// 	id:  par.holderFlanId,
+	// 	amt: totalHolderAmt,
+	// 	discription: "Крепление поручня к стойкам",
+	// 	unit: "banisterItemsAdd",
+	// 	itemGroup: par.group,
+	// 	};
+	// if(item.amt > 0) par.items.push(item);
+
+	//сохраняем данные для спецификации
+	var partName = par.holderFlanId;
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "",
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Ограждения",
+				purposes: ["Крепление поручня к стойкам"]
+			}
+			if (partName == "holderFlan") specObj[partName].name = "Лодочка плоская черн.";
+			if (partName == "handrailHolderFlanPlane") specObj[partName].name = "Лодочка под плоский поручень нерж.";
+			if (partName == "handrailHolderFlanArc") specObj[partName].name = "Лодочка под круглый поручень";
+		}
+		var name = 0;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	addSpecIdToChilds(par.mesh, partName);
 
 	return par;
 }
@@ -1854,6 +2283,8 @@ function drawPlatformRailingFlan(par) {
 	var holeDst = par.holeDst;
 	var rackSize = 40 + 0.01;
 
+	par.mesh = new THREE.Object3D();
+
 	var shape = new THREE.Shape();
 	var extrudeOptions = {
 		amount: thk,
@@ -1881,10 +2312,10 @@ function drawPlatformRailingFlan(par) {
 	addRoundHole(shape, par.dxfArr, center1, holeRad, par.dxfBasePoint);
 	var center2 = newPoint_xy(center1, 0, holeDst)
 	addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
-	var center2 = newPoint_xy(center1, holeDst, holeDst)
-	addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
-	var center2 = newPoint_xy(center1, holeDst, 0)
-	addRoundHole(shape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
+	var center3 = newPoint_xy(center1, holeDst, holeDst)
+	addRoundHole(shape, par.dxfArr, center3, holeRad, par.dxfBasePoint);
+	var center4 = newPoint_xy(center1, holeDst, 0)
+	addRoundHole(shape, par.dxfArr, center4, holeRad, par.dxfBasePoint);
 
 	//квадратное отверстие
 	holeOffset = (size - rackSize) / 2;
@@ -1901,6 +2332,58 @@ function drawPlatformRailingFlan(par) {
 
 	shape.holes.push(sqHole);
 
+	var screwPar = {
+		id: "screw_6x32",
+		description: "Крепление стоек к ступеням",
+		group: "Ограждения"
+	}
+
+	if (par.unit == "balustrade" && params.fixType2 != "дерево") {
+		screwPar.id = "screw_6x60";
+		screwPar.dowelId = "dowel_10x50";
+		screwPar.description = "Крепление стоек к перекрытию";
+	}
+
+	var screw = drawScrew(screwPar).mesh;
+	screw.position.x = center1.x - size / 2;
+	screw.position.y = 0;
+	screw.position.z = center1.y - size / 2;
+	par.mesh.add(screw);
+
+	var screw = drawScrew(screwPar).mesh;
+	screw.position.x = center2.x - size / 2;
+	screw.position.y = 0;
+	screw.position.z = center2.y - size / 2;
+	par.mesh.add(screw);
+
+	var screw = drawScrew(screwPar).mesh;
+	screw.position.x = center3.x - size / 2;
+	screw.position.y = 0;
+	screw.position.z = center3.y - size / 2;
+	par.mesh.add(screw);
+
+	var screw = drawScrew(screwPar).mesh;
+	screw.position.x = center4.x - size / 2;
+	screw.position.y = 0;
+	screw.position.z = center4.y - size / 2;
+	par.mesh.add(screw);
+
+	var partName = "steelCover";
+	var name = "Декоративная крышка основания стойки (черн.)";
+	if (params.banisterMaterial == "40х40 нерж." || params.banisterMaterial == "40х40 нерж+дуб") {
+		partName = "stainlessCover";
+		name = "Декоративная крышка основания стойки (нерж.)";
+	}
+
+	var coverParams = {
+		id: partName,
+		name: name,
+		description: "Крышка фланца стойки"
+	}
+
+	if (par.unit == "balustrade") coverParams.description += " баллюстрада";
+	var cover = drawRackCover(coverParams);
+	par.mesh.add(cover);
 
 	//подпись под фигурой
 	var text = "Фланец ограждений"
@@ -1916,13 +2399,161 @@ function drawPlatformRailingFlan(par) {
 	flan.position.x = -size / 2
 	flan.position.z = size / 2
 
-	par.mesh = new THREE.Object3D();
 	par.mesh.add(flan);
 	return par;
 
 
 } //end of drawPlatformRailingFlan
 
+
+function drawGlassRutel(par) {
+	var mesh = new THREE.Object3D();
+	par = par || {};
+	var len = par.len || 125;
+	var diam = par.size || 14;
+
+	var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
+	var rutel = new THREE.Mesh(geometry, params.materials.inox);
+	rutel.specId = "rutel_m" + diam;
+	mesh.add(rutel);
+
+	var rutelShims = drawRutelShims(diam);
+	rutelShims.position.y -= len / 2;
+	mesh.add(rutelShims);
+
+	//На моно гайки и шайбы не нужны
+	if (params.calcType !== 'mono') {
+		//шайба
+		var shimParams = { diam: diam }
+		var shim = drawShim(shimParams).mesh;
+		shim.position.y = len / 2 - 20;
+		mesh.add(shim);
+
+		//гайка
+		var nutParams = { diam: diam }
+		var nut = drawNut(nutParams).mesh;
+		nut.position.y = len / 2 - 20;
+		mesh.add(nut);
+
+		//шайба
+		var shimParams = { diam: diam }
+		var shim = drawShim(shimParams).mesh;
+		shim.position.y = len / 2 - 35;
+		shim.rotation.y = Math.PI;
+		mesh.add(shim);
+
+		//гайка
+		var nutParams = { diam: diam }
+		var nut = drawNut(nutParams).mesh;
+		nut.position.y = len / 2 - 35;
+		nut.rotation.y = Math.PI;
+		mesh.add(nut);
+	}
+
+	//сохраняем данные для спецификации
+	var partName = "rutel_m" + diam;
+	if (typeof specObj != 'undefined' && partName) {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Шпилька рутеля М" + diam + " L=" + len + "мм",
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_1",
+				purposes: ["Крепление стекол ограждения"],
+				workUnitName: "amt",
+				group: "Ограждения",
+			}
+		}
+
+		name = 0;
+
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	return mesh
+}
+
+function drawRutelShims(diam) {
+	var geometry = new THREE.CylinderGeometry(diam / 2 * 1.5, diam / 2 * 1.5, 2, 10, 1, false);
+	var rutel = new THREE.Mesh(geometry, params.materials.inox);
+	rutel.specId = "rutelShims_m" + diam;
+
+	//сохраняем данные для спецификации
+	var partName = "rutelShims_m" + diam;
+	if (typeof specObj != 'undefined' && partName) {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Комплект фурнитуры рутеля М" + diam,
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_1",
+				purposes: ["Крепление стекол ограждения"],
+				workUnitName: "amt",
+				group: "Ограждения",
+			}
+		}
+
+		name = 0;
+
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	return rutel
+}
+
+function drawRackCover(par) {
+	par.mesh = new THREE.Object3D();
+
+	par.mesh.specId = par.id;
+
+	var size = 80;
+
+	var geometry = new THREE.BoxGeometry(size, 10, size);
+	var material = params.materials.metal;
+	if (par.id == "stainlessCover") material = params.materials.inox;
+	var cover = new THREE.Mesh(geometry, material);
+	cover.specId = par.id;
+	if (!testingMode) par.mesh.add(cover);
+
+	//сохраняем данные для спецификации
+	par.partName = par.id;
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: par.name,
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_1",
+				purposes: [],
+				workUnitName: "amt",
+				group: "Ограждения",
+			}
+
+			if (par.group) specObj[par.partName].group = par.group;
+		}
+		if (par.description) {
+			if (specObj[par.partName].purposes.indexOf(par.description) == -1) specObj[par.partName].purposes.push(par.description);
+		}
+
+		name = 0;
+
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	return par.mesh;
+}
 
 /** функция отрисовывает уголок балясины для монокосоуров и винтовых
 
@@ -1999,6 +2630,49 @@ function drawBanisterAngle(par) {
 	topPlate.position.z = 0;
 	par.mesh.add(topPlate);
 
+	//саморезы или болты
+	if (!par.noBolts) {
+		if (params.calcType == "vint" && (params.treadMaterial == 'рифленая сталь' || ~params.treadMaterial.indexOf("лотки"))) {
+			//болты
+			if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //anglesHasBolts - глобальная переменная)
+				var boltPar = {
+					diam: 6,
+					len: 20,
+					headType: "внутр. шестигр. плоск. гол.",
+				}
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2;
+				bolt.position.x = center1.x;
+				bolt.position.y = center1.y;
+				topPlate.add(bolt)
+
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2;
+				bolt.position.x = center2.x;
+				bolt.position.y = center2.y;
+				topPlate.add(bolt)
+			}
+		} else {
+			//саморезы
+			var screwPar = {
+				id: "screw_6x32",
+				description: "Крепление ступеней",
+				group: "Ступени"
+			}
+			var screw = drawScrew(screwPar).mesh;
+			screw.rotation.x = Math.PI / 2;
+			screw.position.x = center1.x;
+			screw.position.y = center1.y;
+			topPlate.add(screw)
+
+			var screw = drawScrew(screwPar).mesh;
+			screw.rotation.x = Math.PI / 2;
+			screw.position.x = center2.x;
+			screw.position.y = center2.y;
+			topPlate.add(screw)
+		}
+	}
+
 
 
 	//вертикальная пластина
@@ -2049,6 +2723,36 @@ function drawBanisterAngle(par) {
 	frontPlate.position.z = 0;
 	par.mesh.add(frontPlate);
 
+	//болты
+	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //anglesHasBolts - глобальная переменная)
+		var boltPar = {
+			diam: 6,
+			len: boltLen,
+			headType: "внутр. шестигр. плоск. гол.",
+		}
+		if (params.calcType == 'mono') {
+			boltPar.len = 20;
+			boltPar.noNut = true;
+			boltPar.hasRivet = true;
+		}
+		if (params.calcType == 'vint') {
+			boltPar.headType = 'меб.';
+			boltPar.len = 16;
+			if (params.railingModel == "Частые стойки") {
+				boltPar.headType = "внутр. шестигр. плоск. гол.";
+				boltPar.len = 35;
+			}
+		}
+		var bolt = drawBolt(boltPar).mesh;
+		bolt.rotation.x = Math.PI / 2;
+		bolt.position.x = center.x;
+		bolt.position.y = center.y;
+		if (params.calcType == 'vint' && params.railingModel == "Частые стойки") bolt.position.z = -6;
+		if (params.calcType == 'mono') bolt.rotation.x = -Math.PI / 2;
+		frontPlate.add(bolt)
+	}
+
+
 	//сохраняем данные для спецификации
 	var partName = "balAngle";
 	if (typeof specObj != 'undefined') {
@@ -2069,6 +2773,10 @@ function drawBanisterAngle(par) {
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 	}
+
+	$.each(par.mesh.children, function () {
+		this.specId = partName + name;
+	})
 
 	return par;
 } //end of drawBanisterAngle
@@ -2931,6 +3639,45 @@ function drawHandrail_4(par) {
 		par.holderAmt = holderAmt;
 	}
 
+	if ((par.startPlug || par.endPlug) && (handrailPar.mat == 'metal' || handrailPar.mat == 'inox')) {
+		var plugParams = {
+			id: handrailPar.handrailPlugId,
+			width: handrailPar.profY,
+			height: handrailPar.profZ,
+			description: "Заглушка поручня",
+			group: "Ограждения"
+		}
+		if (handrailPar.mat == 'inox') plugParams.type = "inox";
+
+		if (handrailPar.handrailType == "Ф50 нерж.") plugParams.isCirclePlug = true;
+
+		var zOffset = -par.wallOffset;
+		if (par.side == 'out') zOffset = par.wallOffset;
+
+		if (par.startPlug) {
+			var plugBasePoint = polar(p1, par.poleAngle + Math.PI / 2, -handrailPar.profY / 2);
+			var startPlug = drawPlug(plugParams);
+			startPlug.position.x = plugBasePoint.x;
+			startPlug.position.y = plugBasePoint.y;
+			startPlug.position.z = zOffset;
+			startPlug.rotation.z = par.poleAngle + Math.PI / 2;
+			if (!testingMode) par.mesh.add(startPlug);
+		}
+
+		if (par.endPlug) {
+			var plugBasePoint = p2;//newPoint_xy(p1, length, 0)
+			plugBasePoint = polar(plugBasePoint, par.poleAngle + Math.PI / 2, -handrailPar.profY / 2);
+			var endPlug = drawPlug(plugParams);
+			endPlug.position.x = plugBasePoint.x;
+			endPlug.position.y = plugBasePoint.y;
+			endPlug.position.z = zOffset;
+			endPlug.rotation.z = par.poleAngle + Math.PI / 2;
+			if (!testingMode) par.mesh.add(endPlug);
+		}
+
+	}
+
+
 	//сохраняем данные для спецификации
 	var partName = "handrails";
 	if (par.partName) partName = par.partName; //используется для sideHandrails
@@ -2951,10 +3698,13 @@ function drawHandrail_4(par) {
 			if (handrailPar.mat == "inox") specObj[partName].division = "metal";
 			//if(params.calcType == "timber") specObj[partName].name = "Поручень";
 			if (par.partName == "botPole") specObj[partName].name = "Подбалясная рейка";
+			if (params.calcType == 'vhod' && params.staircaseType == 'Готовая') specObj[partName].name = "Поручень " + handrailPar.handrailType;
+
 		}
 
 		var name = Math.round(par.profWidth) + "x" + Math.round(par.profHeight) + "х" + Math.round(par.length);
 		if (par.type == "round") name = "Ф" + Math.round(par.profHeight) + "х" + Math.round(par.length);
+		if (params.calcType == 'vhod' && params.staircaseType == 'Готовая') name = "L=" + Math.round(par.length) + "мм";
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
