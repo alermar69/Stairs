@@ -1,0 +1,537 @@
+//глобальные массивы элементов лестницы для каждого видового экрана
+var stairCase1 = [];
+var stairCase2 = [];
+
+
+//функция - оболочка
+function drawVintStaircase(viewportId) {
+
+	//удаляем существующую лестницу в нужный видовый экран
+	if (viewportId == 'viewPort1') {
+		for (i = 0; i < stairCase1.length; i++) scene.remove(stairCase1[i]);
+		stairCase1 = [];
+		}
+	if (viewportId == 'viewPort2') {
+		for (i = 0; i < stairCase2.length; i++) scene2.remove(stairCase2[i]);
+		stairCase2 = [];
+		}
+	
+	//локальный массив элементов лестницы
+	var stairCase = [];
+	/*вспомогательные оси*/	
+	
+	var axes = new THREE.AxisHelper( 2000 );
+	stairCase.push(axes);	
+
+	/*параметры лестницы*/
+	var treadMaterial = getInputValue("treadMaterial");
+	var staircaseHeight = getInputValue("staircaseHeight");
+	var stepAmt = getInputValue("stepAmt");
+	var staircaseDiam = getInputValue("staircaseDiam");
+	var stepAngle = getInputValue("stepAngle");
+	var platformAngle = getInputValue("platformAngle");
+	var platformPosition = getInputValue("platformPosition");
+	var handrailMaterial = getInputValue("handrailMaterial");
+	var banisterPerStep = getInputValue("banisterPerStep");
+	var columnDiam = getInputValue("columnDiam");
+
+
+	var treadLowRad = columnDiam / 2 + 5;
+	var treadThickness = 40;
+	var holeDiam = 22;
+	var stairAmt = stepAmt - 1;
+	if (platformPosition == "ниже") stairAmt = stepAmt - 2;
+	var stepHeight = staircaseHeight / stepAmt;
+	
+	//переводим углы в радианы
+	stepAngle = stepAngle/180 * Math.PI;
+	platformAngle = platformAngle/180 * Math.PI;
+	
+	/*Материалы*/
+	var timberMaterial = new THREE.MeshLambertMaterial( { color: 0x804000, overdraw: 0.5} );
+	var metalMaterial = new THREE.MeshLambertMaterial({color: 0x363636, wireframe: false});
+	var floorMaterial = new THREE.MeshLambertMaterial( {color: 0xBFBFBF});
+	
+	var treadExtrudeOptions = {
+		amount: treadThickness, 
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+		};
+	
+	/*Угол ступени с учетом нахлеста ступеней*/
+	var treadOverlayArcLength = 50;
+	var treadOverlayArcAngle = treadOverlayArcLength / (staircaseDiam / 2);
+	var treadAngle = stepAngle + treadOverlayArcAngle;
+	
+	
+	var treadShape = drawVintTreadShape(staircaseDiam, treadAngle, treadLowRad, holeDiam);
+	var geom = new THREE.ExtrudeGeometry(treadShape, treadExtrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+
+/*начальный угол лестницы*/
+
+var treadExtraAngle = Math.asin(treadLowRad/(staircaseDiam / 2));
+var platformDepth = staircaseDiam / 2 + 100;
+var L1 = platformDepth / Math.cos(platformAngle / 2);
+var platformWidth = 2 * platformDepth / Math.sin(platformAngle / 2);
+var platformExtraAngle = Math.asin(treadLowRad / L1);
+var staircaseAngle = stairAmt * stepAngle + platformAngle/2 - treadExtraAngle// - platformExtraAngle;
+var startAngle = Math.PI - staircaseAngle// + 2*treadOverlayArcAngle;	
+
+/*ступени*/
+
+addVintTreads();
+
+function addVintTreads() {
+for (var i=0; i<stairAmt; i++){
+var meshTreadMaterial = timberMaterial;
+if (treadMaterial == "рифленая сталь" ||treadMaterial == "лотки под плитку")
+	meshTreadMaterial = metalMaterial;
+	
+	var turnStep1 = new THREE.Mesh(geom, meshTreadMaterial);
+	
+	turnStep1.rotation.x = -0.5*Math.PI;
+	turnStep1.rotation.z = stepAngle * i + startAngle;	
+	turnStep1.position.x = 0;
+	turnStep1.position.y =stepHeight* (i + 1) - treadThickness;
+	turnStep1.position.z = 0;	
+	turnStep1.castShadow = true;
+	stairCase.push(turnStep1);	
+	}
+
+}	
+/*бобышки*/ 
+
+addVintSpacers();
+
+function addVintSpacers() {
+
+var radiusTop = columnDiam/2;
+var radiusBottom = radiusTop;
+var height =stepHeight- treadThickness;
+var radialSegments = 12;
+var heightSegments = 1;
+var openEnded = false;
+
+var geom = new THREE.CylinderGeometry( radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded) 
+
+for (var i=0; i<stairAmt+1; i++){
+	var spacer = new THREE.Mesh(geom, metalMaterial);	
+	spacer.position.x= 0;
+	spacer.position.y= height/2 +stepHeight * i;
+	spacer.position.z= 0;	
+	spacer.castShadow = true;
+	stairCase.push(spacer);	
+	}
+	
+}
+
+/*площадка*/
+
+addVintPlatform();
+
+function addVintPlatform() { 
+
+var meshPlatformMaterial = timberMaterial;
+if (treadMaterial == "рифленая сталь" ||treadMaterial == "лотки под плитку")
+	meshPlatformMaterial = metalMaterial;
+	
+var treadShape = drawVintPlatformShape(platformAngle, platformDepth, treadLowRad, holeDiam);
+	var geom = new THREE.ExtrudeGeometry(treadShape, treadExtrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var platform = new THREE.Mesh(geom, meshPlatformMaterial);	
+	platform.rotation.x=-0.5*Math.PI;
+	//platform.rotation.z = stepAngle * (i-1) - treadExtraAngle + platformExtraAngle + startAngle;	
+	platform.rotation.z = platformExtraAngle - platformAngle/2 + Math.PI; //platformExtraAngle/2;
+	platform.position.x= 0;
+	platform.position.y=stepHeight* (stairAmt + 1) - treadThickness;
+	platform.position.z= 0;	
+	platform.castShadow = true;
+	stairCase.push(platform);
+}
+
+/*Параметры стоек*/
+var longBanisterLength = 1000;
+var banisterProfileSize = 20;
+var banisterBottomOverhang = 30;
+var banistrPositionAngle0 = treadExtraAngle - treadOverlayArcAngle/2 - startAngle;
+var banisterPositionRad = staircaseDiam/2 + banisterProfileSize/2;
+
+/*Длинные стойки ограждений*/
+
+addVintLongBanisters();
+
+function addVintLongBanisters() {
+
+var geom = new THREE.BoxGeometry( banisterProfileSize, longBanisterLength, banisterProfileSize);
+var banistrPositionAngle;
+
+
+for (var i=0; i<stairAmt+1; i++){
+	var longBanister = new THREE.Mesh(geom, metalMaterial);
+	banistrPositionAngle = -stepAngle * i + banistrPositionAngle0;
+	longBanister.rotation.y = -banistrPositionAngle;	
+	longBanister.position.x = banisterPositionRad * Math.cos(banistrPositionAngle);
+	longBanister.position.y = longBanisterLength/2 +stepHeight * i - treadThickness - banisterBottomOverhang;
+	longBanister.position.z = banisterPositionRad * Math.sin(banistrPositionAngle);	
+	longBanister.castShadow = true;
+	stairCase.push(longBanister);
+	}
+
+}
+	
+	
+/*короткие стойки ограждений*/
+
+if (banisterPerStep > 1) addVintShortBanisters ();
+
+function addVintShortBanisters() {
+
+var shortBanisterPerStep = banisterPerStep - 1;
+var banisterExtraLength =stepHeight/ banisterPerStep;
+
+//добавляем балясины
+for (var j=0; j < shortBanisterPerStep; j++){
+	var shortBanisterLength = longBanisterLength -stepHeight+ banisterExtraLength * (j + 1);
+	var geom = new THREE.BoxGeometry( banisterProfileSize, shortBanisterLength, banisterProfileSize);
+	var banistrPositionAngle1 = treadExtraAngle - treadOverlayArcAngle/2 - stepAngle/banisterPerStep * (j + 1) - startAngle;
+	var banisterPositionRad = staircaseDiam/2 + banisterProfileSize/2;
+
+for (var i=0; i<stairAmt; i++){
+	var shortBanister = new THREE.Mesh(geom, metalMaterial);
+	var banistrPositionAngle = -stepAngle * i + banistrPositionAngle1;
+	shortBanister.rotation.y = -banistrPositionAngle;	
+	shortBanister.position.x = banisterPositionRad * Math.cos(banistrPositionAngle);
+	shortBanister.position.y = shortBanisterLength/2 +stepHeight* (i + 1) - treadThickness - banisterBottomOverhang;
+	shortBanister.position.z = banisterPositionRad * Math.sin(banistrPositionAngle);	
+	shortBanister.castShadow = true;
+	stairCase.push(shortBanister);	
+	}
+	
+	}
+}
+
+/*поручень*/
+
+addVintHandrail();
+
+function addVintHandrail(){
+/*координаты верхних точек балЯсин*/
+var handrailPoints = [];
+for (var i=0; i<stairAmt+1; i++){
+	banistrPositionAngle = -stepAngle * i + banistrPositionAngle0;
+	var p1_x = banisterPositionRad * Math.cos(banistrPositionAngle);
+	var p1_y = longBanisterLength/2 +stepHeight * i - treadThickness - banisterBottomOverhang + longBanisterLength/2;
+	var p1_z = banisterPositionRad * Math.sin(banistrPositionAngle);	
+	
+	//выступ за первую стойку
+	if (i == 0) {
+		var j = -0.25
+		banistrPositionAngle = -stepAngle * j + banistrPositionAngle0;
+		var p0_x = banisterPositionRad * Math.cos(banistrPositionAngle);
+		var p0_y = longBanisterLength/2 +stepHeight * j - treadThickness - banisterBottomOverhang + longBanisterLength/2
+		var p0_z = banisterPositionRad * Math.sin(banistrPositionAngle);	
+		handrailPoints.push(new THREE.Vector3(p0_x, p0_y, p0_z));
+		}
+	//остальные стойки
+	handrailPoints.push(new THREE.Vector3(p1_x, p1_y, p1_z));
+	//выступ за последнюю стойку
+	if (i == stairAmt) {
+		var j = i + 0.25
+		banistrPositionAngle = -stepAngle * j + banistrPositionAngle0;
+		var p0_x = banisterPositionRad * Math.cos(banistrPositionAngle);
+		var p0_y = longBanisterLength/2 +stepHeight * j - treadThickness - banisterBottomOverhang + longBanisterLength/2
+		var p0_z = banisterPositionRad * Math.sin(banistrPositionAngle);	
+		handrailPoints.push(new THREE.Vector3(p0_x, p0_y, p0_z));
+		}
+	}
+var handrailSpline =  new THREE.CatmullRomCurve3( handrailPoints );
+var extrudeSettings = {
+	steps			: 200,
+	bevelEnabled	: false,
+	extrudePath		: handrailSpline
+	};
+	
+
+	var shape = new THREE.Shape();
+	shape.absarc(0, 0, 20, 0, 2*Math.PI, true)
+
+/*прямоугольный поручень - не работает	
+if( handrailType == "40х60"){
+var shape = new THREE.Shape();
+	shape.moveTo(-20, -30);
+	shape.lineTo(-20, 30);
+	shape.lineTo(20, 30);
+	shape.lineTo(20, -30);
+	shape.lineTo(-20, -30);
+}
+*/
+
+var meshHandrailMaterial = timberMaterial;
+if (handrailMaterial == "Нержавейка" ||handrailMaterial == "Алюминий")
+	meshHandrailMaterial = metalMaterial;
+	
+	var geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings );
+	var handrailMesh = new THREE.Mesh( geometry, meshHandrailMaterial );
+	stairCase.push(handrailMesh);			
+}//end of addVintHandrail()
+
+/* секция ограждений площадки*/
+
+addPlatformRailingSection();
+
+/*вспомогательные оси*
+var axes2 = new THREE.AxisHelper( 2000 );
+axes2.position.y= stepHeight * stepAmt// - treadThickness;
+stairCase.push(axes2);
+*/
+
+
+function addPlatformRailingSection() {
+var sectionExtrudeOptions = {
+		amount: 20, 
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+		};
+
+var L1 = platformDepth / Math.cos(platformAngle / 2);
+var extraAngle = Math.asin(treadLowRad / L1);
+var edgeLength = L1 * Math.cos(extraAngle);
+
+
+var sectionLength = edgeLength - 160;
+var sectionShape = drawPlatformRailingSectionShape(sectionLength);
+var sectionTyrnAngle = platformAngle/2 - platformExtraAngle;
+var geom = new THREE.ExtrudeGeometry(sectionShape, sectionExtrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var railingSection = new THREE.Mesh(geom, metalMaterial);	
+	railingSection.rotation.y = Math.PI + sectionTyrnAngle;
+	railingSection.position.x = -20*Math.cos(sectionTyrnAngle) + 10*Math.sin(sectionTyrnAngle);
+	railingSection.position.y = stepHeight * (stairAmt + 1) + 100;
+	railingSection.position.z = 20*Math.sin(sectionTyrnAngle) + 10*Math.cos(sectionTyrnAngle);	
+	railingSection.castShadow = true;
+	stairCase.push(railingSection);
+	
+/*внутренняя стойка*/
+	var rackLength = 850
+	var geometry = new THREE.BoxGeometry( 40, rackLength, 40);
+	var rack1 = new THREE.Mesh( geometry, metalMaterial  );
+	rack1.castShadow = true;
+	rack1.rotation.y = sectionTyrnAngle
+	rack1.position.y = stepHeight * (stairAmt + 1) + rackLength/2;
+	rack1.position.x = 0;
+	rack1.position.z = 0;
+	stairCase.push(rack1);
+	/*кронштейн поручня*/
+	var geometry = new THREE.CylinderGeometry( 6, 6, 70);
+	var handrailHolder = new THREE.Mesh( geometry, metalMaterial  );
+	handrailHolder.castShadow = true;
+	handrailHolder.rotation.y = sectionTyrnAngle
+	handrailHolder.position.y = stepHeight * (stairAmt + 1) + 35 + rackLength;
+	handrailHolder.position.x = 0;
+	handrailHolder.position.z = 0;
+	stairCase.push(handrailHolder);
+
+/*внeшняя стойка*/
+	geometry = new THREE.BoxGeometry( 40, rackLength, 40);
+	rack1 = new THREE.Mesh( geometry, metalMaterial  );
+	rack1.castShadow = true;
+	rack1.rotation.y = sectionTyrnAngle;
+	rack1.position.y = stepHeight * (stairAmt + 1) + rackLength/2;
+	rack1.position.x = -(sectionLength + 40) * Math.cos(sectionTyrnAngle);
+	rack1.position.z = (sectionLength + 40) * Math.sin(sectionTyrnAngle);
+	stairCase.push(rack1);
+/*кронштейн поручня*/
+	var geometry = new THREE.CylinderGeometry( 6, 6, 70); 
+	var handrailHolder = new THREE.Mesh( geometry, metalMaterial  );
+	handrailHolder.castShadow = true;
+	handrailHolder.position.y = stepHeight * (stairAmt + 1) + 35 + rackLength;
+	handrailHolder.position.x = -(sectionLength + 40) * Math.cos(sectionTyrnAngle);
+	handrailHolder.position.z = (sectionLength + 40) * Math.sin(sectionTyrnAngle);
+	stairCase.push(handrailHolder);
+
+/*поручень*/
+	var geometry = new THREE.CylinderGeometry( 20, 20, edgeLength);
+	var meshHandrailMaterial = timberMaterial;
+	if (handrailMaterial == "Нержавейка" ||handrailMaterial == "Алюминий")
+		meshHandrailMaterial = metalMaterial;
+	var handrail = new THREE.Mesh( geometry, meshHandrailMaterial);
+	handrail.castShadow = true;
+	handrail.rotation.x = -Math.PI / 2;
+	handrail.rotation.z = sectionTyrnAngle + Math.PI/2;	
+	handrail.position.y = stepHeight * (stairAmt + 1) + 85 + rackLength;
+	handrail.position.x = -(sectionLength + 40) * Math.cos(sectionTyrnAngle) / 2;
+	handrail.position.z = (sectionLength + 40) * Math.sin(sectionTyrnAngle) / 2;
+	stairCase.push(handrail);	
+
+
+};//end of addPlatformRailingSection();
+
+
+/*верхнее перекрытие*/
+
+addTopFloor();
+
+function addTopFloor() {
+var M = 1500;
+var topStairType = "вровень";
+var topFloorThickness = 300;
+geometry = new THREE.BoxGeometry( M, topFloorThickness, M);
+	floorTop = new THREE.Mesh( geometry, floorMaterial  );
+	floorTop.castShadow = true;
+	floorTop.position.y =stepHeight* stepAmt - topFloorThickness/2 - 5;
+	floorTop.position.x = -M/2 - platformDepth;
+	floorTop.position.z = 0;
+	stairCase.push(floorTop);		
+
+	}//end of addTopFloor();	
+	
+/*добавляем все детали в нужный видовый экран*/
+	if (viewportId == 'viewPort1') {
+		for (i = 0; i < stairCase.length; i++) {
+			scene.add(stairCase[i]);
+			stairCase1.push(stairCase[i]); //копируем элемент в глобальный массив			
+			}
+		}
+	if (viewportId == 'viewPort2') {
+		for (i = 0; i < stairCase.length; i++) {
+			scene2.add(stairCase[i]);
+			stairCase2.push(stairCase[i]); //копируем элемент в глобальный массив			
+			}
+		}
+		
+
+
+}//end of drawVintStaircase(scene);
+
+function drawVintTreadShape(staircaseDiam, treadAngle, treadLowRad, holeDiam) {
+
+/*чертеж ступени с обозначением параметров здесь:
+http://6692035.ru/calculator/vint/autoCad/vintTread.pdf
+*/
+var stairRad = staircaseDiam/2;
+
+/*рассчитываем угол между ребрами ступени*/
+var extraAngle = Math.asin(treadLowRad/stairRad);
+var edgeLength = stairRad * Math.cos(extraAngle);
+var edgeAngle = treadAngle - 2*extraAngle;
+
+/*рассчитываем координаты точек*/
+var p0 = {
+	x: 0,
+	y: 0,
+	}
+var p1 = {
+	x: 0,
+	y: -treadLowRad,
+	}
+var p2 = {
+	x: -treadLowRad * Math.sin(edgeAngle),
+	y: treadLowRad * Math.cos(edgeAngle)
+	}
+var p3 = {
+	x: stairRad * Math.cos(treadAngle - extraAngle),
+	y: stairRad * Math.sin(treadAngle - extraAngle)
+	}
+var p4 = {
+	x: edgeLength,
+	y: -treadLowRad
+	}
+	
+/*вычерчиваем конутр ступени*/
+var treadShape = new THREE.Shape();	
+	treadShape.absarc(p0.x, p0.y, treadLowRad, 1.5*Math.PI, (Math.PI/2 + edgeAngle), true)
+	treadShape.lineTo(p3.x, p3.y);
+	treadShape.absarc(0, 0, stairRad, (treadAngle - extraAngle), -extraAngle, true)
+	treadShape.lineTo(p1.x, p1.y);
+	
+	/*отверстие*/
+	var hole = new THREE.Path();
+	hole.absarc(p0.x, p0.y, holeDiam/2, 0, 2*Math.PI, true)
+	treadShape.holes.push(hole);
+	return treadShape;
+
+
+}
+
+function drawVintPlatformShape(platformAngle, platformDepth, treadLowRad, holeDiam) {
+
+/*чертеж площадки с обозначением параметров здесь:
+http://6692035.ru/calculator/vint/autoCad/vintPlatform.pdf
+*/
+
+var L1 = platformDepth / Math.cos(platformAngle / 2);
+var platformWidth = 2 * platformDepth / Math.sin(platformAngle / 2);
+var extraAngle = Math.asin(treadLowRad / L1);
+var edgeAngle = platformAngle - 2*extraAngle;
+var edgeLength = L1 * Math.cos(extraAngle);
+var platformDepth = staircaseDiam / 2 + 100;
+
+/*рассчитываем координаты точек*/
+var p1 = [];
+	p1[0] = 0;
+	p1[1] = -treadLowRad;
+var p2 = [];
+	p2[0] = -treadLowRad * Math.sin(edgeAngle);
+	p2[1] = treadLowRad * Math.cos(edgeAngle);	
+var p3 = [];
+	p3[0] = L1 * Math.cos(platformAngle - extraAngle);
+	p3[1] = L1 * Math.sin(platformAngle - extraAngle);
+var p4 = [];
+	p4[0] = edgeLength;
+	p4[1] = -treadLowRad;	
+	
+/*отрисовываем контур площадки*/
+var treadShape = new THREE.Shape();	
+	treadShape.absarc(0, 0, treadLowRad, 1.5*Math.PI, (edgeAngle + Math.PI / 2), true)
+	treadShape.lineTo(p3[0], p3[1]);
+	treadShape.lineTo(p4[0], p4[1]);
+	treadShape.lineTo(p1[0], p1[1]);
+	
+	/*отверстие*/
+	var hole = new THREE.Path();
+	hole.absarc(0, 0, holeDiam/2, 0, 2*Math.PI, true)
+	treadShape.holes.push(hole);
+	return treadShape;
+}
+
+function drawPlatformRailingSectionShape(sectionLength) {
+var latticeHeight = 730;
+var latticeStep = 120;
+var barSize = 20;
+var verticalBarAmt = Math.floor(sectionLength / latticeStep);
+var holeWidth = (sectionLength - barSize * verticalBarAmt) / (verticalBarAmt + 1);
+
+/*внешний контур*/
+var sectionShape = new THREE.Shape();	
+	sectionShape.moveTo(0,0);
+	sectionShape.lineTo(0, barSize);
+	sectionShape.lineTo(holeWidth, barSize);
+	sectionShape.lineTo(holeWidth, (latticeHeight - barSize));
+	sectionShape.lineTo(0, (latticeHeight - barSize));
+	sectionShape.lineTo(0, latticeHeight);
+	sectionShape.lineTo(sectionLength, latticeHeight);
+	sectionShape.lineTo(sectionLength, (latticeHeight - barSize));
+	sectionShape.lineTo((sectionLength - holeWidth), (latticeHeight - barSize));
+	sectionShape.lineTo((sectionLength - holeWidth), barSize);
+	sectionShape.lineTo(sectionLength, barSize);
+	sectionShape.lineTo(sectionLength, 0);
+	sectionShape.lineTo(0,0);
+	
+	
+/*внутренний контур*/
+for(var i = 1; i < verticalBarAmt; i++) {
+	var leftOffset = (barSize + holeWidth)*i;
+	var hole = new THREE.Path();	
+	hole.moveTo((leftOffset + holeWidth),barSize);
+	hole.lineTo((leftOffset + holeWidth),(latticeHeight - barSize));
+	hole.lineTo(leftOffset,(latticeHeight - barSize));
+	hole.lineTo(leftOffset,barSize);
+	hole.lineTo((leftOffset + holeWidth),barSize);
+	sectionShape.holes.push(hole); 
+	}
+return sectionShape;
+
+};//end of drawPlatformRailingSectionShape();

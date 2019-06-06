@@ -1,0 +1,17 @@
+var params = {}; //глобальный массив значений инпутов
+
+window.onload = function () {
+	initStats();
+	addViewports ("WebGL-output");
+	recalculate();
+}
+
+function recalculate() {
+	getAllInputsValues(params);
+	calcSpecVint();
+	drawVintStaircase('viewPort1');
+	drawVintStaircase('viewPort2');
+	changeOffer();
+	changeFormAssembling();
+	priceCalcVint();
+}

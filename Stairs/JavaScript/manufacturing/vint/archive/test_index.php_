@@ -1,0 +1,226 @@
+<?
+require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
+$APPLICATION->SetTitle("Составление коммерческого предложения на винтовую лестницу v.1.0");
+?> 
+ 
+<h1 id = "mainTitle">Коммерческое предложение на винтовую лестницу</h1>
+<!--служебные поля-->
+<div id="calcInfo" style="display: none">
+	<select size="1" id="calcType">
+		<option value="lt-ko">lt-ko</option>
+		<option value="timber">timber</option>
+		<option value="vint" selected >vint</option>
+		<option value="vhod">vhod</option>
+		<option value="geometry">geometry</option>		
+	</select>
+	<input type="text" value="1.0" id = "calcVersion"></li>
+</div>
+
+<!-- Форма параметров заказа-->
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.include",
+	".default",
+	Array(
+		"AREA_FILE_SHOW" => "file",
+		"PATH" => "/calculator/general/forms/orderForm.php",
+		"EDIT_TEMPLATE" => ""
+	)
+);?>
+
+
+
+
+
+<div id="manual" style="display: none;">
+<h2>Руководство пользователя</h2>
+<h3>Обозначения основных геометрических параметров</h3>
+<a href = "/calculator/vint/autoCad/staircaseAngles.pdf" target="blanc">Лестница</a><br/>
+<a href = "/calculator/vint/autoCad/vintTread.pdf" target="blanc">Ступень</a><br/>
+<a href = "/calculator/vint/autoCad/vintPlatform.pdf" target="blanc">Площадка</a><br/>
+
+</div>
+
+<div id="history" style="display: none;">
+<h3>История версий</h3>
+<p>Что нового в версии 1.0 (18.08.2016):</p>
+<ul>
+	<li>Программа работает;</li>
+</ul>
+
+</div>
+
+<div id="visualisation">
+	<h2 class="raschet" onclick="recalculate()">Общий вид лестницы:</h2>
+	<div id="Stats-output" style="display: none;"></div>
+	<div id="WebGL-output"><canvas>Для отображения содержимого откройте страницу в Гугл Хром</canvas></div> 
+</div>
+
+
+<div id="mainImages" style="display: none">
+<h2>Общий вид лестницы:</h2>
+<a href="/images/stairs/lt/lt-1/001.jpg" rel="fancy"><img src="/images/stairs/lt/lt-1/001.jpg" width="400px"></a>
+<a href="/images/stairs/lt/lt-1/002.jpg" rel="fancy"><img src="/images/stairs/lt/lt-1/002.jpg" width="400px"></a>
+<a href="/images/stairs/lt/lt-1/003.jpg" rel="fancy"><img src="/images/stairs/lt/lt-1/003.jpg" width="400px"></a>
+<a href="/images/stairs/lt/lt-1/004.jpg" rel="fancy"><img src="/images/stairs/lt/lt-1/004.jpg" width="400px"></a>
+</div>
+
+<div id="description">
+</div>
+
+<div id="complect">
+</div>
+
+
+
+
+
+<div id="totalResult" onclick='recalculate();'>
+	<h2 class="raschet">Общая стоимость лестницы</h2>
+	<p>Расчет еще не выполнен.</p>
+</div>
+
+<div id="about" style="display: none">
+<!-- Форма параметров заказа-->
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.include",
+	".default",
+	Array(
+		"AREA_FILE_SHOW" => "file",
+		"PATH" => "/calculator/general/about.php",
+		"EDIT_TEMPLATE" => ""
+	)
+);?>
+</div>
+
+<div id="wallsForm">
+<h2>Параметры стен</h2>
+<!-- форма параметров стен-->
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.include",
+	".default",
+	Array(
+		"AREA_FILE_SHOW" => "file",
+		"PATH" => "/calculator/general/forms/wallsForm.php",
+		"EDIT_TEMPLATE" => ""
+	)
+);?>
+</div>
+
+<div id="staircaseForm">
+<h2>Параметры лестницы.</h2>
+
+<!-- форма параметров каркаса-->
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.include",
+	".default",
+	Array(
+		"AREA_FILE_SHOW" => "file",
+		"PATH" => "/calculator/vint/vint_form.php",
+		"EDIT_TEMPLATE" => ""
+	)
+);?>
+
+</div>
+
+<div id="balustradeForm">
+<h2>Параметры балюстрады</h2>
+</div>
+
+<div id="assembling">
+<!-- Форма доставка и установка-->
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.include",
+	".default",
+	Array(
+		"AREA_FILE_SHOW" => "file",
+		"PATH" => "/calculator/general/forms/assemblingForm.php",
+		"EDIT_TEMPLATE" => ""
+	)
+);?>
+
+</div>
+
+<!--Расчетные параметры геометрии-->
+<div id="geometry" ></div>
+
+
+
+<div id="cost" style="display: none;">
+<h2>Расчет себестоимости</h2>
+
+<h4>Коэффициенты цены</h4>
+<!-- Форма доставка и установка-->
+<?$APPLICATION->IncludeComponent(
+	"bitrix:main.include",
+	".default",
+	Array(
+		"AREA_FILE_SHOW" => "file",
+		"PATH" => "/calculator/general/forms/priceFactorForm.php",
+		"EDIT_TEMPLATE" => ""
+	)
+);?>
+
+<div id="cost_carcas">
+<h4>Себестоимость каркаса и ступеней</h4>
+<p>Расчет еще не произведен</p>
+</div>
+
+<div id="cost_perila">
+<h4>Себестоимость ограждений</h4>
+<p>Расчет еще не произведен</p>
+</div>
+
+<div id="total_cost">
+<h4>Общая себестоимость</h4>
+<p>Расчет еще не произведен</p>
+</div>
+</div>
+
+<div id="result" style="display: none;"></div>
+
+<div id="specificationList" style="display: none;">
+<h2 class="raschet" onclick="calcSpecVint();">Спецификация</h2>
+	<div id="metal_list"></div>
+
+	<div id="timber_list"></div>
+
+	<div id="store_list"></div>
+
+	<div id="faq"></div>
+
+</div>
+
+<!--общие библитотеки-->
+<script async="" src="/calculator/forms/FileSaver.min.js" /></script>
+
+<!--графика-->
+<script type="text/javascript" src="/calculator/general/viewports.js"></script>
+<script type="text/javascript" src="/calculator/geometry/3d/libs/three.js"></script> 
+<script type="text/javascript" src="/calculator/geometry/3d/libs_old/stats.js"></script> 
+<script type="text/javascript" src="/calculator/geometry/3d/libs_old/dat.gui.js"></script>
+<script type="text/javascript" src="/calculator/geometry/3d/libs/OrbitControls.js"></script>
+ 
+<!--визуализация-->
+<script type="text/javascript" src="draw_vint.js"></script>
+<script type="text/javascript" src="/calculator/general/drawPrimitives.js"></script>
+
+<!--экспорт в dxf-->
+<script type="text/javascript" src="/calculator/general/dxfFileMaker.js"></script>
+
+<!--экспорт в xml-->
+<script type="text/javascript" src="/calculator/general/dataExchangeXml.js"></script>
+
+<!--изменение оффера-->
+<script type="text/javascript" src="change_offer.js"></script>
+
+<!--расчет цены-->
+<script type="text/javascript" src="price_calc.js"></script>
+
+<!--оболочки-->
+<script type="text/javascript" src="test_main.js"></script>
+
+<!--спецификация-->
+<script type="text/javascript" src="/calculator/general/calc_general.js"></script>
+<script type="text/javascript" src="calc_vint.js"></script>
+
+<?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

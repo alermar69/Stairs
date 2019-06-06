@@ -1,0 +1,445 @@
+/*расчет цены винтовой лестницы*/
+
+var staircaseCost={};
+var staircasePrice={};
+function calculateStaircasePrice(){
+
+/*получаем переменные из формы*/
+	var treadMaterial = getInputValue("treadMaterial");
+	var staircaseHeight = getInputValue("staircaseHeight");
+	var stepAmt = getInputValue("stepAmt");
+	var staircaseDiam = getInputValue("staircaseDiam");
+	var stepAngle = getInputValue("stepAngle");
+	var platformAngle = getInputValue("platformAngle");
+	var platformPosition = getInputValue("platformPosition");
+	var handrailMaterial = getInputValue("handrailMaterial");
+	var rackType = getInputValue("rackType");
+	var banisterPerStep = getInputValue("banisterPerStep");
+	var columnDiam = getInputValue("columnDiam");
+	var metalPaint = params.metalPaint;
+	var timberPaint = params.timberPaint;
+
+	var timberPaintPrice = 0;
+	var metalPaintPrice = 0;
+
+/*** РАСЧЕТЫ ***/
+
+/*расчет кол-ва ступеней*/
+	var stairAmt = stairParams.stairAmt;
+	var stepHeight = stairParams.stepHeight;
+
+/*стоимость ступеней*/
+var timberMeterPrice = 0;
+var metalTonnPrice = 45000;
+if (treadMaterial == "береза") timberMeterPrice = 55000;
+if (treadMaterial == "дуб") timberMeterPrice = 80000;
+
+
+/*лестница с деревянными ступенями*/
+
+if (treadMaterial == "береза" || treadMaterial == "дуб") {
+	
+	//ступени (tread)
+	var billetLength; //длина заготовки на две ступени
+	var billetWidth = 0.6; //ширина заготовки для ступеней
+	var billetThickness = 0.04; //толщина заготовки
+	
+	billetLength = staircaseDiam * 0.6/1000; //приблизительная формула
+	
+	var treadMaterialPrice = billetLength * billetWidth * billetThickness * timberMeterPrice / 2;
+	var treadWorkPrice = 150;
+	var treadPaintPrice = 700;
+	
+	var totalTreadsPrice = (treadMaterialPrice + treadWorkPrice) * stairAmt;
+	if (timberPaint == "лак") timberPaintPrice += treadPaintPrice * stairAmt;
+	if (timberPaint == "морилка+лак") timberPaintPrice += treadPaintPrice * stairAmt * 1.3;
+	
+	//площадка (platform)
+	var platformLength; //длина заготовки площадки
+	var platformWidth = 0.6 //ширина заготовки площадки
+	var platformThickness = 0.04; //толщина заготовки
+	platformLength = staircaseDiam * 0.7/1000 //приблизительная формула
+
+	var platformMaterialPrice = platformLength * platformWidth * platformThickness * timberMeterPrice;
+	var platformWorkPrice = 300;
+	var platformPaintPrice = 1500;
+	
+	var totalPlatformPrice = platformMaterialPrice + platformWorkPrice;
+	if (timberPaint == "лак") timberPaintPrice += platformPaintPrice;
+	if (timberPaint == "морилка+лак") timberPaintPrice += platformPaintPrice * 1.3;
+	}
+
+
+
+/* Лестница с металлическими ступенями*/
+
+if (treadMaterial == "рифленая сталь" || treadMaterial == "лотки под плитку") {
+	
+	var treadMaterialPrice;
+	var treadPaintPrice;
+	var platformMaterialPrice;
+	var platformPaintPrice;
+	
+	/*приблизительные формулы*/
+		treadMaterialPrice = staircaseDiam*0.6;
+		treadPaintPrice = staircaseDiam*0.3;
+		platformMaterialPrice = staircaseDiam*1.5;
+		platformPaintPrice = staircaseDiam*0.5;
+	/*
+	if (staircaseDiam == 1200) {
+		treadMaterialPrice = 650;
+		treadPaintPrice = 600;
+		platformMaterialPrice = 1700;
+		platformPaintPrice = 1200;
+		}
+	if (staircaseDiam == 1400) {
+		treadMaterialPrice = 750;
+		treadPaintPrice = 700;
+		platformMaterialPrice = 1900;
+		platformPaintPrice = 1400;
+		}
+	if (staircaseDiam == 1500) {
+		treadMaterialPrice = 850;
+		treadPaintPrice = 800;
+		platformMaterialPrice = 2100;
+		platformPaintPrice = 1600;
+		}
+	if (staircaseDiam == 1600) {
+		treadMaterialPrice = 1050;
+		treadPaintPrice = 700;
+		platformMaterialPrice = 2550;
+		platformPaintPrice = 1800;
+		}
+	*/
+	var treadWorkPrice = 100;
+	var platformWorkPrice = 200;
+	
+	
+	var totalTreadsPrice = (treadMaterialPrice + treadWorkPrice) * stairAmt;
+	var totalPlatformPrice = platformMaterialPrice + platformWorkPrice;
+
+	if (metalPaint == "порошковая") {
+		metalPaintPrice = treadPaintPrice * stairAmt + platformPaintPrice;
+		}
+}
+
+	
+/*бобышки (spacer)*/
+
+var tubePrice = 0.2*12.133/1000 * metalTonnPrice; //0.2м, 12,133 кг/м, 1000м/т
+var sheetPrice = 0.13*0.13*0.024*7.8 * metalTonnPrice;//0.13x0.13м, 24мм, 7,8т/м3
+var plasmaPrice = sheetPrice; //резка плазмой
+var lathePrice = 100; //токарка
+var assemblingPrice = 100; //сборка, сварка
+var paintingPrice = 150; //покраска
+
+var spacerPrice = tubePrice + sheetPrice + plasmaPrice + lathePrice + assemblingPrice; 
+if (metalPaint == "порошковая") metalPaintPrice += paintingPrice * (stairAmt + 1);
+var totalSpacerPrice = spacerPrice * (stairAmt + 1);
+
+/*стойки ограждений (rack)*/
+if (rackType == "черная сталь") {
+	var handrailHolderPrice = 30;
+	var treadAnglePrice = 15;
+	var tubePrice = 1*0.841/1000 * metalTonnPrice; //1м, 0,841 кг/м, 1000 кг/т
+	var metaePrice = 3*7; //метизы, 7шт по 3р
+	var workPrice = 50;
+	var paintingPrice = 100;
+	var rackPrice = handrailHolderPrice + treadAnglePrice*2 + tubePrice + metaePrice + workPrice;
+	if(metalPaint == "порошковая") metalPaintPrice += paintingPrice * banisterPerStep * stairAmt;
+	}
+if (rackType =="нержавейка") {
+	var handrailHolderPrice = 30;
+	var treadAnglePrice = 15;
+	var tubePrice = 250; 
+	var metaePrice = 3*7; //метизы, 7шт по 3р
+	var workPrice = 100;
+	var rackPrice = handrailHolderPrice + treadAnglePrice*2 + tubePrice + metaePrice + workPrice;
+	}
+
+var totalRackPrice = rackPrice * banisterPerStep * stairAmt;
+
+/*поручень на лестнице*/
+
+var stepHandrailLength; //длина поручня на один подъем
+var h = 0.2; //подъем ступени
+var stepAngle = 2*Math.PI / 16; //угол на одну ступень
+stepHandrailLength = (Math.PI * staircaseDiam/1000 / 16) / Math.cos(stepAngle);
+var handrailLength = stepHandrailLength * (stairAmt + 1) + staircaseDiam/2000;
+
+//округляем до половины хлыста
+if (handrailLength <= 6) handrailLength = 6;
+else handrailLength = 9;
+
+if (handrailMaterial == "ПВХ") {
+	handrailMeterPrice = 400;
+	handrailWorkPrice = 2000;
+	handrailPaintPrice = 0;
+	}
+if (handrailMaterial == "Нержавейка") {
+	handrailMeterPrice = 400;
+	handrailWorkPrice = 10000;
+	handrailPaintPrice = 0;
+	}
+if (handrailMaterial == "Алюминий"){
+	handrailMeterPrice = 200;
+	handrailWorkPrice = 2000;
+	handrailPaintPrice = 0;
+	}
+if (handrailMaterial == "Дуб") {
+	handrailMeterPrice = 800;
+	handrailWorkPrice = 15000;
+	handrailPaintPrice = 0;
+	if (timberPaint == "лак") timberPaintPrice += 5000;
+	if (timberPaint == "морилка+лак") timberPaintPrice += 8000;
+	}
+
+var totalHandrailPrice = handrailMeterPrice * handrailLength + handrailWorkPrice;
+
+
+/*Ограждение балюстрады*/
+var balustradeMeterPrice = 0;
+var totalBalustradePrice = 0;
+
+/*итоговая цена*/
+
+var totalStairPrice = totalTreadsPrice + totalPlatformPrice + totalSpacerPrice + totalRackPrice + totalHandrailPrice;
+
+var markup = 3
+var markupPaint = 2;
+
+
+/*данные по цене*/
+staircasePrice.treads = totalTreadsPrice * markup;
+staircasePrice.platform = totalPlatformPrice * markup;
+staircasePrice.spacers= totalSpacerPrice * markup;
+staircasePrice.racks = totalRackPrice * markup;
+staircasePrice.handrail = totalHandrailPrice * markup;
+staircasePrice.staircase = totalStairPrice * markup;
+staircasePrice.staircaseMetalPaint = metalPaintPrice * markupPaint;
+staircasePrice.staircaseTimberPaint = timberPaintPrice * markupPaint;
+
+
+/*данные по себестоимости*/
+
+staircaseCost.treads = totalTreadsPrice;
+staircaseCost.platform = totalPlatformPrice;
+staircaseCost.spacers= totalSpacerPrice;
+staircaseCost.racks = totalRackPrice;
+staircaseCost.handrail = totalHandrailPrice;
+staircaseCost.staircase = totalStairPrice;
+staircaseCost.staircaseMetalPaint = metalPaintPrice;
+staircaseCost.staircaseTimberPaint = timberPaintPrice;
+console.log()
+} //конец функции priceCalcVint()
+
+function calculateTotalPrice(){
+
+var totalMetalPaintPrice = 0;
+var totalTimberPaintPrice = 0;
+var totalStaircasePrice = 0;
+var totalMetalPaintCost = 0;
+var totalTimberPaintCost = 0;
+var totalStaircaseCost = 0;
+var discount = 0.3;
+var discountSum = 0;
+var stairCaseFinalPrice = 0;
+
+staircasePrice.staircaseFinal = 0;
+staircasePrice.treadsFinal = 0;
+staircasePrice.railingFinal = 0;
+staircasePrice.banisterFinal = 0;
+staircasePrice.assemblingFinal = 0;
+
+
+/*учитываем пользовательские к-ты на цену*/
+staircasePrice.staircase = staircasePrice.staircase * params.staircasePriceFactor;
+staircasePrice.banister = staircasePrice.banister * params.balustradePriceFactor;
+staircasePrice.assembling = staircasePrice.assembling * params.assemblingPriceFactor;
+
+/*учитываем пользовательские к-ты на себестоимость*/
+staircaseCost.staircase = staircaseCost.staircase * params.staircaseCostFactor;
+staircaseCost.banister = staircaseCost.banister * params.balustradeCostFactor;
+staircaseCost.assembling = staircaseCost.assembling * params.assemblingCostFactor;
+
+
+//лестница
+if(staircasePrice.staircase) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.staircase;
+	discountSum = discountSum + staircasePrice.staircase * discount;
+	staircasePrice.staircaseFinal = Math.round(staircasePrice.staircase*(1-discount))
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.staircase;
+	}
+	
+//покраска металлических деталей лестницы	
+if(staircasePrice.staircaseMetalPaint) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.staircaseMetalPaint;
+	totalMetalPaintPrice = totalMetalPaintPrice + staircasePrice.staircaseMetalPaint;
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.staircaseMetalPaint;
+	totalMetalPaintCost = totalMetalPaintCost + staircaseCost.staircaseMetalPaint;
+	}
+
+//покраска деревянных деталей лестницы
+if(staircasePrice.staircaseTimberPaint) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.staircaseTimberPaint;
+	totalTimberPaintPrice = totalTimberPaintPrice + staircasePrice.staircaseTimberPaint;
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.staircaseTimberPaint;
+	totalTimberPaintCost = totalTimberPaintCost + staircaseCost.staircaseTimberPaint;
+	}
+
+	
+//балюстрада
+if(staircasePrice.banister) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.banister;
+	discountSum = discountSum + staircasePrice.banister * discount;
+	staircasePrice.banisterFinal = Math.round(staircasePrice.banister*(1-discount))
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.banister;
+	}
+	
+//покраска металла балюстрады
+if(staircasePrice.banisterMetalPaint) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.banisterMetalPaint;
+	totalMetalPaintPrice = totalMetalPaintPrice + staircasePrice.banisterMetalPaint;
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.banisterMetalPaint;
+	totalMetalPaintCost = totalMetalPaintCost + staircaseCost.banisterMetalPaint;
+	}
+	
+//покраска дерева балюстрады
+if(staircasePrice.banisterTimberPaint) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.banisterTimberPaint;
+	totalTimberPaintPrice = totalTimberPaintPrice + staircasePrice.banisterTimberPaint;
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.banisterTimberPaint;
+	totalTimberPaintCost = totalTimberPaintCost + staircaseCost.banisterTimberPaint;
+	}
+	
+//сборка
+if(staircasePrice.assembling) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.assembling;
+	staircasePrice.assemblingFinal = staircasePrice.assembling;
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.assembling;
+	}
+
+//доставка
+if(staircasePrice.delivery || staircaseCost.delivery) {
+	totalStaircasePrice = totalStaircasePrice + staircasePrice.delivery;
+	//себестоимость
+	totalStaircaseCost = totalStaircaseCost + staircaseCost.delivery;
+	}
+
+//общая стоимость лестницы	
+stairCaseFinalPrice = totalStaircasePrice - discountSum;
+
+
+/*сохраняем информацию в глобальный массив*/
+staircasePrice.totalPrice = totalStaircasePrice;
+staircasePrice.discountSum = discountSum;
+staircasePrice.finalPrice = stairCaseFinalPrice;
+staircasePrice.metalPaint = totalMetalPaintPrice;
+staircasePrice.timberPaint = totalTimberPaintPrice;
+
+staircaseCost.totalCost = totalStaircaseCost;
+staircaseCost.metalPaint = totalMetalPaintCost;
+staircaseCost.timberPaint = totalTimberPaintCost;
+//валовая прибыль
+staircasePrice.vp = staircasePrice.finalPrice - staircaseCost.totalCost;
+
+/*округление результатов*/
+
+$.each(staircasePrice, function(i){ 
+	staircasePrice[i] = Math.round(this);
+	});
+$.each(staircaseCost, function(i){ 
+	staircaseCost[i] = Math.round(this);
+	});
+
+}//end of calculateTotalPrice();
+
+function printPrice(){
+var outputDiv = document.getElementById('totalResult')
+
+outputDiv.innerHTML = 
+	"<h2>Общая стоимость лестницы</h2>" + 
+	"Стоимость лестницы: " + staircasePrice.staircase +  " руб; <br/>";
+if(staircaseCost.banister)
+	outputDiv.innerHTML += "Стоимость балюстрады: " + staircasePrice.banister +  " руб; <br/>";
+
+//доп. услуги
+if(staircasePrice.assembling || staircasePrice.metalPaint || staircasePrice.timberPaint || params.delivery != "нет")
+	outputDiv.innerHTML += "<h3>Дополнительные услуги </h3>";
+if(staircasePrice.metalPaint)
+	outputDiv.innerHTML += "Покраска металла: " + staircasePrice.metalPaint + "руб;<br/>";	
+if(staircasePrice.timberPaint)
+	outputDiv.innerHTML += "Покраска дерева: " + staircasePrice.timberPaint + "руб;<br/>";		
+if(staircasePrice.assembling)
+	outputDiv.innerHTML += "Сборка: " + staircasePrice.assembling + "руб;<br/>";	
+if(params.delivery != "нет" &&  staircasePrice.delivery)
+	outputDiv.innerHTML += 
+		"Доставка: " + staircasePrice.delivery + "руб;<br/>";	
+if(params.delivery != "нет" &&  staircasePrice.delivery == 0)
+	outputDiv.innerHTML += "Доставка: бесплатно<br/>";	
+	
+//общая стоимость
+outputDiv.innerHTML += "<h3>Общая стоимость лестницы </h3>" + 
+	"<b>Общая стоимость лестницы: " + staircasePrice.totalPrice + " руб;</b> <br/>" + 
+	"<b class='yellow'>Скидка: " + staircasePrice.discountSum +  " руб; </b><br/>" + 
+	"<b class='yellow'>Цена со скидкой: " + staircasePrice.finalPrice +  " руб; </b><br/>";
+
+
+} //end of printPrice
+
+
+function printCost(){
+var staircaseCostDivId = "cost_staircase";
+var railingCostDivId = "cost_perila";
+var banisterCostDivId = "cost_banister";
+var assemblingCostDivId = "cost_assembling";
+var totalCostDivId = "total_cost";
+
+var tableBody =
+	"<tr><td>Лестница</td><td>" + staircaseCost.staircase +"</td><td>"+ staircasePrice.staircase +"</td><td>"+ staircasePrice.staircaseFinal + "</td></tr>" +
+	"<tr><td>Балюстрада</td><td>" + staircaseCost.banister +"</td><td>"+ staircasePrice.banister +"</td><td>"+ staircasePrice.banisterFinal + "</td></tr>" +
+	"<tr><td>Покраска металла</td><td>" + staircaseCost.metalPaint +"</td><td>"+ staircasePrice.metalPaint +"</td><td>"+ staircasePrice.metalPaint + "</td></tr>" +
+	"<tr><td>Покраска дерева</td><td>" + staircaseCost.timberPaint +"</td><td>"+ staircasePrice.timberPaint +"</td><td>"+ staircasePrice.timberPaint + "</td></tr>" +
+	"<tr><td>Сборка</td><td>" + staircaseCost.assembling +"</td><td>"+ staircasePrice.assembling +"</td><td>"+ staircasePrice.assemblingFinal + "</td></tr>" +
+	"<tr><td>Доставка</td><td>" + staircaseCost.delivery +"</td><td>"+ staircasePrice.delivery +"</td><td>"+ staircasePrice.delivery + "</td></tr>" +
+	"<tr><td><b>Итого</b></td><td><b>" + staircaseCost.totalCost +"</b></td><td><b>" + staircasePrice.totalPrice + "</b></td><td><b>" + staircasePrice.finalPrice + "</b></td></tr>";
+
+var outputDiv = document.getElementById(totalCostDivId);
+outputDiv.innerHTML = "";
+outputDiv.innerHTML += 
+	"<table class='form_table'><tbody><tr><th>Наименование</th><th>Себестоимость</th><th>Цена без скидки</th><th>Цена со скидкой</th></tr>" + 
+	tableBody + 
+	"</tbody></table>";
+var vpPart = Math.round(staircasePrice.vp / staircasePrice.finalPrice * 100)
+outputDiv.innerHTML += "<b class='yellow'>Валовая прибыль: " + staircasePrice.vp + " руб (" + vpPart + "%)</b>";
+
+/*себестоимость лестницы*/
+outputDiv = document.getElementById(staircaseCostDivId);
+outputDiv.innerHTML =
+	"Ступени: " + staircaseCost.treads +  " руб; <br/>" + 
+	"Площадка: " + staircaseCost.platform +  " руб; <br/>" + 
+	"Бобышки: " + staircaseCost.spacers +  " руб; <br/>" + 
+	"Стойки ограждения: " + staircaseCost.racks +  " руб; <br/>"+
+	"Поручень: " + staircaseCost.handrail +  " руб; <br/>" + 
+	"<b>Итого лестница: " + staircaseCost.staircase +  " руб; </b><br/>" + 
+	"Покраска металла: " + staircaseCost.staircaseMetalPaint +  " руб; <br/>" + 	
+	"Покраска дерева: " + staircaseCost.staircaseTimberPaint +  " руб; <br/>";	
+
+/*** БАЛЮСТРАДА ***/
+outputDivId = banisterCostDivId;
+printRailingCost("балюстрада", outputDivId);
+
+/*** ДОСТАВКА, СБОРКА ***/
+outputDiv = document.getElementById(assemblingCostDivId);
+outputDiv.innerHTML =
+"Сборка: " + staircaseCost.assembling +  " руб; <br/>"+
+"Доставка: " + staircaseCost.delivery +  " руб; <br/>";
+
+} //end of printCost

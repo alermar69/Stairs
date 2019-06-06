@@ -1,0 +1,69 @@
+function changeOffer(){
+var threadMaterial = getInputValue("threadMaterial");
+var metalPaint = getInputValue("metalPaint");
+var timberPaint = getInputValue("timberPaint");
+var handrailMaterial = getInputValue("handrailMaterial");
+var rackType = getInputValue("rackType");
+
+/*Общее описание*/
+
+var description = 
+"<p>Красивая, удобная и надежная винтовая лестница с деревянными ступенями." + 
+"Центральный столб изготовлени из толстой стальной трубы, ступени из ";
+
+if (threadMaterial == "дуб") description += 
+	"первоклассного 100% массива краснодарского дуба";
+else description += 
+	"первоклассного 100% массива березы";
+	
+description += "</p>";
+document.getElementById("description").innerHTML = description;
+
+/*Описание комплектации*/ 
+
+var complect = 
+"<h2>Комплектация лестницы</h2>" +
+"<div id='carcasDiv'>" +
+"<h3>Надежный металлический каркас</h3>" +
+"<div id='carcasImage'>" +
+"<a href='/images/stairs/lt/lt-1/001.jpg' rel='fancy'><img src='/images/stairs/lt/lt-1/001.jpg' width='300px'></a>" +
+"</div>" +
+"<ul class='galka'>" +
+	"<li id='carcasText_1'>Надежный каркас из стали толщиной 8мм выдерживает нагрузку до 900 кг;</li>" +
+	"<li id='carcasText_2'>Продуманная конструкция позволяет собрать каркас на болтах без сварки за 2 часа</li>" +
+	"<li id='carcasText_3'>Каркас можно легко и быстро обшить гипсокартоном или построить стенку под лестницей;</li>" +
+	"<li id='carcasText_4'>Детали каркаса поставляются зачищенными и подготовленными под покраску;</li>" +
+"</ul>" +
+"</div>" +
+"<div id='stairsDiv'>" +
+"<h3 id='stairsHeader'>Ступени</h3>" +
+"<div id='stairsImage'>" +
+"<a href='/images/stairs/lt/lt-1/001.jpg' rel='fancy'><img src='/images/stairs/lt/lt-1/001.jpg' width='300px'></a>" +
+"</div>" +
+"<ul class='galka'>" +
+	"<li id='stairsText_1'>Надежный стальной каркас выдерживает нагрузку до 900 кг;</li>" +
+	"<li id='stairsText_2'>Собирается без сварки за 2 часа</li>" +
+	"<li id='stairsText_3'>Каркас полностью обшивается со всех сторон гипсокартоном;</li>" +
+	"<li id='stairsText_4'>Лестница идеально подойдет Вам, так как изготавливается на заказ под Ваш размер;</li>" +
+"</ul>" +
+"</div>" +
+"<div id='railingDiv'>" +
+"<h3 id='railingHeader'>Ограждения</h3>" +
+"<div id='railingImage'>" +
+"<a href='/images/stairs/lt/lt-1/001.jpg' rel='fancy'><img src='/images/stairs/lt/lt-1/001.jpg' width='300px'></a>" +
+"</div>" +
+"<ul class='galka'>" +
+"	<li id='railingText_1'>Надежный стальной каркас выдерживает нагрузку до 900 кг;</li>" +
+"	<li id='railingText_2'>Собирается без сварки за 2 часа</li>" +
+"	<li id='railingText_3'>Каркас полностью обшивается со всех сторон гипсокартоном;</li>" +
+	"<li id='railingText_4'></li>" +
+	"<li id='railingText_5' style='display: none;'></li>" +
+	"<li id='railingText_6' style='display: none;'></li>" +
+"</ul>" +
+"</div>" +
+"<div class='clear'></div>";
+
+document.getElementById("complect").innerHTML = complect;
+
+}
+

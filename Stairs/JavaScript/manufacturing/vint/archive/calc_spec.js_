@@ -1,0 +1,755 @@
+function calcSpecVint() {
+	
+	// массив артикулов деталей, подлежащих покраске - заполнение в профильной библиотеке конкретного типа лестницы
+	window.carcassMetalPaintArr = ["metalStair", "metalTopLanding", "drum", "bottomDrum", "topShim", "topLandingShim", "bottomFlange", "regShim", "steelBanister", "metalBottomStair", "angle", "platformFixAngle", "holderDrum", ""];
+
+	window.carcassTimberPaintArr = ["timberTread", "timberPlatform", "", "", "", "", "", "", "", "", "", "", ""];
+
+	window.railingMetalPaintArr = ["alumHandrailSection", "bracket", "angle", "topRailing", "alumTopLandingHandrail", "steelCover", "topRailing", "", "", "", ""];
+
+	window.railingTimberPaintArr = ["woodenHandrailSection", "woodenTopLandingHandrail", "", "", "", "", "", "", "", "", ""];
+	
+	// глобальные переменные с вариантами покраски
+	window.metalPaint = params.metalPaint;
+	window.metalPaint_perila = params.metalPaint;
+	window.timberPaint = params.timberPaint;
+	window.timberPaint_perila = params.timberPaint;
+	
+	// содержание блока faq (глобальная переменная)
+	window.faqContent = "<h3><br>Обратите внимание!</h3>Расчёт спецификации на ограждения балюстрады находится в разработке.<br>В спецификации не заложено крепление лестницы к перекрытиям и стенам.";
+	
+	// считывание данных из формы
+	getAllInputsValues(params);
+	
+	// удаление элементов массива specification
+	for (i = 1; i < specification.length; i++) {
+		for (j = 0; j < specification[i].length; j++) delete specification[i][j];
+		}
+
+
+// удаление предыдущих заполнений таблиц и их вывода
+window.metal_specification = "<tr><td><b>Наименование</b></td><td><b>Кол-во</b></td><td><b>Назначение</b></td><td><b>Покраска</b></td><td><b>Артикул</b></td></tr>";
+document.getElementById('metal_list').innerHTML = "";
+
+window.timber_specification = "<tr><td><b>Наименование</b></td><td><b>Кол-во</b></td><td><b>Назначение</b></td><td><b>Покраска</b></td><td><b>Артикул</b></td></tr>";
+document.getElementById('timber_list').innerHTML = "";
+
+window.store_specification = "<tr><td><b>Наименование</b></td><td><b>Кол-во</b></td><td><b>Назначение</b></td><td><b>Покраска</b></td><td><b>Артикул</b></td></tr>";
+document.getElementById('store_list').innerHTML = "";
+
+document.getElementById('faq').innerHTML = "";
+
+//константы
+
+var bottomFlanThk = 8;
+var holderFlanThk = 8;
+
+	
+/***  ЛЕСТНИЦА С ДЕРЕВЯННЫМИ СТУПЕНЯМИ   ***/
+
+
+if ((params.treadMaterial == "береза") || (params.treadMaterial == "дуб")) {
+	
+	//бобышки
+	
+	var drumHeight = stairParams.stepHeight - stairParams.treadThickness - 4;
+	var bottomDrumAmt = 1; //кол-во нижних бобышек
+	var holderDrumAmt = params.holderAmt; //кол-во бобышек с промежуточным креплением
+	var drumAmt = params.stepAmt - bottomDrumAmt - holderDrumAmt;
+	
+	
+	//нижняя бобышка
+	var bottomDrumHeight = drumHeight - bottomFlanThk;
+	if(params.botFloorType == "черновой") bottomDrumHeight += params.botFloorsDist;
+	
+	name = "Бобышка ТИП_1 Hб1=" + bottomDrumHeight + "мм";
+	amt = bottomDrumAmt;
+	discription = "Бобышка нижней ступени";
+	division = "Металлический цех";
+	id = "bottomDrum";
+	itemAdd(name, amt, discription, division, id);
+
+	//основные бобышки
+	name = "Бобышка ТИП_2 Hб2=" + drumHeight + "мм";
+	amt = drumAmt;
+	discription = "Бобышка средней ступени";
+	division = "Металлический цех";
+	id = "drum";
+	itemAdd(name, amt, discription, division, id);
+
+	//бобышки кронштейна промежуточного крепления
+	name = "Бобышка ТИП_2 Hб2=" + (drumHeight - holderFlanThk) + "мм";
+	amt = drumAmt;
+	discription = "Бобышка кронштейна крепления к стене";
+	division = "Металлический цех";
+	id = "holderDrum";
+	itemAdd(name, amt, discription, division, id);
+	
+	//ступени	
+	stairAmt = params.stepAmt - 1;	
+	name = "Ступень (" + params.treadMaterial + ")";
+	amt = stairAmt;
+	discription = "Ступень";
+	division = "Столярный цех";
+	id = "timberTread";
+	itemAdd(name, amt, discription, division, id);
+		
+	//площадка
+	name = "Верхняя площадка (" + params.treadMaterial + ")";
+	amt = 1;
+	discription = "Ступень";
+	division = "Столярный цех";
+	id = "timberPlatform";
+	itemAdd(name, amt, discription, division, id);
+	
+	//шайба площадки с 4 отверстиями для саморезов
+	name = "Верхняя шайба с 4 отверстиями";
+	amt = 1;
+	discription = "Шайба площадки с отверстиями под саморезы для крепления секции ограждения";
+	division = "Металлический цех";
+	id = "platformTopShim";
+	itemAdd(name, amt, discription, division, id);
+	
+}//конец лестницы с деревянными ступенями
+
+
+
+	
+/***  ЛЕСТНИЦА С МЕТАЛЛИЧЕСКИМИ СТУПЕНЯМИ   ***/
+	
+	
+if ((params.treadMaterial == "рифленая сталь") || (params.treadMaterial == "лотки под плитку")) {
+	
+	//ступени в сборе с бобышками
+	
+	var drumHeight = stairParams.stepHeight - 4;	
+	var bottomTreadsAmt = 1; //кол-во нижних ступеней
+	var holderTreadsAmt = params.holderAmt; //кол-во бобышек с промежуточным креплением
+	var treadsAmt = params.stepAmt - bottomTreadsAmt - holderTreadsAmt;
+	
+	
+	//нижняя ступень
+	var bottomDrumHeight = drumHeight - bottomFlanThk;
+	if(params.botFloorType == "черновой") bottomDrumHeight += params.botFloorsDist;
+	
+	name = "Ступень металлическая первая"; 
+	amt = bottomTreadsAmt;
+	discription = "Ступень металлическая в сборе с бобышкой ТИП_1 Hб1=" + bottomDrumHeight + "мм";
+	division = "Металлический цех";
+	id = "firstMetalTread";
+	itemAdd(name, amt, discription, division, id);
+	
+	//остальные ступени
+	name = "Ступень металлическая";
+	amt = bottomTreadsAmt;
+	discription = "Ступень металлическая в сборе с бобышкой ТИП_1 Hб1=" + drumHeight + "мм";
+	division = "Металлический цех";
+	id = "metalTread";
+	itemAdd(name, amt, discription, division, id);
+	
+	//верхняя площадка
+	name = "Площадка металлическая";
+	amt = bottomTreadsAmt;
+	discription = "Площадка металлическая в сборе с бобышкой ТИП_1 Hб1=" + drumHeight + "мм";
+	division = "Металлический цех";
+	id = "metalPlatform";
+	itemAdd(name, amt, discription, division, id);
+
+	//шайба площадки с 4 отверстиями с вваренными гайками
+	name = "Верхняя шайба бобышки с 4 отверстиями с вваренными гайками М6";
+	amt = 1;
+	discription = "Шайба последней бобышки с отверстиями для крепления секции ограждения";
+	division = "Металлический цех";
+	id = "platformTopShim";
+	itemAdd(name, amt, discription, division, id);
+
+}//конец лестницы с металлическими ступенями
+	
+	
+	
+/*** ОБЩИЕ ПОЗИЦИИ ДЛЯ ДЕРЕВЯННОЙ И МЕТАЛЛИЧЕСКОЙ ЛЕСТНИЦЫ ***/
+
+//нижний фланец
+	name = "Нижний фланец с приваренной гайкой";
+	amt = 1;
+	discription = "Крепление лестницы к нижнему перекрытию";
+	division = "Металлический цех";
+	id = "bottomFlange";
+	itemAdd(name, amt, discription, division, id);
+	
+//шпилька
+	var studLength = params.staircaseHeight + 4 + 30;
+	var studAmt = Math.ceil(studLength/1000); //шпильки
+
+	name = "Шпилька М20 L=1000 мм";
+	amt = studAmt;
+	discription = "Стяжка центрального столба";
+	division = "Склад";
+	id = "stud";
+	itemAdd(name, amt, discription, division, id);
+	
+	//длинные гайки для соединения шпилек
+	name = "Гайка М20 удлин.";
+	amt = studAmt - 1;
+	discription = "Соединение отрезков стягивающей шпильки";
+	division = "Склад";
+	id = "nut_M20_long";
+	itemAdd(name, amt, discription, division, id);
+	
+//верхняя гайка
+	name = "Гайка М20";
+	amt = 1;
+	discription = "Верхняя гайка стягивания лестницы";
+	division = "Склад";
+	id = "nut_M20";
+	itemAdd(name, amt, discription, division, id);	
+
+//Гроверная шайба для верхней гайки
+	name = "Шайба гроверная М20";
+	amt = 1;
+	discription = "Шайба верхней гайки стягивания лестницы";
+	division = "Склад";
+	id = "shim_M20";
+	itemAdd(name, amt, discription, division, id);
+
+//верхняя шайба бобышки
+	var topShimAmt = drumAmt + bottomDrumAmt + holderDrumAmt;
+	//учитываем что на металлической лестнице площадка не закрывает последнюю бобышку
+	if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") topShimAmt = topShimAmt - 1;
+	name = "Верхняя шайба бобышки";
+	amt = topShimAmt;
+	discription = "Верхняя шайба бобышки с проточкой";
+	division = "Металлический цех";
+	id = "drumTopShim";
+	itemAdd(name, amt, discription, division, id);
+	
+//регулировочные шайбы
+	var regShimAmt = Math.ceil((params.staircaseHeight - stairParams.stepHeight*params.stepAmt)/4) + 2;
+	name = "Регулировочная шайба 4мм";
+	amt = topShimAmt;
+	discription = "Проставка для регулирования высоты лестницы";
+	division = "Металлический цех";
+	id = "regShim";
+	itemAdd(name, amt, discription, division, id);	
+
+//уголки крепления площадки
+	name = "Уголок У2-40х40х90";
+	amt = 2;
+	discription = "Крепление верхней плолщадки к перекрытию";
+	division = "Склад";
+	id = "platformFixAngle";
+	itemAdd(name, amt, discription, division, id);
+
+//кронштейн промежуточного крепления
+	name = "Кронштейн промежуточного крепления Lкр=" + (params.staircaseDiam/2 + 200) + "мм";
+	amt = params.holderAmt;
+	discription = "Промежуточное крепление лестницы к стене, к-т";
+	division = "Металлический цех";
+	id = "middleHolder";
+	itemAdd(name, amt, discription, division, id);
+	
+//болт кронштейна
+	name = "Болт М10х70";
+	amt = params.holderAmt;
+	discription = "Болт кронштейна";
+	division = "Склад";
+	id = "middleHolderBolt";
+	itemAdd(name, amt, discription, division, id);
+	
+//гайка кронштейна
+	name = "Гайка М10";
+	amt = params.holderAmt;
+	discription = "Гайка кронштейна";
+	division = "Склад";
+	id = "nut_M10";
+	itemAdd(name, amt, discription, division, id);
+	
+//шайба кронштейна
+	name = "Шайба М10";
+	amt = params.holderAmt * 2;
+	discription = "Шайба кронштейна";
+	division = "Склад";
+	id = "shim_M10";
+	itemAdd(name, amt, discription, division, id);
+
+	
+	
+/*** ОГРАЖДЕНИЕ ЛЕСТНИЦЫ ***/
+
+
+/*балясины*/
+
+	var banisterAmt = [];
+	var banisterLength = [];
+	var banisterHoleDist = [];
+	var botLedge = 80; //выступ балясины ниже верхней поверхности ступени
+	if(params.treadMaterial == "рифленая сталь") botLedge = 45;
+	var railingHeight = 900; //номинальаня высота ограждения в начале ступени
+	description = ""; //наименование балясины
+	var banisterName = "Балясина 20х20мм (черн.) ";
+	var firstBalId = "firstBal";
+	var longBalId = "longBal";
+	var middleBalId = "middleBal";
+
+	if (params.rackType == "нержавейка") {
+		var banisterName = "Балясина 20х20мм (нерж.) ";
+		var firstBalId = "firstBalInox";
+		var longBalId = "longBalInox";
+		var middleBalId = "middleBalInox";
+	}
+	
+	//стартовая балясина
+	banisterAmt[0] = 1; 
+	banisterLength[0] = stairParams.startBanisterLength;
+	banisterHoleDist[0] = stairParams.stepHeight - 80;
+	if(params.treadMaterial == "рифленая сталь") banisterHoleDist[0] = stairParams.stepHeight - 46;
+	
+	name = "Первая стойка"; 
+	amt = banisterAmt[0];
+	discription = banisterName + "ТИП_1, Lст1=" + banisterLength[0] + "мм, аст1=" + banisterHoleDist[0] + "мм";
+	division = "Металлический цех";
+	id = firstBalId;
+	itemAdd(name, amt, discription, division, id);
+	
+	
+	//длинная балясина с двумя отверстиями
+	banisterAmt[1] = params.stepAmt - 1;
+	banisterLength[1] = stairParams.longBanisterLength;
+	banisterHoleDist[1] = stairParams.stepHeight;
+	
+	name = "Длинная стойка";
+	amt = banisterAmt[1];
+	discription = banisterName + "ТИП_2, Lст2=" + banisterLength[1] + "мм, аст2=" + banisterHoleDist[1] + "мм";
+	division = "Металлический цех";
+	id = longBalId;
+	itemAdd(name, amt, discription, division, id);
+
+	
+	//промежуточные балясины
+	for(var i = 2; i<params.banisterPerStep+1; i++){
+		banisterAmt[i] = params.stepAmt - 1;
+		banisterLength[i] = railingHeight + botLedge + stairParams.stepHeight * (i-1)/params.banisterPerStep;
+		banisterHoleDist[i] = 0;
+		
+		name = "Промежуточная стойка";
+		amt = banisterAmt[i];
+		discription = banisterName + "ТИП_3, Lст3=" + banisterLength[i] + "мм";
+		division = "Металлический цех";
+		id = middleBalId;
+		itemAdd(name, amt, discription, division, id);
+		}
+	
+	//общее кол-во балясин
+	var totalBalAmt = (params.stepAmt - 1) * params.banisterPerStep + 1;
+
+	
+/*нижний узел балясины*/
+	
+	//уголки
+	var angleAmt = 2 * params.stepAmt + (params.banisterPerStep - 1) * (params.stepAmt - 1);	
+	name = "Уголок крепления балясины";
+	amt = angleAmt;
+	discription = "Крепление балясин";
+	division = "Склад";
+	id = "angle";
+	itemAdd(name, amt, discription, division, id);
+	
+	//болты
+	name = "Болт М6х35 с внутр. шестигр.";
+	amt = angleAmt;
+	discription = "Крепление уголков к балясинам";
+	division = "Склад";
+	id = "bolt_M6x35";
+	itemAdd(name, amt, discription, division, id);
+	
+	//шайбы
+	name = "Шайба М6";
+	amt = angleAmt;
+	discription = "Крепление уголков к балясинам";
+	division = "Склад";
+	id = "shim_M6";
+	itemAdd(name, amt, discription, division, id);
+	
+	//гайки
+	name = "Шайба М6";
+	amt = angleAmt;
+	discription = "Крепление уголков к балясинам";
+	division = "Склад";
+	id = "nut_M6";
+	itemAdd(name, amt, discription, division, id);
+
+	//заглушки
+	name = "Заглушка пласт.20х20";
+	amt = totalBalAmt;
+	discription = "Заглушка низа балясины";
+	division = "Склад";
+	id = "plug20";
+	itemAdd(name, amt, discription, division, id);
+	
+	//шурупы крепления к ступеням
+	if (params.treadMaterial == "береза" || params.treadMaterial == "дуб") {
+		name = "Шуруп Ф6,3х32 с пол. гол. с острием";
+		amt = (angleAmt-1) * 2;
+		discription = "Крепление уголков к ступеням";
+		division = "Склад";
+		id = "treadScrew";
+		itemAdd(name, amt, discription, division, id);	
+		}
+	
+	//болты крепления к ступеням
+	if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") {
+		//болты
+		name = "Винт М6х20 полукр. гол. крест";
+		amt = (angleAmt-1) * 2;
+		discription = "Крепление уголков к ступеням";
+		division = "Склад";
+		id = "bolt_M6x20";
+		itemAdd(name, amt, discription, division, id);
+		
+		//шайбы
+		name = "Шайба М6";
+		amt = (angleAmt-1) * 2;
+		discription = "Крепление уголков к ступеням";
+		division = "Склад";
+		id = "shim_M6";
+		itemAdd(name, amt, discription, division, id);
+		
+		//гайки
+		name = "Шайба М6";
+		amt = (angleAmt-1) * 2;
+		discription = "Крепление уголков к ступеням";
+		division = "Склад";
+		id = "nut_M6";
+		itemAdd(name, amt, discription, division, id);
+		
+		}
+	
+/*верхний узел балясин*/	
+	
+	//кронштейны поручня
+	
+	name = "Кронштейн поручня";
+	amt = totalBalAmt;
+	discription = "Крепление поручня";
+	division = "Склад";
+	id = "bracket";
+	itemAdd(name, amt, discription, division, id);
+	
+	//болты
+	name = "Болт М6х35 с внутр. шестигр.";
+	amt = totalBalAmt;
+	discription = "Крепление кронштейнов к балясинам";
+	division = "Склад";
+	id = "bolt_M6x35";
+	itemAdd(name, amt, discription, division, id);
+	
+	//шайбы
+	name = "Шайба М6";
+	amt = totalBalAmt;
+	discription = "Крепление кронштейнов к балясинам";
+	division = "Склад";
+	id = "shim_M6";
+	itemAdd(name, amt, discription, division, id);
+	
+	//гайки
+	name = "Гайка М6";
+	amt = totalBalAmt;
+	discription = "Крепление кронштейнов к балясинам";
+	division = "Склад";
+	id = "nut_M6";
+	itemAdd(name, amt, discription, division, id);
+	
+	//шурупы крепления поручня
+	if ((params.handrailMaterial == "ПВХ") || (params.handrailMaterial == "Дуб"))
+		handrailScrewName = "Шуруп Ф4,2х32 с пол. гол. с острием";
+	if (params.handrailMaterial == "Алюминий")
+		handrailScrewName = "Шуруп Ф4,2х32 с пол. гол. со сверлом";
+	
+	name = handrailScrewName;
+	amt = totalBalAmt * 2;
+	discription = "Крепление поручня к балясинам";
+	division = "Склад";
+	id = "handrailScrew";
+	itemAdd(name, amt, discription, division, id);
+		
+/*поручень на лестнице*/
+	
+	riseAngle = Math.atan2(stairParams.stepHeight, params.staircaseDiam/2 *(params.stepAngle*Math.PI/180));
+	var handrailLength = params.staircaseHeight / Math.sin(riseAngle) + 400;
+	handrailSectionAmt = Math.ceil (handrailLength / 3000);
+	
+	if (params.handrailMaterial == "ПВХ") {		
+		//поручень
+		name = "Секция поручня ПВХ радиусная";
+		amt = handrailSectionAmt;
+		discription = "Поручень на лестнице";
+		division = "Столярный цех";
+		id = "plasticHandrail";
+		itemAdd(name, amt, discription, division, id);
+		
+		//кольца на стыки
+		name = "Кольцо для поручня ПВХ";
+		amt = handrailSectionAmt-1;
+		discription = "Соединение поручня на лестнице";
+		division = "Склад";
+		id = "handrailRing";
+		itemAdd(name, amt, discription, division, id);
+		
+		//зип-болты
+		name = "Зип-болт прямой";
+		amt = handrailSectionAmt-1;
+		discription = "Соединение поручня на лестнице";
+		division = "Склад";
+		id = "zipBolt";
+		itemAdd(name, amt, discription, division, id);
+		
+		//заглушки на торцы
+		name = "Заглушка внешняя для поручня ПВХ";
+		amt = 2;
+		discription = "Концы поручня на лестнице";
+		division = "Склад";
+		id = "handrailCan";
+		itemAdd(name, amt, discription, division, id);	
+		}
+	
+	if (params.handrailMaterial == "Дуб") {	
+		//поручень
+		name = "Секция поручня ДУБ радиусная";
+		amt = handrailSectionAmt;
+		discription = "Поручень на лестнице";
+		division = "Столярный цех";
+		id = "timberHandrail";
+		itemAdd(name, amt, discription, division, id);
+		
+		//зип-болты
+		name = "Зип-болт прямой";
+		amt = handrailSectionAmt-1;
+		discription = "Соединение поручня на лестнице";
+		division = "Склад";
+		id = "zipBolt";
+		itemAdd(name, amt, discription, division, id);
+		
+		//заглушки на торцы
+		name = "Заглушка дуб";
+		amt = 2;
+		discription = "Заглушка отверстий под зип-болт в поручне";
+		division = "Столярный цех";
+		id = "timberPlug";
+		itemAdd(name, amt, discription, division, id);	
+	}
+	
+	if (params.handrailMaterial == "Алюминий") {
+		//поручень
+		name = "Секция поручня алюминиевая радиусная";
+		amt = handrailSectionAmt;
+		discription = "Поручень на лестнице";
+		division = "Металлический цех";
+		id = "alumHandrail";
+		itemAdd(name, amt, discription, division, id);
+		
+		//кольца на стыки
+		name = "Комплект для стыковки алюминиевого поручня";
+		amt = handrailSectionAmt-1;
+		discription = "Соединение поручня на лестнице";
+		division = "Металлический цех";
+		id = "alumHandrailConnector";
+		itemAdd(name, amt, discription, division, id);
+		
+		//заглушки на торцы
+		name = "Заглушка внутр. для алюминиевого поручня";
+		amt = 2;
+		discription = "Концы поручня на лестнице";
+		division = "Склад";
+		id = "handrailCan";
+		itemAdd(name, amt, discription, division, id);
+	}
+	
+	
+/*** ОГРАЖДЕНИЕ ВЕРХНЕЙ ПЛОЩАДКИ ***/
+	
+	
+	//секция
+	name = "Сварная секция ограждения верхней площадки" + params.rackType;
+	amt = 1;
+	discription = "Ограждение верхней площадки";
+	division = "Металлический цех";
+	id = "platformRailingSection";
+	itemAdd(name, amt, discription, division, id);
+	
+	//крышки фланцев стоек секции ограждения площадки
+	name = "Крышка фланца стойки " + params.rackType;
+	amt = 2;
+	discription = "Крышка фланца крепления стойки ограждения верхней площадки";
+	division = "Склад";
+	id = "flanCover";
+	if (params.rackType == "нержавейка") id = "flanCoverInox";
+	itemAdd(name, amt, discription, division, id);
+	
+	//крепление к площадке
+	if (params.treadMaterial == "береза" || params.treadMaterial == "дуб") {
+		name = "Шуруп Ф6,3х32 с пол. гол. с острием";
+		amt = 8;
+		discription = "Крепление секции ограждения к площадке";
+		division = "Склад";
+		id = "treadScrew";
+		itemAdd(name, amt, discription, division, id);	
+		}
+	
+	if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") {
+		//болты
+		name = "Винт М6х20 полукр. гол. крест";
+		amt = 8;
+		discription = "Крепление секции ограждения к площадке";
+		division = "Склад";
+		id = "bolt_M6x20";
+		itemAdd(name, amt, discription, division, id);
+		
+		//шайбы
+		name = "Шайба М6";
+		amt = 8;
+		discription = "Крепление секции ограждения к площадке";
+		division = "Склад";
+		id = "shim_M6";
+		itemAdd(name, amt, discription, division, id);		
+		}
+		
+	//крепление поручня площадки к секции
+	
+	//гайки для черных стоек
+	if (params.rackType == "черная сталь"){
+		name = "Гайка М8";
+		amt = 2;
+		discription = "Крепление штырей к стойкам ограждения площадки";
+		division = "Склад";
+		id = "nut_M8";
+		itemAdd(name, amt, discription, division, id);	
+		}
+		
+	//основание штыря для нержавеющих стоек
+	if (params.rackType == "нержавейка"){
+		name = "Основание штыря 40х40 нерж.";
+		amt = 2;
+		discription = "Крепление штырей к стойкам ограждения площадки";
+		division = "Склад";
+		id = "jointBase";
+		itemAdd(name, amt, discription, division, id);	
+		}
+		
+	//штыри
+		name = "Кронштейн поручня штырь прямой нерж.";
+		amt = 2;
+		discription = "Секция ограждения площадки";
+		division = "Склад";
+		id = "joint";
+		itemAdd(name, amt, discription, division, id);
+	
+	//лодочки полукруглые
+	if (params.handrailMaterial == "ПВХ" || params.handrailMaterial == "Алюминий"){
+		name = "Лодочка полукр. нерж.";
+		amt = 2;
+		discription = "Секция ограждения площадки";
+		division = "Склад";
+		id = "jointFlan";
+		itemAdd(name, amt, discription, division, id);
+		}
+	
+	//лодочки прямые
+	if (params.handrailMaterial == "Дуб"){
+		name = "Лодочка плоск. нерж.";
+		amt = 2;
+		discription = "Секция ограждения площадки";
+		division = "Склад";
+		id = "jointFlan";
+		itemAdd(name, amt, discription, division, id);	
+		}
+	
+	//шурупы крепления поручня
+	name = handrailScrewName;
+	amt = 4;
+	discription = "Крепление поручня секции балюстрады";
+	division = "Склад";
+	id = "handrailScrew";
+	itemAdd(name, amt, discription, division, id);
+	
+	//поручень
+	
+	if (params.handrailMaterial == "ПВХ") {	
+		name = "Секция поручня ПВХ прямая L=" + Math.round(stairParams.handrailPlatformLength) + "мм";
+		amt = 1;
+		discription = "Поручень на балюстраде";
+		division = "Столярный цех";
+		id = "plasticHandrail";
+		itemAdd(name, amt, discription, division, id);		
+		
+		//заглушки на торцы
+		name = "Заглушка внешняя для поручня ПВХ";
+		amt = 2;
+		discription = "Концы поручня на балюстраде";
+		division = "Склад";
+		id = "handrailCan";
+		itemAdd(name, amt, discription, division, id);	
+		}
+	
+	if (params.handrailMaterial == "Дуб") {
+		name = "Секция поручня ДУБ прямая L=" + Math.round(stairParams.handrailPlatformLength) + "мм";
+		amt = 1;
+		discription = "Поручень на балюстраде";
+		division = "Столярный цех";
+		id = "timberHandrail";
+		itemAdd(name, amt, discription, division, id);
+		
+		}
+	
+	if (params.handrailMaterial == "Алюминий") {
+		name = "Секция поручня алюминиевая прямая L=" + Math.round(stairParams.handrailPlatformLength) + "мм";
+		amt = 1;
+		discription = "Поручень на лестнице";
+		division = "Металлический цех";
+		id = "alumHandrail";
+		itemAdd(name, amt, discription, division, id);		
+				
+		//заглушки на торцы
+		name = "Заглушка внутр. для алюминиевого поручня";
+		amt = 2;
+		discription = "Концы поручня на балюстраде";
+		division = "Склад";
+		id = "handrailCan";
+		itemAdd(name, amt, discription, division, id);
+		}
+		
+	
+	// вывод спецификации
+	printSpecification();
+	
+	
+	
+/*** ИНФОРМАЦИЯ ДЛЯ ПРОИЗВОДСТВА ***/
+ 
+
+
+	var stapelStepHeight = stairParams.stepHeight * 12.857/params.stepAngle; //12.857 - угол между стойками стапеля, град.
+	var handrailHorSize = 40;
+	if (params.handrailMaterial == "ПВХ") handrailHorSize = 50;
+	var balSize = 20;
+	var stapelMaxDiam = 2000;
+	var stapelOffset = (stapelMaxDiam - params.staircaseDiam)/2 - balSize/2 + handrailHorSize/2;
+	
+	var outputDiv = document.getElementById('drawings')
+	outputDiv.innerHTML = "<h3>Информация для производства</h3>" + 
+	"Длина поручня лестницы без запаса: " + Math.round(handrailLength) + " мм <br/>" + 
+	"Отступ для установки стоек стапеля: " + Math.round(stapelOffset) + " мм <br/>" +
+	"Подъем на одну стойку стапеля: " + Math.round(stapelStepHeight) + " мм <br/>" +
+	"Длина поручня площадки: " + Math.round(stairParams.handrailPlatformLength) + " мм <br/>" +
+	"Длина секции ограждения площадки (по осям столбов): " + Math.round(stairParams.sectionLength + 40) + " мм <br/>" +
+	"Зазор между эл-тами заполнения секции: " + Math.round(stairParams.sectionHoleWidth) + " мм <br/>" +
+	"Кол-во эл-тов заполнения секции: " + Math.round(stairParams.sectionBalAmt) + " шт <br/>" +
+	"Разность высот столбов (снизу): 4 мм <br/>" +
+
+	
+	"<h3>Чертежи деталей</h3>" + 
+	"<a href='#' onclick='exportToDxf(dxfPrimitivesArr);'>Ступени, площадка DXF</a></br>" + 
+	"<a href='/calculator/vint/autoCad/vintParts_v.1.2.pdf' target='_blank'>Детали для цеха PDF</a></br>" + 
+	"<a href='/calculator/vint/autoCad/vintParts_4mm_v.1.2.dxf' target='_blank'>Детали на чпу 4мм DXF</a></br>" + 
+	"<a href='/calculator/vint/autoCad/vintParts_8mm_v.1.2.dxf' target='_blank'>Детали на чпу 8мм DXF</a></br>";
+
+} // end of calcSpecVint()
