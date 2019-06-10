@@ -502,7 +502,7 @@ function drawGlassSection(par){
 	var sectionHeight = 800;
 
 	par.sectionHeight = sectionHeight;
-	par.glassHeight = sectionHeight + glassOffsetY;
+	par.glassHeight = sectionHeight + glassOffsetY;	
 	calculateGlassPoints(par);
 
 	if(params.turnSide == 'левое'){
@@ -556,6 +556,16 @@ function drawGlassSection(par){
 		if (i == 0 && par.marshPar.botTurn == 'пол'){
 			if (par.glassPoints[0].y < glassOffsetY)
 				glassPar.botCutHeight = glassOffsetY - par.marshPar.h;
+		}
+
+		//вырез для нахлеста на верхнее перекрытие
+		if (marshPar.lastMarsh && params.railingModel_bal !== 'нет' && i == (par.glassPoints.length - 1)) {
+			glassPar.topConnectionBal = true;
+			glassPar.extraLengthToBal = (60 + params.flanThickness + params.banisterPosX) / Math.cos(marshPar.ang);
+			if (params.railingModel_bal !== "Самонесущее стекло") glassPar.extraLengthToBal -= 40 / 2 / Math.cos(marshPar.ang); // 40 - ширина стойки
+			if (params.railingModel_bal == "Самонесущее стекло") glassPar.extraLengthToBal -= (glassThickness / 2 + 10) / Math.cos(marshPar.ang); // 10 - зазор между стеклами
+			glassPar.balCutHeight = marshPar.h + glassOffsetY - par.glassPoints[0].y - params.flanThickness * Math.tan(marshPar.ang);
+			if (params.glassFix_bal == 'профиль') glassPar.balCutHeight += 100 - (params.banisterPosX - 50 / 2) * Math.tan(marshPar.ang); // 100 - высота профиля, 50 - ширина профиля
 		}
 		
 		glassPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.glassPoints[i].x, par.glassPoints[i].y);
@@ -620,6 +630,19 @@ function drawGlassSection(par){
 
 		if (params.startVertHandrail == "есть" && params.handrailFixType == "паз") {
 			handrailParams.extraLengthEnd = 0;
+		}
+
+		//удлинение поручня для нахлеста на верхнее перекрытие
+		if (marshPar.lastMarsh && params.railingModel_bal !== 'нет') {
+			//параметры поручня балюстрады
+			var handrailBalPar = {
+				prof: params.handrailProf_bal,
+				sideSlots: params.handrailSlots_bal,
+				handrailType: params.handrail_bal,
+			}
+			handrailBalPar = calcHandrailMeterParams(handrailBalPar); //функция в файле priceLib.js
+			handrailParams.extraLengthEnd += 10;
+			handrailParams.extraLengthEnd += (60 + params.flanThickness + params.banisterPosX - handrailBalPar.profZ / 2) / Math.cos(marshPar.ang);
 		}
 
 
@@ -1772,7 +1795,7 @@ function calculateRacks(par){
 	//первая стойка нижнего поворота
 	if(par.botEnd != "нет") {
 		parRacks.botFirst = {
-			x: -params.M + 100,
+			x: -params.M + 130,
 			y: 0,//-par.h,
 			len: rackLen,
 			holderAng: marshPar.ang,
@@ -1788,7 +1811,12 @@ function calculateRacks(par){
 			// parRacks.angBot = parRacks.botFirst.holderAng;//calcAngleX1(parRacks.botFirst, parRacks.botLast);
 		}
 		if(par.botEnd == "площадка"){
-			parRacks.botFirst.x += 150;
+			if (prevMarshPar.hasRailing.out) {
+				parRacks.botFirst.x += 100;
+			}
+			if (params.stairModel == 'П-образная с площадкой') {
+				parRacks.botFirst.x = -params.platformLength_1 + 80;
+			}
 			parRacks.botFirst.len += par.handrailTurnOffset; //удлинняем стойку чтобы стык поручня не попадал на кронштейн
 			parRacks.botFirst.holderAng = 0;
 		}
@@ -2450,3 +2478,170 @@ function addRackAngles(par){
 
 }//end of addRackAngles
 
+//-----------------------------
+
+function drawGlass2(par) {
+
+	par.dxfArr = dxfPrimitivesArr;
+	if (!par.dxfBasePoint) {
+		par.dxfBasePoint = { x: 0, y: 0, };
+		par.dxfArr = [];
+	}
+
+	par.mesh = new THREE.Object3D();
+
+	//необязательные параметры
+	if (!par.angleBot) par.angleBot = par.angleTop;
+	if (!par.botCutHeight) par.botCutHeight = 0;
+	if (!par.topCutHeight) par.topCutHeight = 0;
+	if (!par.holeCenters) par.holeCenters = [];
+
+
+	var extrudeOptions = {
+		amount: par.thk,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+
+	//четырехугольник без срезов
+	var p1 = { x: 0, y: 0 };
+	var p2 = newPoint_xy(p1, 0, par.heightLeft);
+	var p3 = newPoint_x1(p2, par.width, par.angleTop);
+	var p4 = newPoint_x1(p1, par.width, par.angleBot);
+
+
+	//срез снизу
+	var botY = p1.y;
+	if (par.botCutHeight != 0) {
+		var p11 = newPoint_y(p1, par.botCutHeight, par.angleBot);
+		var p12 = newPoint_xy(p1, 0, par.botCutHeight);
+		botY = p12.y;
+	}
+
+	//срез сверху
+	var topY = p3.y;
+	if (par.topCutHeight != 0) {
+		var p31 = newPoint_y(p1, -par.topCutHeight, par.angleTop);
+		var p32 = newPoint_xy(p3, 0, -par.topCutHeight);
+		topY = p32.y;
+	}
+
+	//вырез для нахлеста на верхнее перекрытие
+	if (par.topConnectionBal) {
+		var p31 = polar(p3, par.angleTop, par.extraLengthToBal);
+		var pt = newPoint_xy(p1, 0, par.balCutHeight);
+		var p32 = itercection(pt, polar(pt, par.angleTop, 100), p31, polar(p31, Math.PI / 2, 100));
+		var p41 = itercection(pt, polar(pt, par.angleTop, 100), p4, polar(p4, Math.PI / 2, 100));
+		topY = p31.y;
+	}
+
+	var shape = new THREE.Shape();
+
+	//начинаем с 4 точки
+	if (par.botCutHeight == 0) {
+		addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p1, p2, par.dxfBasePoint);
+	}
+	if (par.botCutHeight != 0) {
+		addLine(shape, par.dxfArr, p4, p11, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p11, p12, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p12, p2, par.dxfBasePoint);
+	}
+
+	//начинаем с 2 точки
+	if (par.topConnectionBal) {
+		addLine(shape, par.dxfArr, p2, p31, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p31, p32, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p32, p41, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p41, p4, par.dxfBasePoint);
+	}
+	else {
+		if (par.topCutHeight == 0) {
+			addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+			addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
+		}
+		if (par.topCutHeight != 0) {
+			addLine(shape, par.dxfArr, p2, p31, par.dxfBasePoint);
+			addLine(shape, par.dxfArr, p31, p32, par.dxfBasePoint);
+			addLine(shape, par.dxfArr, p32, p4, par.dxfBasePoint);
+		}
+	}
+
+
+	//длина стекла справа (для расчета длины слева следующего стекла)
+	par.heightRight = p3.y - p4.y;
+
+	//базовые точки для поручней
+	par.p1 = copyPoint(p2);
+	par.p2 = copyPoint(p3);
+
+	//отверстия стекла
+	for (var i = 0; i < par.holeCenters.length; ++i) {
+		addRoundHole(shape, dxfPrimitivesArr, par.holeCenters[i], par.holeCenters[i].rad, par.dxfBasePoint);
+
+		if (!par.holeCenters[i].hasHolder) {
+			var rutelPar = {
+				size: 10
+			};
+			var rutel = drawGlassRutel(rutelPar);
+			rutel.rotation.x = Math.PI / 2;
+			if (par.key == 'in') rutel.rotation.x *= -1;
+			rutel.rotation.x *= turnFactor;
+
+			rutel.position.x = par.holeCenters[i].x;
+			rutel.position.y = par.holeCenters[i].y;
+			rutel.position.z = 125 / 2 - 2;
+			if (par.key == 'in') rutel.position.z = -125 / 2 + 2;
+			if (par.key == 'in' && turnFactor == 1) rutel.position.z += par.thk;
+			if (par.key == 'out' && turnFactor == -1) rutel.position.z -= par.thk;
+			rutel.position.z *= turnFactor;
+
+			if (!testingMode) par.mesh.add(rutel);
+		}
+
+	}
+
+	if (!shape.drawing) shape.drawing = {};
+	shape.drawing.group = 'glass';
+	shape.drawing.keyPoints = { topP1: p2, topP2: p3, botP1: p4, botP2: p1 };
+	if (p11) {
+		shape.drawing.keyPoints.botP2 = p11;
+		shape.drawing.keyPoints.botP3 = p12;
+	}
+	shapesList.push(shape);
+
+	var geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var glass = new THREE.Mesh(geometry, params.materials.glass);
+
+	par.mesh.add(glass);
+
+	//сохраняем данные для спецификации
+	var glassHeight2 = topY - botY;
+	var partName = "glasses";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				sumArea: 0,
+				name: "Стекло",
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_2",
+				workUnitName: "amt",
+				group: "Ограждения",
+			}
+		}
+		var name = Math.round(par.width) + "x" + Math.round(glassHeight2);
+		var area = Math.round(par.width * glassHeight2 / 10000) / 100;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+		specObj[partName]["sumArea"] += area;
+	}
+	par.mesh.specId = partName + name;
+
+	return par;
+} //end of drawGlass2

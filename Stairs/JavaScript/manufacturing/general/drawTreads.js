@@ -460,8 +460,14 @@ function drawMarshTreads2(par) {
 		};
 		//коррекция толщины
 		if (params.stairType == "лотки" || params.stairType == "рифленая сталь") plateParams.thk = 4;
-		if (params.stairType == "лотки") plateParams.width -= plateParams.thk * 2;
+		if (params.stairType == "лотки") plateParams.width -= plateParams.thk * 2 + 0.1;
 		// if (params.calcType == "timber") plateParams.thk -= 0.02;
+		if (params.stairType == 'лотки') {
+			// рассчитываем параметры рамки
+			var parFrame = {}
+			calcFrameParams(parFrame);
+			plateParams.thkFull = plateParams.thk + parFrame.profHeight;
+		}
 
 
 		//пригласительные ступени
@@ -702,7 +708,7 @@ function drawMarshTreads2(par) {
 					var parFrame = {}
 					calcFrameParams(parFrame);
 					tread.position.y -= parFrame.profHeight + plateParams.thk;
-					tread.position.x += plateParams.thk;
+					tread.position.x += plateParams.thk + 0.05;
 				}
 				tread.position.z = - plateParams.len / 2;
 			}
@@ -920,6 +926,12 @@ function drawPlatform2(par) {
 		if (params.stairType == 'дпк' || params.stairType == "лиственница тер." ) {
 			plateParams.material = params.materials.dpc;
 			plateParams.dxfArr = [];
+		}
+		if (params.stairType == 'лотки') {
+			// рассчитываем параметры рамки
+			var parFrame = {}
+			calcFrameParams(parFrame);
+			plateParams.thkFull = plateParams.thk + parFrame.profHeight;
 		}
 
 		var partLen = par.partLen;

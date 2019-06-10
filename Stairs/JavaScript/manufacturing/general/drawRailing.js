@@ -1007,6 +1007,11 @@ function drawRailingSectionNewel2(par) {
 			}
 			if (parRacks.topLast) rigelBasePoints.push(copyPoint(parRacks.topLast));
 			if (parRacks.marsh2Last) rigelBasePoints.push(copyPoint(parRacks.marsh2Last));
+
+			if (params.calcType === 'vhod' && params.staircaseType == "Готовая" && par.key == 'rear') {
+				rigelBasePoints[0].x -= 100;
+				rigelBasePoints[rigelBasePoints.length - 1].x += 100;
+			}
 		}
 		if (params.calcType === 'mono') {
 			var rigelBasePoints = calcRigelPoints(par, parRacks);
@@ -1135,6 +1140,10 @@ function drawRailingSectionNewel2(par) {
 		//удлиннение поручня последнего марша
 		if (params.stairModel == "Прямая" || par.marshId == 3) {
 			handrailParams.extraLengthEnd += params.topHandrailExtraLength;
+		}
+		if (params.calcType === 'vhod' && params.staircaseType == "Готовая" && par.key == 'rear') {
+			handrailParams.extraLengthStart += 90;
+			handrailParams.extraLengthEnd += 90;
 		}
 		handrailParams = drawPolylineHandrail(handrailParams);
 
@@ -1646,6 +1655,7 @@ function drawPolylineHandrail(par) {
 
 					var holder = drawHandrailHolderTurnRack(holderPar).mesh;
 					holder.position.z += -30 * turnFactor;
+					if (params.calcType === 'mono' && turnFactor == 1) holder.position.z -= 100;
 					par.mesh.add(holder);
 				}
 			}
@@ -2074,6 +2084,10 @@ function drawPolylineRigel(par) {
 				group: "Ограждения"
 			}
 			var pos = itercection(rigelBasePoint, polar(rigelBasePoint, ang, 100), {x: rack.x, y: 0}, newPoint_xy({x: rack.x, y: 0}, 0, 100));
+
+			//если на следующем марше поворотная стойка, сдвигаем позицию до неё
+			if (rack.dxToMarshNext) pos = newPoint_x1(pos, rack.dxToMarshNext - 40 / 2, ang); // 40 - ширина стойки
+
 			var screw = drawScrew(screwPar).mesh;
 			screw.rotation.x = Math.PI / 2;
 			screw.position.x = pos.x;
@@ -3973,6 +3987,15 @@ function drawGlass2(par){
 		topY = p32.y;
 		}
 
+	//вырез для нахлеста на верхнее перекрытие
+	if (par.topConnectionBal) {
+		var p31 = polar(p3, par.angleTop, par.extraLengthToBal);
+		var pt = newPoint_xy(p1, 0, par.balCutHeight);
+		var p32 = itercection(pt, polar(pt, par.angleTop, 100), p31, polar(p31, Math.PI / 2, 100));
+		var p41 = itercection(pt, polar(pt, par.angleTop, 100), p4, polar(p4, Math.PI / 2, 100));
+		topY = p31.y;
+	}
+
 	var shape = new THREE.Shape();
 
 	//начинаем с 4 точки
@@ -3987,15 +4010,23 @@ function drawGlass2(par){
 		}
 
 	//начинаем с 2 точки
-	if(par.topCutHeight == 0){
-		addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
-		}
-	if(par.topCutHeight != 0){
+	if (par.topConnectionBal) {
 		addLine(shape, par.dxfArr, p2, p31, par.dxfBasePoint);
 		addLine(shape, par.dxfArr, p31, p32, par.dxfBasePoint);
-		addLine(shape, par.dxfArr, p32, p4, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p32, p41, par.dxfBasePoint);
+		addLine(shape, par.dxfArr, p41, p4, par.dxfBasePoint);
+	}
+	else {
+		if (par.topCutHeight == 0) {
+			addLine(shape, par.dxfArr, p2, p3, par.dxfBasePoint);
+			addLine(shape, par.dxfArr, p3, p4, par.dxfBasePoint);
 		}
+		if (par.topCutHeight != 0) {
+			addLine(shape, par.dxfArr, p2, p31, par.dxfBasePoint);
+			addLine(shape, par.dxfArr, p31, p32, par.dxfBasePoint);
+			addLine(shape, par.dxfArr, p32, p4, par.dxfBasePoint);
+		}
+	}
 
 
 	//длина стекла справа (для расчета длины слева следующего стекла)
@@ -4467,7 +4498,8 @@ function setTurnRacksParams(marshId, key) {
 			}
 			if (marshPar.botTurn == "площадка") {
 				par.shiftYforShiftX -= (40) * Math.tan(marshPar.ang);
-				par.shiftYtoP0 = marshPar.h + prevMarshPar.h;
+				//par.shiftYtoP0 = marshPar.h + prevMarshPar.h;
+				par.shiftYtoP0 = prevMarshPar.h + 65;
 				par.stringerShiftPoint.x = rackProfile / 2 + 40;
 				par.stringerShiftPoint.y = - par.shiftYtoP0;
 				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX + 5;

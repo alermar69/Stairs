@@ -335,7 +335,8 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 		center1.noZenk = true;
 		center1.noBolts = true;
 		center1.wallFix = true;
-		par.pointsHoleBot.push(center1);
+		if (par.stringerDivisionBot)par.pointsHoleBot.push(center1);
+		if (!par.stringerDivisionBot)par.pointsHole.push(center1);
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt4, -100, -80);
 		center1.rad = fixPar.diam / 2 + 1;
@@ -343,7 +344,8 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 		center1.noZenk = true;
 		center1.noBolts = true;
 		center1.wallFix = true;
-		par.pointsHoleBot.push(center1);
+		if (par.stringerDivisionBot) par.pointsHoleBot.push(center1);
+		if (!par.stringerDivisionBot) par.pointsHole.push(center1);
 	}
 
 	//базовые точки для стыковки с другими частями косоура

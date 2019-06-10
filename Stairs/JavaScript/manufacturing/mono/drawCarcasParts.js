@@ -76,7 +76,7 @@ function drawColumn(par){
 		//контур подкоса
 		var maxHeight = 400;
 		var minHeight = 100;
-		var length = params.M / 2 + par.profSize / 2 - params.flanThickness;
+		var length = params.M / 2 + par.profSize / 2 - params.flanThickness + par.stringerLedge;
 		par.sideLength = length; //размер для спецификации
 		var flanThickness = 8;
 		var deltaHeightFlan = flanThickness / Math.cos(par.topAngle);
@@ -180,8 +180,8 @@ function drawColumn(par){
 		//flan.rotation.x = -Math.PI/2;
 		flan.position.x = -flanParams.width / 2 + params.flanThickness / 2;
 		flan.position.y = par.length - flanParams.height - params.flanThickness / Math.cos(par.topAngle);// - par.M/2 - par.h - 200;
-		flan.position.z = -params.M / 2;
-		if (par.side == "right") flan.position.z = params.M / 2;
+		flan.position.z = -params.M / 2 + par.stringerLedge;
+		if (par.side == "right") flan.position.z = params.M / 2 + par.stringerLedge;
 
 		flanFix.add(flan);
 
@@ -214,7 +214,7 @@ function drawColumn(par){
 		var minHeight = 100;
 		var plateDist = 100; //расстояние между пластинами
 		var extraLen = 28;
-		var length = params.M / 2 + par.profSize / 2 - params.flanThickness + extraLen + params.stringerLedge1;
+		var length = params.M / 2 + par.profSize / 2 - params.flanThickness + extraLen + par.stringerLedge;
 		par.sideLength = length; //размер для спецификации
 		var flanThickness = 8;
 		var deltaHeightFlan = flanThickness / Math.cos(par.topAngle);
@@ -364,8 +364,8 @@ function drawColumn(par){
 		//flan.rotation.x = -Math.PI/2;
 		flan.position.x = -flanParams.width / 2 + params.flanThickness / 2;
 		flan.position.y = cons.position.y;
-		flan.position.z = -params.M / 2 - params.stringerLedge1;
-		if (par.side == "right") flan.position.z = params.M / 2 - params.flanThickness + params.stringerLedge1;
+		flan.position.z = -params.M / 2 - par.stringerLedge;
+		if (par.side == "right") flan.position.z = params.M / 2 - params.flanThickness + par.stringerLedge;
 
 		par.mesh.add(flan);
 

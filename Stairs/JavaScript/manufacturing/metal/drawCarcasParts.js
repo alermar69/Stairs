@@ -399,13 +399,13 @@ function drawPltStringer(par) {
 	if (par.marshParams.wallFix.out && par.key == "rear") {
 		var fixPar = getFixPart(par.marshId);
 		//отверстие ближе к маршу
-		center1 = newPoint_xy(p0, 150, -100);
+		center1 = newPoint_xy(p0, 200, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
 		//отверстие ближе к углу
-		center1 = newPoint_xy(p3, -100, -100);
+		center1 = newPoint_xy(p3, -200, -100);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.wallFix = true;

@@ -267,6 +267,10 @@ function drawSideHandrailSect(par) {
 		partName: "sideHandrails",
 		marshId: par.marshId
 	}
+
+	handrailParams.startPlug = true;
+	handrailParams.endPlug = true;
+
 	//костыль чтобы не переделывать drawHandrail_4
 	if (turnFactor == -1) {
 		if (handrailParams.side == "in") handrailParams.side = "out"

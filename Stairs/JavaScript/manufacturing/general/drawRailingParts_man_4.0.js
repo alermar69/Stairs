@@ -3184,7 +3184,8 @@ function drawForgedBanister_5(par) {
 		par.mesh.add(bal);
 	}
 	//балясина из svg
-	else{
+	else {
+		var poleSize = 12;
 		var botLen = par.len - 740;
 		var svgPath = $("#forgeModal .modalItem[data-itemName=" + par.type + "]").find("path").eq(0).attr("d");
 		if(par.type == "20х20") svgPath = $("#forgeModal .modalItem[data-itemName=20х20]").find("path").eq(0).attr("d");
@@ -3201,13 +3202,13 @@ function drawForgedBanister_5(par) {
 		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 		var mesh = new THREE.Mesh(geom, params.materials.metal_railing);
-		mesh.position.y = 740/2 + botLen + 72.9; //72.9 - подогнано
+		mesh.position.y = 740 / 2 + botLen + 72.9; //72.9 - подогнано
+		mesh.position.z = -poleSize / 2;
 		par.mesh.add(mesh);
 
 
 		//добавка снизу
-		
-		var poleSize = 12;
+				
 		if(par.type == "20х20") poleSize = 20;
 		var profPar = {
 			type: "rect",
@@ -3225,7 +3226,7 @@ function drawForgedBanister_5(par) {
 		var pole = drawPole3D_4(profPar).mesh;
 		pole.position.x = profPar.poleProfileY / 2;
 		pole.position.y = 0;
-		pole.position.z = 0//-profPar.poleProfileY / 2;
+		pole.position.z = -profPar.poleProfileY / 2;
 		par.mesh.add(pole);
 	
 	}

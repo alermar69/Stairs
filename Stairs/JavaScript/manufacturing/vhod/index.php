@@ -60,6 +60,8 @@ $APPLICATION->SetTitle("Расчет входных лестниц v.4.1");
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
+<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>	
+
 	<script type="text/javascript" src="/manufacturing/metal/drawFrames.js"></script>
 	<script type="text/javascript" src="/manufacturing/metal/drawStringerPartsKo.js"></script>
 	<!--<script type="text/javascript" src="/manufacturing/metal/drawStaircase.js"></script>-->
@@ -81,7 +83,7 @@ $APPLICATION->SetTitle("Расчет входных лестниц v.4.1");
 	<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
-	<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>	
+	
 	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
     
 	<!-- автотесты -->

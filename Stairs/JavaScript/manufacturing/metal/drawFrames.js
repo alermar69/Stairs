@@ -69,9 +69,11 @@ function drawFrames(par){
 					marshId: par.marshId,
 					isP: true,
 				}
+				if (params.stairType == "лотки") pltPar.len -= 4 * 2; // 4 - толщина переднего и заднего фланца лотка
 				pltPar = drawPlatform2(pltPar);
 				var platform = pltPar.treads;
 				platform.position.x = frame.position.x - framePar.sideHolePosX;
+				if (params.stairType == "лотки") platform.position.x += 4;
 				platform.position.y = frame.position.y - framePar.profHeight / 2 - 0.01;
 				if (params.stairType == "рифленая сталь"){
 					platform.position.y = frame.position.y + framePar.profHeight / 2 - 1 + 0.01;

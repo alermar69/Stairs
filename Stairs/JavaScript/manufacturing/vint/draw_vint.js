@@ -388,7 +388,7 @@ function drawStaircase(viewportId, isVisible) {
 	flanParams = drawRoundFlan(flanParams)
 
 	var topFlan = flanParams.mesh;
-	topFlan.position.y = stepHeight * (stairAmt + 1) + regShimAmt * regShimThk + 0.05;
+	topFlan.position.y = stepHeight * (stairAmt + 1) + regShimAmt * regShimThk + 0.05 + 4;
 	var sectionTyrnAngle = (platformAngle / 2 - platformExtraAngle + Math.PI) * turnFactor;
 	if (params.platformType == "square") sectionTyrnAngle = Math.PI / 2 * turnFactor + Math.PI;
 	topFlan.rotation.z = sectionTyrnAngle + Math.PI / 4;

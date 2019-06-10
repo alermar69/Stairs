@@ -2478,7 +2478,8 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 						center1.dxToMarshNext = -(center1.x - p0.x) + par.b + par.turnBotParams.topMarshOffsetX + 5 - 0.1;
 						
 						//отверстия для крепления поворотной стойки следущего марша
-						var center2 = newPoint_xy(p0, par.b + par.turnBotParams.topMarshOffsetX - 40 / 2 + 5, par.stepHoleY);
+						//var center2 = newPoint_xy(p0, par.b + par.turnBotParams.topMarshOffsetX - 40 / 2 + 5, par.stepHoleY);
+						var center2 = newPoint_xy(p2, 15, par.carcasAnglePosY);
 						center2.y -= setTurnRacksParams(par.marshId + 1, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
 						center2.noRack = true;// отверстие не учитывается при построении заграждения
 						par.railingHoles.push(center2);

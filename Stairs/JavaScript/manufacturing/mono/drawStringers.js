@@ -1600,7 +1600,8 @@ function drawComplexStringer(par) {
         dxfBasePoint: par.dxfBasePoint,
         marshId: par.marshId,
         countColon: countColon,
-        isSvgBot: isSvgBot,
+		isSvgBot: isSvgBot,
+		stringerLedge: par.stringerLedge,
     }
 
 
