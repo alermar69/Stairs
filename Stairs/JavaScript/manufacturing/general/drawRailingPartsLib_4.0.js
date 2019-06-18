@@ -135,6 +135,7 @@ function drawRack3d_4(par) {
 		rack.position.z += profSize / 2;
 		rack.position.x -= profSize / 2 * turnFactor;
 	}
+	var rackBot = rack;
 	par.mesh.add(rack);
 
 	//части комбинированной балясины
@@ -176,7 +177,7 @@ function drawRack3d_4(par) {
 		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 		var rack = new THREE.Mesh(geom, par.material);
-		rack.specId = "combRackTop L=" + topLen;
+		var rackTop = rack;
 		par.mesh.add(rack);
 
 	}
@@ -393,6 +394,7 @@ function drawRack3d_4(par) {
 			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 			specObj[partName]["amt"] += 1;
 		}
+		if(rackTop) rackTop.specId = partName + name;
 
 		//низ стойки
 		var partName = "combRackBot";
@@ -418,6 +420,7 @@ function drawRack3d_4(par) {
 			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 			specObj[partName]["amt"] += 1;
 		}
+		if(rackBot) rackBot.specId = partName + name;
 
 	}
 
@@ -556,6 +559,7 @@ function drawPlug(par){
 	if(params.metalPaint == "порошок"){
 		if(params.carcasColor == "белый") plugColor = "БЕЛАЯ";
 	}
+	if (par.width == 50 && par.height == 100) plugColor = "ЧЕРНАЯ";
 	
 	var partName = "plug"
 	if (typeof specObj != 'undefined') {
@@ -1080,40 +1084,42 @@ function drawPole3D_4(par) {
 
 		var holesOffset = params.rackSize - 24 * 2;
 
+		var nagelPar = {
+			id: "nagel",
+			description: "Крепление ступеней к косоурам",
+			group: "Каркас"
+		}
+
 		if (bolts.includes(1)) {
-			var geometry = new THREE.CylinderGeometry(4, 4, 50, 32);
-			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x - holesOffset;
-			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z;
-			par.mesh.add(cylinder);
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x - holesOffset;
+			nagel.position.y = basePoint.y;
+			nagel.position.z = basePoint.z;
+			par.mesh.add(nagel);
 		}
 
 		if (bolts.includes(2)) {
-			var geometry = new THREE.CylinderGeometry(4, 4, 50, 32);
-			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x;
-			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z;
-			par.mesh.add(cylinder);
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x;
+			nagel.position.y = basePoint.y;
+			nagel.position.z = basePoint.z;
+			par.mesh.add(nagel);
 		}
 
 		if (bolts.includes(3)) {
-			var geometry = new THREE.CylinderGeometry(4, 4, 50, 32);
-			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x;
-			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z + holesOffset;
-			par.mesh.add(cylinder);
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x;
+			nagel.position.y = basePoint.y;
+			nagel.position.z = basePoint.z + holesOffset;
+			par.mesh.add(nagel);
 		}
 
 		if (bolts.includes(4)) {
-			var geometry = new THREE.CylinderGeometry(4, 4, 50, 32);
-			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x - holesOffset;
-			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z + holesOffset;
-			par.mesh.add(cylinder);
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x - holesOffset;
+			nagel.position.y = basePoint.y;
+			nagel.position.z = basePoint.z + holesOffset;
+			par.mesh.add(nagel);
 		}
 
 		if (bolts.includes(5)) {
@@ -1211,6 +1217,7 @@ function drawPole3D_4(par) {
 				division: "timber",
 				workUnitName: "sumLength",
 				group: "Ограждения",
+				type_comments: {}
 			}
 			if (partName == "handrails") {
 				specObj[partName].metalPaint = (handrailPar.mat == "metal");
@@ -1425,6 +1432,8 @@ function drawGlassShape_4(p1, p2, angle, glassDist, glassHeight) {
 		specObj[partName]["sumArea"] += area;
 		specObj[partName]["area"] += area;
 	}
+	glassShape.articul = partName + name;
+	
 	return glassShape;
 }
 
@@ -2360,6 +2369,11 @@ function drawPlatformRailingFlan(par) {
 		screwPar.id = "screw_6x60";
 		screwPar.dowelId = "dowel_10x50";
 		screwPar.description = "Крепление стоек к перекрытию";
+		if (params.calcType == 'vint') {
+			screwPar.id = "screw_6x32";
+			screwPar.dowelId = null;
+			screwPar.description = "Крепление стоек к площадке";
+		}
 	}
 
 	var screw = drawScrew(screwPar).mesh;
@@ -3695,7 +3709,7 @@ function drawHandrail_4(par) {
 				division: handrailPar.mat,
 				workUnitName: "amt",
 				group: "handrails",
-				type_comments: {},
+				type_comments: {}
 			}
 			if (handrailPar.mat == "inox") specObj[partName].division = "metal";
 			//if(params.calcType == "timber") specObj[partName].name = "Поручень";
@@ -3907,8 +3921,10 @@ function drawMeshInset(par) {
 			mesh.scale.x = mesh.scale.z = rackSize / 100;
 			mesh.userData.type = 'timberNewell';
 		}
+		mesh.setLayer("railing");
 		par.obj.add(mesh)
 	});
+
 
 
 	if (par.type == "startNewell") {

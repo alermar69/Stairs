@@ -908,15 +908,15 @@ function addBalAngles(par){
 	if(params.calcType == "mono"){
 		
 		//резьбовые заклепки для стоек
-		item = {
-			id: "rivet_M6",
-			amt: getPartAmt("balAngle"),
-			discription: "Крепление уголков к стойкам",
-			unit: "Метизы",
-			itemGroup: "Ограждения",
-			comment: "Рассчитано по уголкам балясин",
-			};
-		if(item.amt > 0) par.items.push(item);
+		// item = {
+		// 	id: "rivet_M6",
+		// 	amt: getPartAmt("balAngle"),
+		// 	discription: "Крепление уголков к стойкам",
+		// 	unit: "Метизы",
+		// 	itemGroup: "Ограждения",
+		// 	comment: "Рассчитано по уголкам балясин",
+		// 	};
+		// if(item.amt > 0) par.items.push(item);
 		
 	}
 	//заглушки

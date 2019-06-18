@@ -549,7 +549,7 @@ function drawMarshTreads2(par) {
 					drawRectTread = false;
 				}
 
-				if (i == railingStartIndex && (params.calcType == "timber" || params.calcType == "timber_stock")) {
+				if (i == railingStartIndex && (params.calcType == "timber" || params.calcType == "timber_stock" && marshPar.hasRailing.in)) {
 					if (par.notches.botIn.x != 0 && par.notches.botIn.y != 0) {
 						plateParams.notches.hasNothes = true;
 						plateParams.notches.botIn = copyPoint(par.notches.botIn);
@@ -740,6 +740,8 @@ function drawMarshTreads2(par) {
 					thk: params.riserThickness,
 					dxfArr: [],
 					dxfBasePoint: newPoint_xy(par.dxfBasePoint, params.M + 200, 0),
+					hasTopScrews: true,
+					hasBotScrews: true
 				};
 
 				//коррекция размеров первого подступенка
@@ -754,7 +756,8 @@ function drawMarshTreads2(par) {
 					if (i == 0) {
 						riserPar.description = "Подступенок первой ступени"
 						riserPar.count = 1
-						riserPar.dxfArr = dxfPrimitivesArr
+						riserPar.dxfArr = dxfPrimitivesArr;
+						riserPar.hasBotScrews = false;
 					}
 					if (i == 1) {
 						riserPar.description = "Подступенок марша"
@@ -762,8 +765,7 @@ function drawMarshTreads2(par) {
 						riserPar.dxfBasePoint.x += par.h + 50
 						riserPar.dxfArr = dxfPrimitivesArr
 					}
-				}
-				else {
+				}else {
 					if (i == 0) {
 						riserPar.description = "Подступенок марша"
 						riserPar.count = par.stairAmt
@@ -963,6 +965,8 @@ function drawPlatform2(par) {
 				thk: params.riserThickness,
 				dxfArr: dxfPrimitivesArr,
 				dxfBasePoint: dxfBasePoint,
+				hasTopScrews: true,
+				hasBotScrews: true
 			};
 
 			//отрисовка
@@ -1990,6 +1994,8 @@ function drawWndTreadsMetal(par) {
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 
 		if (params.stairModel == "П-образная с забегом" && par.turnId == 2) riserPar.width = par.h;
@@ -2080,6 +2086,8 @@ function drawWndTreadsMetal(par) {
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: newPoint_xy(dxfBasePoint, 0, -500),
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 		if (hasTurnRack && treadParams[1].riserFix) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
 			riserPar.cutWndIn = treadParams[1].riserFix / Math.cos(treadParams[1].edgeAngle) + 0.03;
@@ -2170,7 +2178,9 @@ function drawWndTreadsMetal(par) {
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: newPoint_xy(dxfBasePoint, 0, -500),
-			offsetX: offsetX
+			offsetX: offsetX,
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 		if (hasTurnRack) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
 			//riserPar.cutWndIn = params.rackSize / Math.cos(treadParams[3].edgeAngle) + 10;
@@ -2541,6 +2551,8 @@ function drawWndTreadsTimber(par){
 			thk: params.riserThickness - 0.01,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 		if (params.stairModel == 'П-образная с забегом') riserPar.width = par.turnId == 1 ? par.h : par.h_topWnd;
 		if (marshPar.stairAmt == 0) riserPar.width -= params.treadThickness;
@@ -2829,6 +2841,8 @@ function drawWndTreadsTimber_stock(par) {
 			thk: params.riserThickness - 0.01,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 		if (params.calcType == 'timber_stock') riserPar.width = marshPar.h
 		//if (params.stairModel == 'П-образная с забегом') riserPar.width = par.turnId == 1 ? par.h : par.h_topWnd;
@@ -2892,6 +2906,8 @@ function drawWndTreadsTimber_stock(par) {
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 		if (hasTurnRack && treadParams[1].riserFix) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
 			riserPar.cutWndIn = treadParams[1].riserFix / Math.cos(treadParams[1].edgeAngle);
@@ -2964,6 +2980,8 @@ function drawWndTreadsTimber_stock(par) {
 			thk: params.riserThickness,
 			dxfArr: dxfPrimitivesArr,
 			dxfBasePoint: dxfBasePoint,
+			hasTopScrews: true,
+			hasBotScrews: true
 		};
 
 		//отрисовка
@@ -3519,6 +3537,8 @@ function drawTimberPlt_G(par){
             thk: params.riserThickness,
             dxfArr: dxfPrimitivesArr,
             dxfBasePoint: dxfBasePoint,
+						hasTopScrews: true,
+						hasBotScrews: true
         }
 				if (marshParams.stairAmt == 0) {
 					riserPar.width -= params.treadThickness;
@@ -3764,6 +3784,8 @@ function  drawTimberPlt_P(par){
             thk: params.riserThickness,
             dxfArr: dxfPrimitivesArr,
             dxfBasePoint: dxfBasePoint,
+						hasTopScrews: true,
+						hasBotScrews: true
         }
 				/*
         //расчет длины подступенков
@@ -3875,49 +3897,78 @@ function drawRectRiser(par) {
 						group: "Ступени"
 					}
 
-					// Верхние
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = par.width - 20;
-					screw.position.y = params.sideOverHang + 20;
-					screw.position.z = 20;
-					screw.rotation.x = Math.PI / 2;
-					par.mesh.add(screw);
+					var sideOverHang = 0;
+					if (params.sideOverHang) sideOverHang = params.sideOverHang;
 
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = par.width - 20;
-					screw.position.y = par.len / 2;
-					screw.position.z = 20;
-					screw.rotation.x = Math.PI / 2;
-					par.mesh.add(screw);
+					if(par.hasTopScrews){
+						// Верхние
+						if (params.calcType !== 'timber_stock') {
+							var screw = drawScrew(screwPar).mesh;
+							screw.position.x = par.width - 20;
+							screw.position.y = sideOverHang + 20;
+							screw.position.z = 20;
+							screw.rotation.x = Math.PI / 2;
+							par.mesh.add(screw);
+		
+							var screw = drawScrew(screwPar).mesh;
+							screw.position.x = par.width - 20;
+							screw.position.y = par.len / 2;
+							screw.position.z = 20;
+							screw.rotation.x = Math.PI / 2;
+							par.mesh.add(screw);
+		
+							var screw = drawScrew(screwPar).mesh;
+							screw.position.x = par.width - 20;
+							screw.position.y = par.len - sideOverHang - 20;
+							screw.position.z = 20;
+							screw.rotation.x = Math.PI / 2;
+							par.mesh.add(screw);
+						}
+						if (params.calcType == 'timber_stock') {
+							var nagelPar = {
+								id: "nagel",
+								description: "Крепление ступеней к подступенкам",
+								group: "Ступени"
+							}
 
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = par.width - 20;
-					screw.position.y = par.len - params.sideOverHang - 20;
-					screw.position.z = 20;
-					screw.rotation.x = Math.PI / 2;
-					par.mesh.add(screw);
-					
+							var nagel = drawNagel(nagelPar);
+							nagel.position.x = par.width;
+							nagel.position.y = sideOverHang + 20;
+							nagel.position.z = 10;
+							nagel.rotation.z = Math.PI / 2;
+							par.mesh.add(nagel);
+
+							var nagel = drawNagel(nagelPar);
+							nagel.position.x = par.width;
+							nagel.position.y = par.len - sideOverHang - 20;
+							nagel.position.z = 10;
+							nagel.rotation.z = Math.PI / 2;
+							par.mesh.add(nagel);
+						}
+					}
 					// Нижние
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = 20;
-					screw.position.y = params.sideOverHang + 20;
-					screw.position.z = 20;
-					screw.rotation.x = Math.PI / 2;
-					par.mesh.add(screw);
-
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = 20;
-					screw.position.y = par.len / 2;
-					screw.position.z = 20;
-					screw.rotation.x = Math.PI / 2;
-					par.mesh.add(screw);
-
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = 20;
-					screw.position.y = par.len - params.sideOverHang - 20;
-					screw.position.z = 20;
-					screw.rotation.x = Math.PI / 2;
-					par.mesh.add(screw);
+					if(par.hasBotScrews){
+						var screw = drawScrew(screwPar).mesh;
+						screw.position.x = 20;
+						screw.position.y = sideOverHang + 20;
+						screw.position.z = 20;
+						screw.rotation.x = Math.PI / 2;
+						par.mesh.add(screw);
+	
+						var screw = drawScrew(screwPar).mesh;
+						screw.position.x = 20;
+						screw.position.y = par.len / 2;
+						screw.position.z = 20;
+						screw.rotation.x = Math.PI / 2;
+						par.mesh.add(screw);
+	
+						var screw = drawScrew(screwPar).mesh;
+						screw.position.x = 20;
+						screw.position.y = par.len - sideOverHang - 20;
+						screw.position.z = 20;
+						screw.rotation.x = Math.PI / 2;
+						par.mesh.add(screw);
+					}
 
 				}
 

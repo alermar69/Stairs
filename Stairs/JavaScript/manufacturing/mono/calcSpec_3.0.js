@@ -236,28 +236,28 @@ function balustradeItemsAdd(){}; //функция для навигации
 function addMetiz(){};
 	//болты
 
-	item = {
-		id: "capNut_M16",
-		amt: getPartAmt("boltM16"),
-		discription: "Гайки",
-		unit: "Метизы",
-		itemGroup: "Каркас",		
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["capNut_M16"].comment = "Рассчитано по болтам";
+	// item = {
+	// 	id: "capNut_M16",
+	// 	amt: getPartAmt("boltM16"),
+	// 	discription: "Гайки",
+	// 	unit: "Метизы",
+	// 	itemGroup: "Каркас",		
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
+	// partsList["capNut_M16"].comment = "Рассчитано по болтам";
 	   
-	item = {
-		id: "shim_M16",
-		amt: getPartAmt("boltM16"),
-		discription: "Шайбы",
-		unit: "Метизы",
-		itemGroup: "Каркас",
-		comment: "Рассчитано по болтам",
-		};
-	if(item.amt > 0) partsList.addItem(item);
-	partsList["shim_M16"].comment = "Рассчитано по болтам";
+	// item = {
+	// 	id: "shim_M16",
+	// 	amt: getPartAmt("boltM16"),
+	// 	discription: "Шайбы",
+	// 	unit: "Метизы",
+	// 	itemGroup: "Каркас",
+	// 	comment: "Рассчитано по болтам",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
+	// partsList["shim_M16"].comment = "Рассчитано по болтам";
 	
-	if(partsList["rivet_M6"]) partsList["rivet_M6"].comment = "Рассчитано по уголкам балясин";
+	// if(partsList["rivet_M6"]) partsList["rivet_M6"].comment = "Рассчитано по уголкам балясин";
 	
 function addWorks(){}
 

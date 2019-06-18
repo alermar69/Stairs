@@ -1701,7 +1701,8 @@ function drawStringerFlan(par) {
 			specObj[partName]["paintedArea"] += area * 2;
 		}
 		
-		par.mesh.specId = partName + name;
+		par.mesh.specId = partName;
+		if(name) par.mesh.specId += name;
 		return par.mesh;
 	}
 	return null;
@@ -2499,13 +2500,14 @@ function drawColumn2(par) {
 	if(par.profWidth == 100 && par.profHeight == 50){
 		var plugParams = {
 			id: "plasticPlug_100_50",
-			width: 100,
-			height: 50,
+			width: 50,
+			height: 100,
 			description: "Заглушка опор",
 			group: "Каркас"
 		}
 		var rackBotPlug = drawPlug(plugParams);
-		rackBotPlug.position.x -= plugParams.width / 2;
+		rackBotPlug.rotation.y = Math.PI / 2;
+		rackBotPlug.position.x -= plugParams.width / 2 + plugParams.width / 2;
 		rackBotPlug.position.y = holeOffset;
 		if(!testingMode) par.mesh.add(rackBotPlug);
 	}

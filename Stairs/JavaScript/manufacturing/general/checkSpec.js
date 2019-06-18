@@ -117,6 +117,10 @@ function fillSpecsList(specs){
 	$('#specsList').html(specListHtml);
 }
 
+function checkModelItemsCount(){
+
+}
+
 //Рассчитывает количество элементов на модели, по артикулу
 function calcItemsCount(specId){
 	var count = 0;
@@ -135,6 +139,20 @@ function checkSpecModel(){
 	$.each(spec.data, function(key, value){
 		$.each(value, function(){
 			if(calcItemsCount(this.articul) == 0){
+				items.push(this);
+			}
+		});
+	});
+	return items;
+}
+
+//Сравнивает количество объектов из спецификации на модели
+function checkSpecModelCount(){
+	var items = [];
+	var spec = generateSpecJson();
+	$.each(spec.data, function(key, value){
+		$.each(value, function(){
+			if(this.articul && calcItemsCount(this.articul) != (this.amt * 1.0)){
 				items.push(this);
 			}
 		});
@@ -708,6 +726,20 @@ function checkSpec(callback){
 		modelResult += "</span>"
 	}
 	text += "Позиции из спецификации есть на модели: " + modelResult + "<br/>";
+
+	// var isModelCountOk = true;
+	// var errItems = checkSpecModelCount();
+	// if (errItems.length > 0) isModelCountOk = false;
+	// var modelResult = "<span class='green'>да</span>";
+	// if (!isModelCountOk) {
+	// 	modelResult = "<span class='red'>нет <br>Несовпадает:<br>";
+	// 	// modelResult +=
+	// 	errItems.forEach(function(elem){
+	// 		modelResult += elem.articul + " " + elem.name + " " + elem.amt + "/" + calcItemsCount(elem.articul) + "<br>"
+	// 	});
+	// 	modelResult += "</span>"
+	// }
+	// text += "Количество позиций из спецификации совпадает с количеством на модели: " + modelResult + "<br/>";
 
 	//проверка покраски
 	var isPaintingOk = true;

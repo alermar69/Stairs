@@ -262,7 +262,7 @@ function drawBolt(par) {
     }
 
     //головка для болтов в потай
-    if ($sceneStruct.vl_1.boltHead && par.headType != "шестигр.") {
+    if ($sceneStruct.vl_1.boltHead && par.headType != "шестигр." && par.headType != 'шпилька') {
         var shape = new THREE.Shape();
         addCircle(shape, [], { x: 0, y: 0 }, par.diam, { x: 0, y: 0 })
 
@@ -319,7 +319,7 @@ function drawBolt(par) {
     if (!par.noNut && !testingMode) {
 
         //гайка
-        var nutParams = { diam: par.diam }
+        var nutParams = { diam: par.diam, isCap: par.hasCapNut }
         var nut = drawNut(nutParams).mesh;
         nut.position.y = par.len / 2 - nutParams.nutHeight - 1;
         par.mesh.add(nut);
@@ -352,11 +352,10 @@ function drawBolt(par) {
 			cap.position.y = par.len / 2 - 7;
 			par.mesh.add(cap);
 		}
-
-
     //сохраняем данные для спецификации
-    par.partName = "bolt"
-    if (par.diam != 10) par.partName += "M" + par.diam;
+		par.partName = "bolt"
+		if (par.diam != 10) par.partName += "M" + par.diam;
+		if (par.headType == 'шпилька') par.partName = 'stud';
     if (typeof specObj != 'undefined' && par.partName) {
         if (!specObj[par.partName]) {
             specObj[par.partName] = {
@@ -368,14 +367,29 @@ function drawBolt(par) {
                 division: "stock_1",
                 workUnitName: "amt",
                 group: "Метизы",
-            }
+						}
+						if (par.partName == 'stud') {
+							specObj[par.partName].name = "Шпилька";
+							if (par.diam == 10 && (par.len == 100 || par.len == 140)) {
+								specObj[par.partName].name += " сантехническая"
+							}
+							if (par.diam == 14 && (par.len == 125 || par.len == 150)) {
+								specObj[par.partName].name += " рутеля"
+							}
+						}
         }
         var headName = "шестигр. гол.";
         if (par.headType == "потай") headName = "потай внутр. шестигр."
         if (par.headType == "пол. гол. крест") headName = par.headType;
         if (par.headType == "внутр. шестигр. плоск. гол.") headName = par.headType;
-        var name = "М" + par.diam + "х" + par.len + " " + headName;
-        if (par.headType == "меб.") name = "мебельный М" + par.diam + "х" + par.len;
+				var name = "М" + par.diam + "х" + par.len + " " + headName;
+				if (par.headType == "меб.") name = "мебельный М" + par.diam + "х" + par.len;
+				if (par.partName == 'stud') {
+					name = "М" + par.diam + " L=" + par.len;
+					if (par.diam == 10 && (par.len == 100 || par.len == 140)) {
+						name = "М" + par.diam + "х" + par.len;
+					}
+				}
         if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
         if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
         specObj[par.partName]["amt"] += 1;
@@ -439,7 +453,7 @@ function drawPlasticCap(diam){
 				group: "Метизы",
 			}
 		}
-		var name = "M" + diam + " " + capColor;
+		var name = "М" + diam + " " + capColor;
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
@@ -1267,6 +1281,62 @@ function drawScrew(par){
 	par.mesh.setLayer("metis");
 
 	return par
+}
+
+/**
+ * Отрисовывает метиз
+ * @param {object} par 
+ * par.id - ид
+ * par.description - Описание в спецификации
+ * par.group - Группа пецификации
+ */
+function drawNagel(par){
+	var diam = 8;
+	var len = 40;
+	var name = "Шкант id не найден";
+	if (par.id == "nagel") {
+		name = "Шкант Ф8х40";
+		diam = 8;
+		len = 40;
+	}
+
+	var material = new THREE.MeshLambertMaterial({ color: "#808080" });
+	var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
+	var nagel = new THREE.Mesh(geometry, material);
+	nagel.specId = par.id;
+
+	//сохраняем данные для спецификации
+	par.partName = par.id;
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: name,
+				metalPaint: false,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				purposes: [],
+				workUnitName: "amt",
+				group: "Метизы",
+			}
+			if (par.group) specObj[par.partName].group = par.group;
+		}
+		if (par.description) {
+			if (specObj[par.partName].purposes.indexOf(par.description) == -1) specObj[par.partName].purposes.push(par.description);
+		}
+
+		name = 0;
+		
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	nagel.setLayer("metis");
+
+	return nagel
 }
 
 /**

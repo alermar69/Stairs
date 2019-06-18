@@ -1533,7 +1533,7 @@ function addFixParts(par){
 		if(item.amt > 0) partsList.addItem(item);
 		
 		 item = {
-			id: "nut_M" + par.studDiam,
+			id: "nut_М" + par.studDiam,
 			amt: par.amt,
 			discription: par.discription,
 			unit: par.unit,
@@ -1542,7 +1542,7 @@ function addFixParts(par){
 		if(item.amt > 0) partsList.addItem(item);
 		
 		 item = {
-			id: "shim_M" + par.studDiam,
+			id: "shim_М" + par.studDiam,
 			amt: par.amt,
 			discription: par.discription,
 			unit: par.unit,

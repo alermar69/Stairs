@@ -1166,7 +1166,7 @@ function calcHandrailPoints(par, parRacks){
 		});
 
 		//если все стойки находятся на площадке
-		if (racks[0].y == racks[racks.length - 1].y) {			
+		if (racks[0].y == racks[racks.length - 1].y && params.stairModel !== 'Прямая горка') {
 			par.isRearPRailing = true;
 		}
 	

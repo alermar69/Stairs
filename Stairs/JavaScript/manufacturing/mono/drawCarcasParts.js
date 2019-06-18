@@ -3495,7 +3495,8 @@ function drawPlateBolts(par) {
 				diam: 16,
 				len: 40,
 				headType: "шестигр.",
-				}
+				hasCapNut: true
+			}
 
 			//задаем длину болтов
 			par.holesCenter[0].boltLen = 30; //болт в пластину
@@ -6272,7 +6273,7 @@ function drawPlatformFrames(par) {
 		if (testingMode) framePlatform.position.y += 0.01;
 		framePlatform.rotation.x = Math.PI / 2;
 		framePlatform.castShadow = true;
-
+		framePlatform.specId = framePlatformParams.articul;
 		par.platformFrames.add(framePlatform);
 
 
@@ -6370,7 +6371,7 @@ function drawPlatformFrames(par) {
 		}
 		framePlatform.rotation.x = Math.PI / 2;
 		framePlatform.castShadow = true;
-
+		framePlatform.specId = framePlatformParams.articul;
 		par.platformFrames.add(framePlatform);
 
 		//Отрисовка перемычек площадки
@@ -6545,6 +6546,7 @@ function drawFramePlatform(framePlatformParams) {
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 	}
+	framePlatformParams.articul = partName + name;
 
 	return framePlatformParams;
 }

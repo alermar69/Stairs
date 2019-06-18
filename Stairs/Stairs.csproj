@@ -375,6 +375,7 @@
     <Content Include="JavaScript\manufacturing\metal\drawStaircase.js" />
     <Content Include="JavaScript\manufacturing\metal\drawStringerPartsKo.js" />
     <Content Include="JavaScript\manufacturing\metal\drawStringerPartsLt.js" />
+    <Content Include="JavaScript\manufacturing\metal\drawPrimitives3D.js" />
     <Content Include="JavaScript\manufacturing\metal\drawStringers.js" />
     <Content Include="JavaScript\manufacturing\metal\drawSvg.js" />
     <Content Include="JavaScript\manufacturing\metal\index.php" />
@@ -571,6 +572,7 @@
     <Content Include="JavaScript\temp.js" />
     <Content Include="JavaScript\temp1.js" />
     <Content Include="JavaScript\Temp\calcSpecGeneral.js" />
+    <Content Include="JavaScript\Temp\drawRailing_3.0.js" />
     <Content Include="JavaScript\three.js" />
     <Content Include="Web.config" />
   </ItemGroup>

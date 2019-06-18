@@ -574,9 +574,9 @@ function drawSkirting2(par) {
 		//косоур на марше
 		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-		var mesh = new THREE.Mesh(geom, params.materials.skirting);
-		mesh.position.x -= gap;
-		par.mesh.add(mesh);
+		var vert_plate = new THREE.Mesh(geom, params.materials.skirting);
+		vert_plate.position.x -= gap;
+		par.mesh.add(vert_plate);
 
 	}
 
@@ -626,10 +626,10 @@ function drawSkirting2(par) {
 
 		geometry = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-		var mesh = new THREE.Mesh(geometry, params.materials.skirting);
-		mesh.position.y = par.rise + gap;
-		mesh.position.x -= gap + ledge;
-		par.mesh.add(mesh);
+		var hor_plate = new THREE.Mesh(geometry, params.materials.skirting);
+		hor_plate.position.y = par.rise + gap;
+		hor_plate.position.x -= gap + ledge;
+		par.mesh.add(hor_plate);
 	}
 
 	var text = par.skirtingDescription;
@@ -640,7 +640,7 @@ function drawSkirting2(par) {
 
 	//сохраняем данные для спецификации
 	var partName = "skirting_vert";
-	if (typeof specObj != 'undefined') {
+	if (typeof specObj != 'undefined' && par.rise != 0 && !par.isNotVerticalPlank) {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
@@ -666,10 +666,10 @@ function drawSkirting2(par) {
 		specObj[partName]["area"] += area;
 		specObj[partName]["paintedArea"] += paintedArea;
 	}
-	par.mesh.specId = partName + name;
+	if(vert_plate) vert_plate.specId = partName + name;
 
 	var partName = "skirting_hor";
-	if (typeof specObj != 'undefined') {
+	if (typeof specObj != 'undefined' && par.step != 0) {
 		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
@@ -695,6 +695,8 @@ function drawSkirting2(par) {
 		specObj[partName]["area"] += area;
 		specObj[partName]["paintedArea"] += paintedArea;
 	}
+	if(hor_plate) hor_plate.specId = partName + name;
+
 
 
 	return par;

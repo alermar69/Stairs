@@ -855,8 +855,7 @@ function drawRailingSectionNewel2(par) {
 		{
 			if (par.key == "front") par.railingSide = "left";
 			var railingSide = par.railingSide;
-			if (!par.railingSide && params.model == "ко" && par.marshId == 'topPlt')
-				railingSide = "right";
+			if (!par.railingSide && params.model == "ко" && par.marshId == 'topPlt') railingSide = "right";
 			var dxfBasePoint = par.dxfBasePoint;
 			var racks = par.racks;
 			var model = params.model;
@@ -942,7 +941,7 @@ function drawRailingSectionNewel2(par) {
 	}
 
 	/* ригели */
-
+	
 	if (params.railingModel === "Ригели") {
 
 		//Задаем позицию ригелей по Z
@@ -3988,11 +3987,10 @@ function drawGlass2(par){
 		}
 
 	//вырез для нахлеста на верхнее перекрытие
-	if (par.topConnectionBal) {
-		var p31 = polar(p3, par.angleTop, par.extraLengthToBal);
-		var pt = newPoint_xy(p1, 0, par.balCutHeight);
-		var p32 = itercection(pt, polar(pt, par.angleTop, 100), p31, polar(p31, Math.PI / 2, 100));
-		var p41 = itercection(pt, polar(pt, par.angleTop, 100), p4, polar(p4, Math.PI / 2, 100));
+	if (par.hasTopOverlap) {
+		var p31 = polar(p3, par.angleTop, par.extraLengthOverlap);
+		var p41 = newPoint_xy(p3, 0, -par.overlapCutHeight);
+		var p32 = itercection(p41, polar(p41, 0, 100), p31, polar(p31, Math.PI / 2, 100));
 		topY = p31.y;
 	}
 
@@ -4010,7 +4008,7 @@ function drawGlass2(par){
 		}
 
 	//начинаем с 2 точки
-	if (par.topConnectionBal) {
+	if (par.hasTopOverlap) {
 		addLine(shape, par.dxfArr, p2, p31, par.dxfBasePoint);
 		addLine(shape, par.dxfArr, p31, p32, par.dxfBasePoint);
 		addLine(shape, par.dxfArr, p32, p41, par.dxfBasePoint);
