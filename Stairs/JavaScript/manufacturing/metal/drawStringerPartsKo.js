@@ -174,7 +174,7 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 	
 	if (par.key == "out"){
 		var pt1 = newPoint_xy(p0, -params.stringerThickness, 0);
-		var pt2 = newPoint_xy(pt1, -params.M + params.sideOverHang + params.sideOverHang + params.stringerThickness * 2, 0);
+		var pt2 = newPoint_xy(pt1, -params.M + params.sideOverHang + params.sideOverHang + params.stringerThickness * 2 + calcStringerMoove(par.marshId).stringerOutMoovePrev, 0);
 		var pt3 = newPoint_xy(pt2, 0, par.stringerWidthPlatform);
 		var pt4 = newPoint_xy(pt1, 0.0, par.stringerWidthPlatform);
 
@@ -423,6 +423,7 @@ function drawBotStepKo_pltP(par){
     var pltStringerLen = params.platformLength_1 - par.botEndLength - params.stringerThickness * 2 + params.nose;	
 	if (params.sideOverHang <= 75) pltStringerLen -= params.sideOverHang;
 	else pltStringerLen -= 75;
+	pltStringerLen -= calcStringerMoove(2).stringerOutMoove;
 	var pt1 = newPoint_xy(p0, -params.stringerThickness, 0);
 	var pt2 = newPoint_xy(pt1, -pltStringerLen, 0);
 	var pt3 = newPoint_xy(pt2, 0, par.stringerWidthPlatform);
@@ -729,7 +730,7 @@ function drawBotStepKo_wndIn(par){
 	// отверстие под вторую забежную рамку
 	var holePar = {
 		holes: par.wndFramesHoles.topMarsh.in[2],
-		basePoint: newPoint_xy(p2, params.stringerThickness + params.sideOverHang * 2 - params.M, par.h),
+		basePoint: newPoint_xy(p2, params.stringerThickness + params.sideOverHang * 2 + calcStringerMoove(par.marshId).stringerOutMoovePrev - params.M, par.h),
 		}
 	par.pointsHole.push(...calcWndHoles(holePar));
 	
@@ -821,9 +822,9 @@ function drawBotStepKo_wndIn(par){
  */
 function drawBotStepKo_wndOut(par){
 	
-	var p0 = newPoint_xy(par.zeroPoint, -params.M + params.nose - 72 + par.stringerSideOffset + params.stringerThickness, -(par.h + params.treadThickness + 215));
+	var p0 = newPoint_xy(par.zeroPoint, -params.M + params.nose - 72 + par.stringerSideOffset + params.stringerThickness + calcStringerMoove(par.marshId).stringerOutMoovePrev, -(par.h + params.treadThickness + 215));
 	if(par.isWndP){
-		p0.x = -10 + params.sideOverHang;
+		p0.x = -10 + params.sideOverHang + calcStringerMoove(par.marshId).stringerOutMoovePrev;
 	}
 	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0) 
 		p0.x -= params.marshDist - 77 + (params.nose - 20);
@@ -1427,6 +1428,8 @@ function drawTopStepKo_pltG(par){
 	//удлинение косоура площадки
 	var platformLen = par.tyrnLengthTop - 0.01;
 	var pltStringerLen = platformLen - params.sideOverHang - params.nose - par.topEndLength;// - params.stringerThickness;
+	if (!par.stringerLast) pltStringerLen -= calcStringerMoove(par.marshId).stringerOutMooveNext;
+	
 	//для верхней площадки
 	if (par.stringerLast) {
 		if(params.platformRearStringer == "есть") pltStringerLen -= params.stringerThickness;
@@ -1844,8 +1847,10 @@ function drawTopStepKo_pltP(par){
 	else
 		var platformLen = params.platformLength_1;
 	var pltStringerLen = platformLen - (par.a - par.b) - par.topEndLength - params.stringerThickness - 0.01 + params.nose;
-	if (params.sideOverHang <= 75) pltStringerLen -= params.sideOverHang;
+	if (params.sideOverHang <= 75) pltStringerLen -= params.sideOverHang;	
 	else pltStringerLen -= 75;
+
+	if (!par.stringerLast) pltStringerLen -= calcStringerMoove(2).stringerOutMoove;
 
 	var pt1 = newPoint_xy(topLineP1, params.stringerThickness, 0);
 	var pt2 = newPoint_xy(pt1, pltStringerLen - params.stringerThickness, 0);
@@ -2778,7 +2783,7 @@ function drawMarshSteps(par){
 	if(par.type == "bot") {
 		stairAmt -= 1;
 		filletRad = 10;
-		}
+	}
 	
 	for (var i = 0; i < stairAmt; i++){
 		p1 = newPoint_xy(p2, marshParams.b, 0);

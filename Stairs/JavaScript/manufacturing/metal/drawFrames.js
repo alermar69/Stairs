@@ -156,9 +156,18 @@ function drawWndFrames2(par){
 	var obj = new THREE.Object3D();
 
 	var botMarshId = 1;
-	if(par.turnId == "turn2" && params.stairModel == "П-образная трехмаршевая") botMarshId = 2;
+	if (par.turnId == "turn2" && params.stairModel == "П-образная трехмаршевая") botMarshId = 2;
+	//par.marshId = 1;
+	//if (params.stairModel == "П-образная с забегом") {
+	//	if (par.turnId == "turn1") par.marshId = 1;
+	//	if (par.turnId == "turn2") par.marshId = 2;
+	//}
+	if (par.turnId == "turn1") par.marshId = 1;
+	if (par.turnId == "turn2") par.marshId = 2;
+
 	var turnParams = calcTurnParams(botMarshId);
 	var marshParams = getMarshParams(botMarshId);
+	var nextMarshPar = getMarshParams(marshParams.nextMarshId)
 	
 	var wndSteps = calcWndSteps(par.wndPar);
 			
@@ -179,6 +188,7 @@ function drawWndFrames2(par){
 		if (params.stairType == "рифленая сталь" || params.stairType == "лотки") wndFrame1.mesh.position.x = 0;		
 		
 		wndFrame1.mesh.position.y = -par.frameParams.flanThk.top - params.treadThickness;
+	wndFrame1.mesh.position.z = calcStringerMoove(par.marshId).stringerOutMoove / 2 * turnFactor;
 		obj.add(wndFrame1.mesh);
 
 	// добавляем координаты отверстий первой рамки в общий объект
@@ -189,7 +199,7 @@ function drawWndFrames2(par){
 		par.dxfBasePoint = newPoint_xy(dxfBasePoint0, 2000, 0);
 		
 		var wndFrame2 = drawWndFrame2(par);
-		var posX = turnParams.turnLengthTop - params.stringerThickness - (params.model == "ко" ? params.sideOverHang : 0) - wndFrame2.frameParams.treadWidthY;
+	var posX = turnParams.turnLengthTop - params.stringerThickness - (params.model == "ко" ? (params.sideOverHang + calcStringerMoove(par.marshId).stringerOutMooveNext) : 0) - wndFrame2.frameParams.treadWidthY;
 		wndFrame2.mesh.position.y = -par.frameParams.flanThk.top - params.treadThickness + marshParams.h_topWnd;
 		wndFrame2.mesh.position.x = posX;
 		
@@ -265,6 +275,9 @@ function drawWndFrame(par){
 
 	par.mesh = new THREE.Object3D();
 
+	var marshParams = getMarshParams(par.wndPar.botMarshId);
+	var nextMarshParams = getMarshParams(marshParams.nextMarshId);
+
 	var treadParams = par.wndPar.params[par.frameId]
 
 	var thk = {
@@ -302,8 +315,11 @@ function drawWndFrame(par){
 		}	
 	if(params.model == "ко"){
 		var stepWidthLow = 40; //так исторически сложилось
+		var stringerOutMoove = 0;
+		if (par.frameId == 1) stringerOutMoove = calcStringerMoove(par.marshId).stringerOutMoove;
+		if (par.frameId == 3) stringerOutMoove = calcStringerMoove(par.marshId).stringerOutMooveNext;
 		pathPar = {
-			treadWidth: params.M - params.sideOverHang * 2 - params.stringerThickness * 2 - thk.side * 2,
+			treadWidth: params.M - params.sideOverHang * 2 - params.stringerThickness * 2 - thk.side * 2 - stringerOutMoove,
 			edgeAngle: par.frameId == 1 ? treadParams.edgeAngle / 2 : treadParams.edgeAngle,
 			//edgeAngle: treadParams.edgeAngle,
 			stepWidthLow: stepWidthLow, 
@@ -745,6 +761,9 @@ function drawWndFrame2(par){
 	
 	par.mesh = new THREE.Object3D();
 
+	var marshParams = getMarshParams(par.wndPar.botMarshId);
+	var nextMarshParams = getMarshParams(marshParams.nextMarshId);
+
 	par.frameId = 2;
 	var treadParams = par.wndPar.params[par.frameId]
 	
@@ -795,7 +814,7 @@ function drawWndFrame2(par){
 		var pathPar = {
 			angleX: treadParams.angleX,
 			angleY: 35 / 180 * Math.PI, //константа
-			treadWidthY: params.M - params.stringerThickness * 2 - thk.side * 2 - params.sideOverHang * 2,
+			treadWidthY: params.M - params.stringerThickness * 2 - thk.side * 2 - params.sideOverHang * 2 - calcStringerMoove(par.marshId).stringerOutMooveNext,
 			treadWidthX: treadParams.treadWidthX, //пересчитывается ниже
 			innerOffsetY: 0, //константа
 		}
@@ -809,13 +828,13 @@ function drawWndFrame2(par){
 		var frontLineOffset = 40 + thk.front;
 		var frontFrameLine = parallel(p1, p3, frontLineOffset);
 		//вспомогательные точки на внутренней плоскости косоура
-		var stringerP1 = {x: 0, y: params.sideOverHang + params.stringerThickness + thk.side};
-		var stringerP2 = {x: 100, y: params.sideOverHang + params.stringerThickness + thk.side};
+		var stringerP1 = { x: 0, y: params.sideOverHang + params.stringerThickness + thk.side };
+		var stringerP2 = { x: 100, y: params.sideOverHang + params.stringerThickness + thk.side };
 		//точки рамки
 		var frameP1 = itercection(frontFrameLine.p1, frontFrameLine.p2, stringerP1, stringerP2);
 		var frameP2 = itercection(p2, p4, stringerP1, stringerP2);
 		//рассчет параметров рамки
-		pathPar.treadWidthX = treadParams.treadWidthX - (p2.x - frameP2.x) - params.sideOverHang - params.stringerThickness - 4;
+		pathPar.treadWidthX = treadParams.treadWidthX - (p2.x - frameP2.x) - params.sideOverHang - params.stringerThickness - 4 - calcStringerMoove(par.marshId).stringerOutMoove;
 		pathPar.innerOffsetX = frameP2.x - frameP1.x;
 		if (params.riserType == "есть") {
 			pathPar.treadWidthX += params.riserThickness;
@@ -859,7 +878,7 @@ function drawWndFrame2(par){
 
 	//смещаем точки так, чтобы базовая точка была в середине передней грани
 	for(var i=0; i<outLine.points.length; i++){
-		var offsetBaseX = params.M / 2 - (params.model == "ко" ? params.sideOverHang : 0) - params.stringerThickness - thk.side
+		var offsetBaseX = params.M / 2 - (params.model == "ко" ? (params.sideOverHang + calcStringerMoove(par.marshId).stringerOutMoove) : 0) - params.stringerThickness - thk.side
 		var offsetBaseY = pathPar.stepOffsetY - thk.side;
 
 		outLine.points[i].x -= (offsetBaseX) * turnFactor;
@@ -1714,6 +1733,8 @@ function drawTreadFrame2(par){
 	// рассчитываем параметры рамки
 	calcFrameParams(par); //функция в файле drawFrames.js
 
+	var marshParams = getMarshParams(par.marshId);
+
 	/* данные из глобальных переменных
 	params.materials.metal - материал
 	*/
@@ -2043,7 +2064,7 @@ function drawTreadFrame2(par){
 	// позиционируем рамку
 	frame.position.x = - par.sideHolePosX;
 	frame.position.y = flanSideWidth / 2;
-	frame.position.z = -par.length / 2;
+	frame.position.z = -par.length / 2 + calcStringerMoove(par.marshId).stringerOutMoove / 2 * turnFactor;
 	if (par.largePlt && par.isPltFrame){
 		if (params.turnSide == 'левое'){
 			frame.position.z -= par.deltaZ / 2;
@@ -2335,7 +2356,7 @@ function calcFrameParams(par){
 		par.framesAmt = 0;
 	}
 	
-	if(params.model == "ко") par.length -= params.sideOverHang * 2;
+	if (params.model == "ко") par.length -= params.sideOverHang * 2 + calcStringerMoove(par.marshId).stringerOutMoove;
 
 	//профиль
 	par.profWidth = 20;

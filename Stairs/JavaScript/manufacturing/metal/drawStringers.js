@@ -95,8 +95,24 @@ function drawStringer(par){
 		
 	//стандартное построение
 		
-		if (!isException){
+		if (!isException) {
+			var wndFramesHoles = par.wndFramesHoles;
+
 			/*низ марша*/
+
+			//рассчитываем проступи на забеге. Берутся параметры верхнего или нижнего забега
+			if (par.treadsObj.wndPar) par.wndSteps = calcWndSteps(par.treadsObj.wndPar);
+			if (par.treadsObj.wndPar2 && par.marshId > 2) par.wndSteps = calcWndSteps(par.treadsObj.wndPar2);
+			if (par.treadsObj.wndPar2) {
+				if (par.marshId > 1 && params.stairModel == "П-образная с забегом") {
+					if (par.marshId == 2) par.treadsObj.wndPar2.marshId = 1;
+					if (par.marshId == 3) par.treadsObj.wndPar2.marshId = 2;
+					par.wndSteps = calcWndSteps(par.treadsObj.wndPar2);
+				}		
+			}
+
+			if (par.wndFramesHoles1 && par.marshId > 2) par.wndFramesHoles = par.wndFramesHoles1;
+
 
 			if (par.botEnd == "floor") drawBotStepKo_floor(par);
 			if (par.botEnd == "platformG") drawBotStepKo_pltG(par);
@@ -120,6 +136,16 @@ function drawStringer(par){
 
 			/*верх марша*/
 
+			//рассчитываем проступи на забеге. Берутся параметры верхнего или нижнего забега
+			if (par.treadsObj.wndPar) par.wndSteps = calcWndSteps(par.treadsObj.wndPar);
+			if (par.treadsObj.wndPar2 && par.marshId > 1) {
+				if (par.marshId == 2) par.treadsObj.wndPar2.marshId = 2;
+				par.wndSteps = calcWndSteps(par.treadsObj.wndPar2);
+			}
+
+			par.wndFramesHoles = wndFramesHoles;
+			if (par.wndFramesHoles1 && par.marshId > 1) par.wndFramesHoles = par.wndFramesHoles1;
+
 			if (par.topEnd == "floor") drawTopStepKo_floor(par);
 			if (par.topEnd == "platformG") drawTopStepKo_pltG(par);
 			if (par.topEnd == "platformP") drawTopStepKo_pltP(par);
@@ -135,7 +161,7 @@ function drawStringer(par){
 				}
 			}
 		}
-	
+		par.wndFramesHoles = wndFramesHoles;
 	}
 	
 	

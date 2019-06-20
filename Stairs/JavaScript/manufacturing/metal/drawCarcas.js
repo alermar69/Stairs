@@ -92,9 +92,12 @@ function drawCarcas(par){
 	if (params.stairModel != "Прямая"){
 		par.dxfBasePoint.x = dxfX0;
 		par.dxfBasePoint.y += 3000;
-		if (params.stairModel == "П-образная с забегом") {
-			par.wndFramesHoles = par.wndFramesHoles1;
-		}
+		//if (params.stairModel == "П-образная с забегом") {
+		//	par.wndFramesHoles = par.wndFramesHoles1;
+		//}
+		//if (par.wndFramesHoles1) {
+		//	par.wndFramesHoles = par.wndFramesHoles1;
+		//}
 
 		par.stringerParams[3] = drawMarshStringers(par, 3);
 		
@@ -354,7 +357,8 @@ function drawMarshStringers(par, marshId){
 		turnStepsParams: par.treadsObj.wndPar,
 		treadsObj: par.treadsObj,
 		wndFramesHoles: par.wndFramesHoles,
-		};
+	};
+	if (par.wndFramesHoles1) stringerParams.wndFramesHoles1 = par.wndFramesHoles1;
 	var useTopWnPar = false;
 	if(par.treadsObj.wndPar2){
 		if(marshId == 3 && params.stairModel == "П-образная с забегом") useTopWnPar = true;
@@ -367,8 +371,8 @@ function drawMarshStringers(par, marshId){
 	//позиция косоуров по Z
 	var posZIn = (params.M / 2 - stringerParams.stringerSideOffset) * turnFactor;
 	if (turnFactor == 1) posZIn -= params.stringerThickness;
-	
-	var posZOut = - (params.M / 2 - stringerParams.stringerSideOffset) * turnFactor;
+
+	var posZOut = - (params.M / 2 - stringerParams.stringerSideOffset - calcStringerMoove(marshId).stringerOutMoove) * turnFactor;
 	if (turnFactor == -1) posZOut -= params.stringerThickness - 0.01
 	
 	var sideIn = "right";
@@ -778,7 +782,7 @@ function drawPlatformStringers(par){
 		frontStringer.position.x = -params.M * 0.5;
 		if (params.model == "лт") frontStringer.position.x += params.stringerThickness;
 		if (params.model == "ко") {
-			frontStringer.position.x += params.sideOverHang;
+			frontStringer.position.x += params.sideOverHang + calcStringerMoove(1).stringerOutMoove;
 			if (params.stringerDivision == "нет") frontStringer.position.x += params.stringerThickness
 		}
 		mesh.add(frontStringer);
@@ -830,8 +834,8 @@ function drawPlatformStringers(par){
 		
 	}
 	if (params.model == "ко") {
-		var stringerOffset = 75;
-		if(params.sideOverHang < 75) stringerOffset = params.sideOverHang;
+		var stringerOffset = 75 + calcStringerMoove(2).stringerOutMoove;
+		if (params.sideOverHang < 75) stringerOffset = params.sideOverHang + calcStringerMoove(2).stringerOutMoove;
 		rearStringer.position.z += stringerOffset * turnFactor;
 	}
 	if(turnFactor == -1) rearStringer.position.z -= params.stringerThickness;
@@ -839,7 +843,7 @@ function drawPlatformStringers(par){
 	rearStringer.position.y = 5;
 	if (params.model == "ко") rearStringer.position.y = -params.treadThickness;
 	rearStringer.position.x = -params.M * 0.5;
-	if (params.model == "ко") rearStringer.position.x += params.sideOverHang;
+	if (params.model == "ко") rearStringer.position.x += params.sideOverHang + calcStringerMoove(1).stringerOutMoove;
 	mesh.add(rearStringer);
 
 	//уголки на задней тетиве/косоуре
@@ -1064,6 +1068,7 @@ function calcStringerParams(par){
 		par.topEndLength = 0;
 		if ((params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') && (params.platformTop == "площадка" || params.platformTop == "увеличенная"))
 			par.topEndLength = params.platformLength_3;
+
 	}
 	
 	if (par.marshId == 3){
@@ -1377,12 +1382,12 @@ function calcColumnPosHoles(par) {
 		];
 		//if (par.botEnd == "platformG" || par.botEnd == "platformP") basePoints[2] = newPoint_xy(basePoints[2], - 20, 0);
 		if (par.botEnd == "platformG" || par.botEnd == "platformP")
-			holePos[2] = newPoint_xy(basePoints[2], -profSize.profWidth / 2 - 60 - 10, -offsetY);
+		holePos[2] = newPoint_xy(basePoints[2], -profSize.profWidth / 2 - 60 - 10, -offsetY);
 		if (params.model == "ко" && par.botEnd == "platformG" && par.key == "out") {
 			holePos[1].y += 20;
 			holePos[2].y += 20;
-	}
-		if (params.model == "ко" && marshParams.topTurn == "площадка") {
+		}
+		if (params.model == "ко" && marshParams.topTurn == "площадка" && holePos[3]) {
 			holePos[3].x -= 20;
 		}
 		if (params.stringerType == "ломаная") {
@@ -1558,4 +1563,30 @@ function calcColumnSize(){
 	return profSize;
 }
 
+//функция рассчитывает смещение наружного косоура по номеру марша
+function calcStringerMoove(marshId) {
 
+	var par = {
+		stringerOutMoove: 0,
+		stringerOutMooveNext: 0,
+		stringerOutMoovePrev: 0,
+	};
+	if (params.model == "ко") {
+		if (marshId == 1) {
+			par.stringerOutMoove = params.stringerMoove_1;
+			par.stringerOutMooveNext = params.stringerMoove_3;
+			if (~params.stairModel.indexOf("П-образная")) par.stringerOutMooveNext = params.stringerMoove_2;
+		}
+		if (marshId == 2) {
+			par.stringerOutMoove = params.stringerMoove_2;
+			par.stringerOutMoovePrev = params.stringerMoove_1;
+			par.stringerOutMooveNext = params.stringerMoove_3;
+		}
+		if (marshId == 3) {
+			par.stringerOutMoove = params.stringerMoove_3;
+			par.stringerOutMoovePrev = params.stringerMoove_1;
+			if (~params.stairModel.indexOf("П-образная")) par.stringerOutMoovePrev = params.stringerMoove_2;
+		}
+	}
+	return par;
+};

@@ -183,7 +183,7 @@ function drawPltStringer(par) {
 	if (params.model == "ко") shiftHoleY -= par.stringerWidthPlatform - 150;
 
 	if (params.model == "ко") {
-		plateLen -= params.sideOverHang * 2;
+		plateLen -= params.sideOverHang * 2 + calcStringerMoove(1).stringerOutMoove + calcStringerMoove(3).stringerOutMoove;
 		//отступ отверстия под средний уголок
 		var offsetHole1 = params.M - params.stringerThickness - params.sideOverHang * 2 - 30;
 		//оступ отверстия под крайний уголок
@@ -260,7 +260,7 @@ function drawPltStringer(par) {
 	par.pointsHole.push(center2);
 
 	// отверстия под средние крепежные уголки
-	var center1 = newPoint_xy(p0, offsetHole1, shiftHoleY);
+	var center1 = newPoint_xy(p0, offsetHole1 - calcStringerMoove(1).stringerOutMoove, shiftHoleY);
 	if (par.key == "front" && params.model == "ко" && params.stringerDivision == "нет")
 		center1.x -= params.stringerThickness;
 	var center2 = newPoint_xy(center1, 0.0, -60.0);
@@ -271,7 +271,7 @@ function drawPltStringer(par) {
     par.pointsHole.push(center1);
 	par.pointsHole.push(center2);
 
-	var center1 = newPoint_xy(p3, -offsetHole1, shiftHoleY);
+	var center1 = newPoint_xy(p3, -offsetHole1 + calcStringerMoove(3).stringerOutMoove, shiftHoleY);
 	if (par.key == "front" && params.model == "ко" && params.stringerDivision2 == "нет")
 		center1.x += params.stringerThickness;
 	var center2 = newPoint_xy(center1, 0.0, -60.0);
@@ -292,7 +292,7 @@ function drawPltStringer(par) {
 		
 	var angleOffset = 120; //Отступ уголка от края тетивы / косоура
 	var mm = params.M - params.stringerThickness - params.stringerThickness;
-	if (params.model == "ко") mm -= params.sideOverHang * 2;	
+	if (params.model == "ко") mm -= params.sideOverHang * 2 + calcStringerMoove(1).stringerOutMoove + calcStringerMoove(3).stringerOutMoove;	
 	var shiftHolePlY = shiftHoleY;
 	if (params.model == "ко") shiftHolePlY = -20;
 	
@@ -3073,12 +3073,16 @@ if(params.stairType == "рифленая сталь" || params.stairType == "л�
 	treadSideGap = 0;
 	}
 
-	
+	var marshId = par.botMarshId;
+	if (par.turnId == 2) marshId += 1;
+	if (par.marshId) marshId = par.marshId;
+	var stringerOutMoove = calcStringerMoove(marshId).stringerOutMoove;
+	var stringerOutMooveNext = calcStringerMoove(marshId).stringerOutMooveNext;
 //нижний марш
 
 	if(params.model == "ко"){
 	//первая ступень, внешняя сторона		
-		wndSteps[1].out.botMarsh = par.params[1].stepWidthHi - params.sideOverHang * Math.tan(par.params[1].edgeAngle);
+		wndSteps[1].out.botMarsh = par.params[1].stepWidthHi - (params.sideOverHang + stringerOutMoove) * Math.tan(par.params[1].edgeAngle);
 		//учитываем отступ передней кромки рамки 
 		//верхний забег П-образной с забегом
 		if(par.turnId == 2 && params.stairModel == "П-образная с забегом") wndSteps[1].out.botMarsh -= 20;
@@ -3089,7 +3093,7 @@ if(params.stairType == "рифленая сталь" || params.stairType == "л�
 		
 	//вторая ступень, внешняя сторона
 		//суммарная длина забежных проступей
-		var sumLen = turnPar.turnLengthTop - params.sideOverHang;
+		var sumLen = turnPar.turnLengthTop - params.sideOverHang - stringerOutMooveNext;
 		//учитываем отступ передней кромки рамки 
 		//верхний забег П-образной с забегом
 		if(par.turnId == 2 && params.stairModel == "П-образная с забегом") sumLen -= 20;
@@ -3118,18 +3122,18 @@ if(params.stairType == "рифленая сталь" || params.stairType == "л�
 	
 	//вторая ступень внешняя сторона
 		
-		var sideOffset = params.sideOverHang + params.stringerThickness; //отступ внутренней плоскости косоура от края ступени
+		var sideOffset = params.sideOverHang + params.stringerThickness + stringerOutMooveNext; //отступ внутренней плоскости косоура от края ступени
 		wndSteps[2].out.topMarsh = par.params[2].stepWidthX;
 		//учитываем угол задней линии ступени
 		wndSteps[2].out.topMarsh += sideOffset * Math.tan(par.params[2].angleY);
 		//учитывем свес над косоуром нижнего марша
-		wndSteps[2].out.topMarsh -= params.sideOverHang + params.stringerThickness;
+		wndSteps[2].out.topMarsh -= params.sideOverHang + params.stringerThickness + stringerOutMoove;
 		//учитываем подступенки
 		if(params.riserType == "есть") wndSteps[2].out.topMarsh += params.riserThickness / Math.cos(par.params[2].angleY);
 		
 	//третья ступень внешняя сторона
 		//суммарная длина забежных проступей
-		var sumLen = turnPar.turnLengthBot + params.nose - params.sideOverHang - params.stringerThickness;
+		var sumLen = turnPar.turnLengthBot + params.nose - params.sideOverHang - params.stringerThickness - stringerOutMoove;
 		if(params.riserType == "есть") sumLen += params.riserThickness;
 		wndSteps[3].out.topMarsh = sumLen - wndSteps[2].out.topMarsh;
 		

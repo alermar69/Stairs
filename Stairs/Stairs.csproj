@@ -381,6 +381,7 @@
     <Content Include="JavaScript\manufacturing\metal\index.php" />
     <Content Include="JavaScript\manufacturing\metal\ladderRailing.js" />
     <Content Include="JavaScript\manufacturing\metal\main.js" />
+    <Content Include="JavaScript\manufacturing\metal\personalScripts.js" />
     <Content Include="JavaScript\manufacturing\metal\sideHandrail.js" />
     <Content Include="JavaScript\manufacturing\metal\testing.js" />
     <Content Include="JavaScript\manufacturing\module\archive\drawCarcasParts.js" />
