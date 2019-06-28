@@ -276,6 +276,10 @@ function drawComplexStringer(par) {
 
 			hole1.diam = 18;
 			polePar.roundHoles.push(hole1)
+
+			var hole2 = newPoint_xy(hole1, -flanParams.holesDist, 0);
+			hole2.diam = 18;
+			polePar.roundHoles.push(hole2)
 		}
 		if (par.topEnd == "забег" && par.marshId !== 1 && params.stairModel == 'П-образная с забегом'){
 			var hole1 = {
@@ -417,6 +421,7 @@ function drawComplexStringer(par) {
 								platePar.angleIn1 = calcAngleX1(par.pointsShape[0],par.pointsShape[par.pointsShape.length - 1]);
 								platePar.isNotKinkTop = true;
 							}
+							platePar.stepPrev = par.stepPoints[i].x - par.stepPoints[i - 2].x;
 							var plate = drawTurn2TreadPlateCabriole(platePar).mesh;
 						}else {
 							if (par.topConnection) platePar.step -= par.stringerLedge;
@@ -438,6 +443,7 @@ function drawComplexStringer(par) {
 								platePar.angleIn1 = calcAngleX1(par.pointsShape[0], par.pointsShape[par.pointsShape.length - 1]);
 								platePar.isNotKinkTop = true;
 							}
+							
 
 							var plate = drawTurn1TreadPlateCabriole(platePar).mesh;
 						}

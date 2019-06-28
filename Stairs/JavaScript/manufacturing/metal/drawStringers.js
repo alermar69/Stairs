@@ -74,6 +74,7 @@ function drawStringer(par){
 		par.rutelPosY = -60;
 
 		var isException = false; //является ли текущий случай исключением
+		var wndFramesHoles = par.wndFramesHoles;
 
 	//нестандартное построение
 		
@@ -95,8 +96,7 @@ function drawStringer(par){
 		
 	//стандартное построение
 		
-		if (!isException) {
-			var wndFramesHoles = par.wndFramesHoles;
+		if (!isException) {			
 
 			/*низ марша*/
 

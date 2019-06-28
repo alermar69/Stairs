@@ -471,6 +471,7 @@ function drawMarshStringers(par, marshId){
 
 //внешний косоур/тетива
 	
+	stringerParams.wndFramesHoles = par.wndFramesHoles;
 	
 	par.dxfBasePoint.x += stringerParams.lenX;
 	stringerParams.dxfBasePoint = par.dxfBasePoint;
@@ -985,7 +986,7 @@ function drawColumnSide(par, key){
 		if (params.model == "ко") bracePar.width -= params.sideOverHang;
 		
 		if(par.carcasHoles[i].isBraceHole){
-			console.log(par.carcasHoles[i].x, par.keyPoints[key].topPoint)
+
 			if (params.topPltConsolePos == "сзади") {
 				if (params.model == "ко")
 					bracePar.width = par.keyPoints.topPoint.x - par.carcasHoles[i].x + 53 + params.sideOverHang + params.stringerThickness;
@@ -1020,7 +1021,7 @@ function drawColumnSide(par, key){
 		}
 	
 	//колонны наверху входной лестницы без площадки
-	if(params.calcType == "vhod" && params.platformTop == "нет" && params.topStepColumns == "есть"){
+	if (params.calcType == "vhod" && params.platformTop == "нет" && params.topStepColumns == "есть" && params.columnModel == "40х40"){
 		var i = par.carcasHoles.length - 1; //номер отверстия верхнего уголка
 		colParams.length = par.carcasHoles[i].y + marshPos - 90;
 		if(turnFactor == 1){
@@ -1246,8 +1247,13 @@ function calcColumnsPos(isWndP) {
 		if(params.isColumnMiddle1) params.isColumn3 = true;
 		if(params.isColumnMiddle2) params.isColumn1 = true;
 		if(params.isColumnMiddle3) params.isColumn4 = true;
-		if(params.isColumnMiddle4) params.isColumn2 = true;
+		if (params.isColumnMiddle4) params.isColumn2 = true;
+		if (params.platformTop == "нет" && params.topStepColumns == "есть" && params.columnModel !== "40х40") {
+			colPos[marshId].in[3] = true;
+			colPos[marshId].out[3] = true;
 		}
+
+	}
 		
 	if (params.stairModel != "Прямая") {
 		//передние колонны нижнего поворота
@@ -1590,3 +1596,5 @@ function calcStringerMoove(marshId) {
 	}
 	return par;
 };
+
+

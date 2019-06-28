@@ -552,6 +552,7 @@ function makeSvg() {
 			draw: draw,
 		}
 		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
 	}
 	//зум и сдвиг мышкой
 	var panZoom = svgPanZoom('#svgOutputDiv svg', {

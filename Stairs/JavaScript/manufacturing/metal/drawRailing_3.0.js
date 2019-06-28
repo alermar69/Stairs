@@ -919,7 +919,12 @@ function calcHandrailPoints(par, parRacks){
 									}
 					var startPoint = newPoint_xy(handrailParams.points[0], 0, -glassHeight); //поправить
 					handrailParams.points.unshift(startPoint);
-					}
+				}
+				if (par.lastMarsh && par.topEnd == 'нет') {
+					handrailParams.points[handrailParams.points.length - 1] = newPoint_x1(handrailParams.points[handrailParams.points.length - 1], -meterHandrailPar.profY - 5 - handrailParams.extraLengthEnd, marshAngle);
+					var startPoint = newPoint_xy(handrailParams.points[handrailParams.points.length - 1], 0, -glassHeight); //поправить
+					handrailParams.points.push(startPoint);
+				}
 			}
 			if (par.marshId == "topPlt" && params.handrailFixType == "кронштейны") {			
 				var extraLengthBack = 50 + meterHandrailPar.profZ / 2 + 5;// 50- расстояние от стены до оси поручня

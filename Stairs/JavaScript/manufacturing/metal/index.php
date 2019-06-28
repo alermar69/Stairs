@@ -25,6 +25,15 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <!-- Блоки для вывода данных на странице, файлы заказа, чертежи-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/manufacturing/general/include_areas/output.php" ?>
 
+<!-- шаблоны комплектации-->
+<div id="templatesWrap" class="noPrint" style='display: none;'>
+	<br/>
+	<button id="showTemplates">Показать шаблоны комплектации</button>
+	<div id="templates" class="toggleDiv" style='display: none;'>
+		<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/metal/forms/templates.php" ?>
+	</div>
+</div>
+
 <!-- форма параметров проемов каркаса-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/metal/forms/carcas_form.php" ?>
 
@@ -39,6 +48,9 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 
 <!--форма доставка, сборка-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/assemblingForm.php" ?>
+
+<!--комментарии менеджера-->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/comments.php" ?>
 
 <!--себестоимость-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/cost.php" ?>
@@ -62,7 +74,6 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 
 <script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 <script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
-<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
 
 <!--визуализация-->
 	<script type="text/javascript" src="drawStaircase.js"></script>
@@ -87,7 +98,7 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 	<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
 	
 	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
-	
+	<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
     
 	<!-- автотесты -->
 	<script type="text/javascript" src="testing.js"></script>
@@ -103,7 +114,6 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 <script type="text/javascript" src="calcSpec_3.0.js"></script>
 
 <!--оболочки-->
-<script type="text/javascript" src="personalScripts.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 

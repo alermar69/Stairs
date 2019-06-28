@@ -530,6 +530,9 @@ function drawCarcasPart(par, len) {
 	if (!par.keyPoints) par.keyPoints = {};
 	if (!par.keyPoints[par.key]) par.keyPoints[par.key] = {};
 
+	var framePar = { marshId: par.marshId, isPltFrame: true }
+	calcFrameParams(framePar);
+
 	par.stringerWidthPlatform = calcPltStringerWidth();
 	par.stringerWidthPlatform = par.stringerWidthPlatform ? par.stringerWidthPlatform : 150.0;
 	var offSetY = 0;
@@ -547,9 +550,10 @@ function drawCarcasPart(par, len) {
 	//позиция верхнего отверстия уголка каркаса относительно верха тетивы
 	var shiftHoleY = -params.treadThickness - 5 - 20 + offSetY; //позиция верхнего отверстия уголка каркаса относительно верха тетивы
 	if (params.model == "ко") shiftHoleY = -65;
-	if (params.stairType == "рифленая сталь" || params.stairType == "рифленый алюминий" || params.stairType == "лотки")
-		shiftHoleY -= 65;
-	if (params.stairType == "дпк" || params.stairType == "пресснастил") shiftHoleY -= 65;
+	shiftHoleY -= framePar.profHeight + 5;
+	//if (params.stairType == "рифленая сталь" || params.stairType == "рифленый алюминий" || params.stairType == "лотки")
+	//	shiftHoleY -= 65;
+	//if (params.stairType == "дпк" || params.stairType == "пресснастил") shiftHoleY -= 65;
 	if (params.stairModel == "Прямая горка") shiftHoleY -= 5;
 
 	
@@ -609,104 +613,106 @@ function drawCarcasPart(par, len) {
 
 	//}
 	//if (params.stairFrame == "есть" && par.hasFrames) {
-	if (par.hasFrames) {
-		// отверстия под рамки под площадкой
-		par.platformFramesParams = {
-			marshId: par.marshId,
-			isPltFrame: true,
-		};
-		if (par.largePlt) par.platformFramesParams.isLargePlt = true;
-		calcFrameParams(par.platformFramesParams); 
-		calcStringerPar(par);
-		
-		par.stepHoleY = -20 - 5 - params.treadThickness + offSetY;
-		var platformLength = len; 
-		if (par.largePlt) platformLength += 2;
+	if (par.stringerType == "side") {
+		if (par.hasFrames) {
+			// отверстия под рамки под площадкой
+			par.platformFramesParams = {
+				marshId: par.marshId,
+				isPltFrame: true,
+			};
+			if (par.largePlt) par.platformFramesParams.isLargePlt = true;
+			calcFrameParams(par.platformFramesParams);
+			calcStringerPar(par);
 
-		// отверстия под рамки под площадкой
-		var begX = par.platformFramesParams.overhang + 5 + par.platformFramesParams.sideHolePosX;
-		if (par.largePlt) begX -= 2;
-		if (params.stairModel == 'Прямая горка') {
-			begX = par.platformFramesParams.sideHolePosX + 5.0;
-			platformLength -= 5;
-        }
-        //if (params.stairModel !== 'Прямая' && params.stairModel !== 'Прямая горка') platformLength += 8;
-		if (params.platformRearStringer == "нет") platformLength += params.stringerThickness;
+			par.stepHoleY = -20 - 5 - params.treadThickness + offSetY;
+			var platformLength = len;
+			if (par.largePlt) platformLength += 2;
+
+			// отверстия под рамки под площадкой
+			var begX = par.platformFramesParams.overhang + 5 + par.platformFramesParams.sideHolePosX;
+			if (par.largePlt) begX -= 2;
+			if (params.stairModel == 'Прямая горка') {
+				begX = par.platformFramesParams.sideHolePosX + 5.0;
+				platformLength -= 5;
+			}
+			//if (params.stairModel !== 'Прямая' && params.stairModel !== 'Прямая горка') platformLength += 8;
+			if (params.platformRearStringer == "нет") platformLength += params.stringerThickness;
 
 
-		var frameAmt = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameAmt;
-        var frameWidth = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameWidth;
+			var frameAmt = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameAmt;
+			var frameWidth = calcPltFrameParams(platformLength, par.platformFramesParams.overhang).frameWidth;
 
-		
-		var i;
-		for (i = 0; i < frameAmt; i++) {
-			center1 = newPoint_xy(p0, begX, par.stepHoleY);
-			center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX * 2, 0.0);
-			center1.isLargePlt = center2.isLargePlt = par.largePlt;
-			//center1.isPltFrame = center2.isPltFrame = par.largePlt;
-			center1.isPltFrame = center2.isPltFrame = true;
-            if (par.isMiddleStringer) {
-				par.elmIns[par.key] = {};
-				center1.isPltPFrame = center2.isPltPFrame = true;
-			    center1.noZenk = center2.noZenk = true;
-            }
-            if (params.platformTop == 'увеличенная') {
-                if (params.calcType == "vhod" && params.M > 1100)
+
+			var i;
+			for (i = 0; i < frameAmt; i++) {
+				center1 = newPoint_xy(p0, begX, par.stepHoleY);
+				center2 = newPoint_xy(center1, frameWidth - par.platformFramesParams.sideHolePosX * 2, 0.0);
+				center1.isLargePlt = center2.isLargePlt = par.largePlt;
+				//center1.isPltFrame = center2.isPltFrame = par.largePlt;
+				center1.isPltFrame = center2.isPltFrame = true;
+				if (par.isMiddleStringer) {
+					par.elmIns[par.key] = {};
 					center1.isPltPFrame = center2.isPltPFrame = true;
-				if (params.stairModel == "Г-образная с площадкой" && turnFactor == 1) {
-					center1.noBoltsIn = center2.noBoltsIn = true;
+					center1.noZenk = center2.noZenk = true;
 				}
-				else
-					center1.noBoltsOut = center2.noBoltsOut = true;
-            }
-			par.pointsHole.push(center1);
-			par.pointsHole.push(center2);
-			begX += frameWidth + 5.0;
-			par.carcasHoles.push(center1, center2)
-		}
-		
-	}
-	if (!par.hasFrames) {
-		var stepHoleY = -(params.treadThickness + 20.0 + 5.0);
+				if (params.platformTop == 'увеличенная') {
+					if (params.calcType == "vhod" && params.M > 1100)
+						center1.isPltPFrame = center2.isPltPFrame = true;
+					if (params.stairModel == "Г-образная с площадкой" && turnFactor == 1) {
+						center1.noBoltsIn = center2.noBoltsIn = true;
+					}
+					else
+						center1.noBoltsOut = center2.noBoltsOut = true;
+				}
+				par.pointsHole.push(center1);
+				par.pointsHole.push(center2);
+				begX += frameWidth + 5.0;
+				par.carcasHoles.push(center1, center2)
+			}
 
-		// отверстия под 1 уголок площадки
-		if (plateLen < 790) {
-			var holeDist = 50;
-			var angleType = "У2-40х40х90";
-			var angleHolePosX = 20;
 		}
-		else {
-			var angleType = "У2-40х40х200";
-			var angleHolePosX = 25;
-			var holeDist = 150;
-		}
+		if (!par.hasFrames) {
+			var stepHoleY = -(params.treadThickness + 20.0 + 5.0);
 
-		var stepHoleXside1 = (plateLen / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
-		center1 = newPoint_xy(p0, stepHoleXside1, stepHoleY);
-		center2 = newPoint_xy(center1, holeDist, 0.0);
-		par.pointsHole.push(center1);
-		par.pointsHole.push(center2);
-		par.carcasHoles.push(center1, center2);
+			// отверстия под 1 уголок площадки
+			if (plateLen < 790) {
+				var holeDist = 50;
+				var angleType = "У2-40х40х90";
+				var angleHolePosX = 20;
+			}
+			else {
+				var angleType = "У2-40х40х200";
+				var angleHolePosX = 25;
+				var holeDist = 150;
+			}
 
-		// отверстия под перемычку 2
-		if (plateLen > 600 && par.stringerType == "side") {
-			center1 = newPoint_xy(p0, ((plateLen * 0.5) + 29), shiftHoleY);
-			center2 = newPoint_xy(center1, 0.0, -60);
-			center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
-			//par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0 - 29 - 39, 20.0));
-			var pCentralHoles = copyPoint(center1);
-			par.pointsHole.push(center2);
-			par.pointsHole.push(center1);
-		}
-
-		// отверстия под 2 уголок площадки
-		var stepHoleXside2 = (plateLen / 2 - 64) / 2 + plateLen / 2 - holeDist / 2;
-		if (stepHoleXside2 > 0.0) {
-			center1 = newPoint_xy(p0, stepHoleXside2, stepHoleY);
+			var stepHoleXside1 = (plateLen / 2 - 110 - 64) / 2 + 140 - holeDist / 2;
+			center1 = newPoint_xy(p0, stepHoleXside1, stepHoleY);
 			center2 = newPoint_xy(center1, holeDist, 0.0);
 			par.pointsHole.push(center1);
 			par.pointsHole.push(center2);
 			par.carcasHoles.push(center1, center2);
+
+			// отверстия под перемычку 2
+			if (plateLen > 600 && par.stringerType == "side") {
+				center1 = newPoint_xy(p0, ((plateLen * 0.5) + 29), shiftHoleY);
+				center2 = newPoint_xy(center1, 0.0, -60);
+				center1.hasAngle = center2.hasAngle = false; //уголки перемычки отрисовываются внутри drawBridge_2
+				//par.elmIns[par.key].bridges.push(newPoint_xy(center1, -38.0 - 29 - 39, 20.0));
+				var pCentralHoles = copyPoint(center1);
+				par.pointsHole.push(center2);
+				par.pointsHole.push(center1);
+			}
+
+			// отверстия под 2 уголок площадки
+			var stepHoleXside2 = (plateLen / 2 - 64) / 2 + plateLen / 2 - holeDist / 2;
+			if (stepHoleXside2 > 0.0) {
+				center1 = newPoint_xy(p0, stepHoleXside2, stepHoleY);
+				center2 = newPoint_xy(center1, holeDist, 0.0);
+				par.pointsHole.push(center1);
+				par.pointsHole.push(center2);
+				par.carcasHoles.push(center1, center2);
+			}
 		}
 	}
 	//отверстия под колонну на боковой тетиве увеличенной верхней площадки
@@ -853,6 +859,9 @@ function drawTopPltStringer(par) {
 	
 	if (!par.keyPoints) par.keyPoints = {};
 	if (!par.keyPoints[par.key]) par.keyPoints[par.key] = {};
+
+	var framePar = { marshId: par.marshId, isPltFrame: true }
+	calcFrameParams(framePar);
 	
 	par.stringerWidthPlatform = calcPltStringerWidth();
 
@@ -867,6 +876,9 @@ function drawTopPltStringer(par) {
 	//if (params.stairType == "рифленая сталь" || params.stairType == "рифленый алюминий" || params.stairType == "лотки") shiftHoleY -= 14;
 	//if (params.stairType == "рифленая сталь" || params.stairType == "рифленый алюминий" || params.stairType == "лотки")
 	//	shiftHoleY -= 50;
+	var shiftHoleY = -params.treadThickness - 5 - 20; //позиция верхнего отверстия уголка каркаса относительно верха тетивы
+	shiftHoleY -= framePar.profHeight + 5;
+
 	if (params.model == "ко") shiftHoleY = -par.stringerWidthPlatform + 25 + 60;
 	//if(params.model == "ко") shiftHoleY = -95;
 	var shiftHoleX = 30.0 + params.stringerThickness;

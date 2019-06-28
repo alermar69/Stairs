@@ -1136,7 +1136,7 @@ function setObjectVisible(obj){
  */
 function drawVint(par){
 	par.mesh = new THREE.Object3D();
-	par.mesh.specId = par.id;
+	par.mesh.specId = par.id + "_model";
 
 	par.len = 10;
 	par.diam = 6;
@@ -1187,7 +1187,7 @@ function drawVint(par){
 	if(!testingMode) par.mesh.add(vint);
 
 	//сохраняем данные для спецификации
-	par.partName = par.id;
+	par.partName = par.id + "_model";
 	if (typeof specObj != 'undefined' && par.partName) {
 		if (!specObj[par.partName]) {
 			specObj[par.partName] = {
@@ -1227,7 +1227,7 @@ function drawVint(par){
 function drawScrew(par){
 	par.mesh = new THREE.Object3D();
 	var screwParams = getScrewParams(par.id);
-	par.mesh.specId = screwParams.id;
+	par.mesh.specId = screwParams.id + "_model";
 
 	par.len = screwParams.len;
 	par.diam = screwParams.diam;
@@ -1236,6 +1236,14 @@ function drawScrew(par){
 	var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, par.len, 10, 1, false);
 	var screw = new THREE.Mesh(geometry, screwMaterial);
 	if(!testingMode) par.mesh.add(screw);
+
+	if (par.hasShim) {
+		//шайба
+		var shimParams = { diam: par.diam }
+		var shim = drawShim(shimParams).mesh;
+		shim.position.y = -par.len / 2;
+		par.mesh.add(shim);
+	}
 
 	if (par.dowelId) {
 		var dowelPar = {
@@ -1249,8 +1257,14 @@ function drawScrew(par){
 		par.mesh.add(dowel);
 	}
 
+	if (par.timberPlugDiam) {
+		var plug = drawTimberPlug(par.timberPlugDiam);
+		plug.position.y = -par.len / 2;
+		par.mesh.add(plug);
+	}
+
 	//сохраняем данные для спецификации
-	par.partName = screwParams.id;
+	par.partName = screwParams.id + "_model";
 	if (typeof specObj != 'undefined' && par.partName) {
 		if (!specObj[par.partName]) {
 			specObj[par.partName] = {
@@ -1450,22 +1464,22 @@ function getScrewParams(screwId){
 		diam = 4;
 	}
 	if(screwId == "riserScrewBot"){
-		screwName = "Саморез Ф3,5х55 потай остр. бел.";
+		screwName = "Саморез Ф3,5х55 потай бел.";
 		len = 55;
 		diam = 3;
 	}
 	if(screwId == "riserScrewTop"){
-		screwName = "Саморез Ф3,5х35 потай отср. бел.";
+		screwName = "Саморез Ф3,5х35 потай бел.";
 		len = 35;
 		diam = 3;
 	}
 	if(screwId == "riserScrewTopWinderKo"){
-		screwName = "Саморез Ф3,5х16 потай остр. бел.";
+		screwName = "Саморез Ф3,5х16 потай бел.";
 		len = 16;
 		diam = 3;
 	}
 	if(screwId == "screw_6x60"){
-		screwName =  "Саморез Ф6х60 потай остр. желт.";
+		screwName =  "Саморез Ф6х60 потай желт.";
 		len = 60;
 		diam = 6;
 	}
@@ -1480,23 +1494,28 @@ function getScrewParams(screwId){
 		diam = 4;
 	}
 	if(screwId == "treadScrew_ko"){
-		screwName =  "Саморез Ф3,5х35 потай остр. бел.";
+		screwName =  "Саморез Ф3,5х35 потай бел.";
 		len = 35;
 		diam = 3;
 	}
 	if(screwId == "screw_3x55"){
-		screwName =  "Саморез Ф3,5х55 потай остр. бел.";
+		screwName =  "Саморез Ф3,5х55 потай бел.";
 		len = 55;
 		diam = 3;
 	}
 	if(screwId == "screw_3x35"){
-		screwName = "Саморез Ф3,5х35 потай остр. бел.";
+		screwName = "Саморез Ф3,5х35 потай бел.";
 		len = 35;
 		diam = 3;
 	}
 	if(screwId == "screw_4x45"){
-		screwName = "Саморез Ф4,5х45 потай остр. бел.";
+		screwName = "Саморез Ф4,5х45 потай бел.";
 		len = 45;
+		diam = 4;
+	}
+	if(screwId == "screw_4x35"){
+		screwName = "Саморез Ф4х35 потай желт.";
+		len = 35;
 		diam = 4;
 	}
 	if(screwId == "screw_4x32"){
@@ -1523,6 +1542,11 @@ function getScrewParams(screwId){
 		screwName =  "Кровельный саморез 5,5x32";
 		len = 32;
 		diam = 5;
+	}
+	if(screwId == "screw_8x60"){
+		screwName = "Глухарь 8х60";
+		len = 60;
+		diam = 8;
 	}
 	if(screwId == "screw_8x80"){
 		screwName = "Глухарь 8х80";

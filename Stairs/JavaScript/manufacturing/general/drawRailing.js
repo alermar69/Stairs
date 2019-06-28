@@ -1303,8 +1303,27 @@ function drawPolylineHandrail(par) {
 
 	points = points1;
 
-	//расчет длин и углов всех участков поручня
+	var maxLen = 3000;
+	if(!(meterHandrailPar.mat == 'timber' && meterHandrailPar.handrailType != 'ПВХ')) maxLen = 4000;
 
+	var newPoints = [];
+	for (var i = 0; i < points.length - 1; i++) {
+		var point = points[i];
+		var nextPoint = points[i + 1];
+		var len = distance(point, nextPoint);
+		newPoints.push(point);
+		if (len > maxLen) {
+			var midPoint = midpoint(point, nextPoint);
+			// var ang = angle(point, nextPoint);
+			midPoint.isMidpoint = true;
+			newPoints.push(midPoint);
+		}
+		if (i == points.length - 2) {
+			newPoints.push(nextPoint);
+		}
+	}
+	points = newPoints;
+	//расчет длин и углов всех участков поручня
 	var startOffset = 0; //смещение начала текущего куска поручня от базовой точки
 	var startAngle = Math.PI / 2; //угол начала текущего куска поручня
 	var previousLength = 0; //Длинна предыдущего куска, необходима для рассчета конечной точки предыдущего куска
@@ -1521,7 +1540,7 @@ function drawPolylineHandrail(par) {
 				par.mesh.add(connectionFlan);
 			}
 
-			if ((params.handrailConnectionType == "без зазора премиум" || params.handrailConnectionType == "без зазора") && i < points.length - 2) {
+			if ((params.handrailConnectionType == "без зазора премиум" || params.handrailConnectionType == "без зазора") && i < points.length - 2 && meterHandrailPar.mat == 'timber') {
 
 				var plugDiam = 10;
 
@@ -2108,9 +2127,9 @@ function drawPolylineRigel(par) {
 				group: "Ограждения"
 			}
 			var holder = drawRigelHolder(holderPar);
-			// holder.rotation.x = Math.PI / 2;
+			holder.rotation.x = Math.PI / 2;
 			holder.position.x = pos.x;
-			holder.position.y = pos.y;// + rigelParams.poleProfileY / 2;
+			holder.position.y = pos.y + rigelParams.poleProfileY / 2;
 			holder.position.z = 5;
 			if(!testingMode) par.mesh.add(holder);
 		}
@@ -2692,6 +2711,7 @@ function drawRailingSectionForge2(par) {
 				var splitSection = false;
 				var sectionLength = distance(par.racks[0], newPoint_xy(par.racks[par.racks.length - 1], 0, 1000));
 				if (sectionLength > 3800) splitSection = true;
+				if (params.stairModel	== 'Прямая' || par.key == 'in') splitSection = false;
 				
 
         //верхняя перемычка

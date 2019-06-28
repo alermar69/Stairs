@@ -7,6 +7,8 @@ function drawFrames(par){
 	var isFrameHole = function(hole){
 		return (hole.hasAngle == undefined && hole.wndFrame == undefined);
 	}
+
+	var offsetHoleTopFlanDpk = 0; //на верхнем фланце отступ для первого отверстия крепления ступени дпк площадки (рассчитывается в функции drawTreadFrame2), чтобы отверстия в верхнем фланце рамки располагались по середине ступени дпк
 	for(var i=0; i<par.holes.length-1; i++){
 		if(isFrameHole(par.holes[i])){
 			var holeDist = par.holes[i + 1].x - par.holes[i].x;			
@@ -18,7 +20,8 @@ function drawFrames(par){
 				isPltPFrame: par.holes[i].isPltPFrame, //является ли рамкой промежуточной площадки П-образной с площадкой
 				isLargePlt: par.holes[i].isLargePlt, //является ли каркасом увеличенной площадки
 				isFlanFrame: par.holes[i].isMiddleFlanHole, //попадает ли на соеденительный фланец
-				marshId: par.marshId
+				marshId: par.marshId,
+				offsetHoleTopFlanDpk: offsetHoleTopFlanDpk,
 				}
 			//для лотков и рифленки рамка не накладывается на фланец
 			if(params.stairType == "лотки" || params.stairType == "рифленая сталь"){
@@ -1930,31 +1933,46 @@ function drawTreadFrame2(par){
 	}
 
 	flanPar.dxfBasePoint = newPoint_xy(flanPar.dxfBasePoint, 0, flanPar.height + 150);
-	
-	// определяем параметры первого отверстия фланца
-	var hole1 = {
-		x: flanPar.width / 2,
-		y: flanPar.holeOffset,
-	};
 
-	// определяем параметры второго отверстия фланца
-	var hole2 = {
-		x: flanPar.width / 2,
-		y: flanPar.height - flanPar.holeOffset,
-	};
+	if (!(params.stairType == "дпк" && par.isPltFrame)) {
+		// определяем параметры первого отверстия фланца
+		var hole1 = {
+			x: flanPar.width / 2,
+			y: flanPar.holeOffset,
+		};
 
-	// добавляем параметры отверстий в свойства фланца
-	flanPar.roundHoleCenters.push(hole1, hole2);
-
-	//для дпк на площадке добавляем два отверстия в середине
-	if (params.stairType == "дпк" && par.isPltFrame) {
-		var holeDist = par.holeDist / 3;
-		// определяем параметры средних отверстий фланца
-		var hole3 = newPoint_xy(hole1, 0, holeDist);
-		var hole4 = newPoint_xy(hole3, 0, holeDist);
+		// определяем параметры второго отверстия фланца
+		var hole2 = {
+			x: flanPar.width / 2,
+			y: flanPar.height - flanPar.holeOffset,
+		};
 
 		// добавляем параметры отверстий в свойства фланца
-		flanPar.roundHoleCenters.push(hole3, hole4);
+		flanPar.roundHoleCenters.push(hole1, hole2);
+	}
+
+	//для дпк на площадке
+	if (params.stairType == "дпк" && par.isPltFrame) {
+		var holeOffset = flanPar.holeOffset;
+		if (par.offsetHoleTopFlanDpk !== 0) holeOffset = par.offsetHoleTopFlanDpk;
+
+		// определяем параметры первого отверстия фланца
+		var hole = {
+			x: flanPar.width / 2,
+			y: flanPar.height - holeOffset,
+		};
+		// добавляем параметры отверстий в свойства фланца
+		flanPar.roundHoleCenters.push(hole);
+
+
+		//var threadStep = (marshParams.a - 5) / 2;
+		var threadStep = 145 + 5; // 145 - ширина ступени дпк, 5 - зазор между ступенями
+		var count = Math.floor((par.width - par.profWidth * 2 - holeOffset) / threadStep);
+		for (var j = 0; j < count; j++) {
+			hole = newPoint_xy(hole, 0, -threadStep);
+			flanPar.roundHoleCenters.push(hole);
+		}
+		par.offsetHoleTopFlanDpk = threadStep - (par.width - holeOffset - threadStep * count + 5);
 	}
 
 	if(params.stairType == "пресснастил") par.bridgeAmt = 0;
@@ -2426,9 +2444,13 @@ function calcFrameParams(par){
 	}
 
 	//кол-во перемычек
-	par.bridgeAmt = 2;
-	par.profBridgeAmt = 0;	
+	par.bridgeAmt = 2;	
 	if (par.isPltFrameMarshDist && params.marshDist < 200) par.bridgeAmt = 0;
+
+	par.profBridgeAmt = 0;	
+	if (params.model == "лт" && params.M > 900) par.profBridgeAmt = 1;
+	if (params.model == "ко" && (params.M - params.sideOverHang * 2) > 900) par.profBridgeAmt = 1;
+
 	
 	if(params.stairType == "дпк") {
 		if (par.length < 150) par.bridgeAmt = 1;

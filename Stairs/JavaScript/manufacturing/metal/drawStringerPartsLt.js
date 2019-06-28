@@ -860,7 +860,7 @@ function drawBotStepLt_pltPOut(par) {
 		if (params.railingModel != "Самонесущее стекло") {
 
 			// отверстия под дальнюю стойку промежуточной площадки
-			center1 = newPoint_xy(p1, 80 - 8, par.stepHoleY);
+			center1 = newPoint_xy(p1, 80 - 8, par.rackTopHoleY);
 			par.railingHoles.push(center1);
 
 			// отверстия под средние стойки
@@ -875,7 +875,7 @@ function drawBotStepLt_pltPOut(par) {
 			}
 
 			// отверстия под стойку 2 промежуточной площадки
-			center1 = newPoint_xy(ph, -60 - 5 - 60, par.stepHoleY);
+			center1 = newPoint_xy(ph, -60 - 5 - 60, par.rackTopHoleY);
 			par.railingHoles.push(center1);
 		}
 		if (params.railingModel == "Самонесущее стекло") {
@@ -2325,7 +2325,9 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 
 	// отверстия под задний крепежный уголок
 	if (isAngel) {
-		center1 = newPoint_xy(topLineP1, -30.0, par.carcasAnglePosY);
+		var shiftHoleY = par.carcasAnglePosY;
+		if(par.marshPar.lastMarsh) shiftHoleY = -params.treadThickness - 5 - 20 - par.platformFramesParams.profHeight - 5;
+		center1 = newPoint_xy(topLineP1, -30.0, shiftHoleY);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
 		if (params.topFlan == "есть" && par.stringerLast) {
@@ -2912,6 +2914,7 @@ function drawTopStepLt_pltPIn(par) {
 
 	// уголок крепления к задней тетиве
 	var holePos = par.carcasAnglePosY + params.treadThickness + 5.0;
+	if (par.marshPar.lastMarsh) holePos = - 20 - par.platformFramesParams.profHeight - 5;
 	if (params.calcType == 'vhod') {
 		//holePos = -35 + par.carcasAnglePosY;
 		//holePos = 25 + par.carcasAnglePosY;
@@ -2936,7 +2939,7 @@ function drawTopStepLt_pltPIn(par) {
 
 	if (par.stringerLast && params.platformTop == 'увеличенная') {
 		center1 = newPoint_xy(ph, 32.0, holePos);
-		if (params.stairType == "нет") center1.y += par.carcasAnglePosY;
+		//if (params.stairType == "нет") center1.y += par.carcasAnglePosY;
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = false;
 		par.pointsHole.push(center2);

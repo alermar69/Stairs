@@ -503,6 +503,7 @@ function drawBotStepKo_pltP(par){
 	// отверстия крепления к площадки
 	
 	var pltPar = {len: params.platformLength_1 + params.nose,}
+	pltPar.len -= calcStringerMoove(2).stringerOutMoove;
 	calcPltPartsParams(pltPar);
 	//var xPo = pltPar.partLen - par.botEndLength - params.stringerThickness - 96 + params.nose;
 	//po1 = newPoint_xy(pt4, -xPo, -20);
@@ -589,7 +590,8 @@ function drawBotStepKo_pltP(par){
 		center1.noZenk = true;
 		center1.noBolts = true;
 		center1.wallFix = true;
-		par.pointsHoleBot.push(center1);
+		pointsHoleBot.push(center1);
+		
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p2, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
@@ -597,7 +599,7 @@ function drawBotStepKo_pltP(par){
 		center1.noZenk = true;
 		center1.noBolts = true;
 		center1.wallFix = true;
-		par.pointsHoleBot.push(center1);
+		par.pointsHole.push(center1);
 	}
 
 	//базовые точки для стыковки с другими частями косоура
@@ -749,7 +751,7 @@ function drawBotStepKo_wndIn(par){
 		center1.hasAngle = center2.hasAngle = true;
 		// если второе отверстие на уголке крепления к нижнему косоуру совпадает с отверстием под уголок крепления к нижнему перекрытию нижнего косоура
 		if (par.prevMarshPar.botTurn == 'пол') {
-			var turnParams = calcTurnParams(par.prevMarshPar.marshId)
+			var turnParams = calcTurnParams(par.marshPar.prevMarshId)
 			var stingerLen = turnParams.topMarshOffsetX + par.stringerSideOffset - params.nose + params.stringerThickness + 60;
 			if (params.riserType == "есть") stingerLen -= params.riserThickness;
 			if (stingerLen >= 120) center2.noBoltsInSide1_2 = true;
@@ -1658,7 +1660,9 @@ function drawTopStepKo_pltG(par){
 	//считаем параметры щитов площадки
 	var pltPar = {
 		len: par.tyrnLengthTop,
+		//len: pltStringerLen,
 	}
+	if (!par.stringerLast) pltPar.len -= calcStringerMoove(par.marshId).stringerOutMooveNext;
 	pltPar = calcPltPartsParams(pltPar);
 
 	//для верхней площадки если она короткая и там один щит, делаем рамку во всю глубину площадки
@@ -1952,6 +1956,7 @@ function drawTopStepKo_pltP(par){
 
 	// отверстия крепления рамки площадки
 	var pltPar = { len: platformLen + params.nose, }
+	if (!par.stringerLast) pltPar.len -= calcStringerMoove(2).stringerOutMoove;
 	calcPltPartsParams(pltPar);
 	//var xPo = pltPar.partLen - par.topEndLength - params.stringerThickness - 96;
 	//po1 = newPoint_xy(pt1, xPo, -20);
@@ -2032,6 +2037,7 @@ function drawTopStepKo_pltP(par){
 		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
+
 		//отверстие ближе к углу
 		center1 = newPoint_xy(pt2, -100, -100);
 		center1.rad = fixPar.diam / 2 + 1;
@@ -2039,7 +2045,7 @@ function drawTopStepKo_pltP(par){
 		center1.noZenk = true;
 		center1.noBolts = true;
 		center1.wallFix = true;
-		par.pointsHole.push(center1);
+		pointsHoleTop.push(center1);
 	}
 
 }//end of drawTopStepKo_pltP
@@ -2080,6 +2086,7 @@ function drawTopStepKo_wndIn(par) {
 		var p20 = newPoint_xy(p1, (par.stringerWidth / Math.sin(par.marshAng)), 0.0) // первая точка на нижней линии марша
 		var p21 = polar(p20, par.marshAng, 100.0); // вторая точка на нижней линии
 		var topLineP2 = itercection(p20, p21, topLineP1, polar(topLineP1, Math.PI / 2, 100));
+		if (par.longStringerTop) topLineP2.filletRad = 0;
 		botLinePoints.push(topLineP2);
 		}
 		
@@ -2104,7 +2111,7 @@ function drawTopStepKo_wndIn(par) {
 
 	//сохраняем точки контура
 
-	p1.filletRad = p2.filletRad = 0;
+	p1.filletRad = p2.filletRad = 0;	
 	if(par.stairAmt > 0) par.pointsShape.push(p1);
 	par.pointsShape.push(p2);	
 	par.pointsShape.push(topLineP1);
@@ -2272,6 +2279,7 @@ function drawTopStepKo_wndOut(par){
 	/*ОТВЕРСТИЯ*/
 	
 	// отверстия под первую забежную рамку
+
 	var holePar = {
 		holes: par.wndFramesHoles.botMarsh.out[1],
 		basePoint: p2,

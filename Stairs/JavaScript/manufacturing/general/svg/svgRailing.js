@@ -960,7 +960,8 @@ function drawSVGHandrails(par){
 	commonSet.listText += "фаски на концах: 6мм";
 
 	// commonSet.listText = "Общий";
-	var sets = [commonSet];
+	var sets = [];
+	//var sets = [commonSet];
 	var partsBasePoint = {x:0, y: -100};
 	$.each(handrailShapes, function(){
 		var shape = this;

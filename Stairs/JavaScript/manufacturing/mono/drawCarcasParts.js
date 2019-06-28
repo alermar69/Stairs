@@ -319,7 +319,7 @@ function drawColumn(par){
         shapesList.push(shape);
 
 		//фланец к стене
-
+		var flanFix = new THREE.Object3D();
 		var flanParams = {
 			width: 200,
 			holeDiam: 18,
@@ -340,6 +340,10 @@ function drawColumn(par){
 			dxfBasePoint: newPoint_xy(par.dxfBasePoint, length + 200, 0),
 			dxfPrimitivesArr: par.dxfArr,
 		};
+
+		flanParams.isFixPart = true; // болты крепления к стенам
+		flanParams.fixPar = getFixPart(par.marshId); // параметры крепления к стенам
+		flanParams.holeDiam = flanParams.fixPar.diam + 2; 
 
 		//добавляем фланец
         flanParams = drawRectFlan(flanParams);
@@ -367,7 +371,7 @@ function drawColumn(par){
 		flan.position.z = -params.M / 2 - par.stringerLedge;
 		if (par.side == "right") flan.position.z = params.M / 2 - params.flanThickness + par.stringerLedge;
 
-		par.mesh.add(flan);
+		flanFix.add(flan);
 
 		//наклонные пластины фланца
 		var gap = 1;
@@ -401,7 +405,7 @@ function drawColumn(par){
 		plate.position.x = -plateDist / 2;
 		plate.position.y = cons.position.y + maxHeight + 0.01;
 		plate.position.z = -50;
-		par.mesh.add(plate);
+		flanFix.add(plate);
 
 		//вторая пластина
         shapePar.dxfBasePoint = newPoint_xy(shapePar.dxfBasePoint, 0, (p2.y - p6.y) + 100);
@@ -416,7 +420,7 @@ function drawColumn(par){
 		plate2.position.x = plate.position.x;
 		plate2.position.y = plate.position.y;
 		plate2.position.z = 50 - 8;
-        par.mesh.add(plate2);
+		flanFix.add(plate2);
 
 
         //торцевая пластина
@@ -434,7 +438,7 @@ function drawColumn(par){
         endPlate.position.y = cons.position.y + maxHeight - endPlatePar.width;
         endPlate.position.z = 50 + extraLen - params.flanThickness;
         if (par.side == "right") endPlate.position.z = -(50 + extraLen);
-        par.mesh.add(endPlate);
+        flanFix.add(endPlate);
 
         endPlatePar.shape.drawing = {
             name: "Торцевая пластина",
@@ -461,7 +465,7 @@ function drawColumn(par){
 		headBridge.position.x = plate.position.x + 8 + gap;
 		headBridge.position.y = plate.position.y - headBridgePar.height;
 		headBridge.position.z = 50 - 8;
-		par.mesh.add(headBridge);
+		flanFix.add(headBridge);
 
 		//вторая пластина
         headBridgePar.dxfBasePoint = newPoint_xy(headBridgePar.dxfBasePoint, 0, headBridgePar.height + 100);
@@ -478,7 +482,23 @@ function drawColumn(par){
 		headBridge.position.x = plateDist / 2 - 8 - gap;
 		headBridge.position.y = plate.position.y - headBridgePar.height;
 		headBridge.position.z = 50 - 8;
-        par.mesh.add(headBridge);
+		flanFix.add(headBridge);
+
+		//болты крепления к стенам
+		if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
+			if (flanParams.fixPar.fixPart !== 'нет') {
+				for (var i = 0; i < flanParams.holesFix.length; i++) {
+					var fix = drawFixPart(flanParams.fixPar).mesh;
+					fix.position.x = flan.position.x + flanParams.holesFix[i].x;
+					fix.position.y = flan.position.y + flanParams.holesFix[i].y;
+					fix.position.z = flan.position.z + params.flanThickness * (1 + turnFactor) * 0.5;
+					fix.rotation.x = Math.PI / 2 * turnFactor;
+					flanFix.add(fix);
+				}
+			}
+		}
+
+		par.mesh.add(flanFix);
 
 	} //end of подкос
 
@@ -3750,6 +3770,8 @@ function drawTurn1TreadPlateCabriole(par) {
 	par.isBot = true
 	par.isIn = true
 
+	var marshPar = getMarshParams(par.marshId);
+
 	var dxfArr = dxfPrimitivesArr;
 	if (turnFactor == 1) dxfArr = {};
 
@@ -4105,12 +4127,24 @@ function drawTurn1TreadPlateCabriole(par) {
 		var p1 = newPoint_xy(p0, 0, par.heightIn);
 		var p2 = newPoint_xy(p1, distance(pi2, pi00) - 25, 0);
 		//var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
-		pt1 = newPoint_xy(p1, par.step, 0);
-		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
-		if (par.isNotKinkTop) dx -= 20;
-		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
+		//pt1 = newPoint_xy(p1, par.step, 0);
+		//var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		//if (par.isNotKinkTop) dx -= 20;
+		//var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
+		//var pt3 = polar(pt2, angle1, 100);
+		//var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+		//var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+
+		var pt1 = newPoint_xy(p1, 0, -marshPar.h);
+		var pt2 = polar(pt1, -(Math.PI / 2 - angle1), params.sidePlateWidth - params.sidePlateOverlay - 5);
 		var pt3 = polar(pt2, angle1, 100);
-		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+
+		var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		if (p3.y + 5 > p2.y) {
+			var pt4 = itercection(p1, polar(p1, 0, 100), pt2, pt3);
+			p2 = newPoint_xy(pt4, -10, 0);
+			var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		}
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
 		var points = [p0, p1, p2, p3];
@@ -4210,12 +4244,23 @@ function drawTurn1TreadPlateCabriole(par) {
 		var p1 = newPoint_xy(p0, 0, par.heightIn);
 		var p2 = newPoint_xy(p1, distance(pi1, pi0) - 25, 0);
 		//var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
-		var pt1 = newPoint_xy(p1, par.step, 0);
-		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
-		if (par.isNotKinkTop) dx -= 20;
-		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
+		//var pt1 = newPoint_xy(p1, par.step, 0);
+		//var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		//if (par.isNotKinkTop) dx -= 20;
+		//var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
+		//var pt3 = polar(pt2, angle1, 100);
+		//var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+		//var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+		var pt1 = newPoint_xy(p1, 0, -marshPar.h);
+		var pt2 = polar(pt1, -(Math.PI / 2 - angle1), params.sidePlateWidth - params.sidePlateOverlay - 5);
 		var pt3 = polar(pt2, angle1, 100);
-		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+
+		var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		if (p3.y + 5 > p2.y) {
+			var pt4 = itercection(p1, polar(p1, 0, 100), pt2, pt3);
+			p2 = newPoint_xy(pt4, -10, 0);
+			var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		}
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
 		dxfBasePoint.x += distance(p2, p1) + 100;
@@ -4358,6 +4403,9 @@ function drawTurn2TreadPlateCabriole(par) {
 	par.isTop = true
 	par.isBot = true
 	par.isIn = true
+
+	var marshPar = getMarshParams(par.marshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
 
 	var dxfArr = dxfPrimitivesArr;
 	if (turnFactor == -1) dxfArr = {};
@@ -4700,8 +4748,8 @@ function drawTurn2TreadPlateCabriole(par) {
 		var p0 = copyPoint(pv0);
 		var p1 = newPoint_xy(p0, treadPlateWidth, 0);
 		var p2 = newPoint_xy(p1, 0, -20);
-		var p3 = newPoint_xy(p0, treadPlateWidth / 2 + (profileWidth / 2 + par.strapThickness) / Math.cos(ang), -h1);
-		var p4 = newPoint_xy(p0, treadPlateWidth / 2 - (profileWidth / 2 + par.strapThickness) / Math.cos(ang), -h1);
+		var p3 = newPoint_xy(p0, treadPlateWidth / 2 + (profileWidth / 2 + par.strapThickness) / Math.cos(ang), -h1 - stringerPlateThickness);
+		var p4 = newPoint_xy(p0, treadPlateWidth / 2 - (profileWidth / 2 + par.strapThickness) / Math.cos(ang), -h1 - stringerPlateThickness);
 		var p5 = newPoint_xy(p0, 0, -20);
 
 		addLine(shape, dxfPrimitivesArr, p0, p1, dxfBasePoint);
@@ -4767,11 +4815,17 @@ function drawTurn2TreadPlateCabriole(par) {
 		var p0 = { x: 0, y: 0 };
 		var p1 = newPoint_xy(p0, 0, par.heightIn);
 		var p2 = newPoint_xy(p1, distance(py1, pk1) + dxWidthIn, 0);
-		var pt1 = newPoint_xy(p1, 0, -h1);
-		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
-		if (par.isNotKinkTop) dx -= 20;
-		var pt2 = newPoint_xy(pt1, dx / Math.sin(par.angleIn1), 0);
+		//var pt1 = newPoint_xy(p1, 0, -h1);
+		//var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		//if (par.isNotKinkTop) dx -= 20;
+		//var pt2 = newPoint_xy(pt1, dx / Math.sin(par.angleIn1), 0);
+		//var pt3 = polar(pt2, par.angleIn1, 100);
+		//var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+		var pt1 = newPoint_xy(p1, - par.stepPrev, -marshPar.h - nextMarshPar.h);		
+		//var pt1 = newPoint_xy(par.pointProf, 0, -marshPar.h + par.heightIn);
+		var pt2 = polar(pt1, -(Math.PI / 2 - par.angleIn1), params.sidePlateWidth - params.sidePlateOverlay - 5);
 		var pt3 = polar(pt2, par.angleIn1, 100);
+		var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 		var p3 = newPoint_xy(p2, 0, -60 + 12);
 		var p31 = itercection(p3, polar(p3, Math.PI, 100), p4, polar(p4, par.angleIn1, 100));
@@ -4857,14 +4911,20 @@ function drawTurn2TreadPlateCabriole(par) {
 		var p0 = { x: 0, y: 0 };
 		var p1 = newPoint_xy(p0, 0, par.heightIn);
 		var p2 = newPoint_xy(p1, distance(py2, pk11) + dxWidthIn - stringerPlateThickness * Math.cos(ang), 0);
-		var pt1 = newPoint_xy(p1, 0, -h1 - ((pk1.y - pk11.y) / Math.tan(Math.PI / 2 - par.angleIn1)) + stringerPlateThickness);
-		var dx = par.sidePlateWidth - par.sidePlateOverlay;// - 10 ? FIX
-		if (par.isNotKinkTop) dx -= 20;
+		//var pt1 = newPoint_xy(p1, 0, -h1 - ((pk1.y - pk11.y) / Math.tan(Math.PI / 2 - par.angleIn1)) + stringerPlateThickness);
+		//var dx = par.sidePlateWidth - par.sidePlateOverlay;// - 10 ? FIX
+		//if (par.isNotKinkTop) dx -= 20;
 
-		var pt2 = newPoint_xy(pt1, dx / Math.sin(par.angleIn1), 0);
-		var pt3 = polar(pt2, par.angleIn1, 125);
-		//var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
-		var p4 = newPoint_xy(p0, 50, 0);
+		//var pt2 = newPoint_xy(pt1, dx / Math.sin(par.angleIn1), 0);
+		//var pt3 = polar(pt2, par.angleIn1, 125);
+		////var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+		//var p4 = newPoint_xy(p0, 50, 0);
+		var pt1 = newPoint_xy(p1, - par.stepPrev, - marshPar.h - nextMarshPar.h);
+		var pt1 = newPoint_xy(pt1, profileWidth * Math.tan(turnParams.angleX), 0);
+		var pt2 = polar(pt1, -(Math.PI / 2 - par.angleIn1), params.sidePlateWidth - params.sidePlateOverlay - 5);
+		var pt3 = polar(pt2, par.angleIn1, 100);
+		var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 		var p3 = newPoint_xy(p2, 0, -60 + 12);
 		var p31 = itercection(p3, polar(p3, Math.PI, 100), p4, polar(p4, par.angleIn1, 100));
 
@@ -5043,6 +5103,8 @@ function drawTurn3TreadPlateCabriole(par) {
 	par.isTop = true
 	par.isBot = true
 	par.isIn = true
+
+	var marshPar = getMarshParams(par.marshId);
 
 	var dxfArr = {};
 
@@ -5469,12 +5531,24 @@ function drawTurn3TreadPlateCabriole(par) {
 		var p1 = newPoint_xy(p0, 0, par.heightIn);
 		//var p2 = newPoint_xy(p1, par.widthIn, 0);
 		var p2 = newPoint_xy(p1, distance(pi1, pi0) - 25, 0);
-		var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
-		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
-		if (par.isNotKinkBot) dx -= 20;
-		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
+		//var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
+		//var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		//if (par.isNotKinkBot) dx -= 20;
+		//var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1), 0);
+		//var pt3 = polar(pt2, angle1, 100);
+		//var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+		//var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+
+		var pt1 = newPoint_xy(p1, par.step - profileWidth * Math.tan(turnParams.edgeAngle), 0);
+		var pt2 = polar(pt1, -(Math.PI / 2 - angle1), params.sidePlateWidth - params.sidePlateOverlay - 5);
 		var pt3 = polar(pt2, angle1, 100);
-		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+
+		var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		if (p3.y + 5 > p2.y) {
+			var pt4 = itercection(p1, polar(p1, 0, 100), pt2, pt3);
+			p2 = newPoint_xy(pt4, -10, 0);
+			var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		}
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
 	    var points = [p4, p3, p2, p1, p0]
@@ -5552,12 +5626,24 @@ function drawTurn3TreadPlateCabriole(par) {
 		var p1 = newPoint_xy(p0, 0, par.heightIn);
 		//var p2 = newPoint_xy(p1, par.widthIn, 0);
 		var p2 = newPoint_xy(p1, distance(pi2, pi00) - 25, 0);
-		var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
-		var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
-		if (par.isNotKinkBot) dx -= 20;
-		var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1) + (pi2.y - pi1.y), 0);
+		//var pt1 = newPoint_xy(p1, 0, -h1 + stringerPlateThickness);
+		//var dx = par.sidePlateWidth - par.sidePlateOverlay - 10;
+		//if (par.isNotKinkBot) dx -= 20;
+		//var pt2 = newPoint_xy(pt1, dx / Math.sin(angle1) + (pi2.y - pi1.y), 0);
+		//var pt3 = polar(pt2, angle1, 100);
+		//var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+		//var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+
+		var pt1 = newPoint_xy(p1, par. step, 0);
+		var pt2 = polar(pt1, -(Math.PI / 2 - angle1), params.sidePlateWidth - params.sidePlateOverlay - 5);
 		var pt3 = polar(pt2, angle1, 100);
-		var p3 = itercection(p2, polar(p2, Math.PI * 3 / 2, 100), pt2, pt3);
+
+		var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		if (p3.y + 5 > p2.y) {
+			var pt4 = itercection(p1, polar(p1, 0, 100), pt2, pt3);
+			p2 = newPoint_xy(pt4, -10, 0);
+			var p3 = itercection(p2, polar(p2, Math.PI / 2, 100), pt2, pt3);
+		}
 		var p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
 
 		dxfBasePoint.x += distance(p2, p1) + 100;

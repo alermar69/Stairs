@@ -26,6 +26,15 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <!-- Блоки для вывода данных на странице, файлы заказа, чертежи-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/manufacturing/general/include_areas/output.php" ?>
 
+<!-- шаблоны комплектации-->
+<div id="templatesWrap" class="noPrint" style='display: none'>
+	<br/>
+	<button id="showTemplates">Показать шаблоны комплектации</button>
+	<div id="templates" class="toggleDiv" style='display: none;'>
+		<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/metal/forms/templates.php" ?>
+	</div>
+</div>
+
 <!-- форма параметров проемов каркаса-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/mono/forms/carcas_form.php" ?>
 
@@ -40,6 +49,10 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 
 <!--форма доставка, сборка-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/assemblingForm.php" ?>
+
+<!--комментарии менеджера-->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/comments.php" ?>
+
 
 <!--себестоимость-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/cost.php" ?>
@@ -61,13 +74,6 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
-<!--файлы с едиными функциями (сейчас в работе)-->
-<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
-<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
-<script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
-<script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>
-<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
 <script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 
 <!--визуализация-->
@@ -82,6 +88,13 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 
 <script type="text/javascript" src="drawSvg.js"></script>
 
+<!--файлы с едиными функциями (сейчас в работе)-->
+<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
+<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
+<script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
+<script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>
+<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
+<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
 
 
 <!--расчет спецификации-->

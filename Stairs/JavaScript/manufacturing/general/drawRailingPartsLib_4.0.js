@@ -677,7 +677,7 @@ function drawTimberPlug(plugDiam){
 
 function drawRigelHolder(par) {
 	var size = par.size + 5;
-	var geometry = new THREE.CylinderGeometry(size / 2, size / 2, 40, 32);
+	var geometry = new THREE.CylinderGeometry(size / 2, size / 2, 25, 32);
 	var holder = new THREE.Mesh( geometry, params.materials.inox );
 	
 	var partName = par.id;
@@ -1123,14 +1123,13 @@ function drawPole3D_4(par) {
 		}
 
 		if (bolts.includes(5)) {
-			var geometry = new THREE.CylinderGeometry(7, 7, 50, 32);
-			var cylinder = new THREE.Mesh(geometry, material);
-			cylinder.position.x = basePoint.x - holesOffset / 2;
-			cylinder.position.y = basePoint.y;
-			cylinder.position.z = basePoint.z + holesOffset / 2;
-			par.mesh.add(cylinder);
+			// var geometry = new THREE.CylinderGeometry(7, 7, 50, 32);
+			// var cylinder = new THREE.Mesh(geometry, material);
+			// cylinder.position.x = basePoint.x - holesOffset / 2;
+			// cylinder.position.y = basePoint.y;
+			// cylinder.position.z = basePoint.z + holesOffset / 2;
+			// par.mesh.add(cylinder);
 		}
-
 	}
 
 	//сохраняем данные для спецификации
@@ -1281,7 +1280,7 @@ function drawPole3D_4(par) {
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["sumLength"] += Math.round(par.length) / 1000;
-		specObj[partName]["paintedArea"] += (par.poleProfileZ + par.poleProfileY) * 2 * par.length / 1000;
+		specObj[partName]["paintedArea"] += (par.poleProfileZ + par.poleProfileY) * 2 * par.length / 1000000;
 
 		par.mesh.specId = partName + name;
 	}
@@ -2205,7 +2204,7 @@ function drawHolderFlan(par){
 	// if(item.amt > 0) par.items.push(item);
 
 	//сохраняем данные для спецификации
-	var partName = par.holderFlanId;
+	var partName = par.holderFlanId + "_model";
 	if (typeof specObj != 'undefined') {
 		if (!specObj[partName]) {
 			specObj[partName] = {
@@ -2219,9 +2218,9 @@ function drawHolderFlan(par){
 				group: "Ограждения",
 				purposes: ["Крепление поручня к стойкам"]
 			}
-			if (partName == "holderFlan") specObj[partName].name = "Лодочка плоская черн."; 
-			if (partName == "handrailHolderFlanPlane") specObj[partName].name = "Лодочка под плоский поручень нерж."; 
-			if (partName == "handrailHolderFlanArc") specObj[partName].name = "Лодочка под круглый поручень"; 
+			if (partName == "holderFlan_model") specObj[partName].name = "Лодочка плоская черн."; 
+			if (partName == "handrailHolderFlanPlane_model") specObj[partName].name = "Лодочка под плоский поручень нерж."; 
+			if (partName == "handrailHolderFlanArc_model") specObj[partName].name = "Лодочка под круглый поручень"; 
 		}
 		var name = 0;
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
@@ -2400,10 +2399,10 @@ function drawPlatformRailingFlan(par) {
 	screw.position.z = center4.y - size / 2;
 	par.mesh.add(screw);
 
-	var partName = "steelCover";
+	var partName = "steelCover_model";
 	var name = "Декоративная крышка основания стойки (черн.)";
 	if (params.banisterMaterial == "40х40 нерж." || params.banisterMaterial == "40х40 нерж+дуб"){
-		partName = "stainlessCover";
+		partName = "stainlessCover_model";
 		name = "Декоративная крышка основания стойки (нерж.)";
 	} 
 
@@ -3737,6 +3736,44 @@ function drawHandrail_4(par) {
 		}
 	}
 	par.mesh.specId = partName + name;
+
+	if (par.hasFixings) {
+		var screwPar = {
+			id: "screw_8x120",
+			description: "Крепление поручней к столбу",
+			group: "Ограждения",
+			hasShim: true
+		}
+		var rackSize = 95;
+
+		var screw = drawScrew(screwPar).mesh;
+		screw.rotation.z = -Math.PI / 2;
+		screw.position.x = p0.x - 60;
+		screw.position.y = p0.y + startCutLen / 2;
+		screw.position.z = rackSize / 2;
+		if(!testingMode)	par.mesh.add(screw);
+		
+		var plug = drawTimberPlug(25);
+		plug.rotation.z = -Math.PI / 2;
+		plug.position.x = p0.x - 60 - 60;
+		plug.position.y = p0.y + startCutLen / 2;
+		plug.position.z = rackSize / 2;
+		if(!testingMode)	par.mesh.add(plug);
+		
+		var screw = drawScrew(screwPar).mesh;
+		screw.rotation.z = Math.PI / 2
+		screw.position.x = p2.x + 60;
+		screw.position.y = p2.y - endCutLen / 2;
+		screw.position.z = rackSize / 2;
+		if(!testingMode)	par.mesh.add(screw);
+		
+		var plug = drawTimberPlug(25);
+		plug.rotation.z = Math.PI / 2
+		plug.position.x = p2.x + 120;
+		plug.position.y = p2.y - endCutLen / 2;
+		plug.position.z = rackSize / 2;
+		if(!testingMode)	par.mesh.add(plug);
+	}
 
 	//сохраняем данные для ведомости заготовок
 	if(!par.sectText) par.sectText = "";
