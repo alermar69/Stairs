@@ -110,6 +110,11 @@ function drawAdjustableLeg(isAngle) {
 	if (typeof isFixPats != "undefined" && isFixPats) { //глобальная переменная
 		if (params.fixPart1 != "нет" && params.fixPart1 != "не указано") {
 			var fixPar = getFixPart(1, 'botFloor');
+			if (!isAngle) {//если регулируемая опора на колонне
+				fixPar.fixPart = 'саморезы';
+				fixPar.diam = 6;
+				fixPar.len = 60;
+			}
 			fixPar.thickness = thickness;
 			var holeXY = 15;
 

@@ -3120,10 +3120,10 @@ function drawTopStepLt_pltPOut(par) {
 			par.railingHoles.push(center1);
 
 			// отверстия под средние стойки
-			if (par.platformLength > 1500 && par.hasPltRailing) {
-				var middleRackAmt = Math.round(par.platformLength / 800) - 1;
+			if (params.platformLength_1 > 1500 && par.hasPltRailing) {
+				var middleRackAmt = Math.round(params.platformLength_1 / 800) - 1;
 				if (middleRackAmt < 0) middleRackAmt = 0;
-				var rackDist = (par.platformLength - 200) / (middleRackAmt + 1);
+				var rackDist = (params.platformLength_1 - 200) / (middleRackAmt + 1);
 				for (var i = 1; i <= middleRackAmt; i++) {
 					var center11 = newPoint_xy(center1, rackDist * i, 0);
 					par.railingHoles.push(center11);

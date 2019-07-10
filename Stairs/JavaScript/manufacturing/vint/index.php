@@ -11,7 +11,7 @@ $APPLICATION->SetTitle("Расчет винтовых лестниц v.2.1");
 		<option value="timber">timber</option>
 		<option value="vint" selected >vint</option>
 		<option value="vhod">vhod</option>
-		<option value="geometry">geometry</option>		
+		<option value="geometry">geometry</option>
 	</select>
 	<input type="text" value="2.1" id = "calcVersion">
 </div>
@@ -27,6 +27,9 @@ $APPLICATION->SetTitle("Расчет винтовых лестниц v.2.1");
 
 <!-- форма параметров конструкции балюстрады-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/banister/forms/banister_construct_form.php" ?>
+
+<!--комментарии менеджера-->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/comments.php" ?>
 
 <!--форма доставка, сборка-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/assemblingForm.php" ?>

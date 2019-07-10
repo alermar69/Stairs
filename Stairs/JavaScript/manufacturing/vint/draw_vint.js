@@ -566,7 +566,7 @@ function drawStaircase(viewportId, isVisible) {
 		model.add(stringer, "stringers");
 		
 		var floorAngle = drawAngleSupport("У4-70х70х100");
-		floorAngle.rotation.y = stairParams.stairCaseAngle + Math.PI;
+		floorAngle.rotation.y = stairParams.stairCaseAngle + Math.PI / 2;// - treadExtraAngle;//stairParams.stairCaseAngle + Math.PI;
 		//if (params.turnFactor == 1) floorAngle.rotation.y += Math.PI / 2;
 		translateObject(floorAngle, 0, 0, -params.staircaseDiam / 2);
 		model.add(floorAngle, "stringers");

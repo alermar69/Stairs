@@ -2234,7 +2234,7 @@ function drawTopFixFlans(par){
 	
 	//левый фланец
 	var flan1 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
-	flan1.position.x = -params.M / 2 + sideOffset;
+	flan1.position.x = -params.M / 2 + sideOffset + calcStringerMoove(3).stringerOutMoove;
 	flan1.position.y = -lastRise - botLedge; 
 	//if (params.stairType == "дпк") flan1.position.z = 8;
 	if (marshParams.stairAmt == 0 && marshParams.botTurn == "забег") {
@@ -2684,14 +2684,59 @@ function drawBrace(par) {
 
 	var geometry = new THREE.ExtrudeGeometry(rodShape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var rodObj = new THREE.Object3D();
 	rod = new THREE.Mesh(geometry, params.materials.metal2);
-	rod.rotation.y = -Math.PI * 0.5;
-	rod.position.x = (flanWidth + profWidth) * 0.5 + mooveX;
-	rod.position.y = flanHeight * 0.5 + mooveY;
-	rod.position.z = plateThickness + 45;
-	rod.rotation.x = -angle;
+	rodObj.add(rod);
+	
+	var plugParams = {
+		width: 30,
+		height: 60,
+		description: "Заглушка подкоса",
+		group: "каркаса"
+	}
+	var plug = drawPlug(plugParams);
+	plug.position.x = p2.x;
+	plug.position.y = p2.y - 30;
+	plug.position.z = 15;
+	plug.rotation.z = Math.PI / 2;
+	plug.rotation.x = Math.PI / 2;
+	if(!testingMode) rodObj.add(plug);
 
-	brace.add(rod);
+	var plug = drawPlug(plugParams);
+	plug.position.x = p3.x;
+	plug.position.y = p3.y - 30;
+	plug.position.z = 15;
+	plug.rotation.z = Math.PI / 2;
+	plug.rotation.x = Math.PI / 2;
+	if(!testingMode) rodObj.add(plug);
+	
+	var boltPar = {
+		diam: 10,
+		len: 70,
+		headType: "шестигр.",
+		headShim: true
+	}
+	var bolt = drawBolt(boltPar).mesh;
+	bolt.rotation.x = Math.PI / 2;
+	bolt.position.x = center1.x;
+	bolt.position.y = center1.y;
+	bolt.position.z = 20;
+	if(!testingMode) rodObj.add(bolt)
+	
+	var bolt = drawBolt(boltPar).mesh;
+	bolt.rotation.x = Math.PI / 2;
+	bolt.position.x = center2.x;
+	bolt.position.y = center2.y;
+	bolt.position.z = 20;
+	if(!testingMode) rodObj.add(bolt)
+
+	rodObj.rotation.y = -Math.PI * 0.5;
+	rodObj.position.x = (flanWidth + profWidth) * 0.5 + mooveX;
+	rodObj.position.y = flanHeight * 0.5 + mooveY;
+	rodObj.position.z = plateThickness + 45;
+	rodObj.rotation.x = -angle;
+
+	brace.add(rodObj);
 
 	// кронштейн
 	
@@ -2844,6 +2889,8 @@ function drawBrace(par) {
         steps: 1,
     }*/
 
+
+	var braceFork = new THREE.Object3D();
 	var geometry = new THREE.ExtrudeGeometry(rodPlateShape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	rodPlate1 = new THREE.Mesh(geometry, params.materials.metal);
@@ -2853,7 +2900,7 @@ function drawBrace(par) {
 	rodPlate1.position.z = plateThickness;
 	rodPlate1.rotation.y = -Math.PI * 0.5;
 
-	brace.add(rodPlate1);
+	braceFork.add(rodPlate1);
 
 	rodPlate2 = new THREE.Mesh(geometry, params.materials.metal);
 	rodPlate2.position.x = (flanWidth + (profWidth - 1)) / 2 + (plateThickness + 1) + mooveX;
@@ -2861,16 +2908,40 @@ function drawBrace(par) {
 	rodPlate2.position.z = plateThickness;
 	rodPlate2.rotation.y = -Math.PI * 0.5;
 
-	brace.add(rodPlate2);
+	braceFork.add(rodPlate2);
+	brace.add(braceFork);
+	//сохраняем данные для спецификации
+	var partName = "braceFork_model";
+	if(typeof specObj !='undefined'){
+		if(!specObj[partName]){
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Вилка подкоса с фланцем",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+		var name = 0;
+		if(specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if(!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+	braceFork.specId = partName;
 
 	if (par.topJoin == true) {
+		var braceForkTop = new THREE.Object3D();
+
 		rodPlate3 = new THREE.Mesh(geometry, params.materials.metal);
 		rodPlate3.position.x = (flanWidth - (profWidth - 1)) / 2 - (plateThickness + 1) + mooveX;
 		rodPlate3.position.y = (rodLength - 30 * 2) * Math.sin(angle) + mooveY;
 		rodPlate3.position.z = par.width - plateThickness;
 		rodPlate3.rotation.y = Math.PI * 0.5;
 
-		brace.add(rodPlate3);
+		braceForkTop.add(rodPlate3);
 
 		rodPlate4 = new THREE.Mesh(geometry, params.materials.metal);
 		rodPlate4.position.x = (flanWidth + (profWidth - 1)) / 2 + 1 + mooveX;
@@ -2878,11 +2949,32 @@ function drawBrace(par) {
 		rodPlate4.position.z = par.width - plateThickness;
 		rodPlate4.rotation.y = Math.PI * 0.5;
 
-		brace.add(rodPlate4);
+		braceForkTop.add(rodPlate4);
+		brace.add(braceForkTop);
+
+		//сохраняем данные для спецификации
+		var partName = "braceFork_model";
+		if(typeof specObj !='undefined'){
+			if(!specObj[partName]){
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Вилка подкоса с фланцем",
+					metalPaint: true,
+					timberPaint: false,
+					division: "metal",
+					workUnitName: "amt", //единица измерения
+					group: "Каркас",
+				}
+			}
+			var name = 0;
+			if(specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if(!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+		}
+		braceForkTop.specId = partName;
 	}
 	
-
-		
 	//сохраняем данные для спецификации
 	var partName = "brace";
 	if(typeof specObj !='undefined'){

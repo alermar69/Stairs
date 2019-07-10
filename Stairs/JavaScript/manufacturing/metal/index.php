@@ -74,6 +74,7 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 
 <script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
 <script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
+<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 
 <!--визуализация-->
 	<script type="text/javascript" src="drawStaircase.js"></script>
@@ -88,7 +89,7 @@ $APPLICATION->SetTitle("Расчет лестниц лт и ко v.4.1");
 
 	<script type="text/javascript" src="drawFrames.js"></script>
 	<script type="text/javascript" src="drawStringers.js"></script>
-	<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
+	
 	
 	<script type="text/javascript" src="drawSvg.js"></script>
 

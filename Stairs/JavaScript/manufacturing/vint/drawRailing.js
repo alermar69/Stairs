@@ -425,7 +425,8 @@ function drawSpiralRailing(par) {
 	}
 	if (par.model == "Частые стойки") {
 		handrailParams.poleRad += 10;
-		handrailParams.posY += 20 / Math.cos((stairAmt + 1.5) * stepAngle) + 15;
+		//handrailParams.posY += 20 / Math.cos((stairAmt + 1.5) * stepAngle) + 15;
+		handrailParams.posY += 20;
 	}
 	if (par.model != "Частые стойки") {
 		handrailParams.startOffset = 0.25;
@@ -493,7 +494,8 @@ function drawSpiralRailing(par) {
 		var banisterBottomOverhang = 36; //выступ балясини ниже нижней поверхности ступени
 		var botLedge = banisterBottomOverhang + params.treadThickness; //выступ балясины ниже верхней поверхности ступени
 
-
+		var startAngle = 0;
+		var endAngle = 0;
 		/*координаты верхних точек балЯсин*/
 		var handrailPoints = [];
 		for (var i = 0; i < stairAmt + 1; i++) {
@@ -512,6 +514,7 @@ function drawSpiralRailing(par) {
 				if (par.model != "Частые стойки") p0_y = par.posY + stepHeight * j;
 				var p0_z = par.poleRad * Math.sin(banistrPositionAngle);
 				handrailPoints.push(new THREE.Vector3(p0_x, p0_y, p0_z));
+				startAngle = banistrPositionAngle;
 			}
 			//остальные стойки
 			handrailPoints.push(new THREE.Vector3(p1_x, p1_y, p1_z));
@@ -524,25 +527,40 @@ function drawSpiralRailing(par) {
 				if (par.model != "Частые стойки") p0_y = par.posY + stepHeight * j;
 				var p0_z = par.poleRad * Math.sin(banistrPositionAngle);
 				handrailPoints.push(new THREE.Vector3(p0_x, p0_y, p0_z));
+				endAngle = banistrPositionAngle;
 			}
 		}
 		var handrailSpline = new THREE.CatmullRomCurve3(handrailPoints);
+		
+		
+		var shape = new THREE.Shape();
+		shape.absarc(0, 0, par.poleSize / 2, 0, 2 * Math.PI, true)
+
 		var extrudeSettings = {
 			steps: 200,
 			bevelEnabled: false,
 			extrudePath: handrailSpline
 		};
+	
+		var geometry = new THREE.ExtrudeBufferGeometry(shape, extrudeSettings);
+		var handrail = new THREE.Mesh(geometry, par.material);
 
+		// var pts = [], count = 4;
+		// for ( var i = 0; i < count; i ++ ) {
+		// 	var l = 40;
+		// 	var a = 2 * i / count * Math.PI;
+		// 	pts.push( new THREE.Vector2( Math.cos( a ) * l, Math.sin( a ) * l ) );
+		// }
 
-		var shape = new THREE.Shape();
-		shape.absarc(0, 0, par.poleSize / 2, 0, 2 * Math.PI, true)
-
-		var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-		var mesh = new THREE.Mesh(geometry, par.material);
+		// var shape = new THREE.Shape( pts );
+		// var geometry = new THREE.ExtrudeBufferGeometry( shape, extrudeSettings );
+		// var material = new THREE.MeshLambertMaterial( { color: 0xb00000, wireframe: false } );
+		// var handrail = new THREE.Mesh( geometry, material );
 
 		//поднимаем поручень для контроля длины балясина
-		mesh.position.y += 20;
-
+		handrail.position.y += 20;
+		var mesh = new THREE.Object3D();
+		mesh.add(handrail);
 
 		//рассчитываем длину
 		var sumLen = 0;
@@ -550,6 +568,35 @@ function drawSpiralRailing(par) {
 			sumLen += distance3d(handrailPoints[i], handrailPoints[i + 1]);
 		}
 		sumLen += 600; //Учитываем обрезаемые хвостовики
+
+		if (params.handrailMaterial == 'ПВХ' && par.partName !== "spiralRigel") {
+			var plugParams = {
+				id: "stainlessPlug_pvc",
+				width: 50,
+				height: 50,
+				description: "Заглушка поручня",
+				group: "Поручни",
+				isCirclePlug: true,
+				type: "inox",
+			}
+			var plug = drawPlug(plugParams);
+			plug.position.x = handrailPoints[0].x;
+			plug.position.y = handrailPoints[0].y;
+			plug.position.z = handrailPoints[0].z;
+			// plug.rotation.x = Math.PI / 2;
+			// plug.rotation.y = startAngle;
+			// plug.rotation.z = 0;
+			if(!testingMode) mesh.add(plug);
+
+			var plug = drawPlug(plugParams);
+			plug.position.x = handrailPoints[handrailPoints.length - 1].x;
+			plug.position.y = handrailPoints[handrailPoints.length - 1].y;
+			plug.position.z = handrailPoints[handrailPoints.length - 1].z;
+			// plug.rotation.x = Math.PI / 2;
+			// plug.rotation.y = endAngle;
+			// plug.rotation.z = 0;
+			if(!testingMode) mesh.add(plug);
+		}
 
 		//сохраняем данные для спецификации
 		var partName = par.partName;
@@ -607,6 +654,28 @@ function drawSpiralRailing(par) {
 		}
 		mesh.specId = partName + name;
 
+		if (polePartsAmt > 1  && par.partName !== "spiralRigel") {
+			for (var i = 0; i < polePartsAmt - 1; i++) {
+				var pos = Math.floor(handrailPoints.length / polePartsAmt) * (i + 1);
+				if (params.handrailMaterial == 'ПВХ') {
+					var ring = drawHandrailRing();
+					ring.position.x = handrailPoints[pos].x;
+					ring.position.y = handrailPoints[pos].y;
+					ring.position.z = handrailPoints[pos].z;
+					ring.rotation.x = Math.PI / 2;
+					if(!testingMode) mesh.add(ring);
+				}
+				if(params.handrailMaterial == 'Дуб'){
+					var bolt = drawHandrailZipBolt();
+					bolt.position.x = handrailPoints[pos].x;
+					bolt.position.y = handrailPoints[pos].y;
+					bolt.position.z = handrailPoints[pos].z;
+					bolt.rotation.x = Math.PI / 2;
+					if(!testingMode) mesh.add(bolt);
+				}
+			}
+		}
+
 		return mesh;
 
 	} //end of drawVinPole()
@@ -619,3 +688,71 @@ function drawSpiralRailing(par) {
 	return par;
 
 }; //end of drawSpiralRailing
+
+function drawHandrailZipBolt(){
+	var material = params.materials.inox;
+
+	var geometry = new THREE.CylinderGeometry( 5, 5, 30, 32 );
+	var ring = new THREE.Mesh(geometry, material);
+
+	var partName = "zipBolt"
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Зип-болт прямой",
+				metalPaint: false,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Поручни",
+				purposes: ["Соединение поручня на лестнице"]
+			}
+		}
+		var name = 0;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	ring.specId = partName;	
+	ring.setLayer("metis");
+
+	return ring;
+}
+
+function drawHandrailRing(){
+	var material = params.materials.inox;
+
+	var geometry = new THREE.CylinderGeometry( 30, 30, 10, 32 );
+	var ring = new THREE.Mesh(geometry, material);
+
+	var partName = "handrailRing_model";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Кольцо для поручня ПВХ",
+				metalPaint: false,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Поручни",
+				purposes: ["Соединение поручня на лестнице"]
+			}
+		}
+		var name = 0;
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
+
+	ring.specId = partName;	
+	ring.setLayer("metis");
+
+	return ring;
+}

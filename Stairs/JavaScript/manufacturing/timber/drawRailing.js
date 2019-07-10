@@ -1351,7 +1351,7 @@ function drawRailingSection_4(par){
 				balParams.basePoint.y += 0.05;
 				if (testingMode && marshPar.lastMarsh) { //поднимаем балясины, чтобы не было пересечения с балкой
 					balParams.balLen -= 0.2;
-					balParams.basePoint.y += 0.1;
+					//balParams.basePoint.y += 0.1;
 				}
 
 				//Рассчет размера балясины
@@ -1417,7 +1417,7 @@ function drawRailingSection_4(par){
 			if (params.stairModel == 'П-образная с площадкой' && par.marshId == 1 && getMarshParams(marshPar.nextMarshId).hasRailing.in && side == 'in') {
 				var balParams = {
 					basePoint: {x:0,y:0},
-					lenX: params.marshDist,
+					lenX: params.marshDist - 0.05,
 					ang: 0,
 					balLen: handrailPosY_plt - 110,
 					balStep: 150,
@@ -1790,7 +1790,7 @@ function drawTimberNewell_4(par){
 
 /*функция отрисовывает деревянную балясину*/
 
-function drawTimberBanister_4(par){
+function drawTimberBanister_4(par) {
 
 	/*возвращает деревянную балясину (мэш)
 	banisterLength, banisterSize, botEndType, botEndLength, topEndType, type
@@ -1806,64 +1806,68 @@ function drawTimberBanister_4(par){
 
 		}
 	*/
-	
+
 	var dimAng = par.topAng || 0;//Угол для спецификации
 	var balName = params.timberBalModel;
-	if(par.unit == "balustrade") balName = params.timberBalModel_bal;	
+	if (par.unit == "balustrade") balName = params.timberBalModel_bal;
 	var balPar = getTimberBalParams(balName); //функция в файле /manufacturing/timber/drawRailing.js
 	par.botEnd = balPar.botEnd;
 	par.topEnd = balPar.topEnd;
 	par.type = balPar.type;
-	
-	if(!par.size) par.size = 50;
-	if(!par.botAng) par.botAng = 0;
-	if(!par.topAng) par.topAng = 0;
-	if(par.botEnd == "круг") par.botAng = 0;
-	if(par.topEnd == "круг") par.topAng = 0;
 
-	if(!par.dxfArr) par.dxfArr = dxfPrimitivesArr;
+	if (!par.size) par.size = 50;
+	if (!par.botAng) par.botAng = 0;
+	if (!par.topAng) par.topAng = 0;
+	if (par.botEnd == "круг") par.botAng = 0;
+	if (par.topEnd == "круг") par.topAng = 0;
 
-	if(!par.layer) par.layer = "railing";
+	if (!par.dxfArr) par.dxfArr = dxfPrimitivesArr;
+
+	if (!par.layer) par.layer = "railing";
 
 	var maxSize = par.size;
 	var minSize = 25;
 	var topEndLen = 70;
 	var latheLen = 600;
 	var botEndLen = par.len - latheLen - topEndLen;
-	if(par.botEnd == "круг" && par.topEnd == "круг") {
+	if (par.botEnd == "круг" && par.topEnd == "круг") {
 		botEndLen = (par.len - latheLen) / 2;
 		topEndLen = botEndLen;
 	}
 
-	if(par.type == "квадратные" && !$sceneStruct['vl_1']["banisters"]) botEndLen = par.len;
+	if (par.type == "квадратные" && !$sceneStruct['vl_1']["banisters"]) botEndLen = par.len;
 
 	var extrudeOptions = {
 		amount: maxSize,
 		bevelEnabled: false,
 		curveSegments: 12,
 		steps: 1
-		};
+	};
 
-    par.mesh = new THREE.Object3D();
+	par.mesh = new THREE.Object3D();
 
 	//нижний участок
 	var botEndSize = maxSize
-	if(par.botEnd == "круг") botEndSize = minSize
+	if (par.botEnd == "круг") botEndSize = minSize
 
 	var shape = new THREE.Shape();
-	var p0 = { x: 0, y: 0};
-	var p1 = newPoint_x1(p0, -botEndSize/2, par.botAng);
-	if(par.type == "точеные" || $sceneStruct['vl_1']["banisters"]){
-		var p2 = newPoint_xy(p0, -botEndSize/2, botEndLen);
+	var p0 = { x: 0, y: 0 };
+	var p1 = newPoint_x1(p0, -botEndSize / 2, par.botAng);
+	if (par.type == "точеные" || $sceneStruct['vl_1']["banisters"]) {
+		var p2 = newPoint_xy(p0, -botEndSize / 2, botEndLen);
 		var p3 = newPoint_xy(p2, botEndSize, 0);
 	}
-	if(par.type == "квадратные" && !$sceneStruct['vl_1']["banisters"]){
+	if (par.type == "квадратные" && !$sceneStruct['vl_1']["banisters"]) {
 		var p2 = newPoint_xy(p0, 0, par.len);
-		p2 = newPoint_x1(p2, -botEndSize/2, par.topAng);
+		p2 = newPoint_x1(p2, -botEndSize / 2, par.topAng);
 		var p3 = newPoint_x1(p2, botEndSize, par.topAng);
 	}
-	var p4 = newPoint_x1(p0, botEndSize/2, par.botAng);
+	var p4 = newPoint_x1(p0, botEndSize / 2, par.botAng);
 
+	if (par.drawing) {
+		shape.drawing = par.drawing;
+		if (shapesList) shapesList.push(shape);
+	}
 	//сохраняем размер
 	var deltaY_bot = p4.y - p1.y
 
@@ -1873,18 +1877,18 @@ function drawTimberBanister_4(par){
 	addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint, par.layer);
 
 	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-	if(par.botEnd == "круг")
-		geom = new THREE.CylinderGeometry(botEndSize/2, botEndSize/2, botEndLen);
-		var botPart = new THREE.Mesh(geom, params.materials.banister);
-		if(par.botEnd == "круг") botPart.position.y = botEndLen/2
-		if(par.botEnd == "квадрат") botPart.position.z = -botEndSize/2
-		// par.mesh.add(botPart);
-		if (!testingMode) par.mesh.add(botPart); //Во время тестирования скрываем
-		if (testingMode && par.botEnd == 'квадрат') par.mesh.add(botPart); //Квадраты оставляем
+	if (par.botEnd == "круг")
+		geom = new THREE.CylinderGeometry(botEndSize / 2, botEndSize / 2, botEndLen);
+	var botPart = new THREE.Mesh(geom, params.materials.banister);
+	if (par.botEnd == "круг") botPart.position.y = botEndLen / 2
+	if (par.botEnd == "квадрат") botPart.position.z = -botEndSize / 2
+	// par.mesh.add(botPart);
+	if (!testingMode) par.mesh.add(botPart); //Во время тестирования скрываем
+	if (testingMode && par.botEnd == 'квадрат') par.mesh.add(botPart); //Квадраты оставляем
 
-	if(par.type == "точеные" || $sceneStruct['vl_1']["banisters"]){
+	if (par.type == "точеные" || $sceneStruct['vl_1']["banisters"]) {
 		//точеный участок
-		if(!$sceneStruct['vl_1']["banisters"]){
+		if (!$sceneStruct['vl_1']["banisters"]) {
 			var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, p2.y - p0.y);
 			var points = drawLathePart(latheLen, minSize / 2, maxSize / 2, par.dxfArr, dxfBasePoint);
 			var geom = new THREE.LatheGeometry(points, 12, 2, 2 * Math.PI);
@@ -1896,8 +1900,8 @@ function drawTimberBanister_4(par){
 			if (!testingMode) par.mesh.add(lathePart); //Во время тестирования скрываем
 		}
 
-		
-		if($sceneStruct['vl_1']["banisters"] && !testingMode){
+
+		if ($sceneStruct['vl_1']["banisters"] && !testingMode) {
 			var insetPar = {
 				type: "timber",
 				name: params.timberBalModel,
@@ -1908,7 +1912,7 @@ function drawTimberBanister_4(par){
 					z: -25,
 				}
 			}
-			if(par.unit == "balustrade") insetPar.name = params.timberBalModel_bal;	
+			if (par.unit == "balustrade") insetPar.name = params.timberBalModel_bal;
 
 			drawMeshInset(insetPar);
 		}
@@ -1916,12 +1920,16 @@ function drawTimberBanister_4(par){
 		//верхний участок
 
 		var topEndSize = maxSize
-		if(par.topEnd == "круг") topEndSize = minSize
+		if (par.topEnd == "круг") topEndSize = minSize
 
 		var shape = new THREE.Shape();
+		if (par.drawing) {
+			shape.drawing = par.drawing;
+			if (shapesList) shapesList.push(shape);
+		}
 		var p1 = newPoint_xy(p0, -topEndSize / 2, botEndLen + latheLen);
 		var p2 = newPoint_xy(p0, 0, par.len - 10 / Math.cos(par.topAng));
-			p2 = newPoint_x1(p2, -topEndSize/2, par.topAng);
+		p2 = newPoint_x1(p2, -topEndSize / 2, par.topAng);
 		var p3 = newPoint_x1(p2, topEndSize, par.topAng);
 		var p4 = newPoint_xy(p1, topEndSize, 0);
 
@@ -1932,23 +1940,48 @@ function drawTimberBanister_4(par){
 		addLine(shape, par.dxfArr, p4, p1, par.dxfBasePoint, par.layer);
 
 		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
-		if(par.topEnd == "круг")
-			geom = new THREE.CylinderGeometry(topEndSize/2, topEndSize/2, topEndLen);
+		if (par.topEnd == "круг")
+			geom = new THREE.CylinderGeometry(topEndSize / 2, topEndSize / 2, topEndLen);
 		var topPart = new THREE.Mesh(geom, params.materials.banister);
-			if(par.topEnd == "круг") topPart.position.y = botEndLen + latheLen + topEndLen / 2;
-			if(par.topEnd == "квадрат") topPart.position.z = -topEndSize/2
-			if(par.topEnd == "квадрат") topPart.position.y -= 0.02;
+		if (par.topEnd == "круг") topPart.position.y = botEndLen + latheLen + topEndLen / 2;
+		if (par.topEnd == "квадрат") topPart.position.z = -topEndSize / 2
+		if (par.topEnd == "квадрат") topPart.position.y -= 0.02;
 
-			if (!testingMode) par.mesh.add(topPart); //Во время тестирования скрываем
-			if (testingMode && par.topEnd == 'квадрат') par.mesh.add(topPart); //Квадраты оставляем
-		}
-	
+		if (!testingMode) par.mesh.add(topPart); //Во время тестирования скрываем
+		if (testingMode && par.topEnd == 'квадрат') par.mesh.add(topPart); //Квадраты оставляем
+	}
+
 	dimAng = dimAng * 180 / Math.PI;
+	//Верхний саморез
+	{
+		var screwPar = {
+			id: "screw_4x35",
+			description: "Крепление балясины к доске",
+			group: "Ограждения"
+		}
+		var screw = drawScrew(screwPar).mesh;
+		screw.rotation.y = Math.PI / 2
+		screw.position.y = par.len - 15;
+		screw.position.z = 0;
+		par.mesh.add(screw);
+	}
+	//Нижний шкант
+	if (!testingMode) {
+		var nagelPar = {
+			id: "nagel",
+			description: "Крепление балясин к ступеням",
+			group: "Ограждения"
+		}
+
+		var nagel = drawNagel(nagelPar);
+		nagel.rotation.y = Math.PI / 2;
+		par.mesh.add(nagel);
+	}
 
 	//сохраняем данные для спецификации
 	var partName = "timberBal";
-	if(typeof specObj !='undefined'){
-		if(!specObj[partName]){
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
 			specObj[partName] = {
 				types: {},
 				amt: 0,
@@ -1959,11 +1992,11 @@ function drawTimberBanister_4(par){
 				division: "timber",
 				workUnitName: "amt",
 				group: "timberBal",
-				}
+			}
 		}
-		var name = Math.round(maxSize) + "x" + Math.round(maxSize)+ "x" + Math.round(par.len) + " " + dimAng.toFixed(1) + " гр.";
-		if(specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-		if(!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		var name = Math.round(maxSize) + "x" + Math.round(maxSize) + "x" + Math.round(par.len) + " " + dimAng.toFixed(1) + " гр.";
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;
 		specObj[partName]["paintedArea"] += maxSize * 4 * par.len / 1000000;
 	}

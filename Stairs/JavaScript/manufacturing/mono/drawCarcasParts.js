@@ -2323,6 +2323,18 @@ function drawTreadPlateHoles(par) {
 		addRoundHole(par, par.dxfArr, par.holesCenter[i], par.holeRad, par.dxfBasePoint);
 	}
 
+	//добавляем  вырез в виде треугольника 10х10 для направления сборки
+	var center = newPoint_xy(p0, 0, frontHolesPosY);
+	if (par.basePointShiftX) center.y -= par.basePointShiftX;
+	var hole = new THREE.Path();
+	var p1 = { x: center.x, y: center.y + 10 / Math.sqrt(3) };
+	var p2 = polar(p1, -Math.PI / 3, 10);
+	var p3 = polar(p2, Math.PI, 10);
+	addLine(hole, dxfPrimitivesArr, p1, p2, dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p3, p1, dxfBasePoint);
+	par.holes.push(hole);
+
 	//прямогуольный вырез в центре детали
 	var holeOffset = 15; //отступ края выреза от оси отверстия
 	var pH1 = newPoint_xy(center1, holeOffset, holeOffset);
@@ -2424,6 +2436,17 @@ function drawTurn2TreadPlateHoles(par) {
 	for (var i = 0; i < par.holesCenter.length; i++) {
 		addRoundHole(par, par.dxfArr, par.holesCenter[i], par.holeRad, par.dxfBasePoint);
 	}
+
+	//добавляем  вырез в виде треугольника 10х10 для направления сборки
+	var center = newPoint_xy(p0, 0, 10);
+	var hole = new THREE.Path();
+	var p1 = { x: center.x, y: center.y + 10 / Math.sqrt(3) };
+	var p2 = polar(p1, -Math.PI / 3, 10);
+	var p3 = polar(p2, Math.PI, 10);
+	addLine(hole, dxfPrimitivesArr, p1, p2, dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p2, p3, dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p3, p1, dxfBasePoint);
+	par.holes.push(hole);
 
 	//прямогуольный вырез в центре детали
 	var holeOffset = 5; //отступ края выреза от оси отверстия
@@ -4970,15 +4993,16 @@ function drawTurn2TreadPlateCabriole(par) {
 		
 		//сдвигаем 3 отверстие чтобы болт не пересекался с трубой
 		var pn1 = newPoint_xy(p1, 0, -par.h);
+		var pn1 = polar(pt1, -(Math.PI / 2 - par.angleIn1), params.sidePlateWidth - params.sidePlateOverlay);
 		var line = parallel(pn1, polar(pn1, par.angleIn1, 100), params.sidePlateOverlay - params.sidePlateWidth);
 		var pn2 = itercection(center3, polar(center3, Math.PI / 2, 100), line.p1, line.p2);
-		if ((center3.y - 30) < pn2.y) {
-			center3.y += pn2.y - (center3.y - 30);
+		if ((center3.y - 10) < pn2.y) {
+			center3.y += pn2.y - (center3.y - 10);
 		}
 		//определяем наличие 3-го отверстия
 		var pn3 = itercection(center3, polar(center3, Math.PI / 2, 100), p4, pn);
 		var isHole3 = false;
-		if ((center3.y - 30) > pn3.y) isHole3 = true;
+		if ((center3.y - 10) > pn3.y) isHole3 = true;
 		
 
 		hole1 = new THREE.Path();

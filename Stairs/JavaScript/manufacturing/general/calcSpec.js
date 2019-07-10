@@ -24,7 +24,7 @@ function addItem(par){
 		discription: par.discription, //описание применения
 		unit: par.unit, //узел лестницы
 		group: par.itemGroup, //группа деталей лестницы
-		};
+	};
 	//добавляем информацию о размерах, если она есть
 	if(par.size) item.size = par.size;
 	if(par.comment) item.comment = par.comment;

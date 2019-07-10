@@ -268,65 +268,65 @@ function bracesAdd(){}; //пустая функция для навигации
 	
 	//подкосы
 
-	item = {
-		id:  "plasticPlug_60_30",
-		amt: getPartAmt("brace") * 2,
-		discription: "Заглушки подкосов",
-		unit: "Подкосы",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "plasticPlug_60_30",
+	// 	amt: getPartAmt("brace") * 2,
+	// 	discription: "Заглушки подкосов",
+	// 	unit: "Подкосы",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 
-	item = {
-		id: "braceFork",
-		amt: 2 * getPartAmt("brace"),
-		discription: "Деталь подкоса",
-		unit: "Подкосы",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);		
+	// item = {
+	// 	id: "braceFork",
+	// 	amt: 2 * getPartAmt("brace"),
+	// 	discription: "Деталь подкоса",
+	// 	unit: "Подкосы",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);		
 	
-	item = {
-		id: "bolt_M10x70",
-		amt: 2 * getPartAmt("brace"),
-		discription: "Деталь подкоса",
-		unit: "Подкосы",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id: "bolt_M10x70",
+	// 	amt: 2 * getPartAmt("brace"),
+	// 	discription: "Деталь подкоса",
+	// 	unit: "Подкосы",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 
-	item = {
-		id:  "nut_M10",
-		amt: 2 * getPartAmt("brace"),
-		discription: "Деталь подкоса",
-		unit: "Подкосы",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "nut_M10",
+	// 	amt: 2 * getPartAmt("brace"),
+	// 	discription: "Деталь подкоса",
+	// 	unit: "Подкосы",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 
-	item = {
-		id:  "shim_M10",
-		amt: 4 * getPartAmt("brace"),
-		discription: "Деталь подкоса",
-		unit: "Подкосы",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "shim_M10",
+	// 	amt: 4 * getPartAmt("brace"),
+	// 	discription: "Деталь подкоса",
+	// 	unit: "Подкосы",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 
 	
 //крепление плинтусов
-	if(getPartAmt("skirting_hor")){
-		var tubeAmt = Math.floor(getPartAmt("skirting_hor") / 8);
-		if(tubeAmt < 1) tubeAmt = 1;
-		item = {
-			id:  "silicone",
-			amt: tubeAmt,
-			discription: "Крепление плинтусов",
-			unit: "Ступени",
-			itemGroup: "Ступени",
-			};
-		if(item.amt > 0) partsList.addItem(item);
-	}
+	// if(getPartAmt("skirting_hor")){
+	// 	var tubeAmt = Math.floor(getPartAmt("skirting_hor") / 8);
+	// 	if(tubeAmt < 1) tubeAmt = 1;
+	// 	item = {
+	// 		id:  "silicone",
+	// 		amt: tubeAmt,
+	// 		discription: "Крепление плинтусов",
+	// 		unit: "Ступени",
+	// 		itemGroup: "Ступени",
+	// 		};
+	// 	if(item.amt > 0) partsList.addItem(item);
+	// }
 
 
 // ОГРАЖДЕНИЯ

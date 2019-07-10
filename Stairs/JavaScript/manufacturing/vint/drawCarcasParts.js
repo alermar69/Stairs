@@ -200,7 +200,7 @@ function drawBal(par) {
 	bal.position.x = -par.size / 2;
 	bal.position.y = 0;
 	bal.position.z = -par.size;
-    par.mesh.add(bal);   
+	par.mesh.add(bal);
 
 	//подпись под фигурой
 	var textHeight = 30;
@@ -209,13 +209,12 @@ function drawBal(par) {
 
     //кронштейн поручня
     if (par.topHole == "yes") {
-	    var holder = drawHolderVint();
-
-	    holder.rotation.y = -Math.PI / 2;
-	    holder.position.x = center3.x;
-	    holder.position.y = center3.y;
-
-	    bal.add(holder);
+			var holder = drawHolderVint();
+	    holder.position.x = center3.x - 10;
+			holder.position.y = center3.y;
+			
+			holder.rotation.y = Math.PI / 2;
+	    par.mesh.add(holder);
     }
 
     /*уголки*/
@@ -257,7 +256,7 @@ function drawBal(par) {
 		id: "plasticPlug_20_20",
 		width: 20,
 		height: 20,
-		description: "Заглушка низа стойки",
+		description: "Заглушка низа балясины",
 		group: "Ограждения"
 	}
 	var rackBotPlug = drawPlug(plugParams);
@@ -602,6 +601,8 @@ function drawVintTreadShape(par) {
 		specObj[partName]["paintedArea"] += area * 2 + area * 0.1; //к-т 0,1 учитывает площадь торцев
 	}
 
+	par.articul = partName + name;
+
 	return par;
 
 
@@ -627,7 +628,8 @@ function drawVintTread(par) {
 	var topPlate = new THREE.Mesh(geom, par.material);
 	topPlate.rotation.x = -0.5 * Math.PI;
 	topPlate.position.y = -par.thk;
-    par.mesh.add(topPlate);
+	par.mesh.add(topPlate);
+	par.mesh.specId = topPlateParams.articul;
 
     //---------------------------
     ////рассчитываем координаты базовых точек
@@ -713,7 +715,7 @@ function drawVintPlatform(par) {
 		topPlate.position.y += par.thk;
 	}
 	topPlate.position.y += 0.03;
-
+	par.mesh.specId = topPlateParams.articul;
 	par.mesh.add(topPlate);
 
 
@@ -1770,6 +1772,8 @@ function drawVintPlatformShape(par) {
 		specObj[partName]["paintedArea"] += area * 2 + area * 0.1; //к-т 0,1 учитывает площадь торцев
 	}
 
+	par.articul = partName + name;
+
 	return par;
 } //end of drawVintPlatformShape
 
@@ -2663,6 +2667,22 @@ function drawMidFix(par) {
 
 	par.mesh.add(flan);
 
+	var plugParams = {
+		id: "plasticPlug_40_40",
+		width: 40,
+		height: 40,
+		description: "Заглушка бокового крепления",
+		group: "Каркас"
+	}
+	var rackBotPlug = drawPlug(plugParams);
+	rackBotPlug.position.x = bal.position.x;// + par.holderLength;
+	rackBotPlug.position.y = bal.position.y - par.profWidth / 2;
+	rackBotPlug.position.z = bal.position.z + par.profWidth / 2;
+	rackBotPlug.rotation.x = Math.PI / 2;
+	rackBotPlug.rotation.z = Math.PI / 2;
+
+	if(!testingMode) par.mesh.add(rackBotPlug);
+
 
 	//сохраняем данные для спецификации
 	var partName = "midFix";
@@ -2913,7 +2933,7 @@ function drawDrum(par) {
 		holeDiam: 26,
 		height: shimThk,
 		material: params.materials.metal2,
-		partName: ""
+		partName: "middleFlan"
 	}
 
 	var topShim = drawCylinder_2(cylParams).mesh;
@@ -2955,7 +2975,7 @@ function drawDrum(par) {
 		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
 		specObj[par.partName]["amt"] += 1;
 	}
-	par.shimMesh.specId = par.partName + name;
+	par.tubeMesh.specId = par.partName + name;
 
 	return par;
 
@@ -3282,7 +3302,7 @@ function drawHolderVint() {
 
 	//complexObject1.rotation.x = -stairParams.stairCaseAngle;
 	var stepAngle = params.stepAngle / 180 * Math.PI;
-	complexObject1.rotation.x = -(stairParams.stairAmt + 1.5) * stepAngle;
+	// complexObject1.rotation.x = -(stairParams.stairAmt + 1.5) * stepAngle;
 
 
 	// шурупы крепления поручня

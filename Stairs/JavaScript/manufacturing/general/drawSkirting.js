@@ -612,8 +612,6 @@ function drawSkirting2(par) {
 
 		var dxfBasePoint = newPoint_xy(par.dxfBasePoint, 100, 0);
 
-
-
 		//создаем шейп
 		var shapePar = {
 			points: points,
@@ -630,6 +628,23 @@ function drawSkirting2(par) {
 		hor_plate.position.y = par.rise + gap;
 		hor_plate.position.x -= gap + ledge;
 		par.mesh.add(hor_plate);
+
+		var siliconePar = {
+			description: "Крепление плинтусов",
+			group: "Ступени",
+			len: par.rise - params.treadThickness,
+		}
+		if (par.isNotVerticalPlank) siliconePar.len = length;
+
+		var silicone = drawSilicone(siliconePar).mesh;
+		if (par.isNotVerticalPlank) {
+			silicone.position.x += length / 2;
+			silicone.position.z += params.riserThickness * turnFactor;
+			silicone.rotation.z = Math.PI / 2;
+		}else{
+			silicone.position.y += siliconePar.len / 2;
+		}
+		par.mesh.add(silicone);
 	}
 
 	var text = par.skirtingDescription;

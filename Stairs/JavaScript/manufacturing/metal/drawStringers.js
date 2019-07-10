@@ -356,6 +356,9 @@ function drawStringer(par){
 		
 		//рисуем отверстия
 		drawStringerHoles(par);
+
+		//рисуем отверстия для обшивки каркаса гипсокартоном
+		drawStringerBotHoles(par);
 		
 		//добавляем отверстия под ограждения
 		var railingHolesPar = {
@@ -472,6 +475,9 @@ function drawStringer(par){
 		
 			//рисуем отверстия
 			drawStringerHoles(stringerHolesParams);
+
+			//рисуем отверстия для обшивки каркаса гипсокартоном
+			drawStringerBotHoles(par);
 		
 			//добавляем отверстия под ограждения
 			var holes = par.railingHoles.filter(function(p){
@@ -510,6 +516,9 @@ function drawStringer(par){
 
 		//рисуем отверстия
 		drawStringerHoles(par, "top");
+
+		//рисуем отверстия для обшивки каркаса гипсокартоном
+		drawStringerBotHoles(par, "top");
 		
 		//добавляем отверстия под ограждения
 		var railingHolesPar = {
@@ -542,6 +551,9 @@ function drawStringer(par){
 
 		//рисуем отверстия
 		drawStringerHoles(par, "bot");
+
+		//рисуем отверстия для обшивки каркаса гипсокартоном
+		drawStringerBotHoles(par, "bot");
 		
 		//добавляем отверстия под ограждения
 		var railingHolesPar = {

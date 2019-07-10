@@ -137,29 +137,29 @@ function calcSpecVint() {
 	
 //метизы
 if(params.treadMaterial != "рифленая сталь" && params.treadMaterial != "лотки под плитку"){
-	//крепление площадки к металлической раме
-	if(params.platformType == "square") {
-		item = {
-			id: "treadScrew",
-			amt: 8,
-			discription: "Крепление площадки",
-			unit: "Каркас",
-			itemGroup: "Каркас"
-		};
-		if(item.amt > 0) partsList.addItem(item);
-	}
+	// //крепление площадки к металлической раме
+	// if(params.platformType == "square") {
+	// 	item = {
+	// 		id: "treadScrew",
+	// 		amt: 8,
+	// 		discription: "Крепление площадки",
+	// 		unit: "Каркас",
+	// 		itemGroup: "Каркас"
+	// 	};
+	// 	if(item.amt > 0) partsList.addItem(item);
+	// }
 	
-	//крепление секции ограждения площадки
-	if(params.platformSectionLength > 0){
-		item = {
-			id: "treadScrew",
-			amt: 8,
-			discription: "Крепление ограждения площадки",
-			unit: "Ограждения",
-			itemGroup: "Ограждения"
-		};
-		if(item.amt > 0) partsList.addItem(item);
-	}
+	// //крепление секции ограждения площадки
+	// if(params.platformSectionLength > 0){
+	// 	item = {
+	// 		id: "treadScrew",
+	// 		amt: 8,
+	// 		discription: "Крепление ограждения площадки",
+	// 		unit: "Ограждения",
+	// 		itemGroup: "Ограждения"
+	// 	};
+	// 	if(item.amt > 0) partsList.addItem(item);
+	// }
 	
 }
 
@@ -170,45 +170,45 @@ if(params.treadMaterial != "рифленая сталь" && params.treadMaterial
 //болт кронштейна
 
 
-    item = {
-        id: "middleHolderBolt",
-        amt: getPartAmt("midFix"),
-        discription: "Болт кронштейна",
-		unit: "Центральный столб",
-        itemGroup: "Каркас"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+    // item = {
+    //     id: "middleHolderBolt",
+    //     amt: getPartAmt("midFix"),
+    //     discription: "Болт кронштейна",
+		// unit: "Центральный столб",
+    //     itemGroup: "Каркас"
+    // };
+    // if(item.amt > 0) partsList.addItem(item);
 
 //гайка кронштейна
 
-    item = {
-        id: "nut_M10",
-       amt: getPartAmt("midFix"),
-        discription: "Гайка кронштейна",
-		unit: "Центральный столб",
-        itemGroup: "Каркас"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+    // item = {
+    //     id: "nut_M10",
+    //    amt: getPartAmt("midFix"),
+    //     discription: "Гайка кронштейна",
+		// unit: "Центральный столб",
+    //     itemGroup: "Каркас"
+    // };
+    // if(item.amt > 0) partsList.addItem(item);
 
 //шайба кронштейна
-    item = {
-        id: "shim_M10",
-       amt: getPartAmt("midFix") * 2,
-        discription: "Шайба кронштейна",
-		unit: "Центральный столб",
-        itemGroup: "Каркас"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+    // item = {
+    //     id: "shim_M10",
+    //    amt: getPartAmt("midFix") * 2,
+    //     discription: "Шайба кронштейна",
+		// unit: "Центральный столб",
+    //     itemGroup: "Каркас"
+    // };
+    // if(item.amt > 0) partsList.addItem(item);
 	
 	//пластиковая заглушка
-	item = {
-        id: "plasticPlug_40_40",
-       amt: getPartAmt("midFix") * 2,
-        discription: "Заглушка кронштейна",
-		unit: "Центральный столб",
-        itemGroup: "Каркас"
-    };
-    if(item.amt > 0) partsList.addItem(item);
+	// item = {
+  //       id: "plasticPlug_40_40",
+  //      amt: getPartAmt("midFix") * 2,
+  //       discription: "Заглушка кронштейна",
+	// 	unit: "Центральный столб",
+  //       itemGroup: "Каркас"
+  //   };
+  //   if(item.amt > 0) partsList.addItem(item);
 
 	
 	
@@ -217,18 +217,18 @@ if(params.treadMaterial != "рифленая сталь" && params.treadMaterial
 function floorsMountingItemsAdd(){}; //пустая функция для навигации	
 	
 	//крепление к нижнему перекрытию
-	var fixParams = {
-		partsList: partsList,
-		fixPart: params.fixPart1,
-		fixSurfaceType: params.fixType1,
-		discription: "Крепление к нижнему перекрытию",
-		unit: "Низ лестницы",
-		itemGroup: "Крепление к обстановке",
-		amt: 6,
-		extraStudLength: params.fixSpacerLength1,
-		studDiam: 10,
-		}
-	if(params.isAssembling == "есть") addFixParts(fixParams);
+	// var fixParams = {
+	// 	partsList: partsList,
+	// 	fixPart: params.fixPart1,
+	// 	fixSurfaceType: params.fixType1,
+	// 	discription: "Крепление к нижнему перекрытию",
+	// 	unit: "Низ лестницы",
+	// 	itemGroup: "Крепление к обстановке",
+	// 	amt: 6,
+	// 	extraStudLength: params.fixSpacerLength1,
+	// 	studDiam: 10,
+	// 	}
+	// if(params.isAssembling == "есть") addFixParts(fixParams);
 	
 	//проставка
 	if(params.fixPart1 != "не указано" && params.fixPart1 != "нет" && 
@@ -245,18 +245,18 @@ function floorsMountingItemsAdd(){}; //пустая функция для нав
 			
 	
 	//крепление к верхнему перекрытию
-	var fixParams = {
-		partsList: partsList,
-		fixPart: params.fixPart2,
-		discription: "Крепление к верхнему перекрытию",
-		unit: "Верх лестницы",
-		itemGroup: "Крепление к обстановке",
-		amt: 4,
-		extraStudLength: params.fixSpacerLength2,
-		studDiam: 10,
-		}
+	// var fixParams = {
+	// 	partsList: partsList,
+	// 	fixPart: params.fixPart2,
+	// 	discription: "Крепление к верхнему перекрытию",
+	// 	unit: "Верх лестницы",
+	// 	itemGroup: "Крепление к обстановке",
+	// 	amt: 4,
+	// 	extraStudLength: params.fixSpacerLength2,
+	// 	studDiam: 10,
+	// 	}
 	
-	if(params.isAssembling == "есть") addFixParts(fixParams);
+	// if(params.isAssembling == "есть") addFixParts(fixParams);
 	
 	//проставка
 	if(params.fixPart2 != "не указано" && params.fixPart2 != "нет" && 
@@ -418,23 +418,23 @@ function railingItemsAdd_nav(){};
 
 	if (params.handrailMaterial == "ПВХ") {
 
-        item = {
-            id: "handrailRing",
-            amt: handrailSectionAmt - 1,
-            discription: "Соединение поручня на лестнице",
-			unit: "Поручень лестницы",
-            itemGroup: "Поручни"
-        };
-        if(item.amt > 0) partsList.addItem(item);
+      //   item = {
+      //       id: "handrailRing",
+      //       amt: handrailSectionAmt - 1,
+      //       discription: "Соединение поручня на лестнице",
+			// unit: "Поручень лестницы",
+      //       itemGroup: "Поручни"
+      //   };
+      //   if(item.amt > 0) partsList.addItem(item);
 
-        item = {
-            id: "stainlessPlug_pvc",
-            amt: 2,
-            discription: "Концы поручня на лестнице",
-            unit: "Поручень лестницы",
-            itemGroup: "Поручни"
-        };
-        if(item.amt > 0) partsList.addItem(item);
+      //   item = {
+      //       id: "stainlessPlug_pvc",
+      //       amt: 2,
+      //       discription: "Концы поручня на лестнице",
+      //       unit: "Поручень лестницы",
+      //       itemGroup: "Поручни"
+      //   };
+      //   if(item.amt > 0) partsList.addItem(item);
 		
 		}
 
@@ -537,6 +537,9 @@ function railingItemsAdd_nav(){};
 	"<a href='/drawings/vint/vintParts_v1.4.pdf' target='_blank'>Детали для цеха v1.4 PDF </a></br>" + 
 	"<a href='/drawings/vint/vintParts_4mm_v1.3.dxf' target='_blank'>Детали на чпу 4мм v1.3 DXF</a></br>" + 
 	"<a href='/drawings/vint/vintParts_8mm_v1.3.dxf' target='_blank'>Детали на чпу 8мм v1.3 DXF</a></br>";
+	
+	if(params.pltHandrailConnection == "есть") text += "<a href='/drawings/vint/pltHandrailConnection.pdf' target='_blank'>Замыкание поручня на площадке</a></br>"
+	
 
 	$("#drawings").html(text);
 	

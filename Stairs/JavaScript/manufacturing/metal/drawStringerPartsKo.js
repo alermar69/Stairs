@@ -224,10 +224,10 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 	center1.hasAngle = center2.hasAngle = true;
 	center1.rotated = center2.rotated = true;
 	if (par.key == 'out') center1.noBoltsInSide1 = center2.noBoltsInSide1 = true;
-	par.pointsHole.push(center1);
-	par.pointsHole.push(center2);
+	//par.pointsHole.push(center1);
+	//par.pointsHole.push(center2);
 	
-	if (!(par.topEnd == "platformG" && par.stairAmt === 0)){
+	//if (!(par.topEnd == "platformG" && par.stairAmt === 0)){
 
 		//Отверстия под ограждения
 		if (par.hasRailing){
@@ -323,7 +323,7 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 				}
 			}
 		}
-	}
+	//}
 
 	//крепление к стенам
 	if (par.key == "out" && par.marshParams.wallFix.out) {
@@ -642,15 +642,16 @@ function drawBotStepKo_wndIn(par){
 	// вторая ступень
 	var p4 = newPoint_xy(p3, 0.0, par.h - 0.01);
 	var p5 = newPoint_xy(p4, par.wndSteps[2].in.topMarsh, 0.0);
-	if (params.stairModel == "П-образная трехмаршевая" &&par.marshId == 2 &&params.stairAmt2 == 0 && par.topEnd !== "winder")
+	//if (params.stairModel == "П-образная трехмаршевая" &&par.marshId == 2 &&params.stairAmt2 == 0 && par.topEnd !== "winder")
+	if (params.stairModel == "П-образная трехмаршевая" &&par.marshId == 2 &&params.stairAmt2 == 0)
 		p5.x += (params.marshDist - 77 + (params.nose - 20));
 
 	// третья ступень
 	var p6 = newPoint_xy(p5, 0.0, par.h);
 	var p7 = newPoint_xy(p6, par.wndSteps[3].in.topMarsh, 0.0);
 	if (par.marshId == 2 && params.stairModel == "П-образная с забегом") p7.x += (params.marshDist - 57 - 20); //57 подогнано
-	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0 && par.topEnd == "winder")
-		p7.x += (params.marshDist - 77 + (params.nose - 20));
+	//if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0 && par.topEnd == "winder")
+	//	p7.x += (params.marshDist - 77 + (params.nose - 20));
 	//if (params.riserType == "есть" && params.stairAmt2 == 0) p7.x += 0.01;
 
 	if (par.marshId == "3" && par.stairAmt == 0 && par.topEnd == "platformG") {
@@ -949,7 +950,8 @@ function drawBotStepKo_wndOut(par){
 		holes: par.wndFramesHoles.topMarsh.out[3],
 		basePoint: newPoint_xy(p4, par.wndSteps[3].out.topMarsh - par.wndSteps[3].in.topMarsh, 0.0),
 	}
-	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0 && par.topEnd == "platformG")
+	//if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0 && par.topEnd == "platformG")
+	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 2 && params.stairAmt2 == 0)
 		holePar.basePoint.x += (params.marshDist - 77 + (params.nose - 20));
 	par.pointsHole.push(...calcWndHoles(holePar));
 	
@@ -1315,7 +1317,7 @@ function drawTopStepKo_floor(par){
 			//удлиннение последней стойки
             var dyLastRack = calcLastRackDeltaY(); //функция в файле drawRailing_3.0;
 			center1.x += dyLastRack / Math.tan(par.marshAng);
-			if (center1.x + 30 > topLineP1.x) center1 = newPoint_x(center1, -(30 - (topLineP1.x - center1.x)), par.marshAng);
+			if (center1.x + 30 > topLineP1.x) center1 = newPoint_x1(center1, -(30 - (topLineP1.x - center1.x)), par.marshAng);
 			//смещаем отверстие чуть назад, чтобы не было пересечения с отверстием рамки
 			if (params.topAnglePosition != "вертикальная рамка"){
 				//if(topLineP1.x > center1.x - 70) center1 = newPoint_x1(center1, -(70 - (topLineP1.x - center1.x)), par.marshAng)

@@ -118,6 +118,7 @@ function recalculate() {
 	//спецификациЯ
 	//crateWorksList(); //функция в файле /calculator/general/works.js
 	calcSpecVint();	
+	if(!testingMode) checkSpec();
 //	printWorks();
 	//drawWardrobeMarsh1('vl_1', true);	
 }

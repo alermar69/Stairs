@@ -313,7 +313,7 @@ function drawBolt(par) {
         //шайба
         var shimParams = { diam: par.diam }
         var shim = drawShim(shimParams).mesh;
-        shim.position.y = -par.len / 2;
+        shim.position.y = -par.len / 2 + 2;
         par.mesh.add(shim);
     }
     if (!par.noNut && !testingMode) {
@@ -1567,6 +1567,49 @@ function getScrewParams(screwId){
 	return {id: screwId, len: len, diam: diam, name: screwName};
 }
 
+function drawSilicone(par){
+	par.mesh = new THREE.Object3D();
+	par.mesh.specId = "silicone_model";
+	
+	var siliconeMaterial = new THREE.MeshLambertMaterial({ color: "#808080" });
+	var geometry = new THREE.CylinderGeometry(2, 2, par.len, 10, 1, false);
+	var silicone = new THREE.Mesh(geometry, siliconeMaterial);
+	par.mesh.add(silicone);
+
+	//сохраняем данные для спецификации
+	par.partName = "silicone_model";
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Силикон прозрачный 260 мл.",
+				metalPaint: false,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				purposes: [],
+				workUnitName: "amt",
+				group: "Метизы",
+			}
+			if (par.group) specObj[par.partName].group = par.group;
+		}
+		if (par.description) {
+			if (specObj[par.partName].purposes.indexOf(par.description) == -1) specObj[par.partName].purposes.push(par.description);
+		}
+
+		name = 0;
+		
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1 / 8;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1 / 8;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	par.mesh.setLayer("metis");
+
+	return par
+}
+
 /*отрисовка шейпа гнутого участка уголка*/
 
 function drawAngleSupportCentr(width, metalThickness) {
@@ -1899,66 +1942,6 @@ function drawFixPart(par) {
 		return shim;
 	}
 
-	//шпилька или деталь в виде цилиндра
-	function drawStudF(par) {
-		var len = par.len;
-		if (par.dopParams.lenCylinder) len = par.dopParams.lenCylinder;
-		var diam = par.diam;
-		if (par.dopParams.diamCylinder) diam = par.dopParams.diamCylinder;
-		var material = par.material;
-		if (par.dopParams.material) material = par.dopParams.material;
-
-
-		var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
-		var stud = new THREE.Mesh(geometry, material);
-
-		//сохраняем данные для спецификации
-		var nameFix = "Шпилька";
-		if (par.dopParams.name) nameFix = par.dopParams.name;
-
-		par.partName = "stud_M"
-		if (nameFix == 'Шпилька-шуруп') par.partName = "stud_screw_M"
-		if (nameFix != "Шпилька") par.partName += diam;
-
-		//if (nameFix == 'Химический анкер, баллон') par.partName = "chemAnc"
-		if (nameFix == 'Дюбель') par.partName = "dowel" + "_Ф" + diam;
-
-
-		if (typeof specObj != 'undefined' && par.partName) {
-			if (!specObj[par.partName]) {
-				specObj[par.partName] = {
-					types: {},
-					amt: 0,
-					name: nameFix,
-					metalPaint: false,
-					timberPaint: false,
-					division: "stock_1",
-					workUnitName: "amt",
-					group: "Крепление к обстановке",
-					discription: "Крепление к стене 1"
-				}
-			}
-			var name = "М" + diam + "x" + len;
-			if (nameFix == "Шпилька") name = diam;
-			//if (nameFix == 'Химический анкер, баллон') name = "Ф" + diam + "x" + len;
-			if (nameFix == 'Дюбель') name = "Ф" + diam + "x" + len;
-			if (nameFix == "Шпилька") {
-				if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += Math.round(len / 1000 * 10) / 10;
-				if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = Math.round(len / 1000 * 10) / 10;
-				specObj[par.partName]["amt"] += Math.round(len / 1000 * 10) / 10;
-			}
-			else {
-				if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
-				if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
-				specObj[par.partName]["amt"] += 1;
-			}
-
-		}
-		stud.specId = par.partName + name;
-
-		return stud;
-	}
-
 	//глухарь
 	function drawScrewF(par) {
 		var screw = new THREE.Object3D();
@@ -2030,10 +2013,67 @@ function drawFixPart(par) {
 		return screw;
 	}
 
-	
-
-
 	return par;
+}
+
+//шпилька или деталь в виде цилиндра
+function drawStudF(par) {
+	var len = par.len;
+	if (par.dopParams.lenCylinder) len = par.dopParams.lenCylinder;
+	var diam = par.diam;
+	if (par.dopParams.diamCylinder) diam = par.dopParams.diamCylinder;
+	var material = par.material;
+	if (par.dopParams.material) material = par.dopParams.material;
+
+
+	var geometry = new THREE.CylinderGeometry(diam / 2, diam / 2, len, 10, 1, false);
+	var stud = new THREE.Mesh(geometry, material);
+
+	//сохраняем данные для спецификации
+	var nameFix = "Шпилька";
+	if (par.dopParams.name) nameFix = par.dopParams.name;
+
+	par.partName = "stud_M"
+	if (nameFix == 'Шпилька-шуруп') par.partName = "stud_screw_M"
+	if (nameFix != "Шпилька") par.partName += diam;
+
+	//if (nameFix == 'Химический анкер, баллон') par.partName = "chemAnc"
+	if (nameFix == 'Дюбель') par.partName = "dowel" + "_Ф" + diam;
+
+
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: nameFix,
+				metalPaint: false,
+				timberPaint: false,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Крепление к обстановке",
+				discription: "Крепление к стене 1"
+			}
+		}
+		var name = "М" + diam + "x" + len;
+		if (nameFix == "Шпилька") name = diam;
+		//if (nameFix == 'Химический анкер, баллон') name = "Ф" + diam + "x" + len;
+		if (nameFix == 'Дюбель') name = "Ф" + diam + "x" + len;
+		if (nameFix == "Шпилька") {
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += Math.round(len / 1000 * 10) / 10;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = Math.round(len / 1000 * 10) / 10;
+			specObj[par.partName]["amt"] += Math.round(len / 1000 * 10) / 10;
+		}
+		else {
+			if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+			if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
+			specObj[par.partName]["amt"] += 1;
+		}
+
+	}
+	stud.specId = par.partName + name;
+
+	return stud;
 }
 
 /*параметры крепления к стенам, нижнему и верхнему перекрытию*/

@@ -597,7 +597,7 @@ function drawPlug(par){
 	}
 
 	plug.specId = partName + name;	
-	plug.setLayer("metis");
+	plug.setLayer("plugs");
 
 	return plug;
 }
@@ -630,7 +630,6 @@ function drawTimberPlug(plugDiam){
 
 	//сохраняем данные для спецификации
 	
-	
 	var partName = "timberPlug"
 	if (typeof specObj != 'undefined') {
 		if (!specObj[partName]) {
@@ -661,7 +660,7 @@ function drawTimberPlug(plugDiam){
 	}
 
 	plug.specId = partName + name;	
-
+	plug.setLayer('plugs');
 	return plug;
 }
 
@@ -1093,7 +1092,13 @@ function drawPole3D_4(par) {
 		if (bolts.includes(1)) {
 			var nagel = drawNagel(nagelPar);
 			nagel.position.x = basePoint.x - holesOffset;
-			nagel.position.y = basePoint.y;
+			nagel.position.y = basePoint.y - 20.5;
+			nagel.position.z = basePoint.z;
+			par.mesh.add(nagel);
+
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x - holesOffset;
+			nagel.position.y = basePoint.y + 20.5;
 			nagel.position.z = basePoint.z;
 			par.mesh.add(nagel);
 		}
@@ -1101,7 +1106,13 @@ function drawPole3D_4(par) {
 		if (bolts.includes(2)) {
 			var nagel = drawNagel(nagelPar);
 			nagel.position.x = basePoint.x;
-			nagel.position.y = basePoint.y;
+			nagel.position.y = basePoint.y - 20.5;
+			nagel.position.z = basePoint.z;
+			par.mesh.add(nagel);
+
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x;
+			nagel.position.y = basePoint.y + 20.5;
 			nagel.position.z = basePoint.z;
 			par.mesh.add(nagel);
 		}
@@ -1109,7 +1120,13 @@ function drawPole3D_4(par) {
 		if (bolts.includes(3)) {
 			var nagel = drawNagel(nagelPar);
 			nagel.position.x = basePoint.x;
-			nagel.position.y = basePoint.y;
+			nagel.position.y = basePoint.y - 20.5;
+			nagel.position.z = basePoint.z + holesOffset;
+			par.mesh.add(nagel);
+
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x;
+			nagel.position.y = basePoint.y + 20.5;
 			nagel.position.z = basePoint.z + holesOffset;
 			par.mesh.add(nagel);
 		}
@@ -1117,7 +1134,13 @@ function drawPole3D_4(par) {
 		if (bolts.includes(4)) {
 			var nagel = drawNagel(nagelPar);
 			nagel.position.x = basePoint.x - holesOffset;
-			nagel.position.y = basePoint.y;
+			nagel.position.y = basePoint.y - 20.5;
+			nagel.position.z = basePoint.z + holesOffset;
+			par.mesh.add(nagel);
+
+			var nagel = drawNagel(nagelPar);
+			nagel.position.x = basePoint.x - holesOffset;
+			nagel.position.y = basePoint.y + 20.5;
 			nagel.position.z = basePoint.z + holesOffset;
 			par.mesh.add(nagel);
 		}
@@ -2105,14 +2128,14 @@ function drawHolderFlan(par){
 	par.material = params.materials.inox;
 
 	par.holderFlanId = "handrailHolderFlanPlane";
-	if(handrailPar.handrailModel == "round") par.holderFlanId = "handrailHolderFlanArc";
 	if(params.railingModel == "Кованые балясины" ||
 		params.railingModel == "Трап" ||
 		rackModel == "40х40 черн."){
 			par.holderFlanId = "holderFlan";
 			if(params.handrail == "40х20 черн." || params.handrail == "ПВХ") par.holderFlanId = "handrailHolderFlanPlane";
 			par.material = params.materials.metal_railing;
-		}
+	}
+	if (handrailPar.handrailModel == "round") par.holderFlanId = "handrailHolderFlanArc";
 	
 	var len = 60;
 	var wid = 20;
@@ -3748,28 +3771,28 @@ function drawHandrail_4(par) {
 
 		var screw = drawScrew(screwPar).mesh;
 		screw.rotation.z = -Math.PI / 2;
-		screw.position.x = p0.x - 60;
+		screw.position.x = p0.x - 60 + (120 - rackSize) - 0.5;
 		screw.position.y = p0.y + startCutLen / 2;
 		screw.position.z = rackSize / 2;
 		if(!testingMode)	par.mesh.add(screw);
 		
 		var plug = drawTimberPlug(25);
 		plug.rotation.z = -Math.PI / 2;
-		plug.position.x = p0.x - 60 - 60;
+		plug.position.x = p0.x - 60 - 60 + (120 - rackSize) - 1 - 0.5;
 		plug.position.y = p0.y + startCutLen / 2;
 		plug.position.z = rackSize / 2;
 		if(!testingMode)	par.mesh.add(plug);
 		
 		var screw = drawScrew(screwPar).mesh;
 		screw.rotation.z = Math.PI / 2
-		screw.position.x = p2.x + 60;
+		screw.position.x = p2.x + 60 - (120 - rackSize) + 0.5;
 		screw.position.y = p2.y - endCutLen / 2;
 		screw.position.z = rackSize / 2;
 		if(!testingMode)	par.mesh.add(screw);
 		
 		var plug = drawTimberPlug(25);
 		plug.rotation.z = Math.PI / 2
-		plug.position.x = p2.x + 120;
+		plug.position.x = p2.x + 120 - (120 - rackSize) + 1 + 0.5;
 		plug.position.y = p2.y - endCutLen / 2;
 		plug.position.z = rackSize / 2;
 		if(!testingMode)	par.mesh.add(plug);

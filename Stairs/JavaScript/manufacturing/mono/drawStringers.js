@@ -279,7 +279,11 @@ function drawComplexStringer(par) {
 
 			var hole2 = newPoint_xy(hole1, -flanParams.holesDist, 0);
 			hole2.diam = 18;
-			polePar.roundHoles.push(hole2)
+			var line = parallel(stringerPoints[stringerPoints.length - 2], stringerPoints[stringerPoints.length - 3], params.profileHeight)
+			var pt = itercection(hole2, polar(hole2, Math.PI / 2, 100), line.p1, line.p2);
+			var angel = calcAngleX1(stringerPoints[stringerPoints.length - 3], stringerPoints[stringerPoints.length - 2])
+			if (hole2.y < (pt.y - hole2.diam / 2 / Math.sin(angel)))
+				polePar.roundHoles.push(hole2);
 		}
 		if (par.topEnd == "забег" && par.marshId !== 1 && params.stairModel == 'П-образная с забегом'){
 			var hole1 = {
@@ -1392,6 +1396,7 @@ function drawComplexStringer(par) {
 					//var len = par.lengthBturn1;
 					var len = (params.M - (params.stringerThickness + params.M / 3)) / 2;
 					if (par.botEnd == 'площадка') len = params.M / 2 - (params.M - 300) / 2;
+					if (params.stairModel == 'П-образная с площадкой') len = 125;
 					var width = params.stringerThickness - 8;
 
 					var p0 = { x: 0, y: 0 }
@@ -1459,6 +1464,7 @@ function drawComplexStringer(par) {
 					//var len = par.lengthBturn1;
 					var len = (params.M - (params.stringerThickness + params.M / 3)) / 2;
 					if (par.topEnd == 'площадка') len = params.M / 2 - (params.M - 300) / 2;
+					if (params.stairModel == 'П-образная с площадкой' && par.marshId == 1) len = 125;
 					var width = params.stringerThickness - 8;
 
 					var p0 = {x: 0, y: 0}

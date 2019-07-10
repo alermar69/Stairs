@@ -1368,7 +1368,7 @@ function drawPolylineHandrail(par) {
 			//последний кусок
 			if (i == points.length - 2) {
 				endAngle = Math.PI / 2;
-				if (params.handrailEndType == "под углом" && p2.x != p1.x) {
+				if ((params.handrailEndType == "под углом" || par.isHandrailEndAng) && p2.x != p1.x) {
 					endAngle = Math.PI / 2 - handrailAngle;
 				}
 				var length = distance(p1, p2);
