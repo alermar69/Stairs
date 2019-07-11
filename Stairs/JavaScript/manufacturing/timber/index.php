@@ -41,6 +41,9 @@ $APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1")
 <!--форма доставка, сборка-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/assemblingForm.php" ?>
 
+<!--комментарии менеджера-->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/comments.php" ?>
+
 <!--себестоимость-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/cost.php" ?>
 

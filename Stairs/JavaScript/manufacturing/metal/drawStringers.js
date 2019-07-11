@@ -123,12 +123,6 @@ function drawStringer(par){
 			/*средние ступени*/			
 			ltko_set_railing(par.stairAmt, par);
 
-			//смещяем все стойки если начало ограждений не с первой ступени
-			if (par.marshId == 1 && params.railingStart > 0){
-				for (var j = 0; j < par.railing.length; j++){
-					par.railing[j] += params.railingStart * 1.0;
-				}
-			}
 			par.divide = ltko_set_divide(par.marshId).divide;
 			if (par.railing.includes(par.divide) && params.railingModel == "Самонесущее стекло") par.divide += 1;
 
@@ -230,13 +224,6 @@ function drawStringer(par){
 				}		
 		}
 
-		//смещяем все стойки если начало ограждений не с первой ступени
-		if (par.marshId == 1 && params.railingStart > 0) {
-			for (var j = 0; j < par.railing.length; j++) {
-				par.railing[j] += params.railingStart * 1.0;
-			}
-		}
-		
 		par.bridge = ltko_set_divide(par.marshId).bridges;
 		par.divide = ltko_set_divide(par.marshId).divide;
 		if (par.railing.includes(par.divide)) par.divide -= 1;

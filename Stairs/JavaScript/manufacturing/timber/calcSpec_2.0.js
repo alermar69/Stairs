@@ -60,7 +60,7 @@ function floorsMountingItemsAdd(){}; //пустая функция для нав
 		extraStudLength: params.fixSpacerLength1,
 		studDiam: 10,
 		}
-	if(params.isAssembling == "есть") addFixParts(fixParams);
+	//if(params.isAssembling == "есть") addFixParts(fixParams);
 	
 	//проставка
 	if(params.fixPart1 != "не указано" && params.fixPart1 != "нет" && 
@@ -87,7 +87,7 @@ function floorsMountingItemsAdd(){}; //пустая функция для нав
 		studDiam: 10,
 		}
 	
-	if(params.isAssembling == "есть") addFixParts(fixParams);
+	//if(params.isAssembling == "есть") addFixParts(fixParams);
 	
 	//проставка
 	if(params.fixPart2 != "не указано" && params.fixPart2 != "нет" && 

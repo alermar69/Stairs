@@ -2389,7 +2389,7 @@ function drawTopFixFlan(length, dxfBasePoint) {
 		specObj[partName]["area"] += area;
 		specObj[partName]["paintedArea"] += area * 2;
 	}
-	flanParams.mesh.specId = partName + name;
+	flanParams.mesh.specId = partName + (name || "");
 		
 	return flanParams;
 	
@@ -2643,8 +2643,7 @@ function drawBrace(par) {
 	var holeDistY = 60;
 	var rodLength = (par.width - (plateThickness + 45) * 2) / Math.cos(angle) + 30 * 2;
 	par.height = (rodLength - 30 * 2) * Math.sin(angle);	// расстояние между отверстиями верхнего и нижнего фланцев по вертикали
-	
-	
+
 	//смещение всех деталей так, чтобы базовой точкой подкоса был центр верхнего левого отверстия
 	var mooveX = -(flanWidth - holeDistX) / 2 - 5;
 	if(par.side == "left") mooveX -= 85;
@@ -2744,6 +2743,9 @@ function drawBrace(par) {
 	par.topJoin = true;
 	if (params.topPltConsolePos == "сзади") par.topJoin = false;
 
+	var braceFork = new THREE.Object3D();//Крепление к стене/косоуру
+	if (par.topJoin == true) var braceForkTop = new THREE.Object3D();
+
 	// Фланец кронштейна
 	par.dxfBasePoint = newPoint_xy(par.dxfBasePoint, 0, -200);
 	
@@ -2776,6 +2778,7 @@ function drawBrace(par) {
 	addRoundHole(flanShape, par.dxfArr, center2, holeRad, par.dxfBasePoint);
 	addRoundHole(flanShape, par.dxfArr, center3, holeRad, par.dxfBasePoint);
 	addRoundHole(flanShape, par.dxfArr, center4, holeRad, par.dxfBasePoint);
+
 	// прямоугольные отверстия
 	/*первое прямоугольное отверстие*/
 	var hole1 = new THREE.Path();
@@ -2806,6 +2809,28 @@ function drawBrace(par) {
 	var textBasePoint = newPoint_xy(par.dxfBasePoint, 0, -80);
 	addText(text, textHeight, par.dxfArr, textBasePoint);
 
+	// Рисуем болты для фланца
+	function drawFlanBolts(flan, centers){
+		var boltPar = {
+			diam: 10,
+			len: 30,
+			headType: "шестигр.",
+		}
+
+		console.log(centers);
+
+		for (var i = 0; i < centers.length; i++) {
+			var center = centers[i];
+			
+			var bolt = drawBolt(boltPar).mesh;
+			bolt.rotation.x = -Math.PI / 2;
+			bolt.position.x = center.x;
+			bolt.position.y = center.y;
+			bolt.position.z = 0;
+			flan.add(bolt);
+		}
+	}
+
 	var extrudeOptions = {
 		amount: plateThickness,
 		bevelEnabled: false,
@@ -2816,21 +2841,27 @@ function drawBrace(par) {
 	var geometry = new THREE.ExtrudeGeometry(flanShape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	wallPlate1 = new THREE.Mesh(geometry, params.materials.metal);
+	var wallPlate1Obj = new THREE.Object3D();
+	drawFlanBolts(wallPlate1Obj, [center1, center2, center3, center4]);
 
-	wallPlate1.position.x = mooveX;
-	wallPlate1.position.y = mooveY;
-	wallPlate1.position.z = 0;
+	wallPlate1Obj.add(wallPlate1);
+	
+	wallPlate1Obj.position.x = mooveX;
+	wallPlate1Obj.position.y = mooveY;
+	wallPlate1Obj.position.z = 0;
 
-	brace.add(wallPlate1);
+	braceFork.add(wallPlate1Obj);
 
 	if (par.topJoin == true) {
 		wallPlate2 = new THREE.Mesh(geometry, params.materials.metal);
+		var wallPlate2Obj = new THREE.Object3D();
+		drawFlanBolts(wallPlate2Obj, [center1, center2, center3, center4]);
 
-		wallPlate2.position.x = mooveX;
-		wallPlate2.position.y = (rodLength - 30 * 2) * Math.sin(angle) + mooveY;
-		wallPlate2.position.z = par.width - plateThickness;
+		wallPlate2Obj.position.x = mooveX;
+		wallPlate2Obj.position.y = (rodLength - 30 * 2) * Math.sin(angle) + mooveY;
+		wallPlate2Obj.position.z = par.width - plateThickness;
 
-		brace.add(wallPlate2);
+		braceForkTop.add(wallPlate2Obj);
 	}
 
 	// Косынка кронштейна
@@ -2890,7 +2921,6 @@ function drawBrace(par) {
     }*/
 
 
-	var braceFork = new THREE.Object3D();
 	var geometry = new THREE.ExtrudeGeometry(rodPlateShape, extrudeOptions);
 	geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 	rodPlate1 = new THREE.Mesh(geometry, params.materials.metal);
@@ -2933,8 +2963,6 @@ function drawBrace(par) {
 	braceFork.specId = partName;
 
 	if (par.topJoin == true) {
-		var braceForkTop = new THREE.Object3D();
-
 		rodPlate3 = new THREE.Mesh(geometry, params.materials.metal);
 		rodPlate3.position.x = (flanWidth - (profWidth - 1)) / 2 - (plateThickness + 1) + mooveX;
 		rodPlate3.position.y = (rodLength - 30 * 2) * Math.sin(angle) + mooveY;

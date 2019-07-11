@@ -55,6 +55,96 @@ function drawComplexStringer(par){
 			}
 		par.mesh2.add(part);
 	}
+	
+	var posZ = par.pos.z;
+	if(par.side == "in") {
+		posZ += (-params.stringerThickness / 2 - par.stringerSideOffset) * turnFactor;
+	}
+	if(par.side == "out") {
+		if(turnFactor == 1) posZ += params.stringerThickness / 2 + par.stringerSideOffset;
+		if(turnFactor == -1) posZ += -par.stringerSideOffset - params.stringerThickness / 2
+	}
+
+	if(getMarshParams(par.marshId).lastMarsh){
+		var screwPar = {
+			id: "screw_8x120",
+			description: "Крепление выходного узла к каркасу",
+			group: "Каркас",
+			hasShim: true
+		}
+	
+		var screw = drawScrew(screwPar).mesh;
+		screw.position.x = par.keyPoints.topPoint.x - 20 + 0.5;
+		screw.position.y = par.keyPoints.topPoint.y - 50;
+		screw.position.z = posZ;
+		screw.rotation.z = Math.PI / 2;
+		if(!testingMode)	par.mesh1.add(screw);
+
+		var plug = drawTimberPlug(25);
+		plug.rotation.z = Math.PI / 2
+		plug.position.x = par.keyPoints.topPoint.x - 20 + 60 + 2;
+		plug.position.y = par.keyPoints.topPoint.y - 50;
+		plug.position.z = posZ;
+		if(!testingMode)	par.mesh1.add(plug);
+		
+		var screw = drawScrew(screwPar).mesh;
+		screw.position.x = par.keyPoints.topPoint.x - 20 + 0.5;
+		screw.position.y = par.keyPoints.topPoint.y - 200;
+		screw.position.z = posZ;
+		screw.rotation.z = Math.PI / 2;
+		if(!testingMode)	par.mesh1.add(screw);
+
+		var plug = drawTimberPlug(25);
+		plug.rotation.z = Math.PI / 2
+		plug.position.x = par.keyPoints.topPoint.x - 20 + 60 + 2;
+		plug.position.y = par.keyPoints.topPoint.y - 200;
+		plug.position.z = posZ;
+		if(!testingMode)	par.mesh1.add(plug);
+	}
+
+	if (par.side == 'in' && !getMarshParams(par.marshId).lastMarsh) {
+		var screwPar = {
+			id: "screw_8x120",
+			description: "Крепление косоуров к столбу",
+			group: "Каркас",
+			hasShim: true
+		}
+		var screw = drawScrew(screwPar).mesh;
+		screw.rotation.z = Math.PI / 2
+		screw.position.x = par.keyPoints.topPoint.x - 60 + params.rackSize + 0.5;
+		screw.position.y = par.keyPoints.topPoint.y - 100;
+		screw.position.z = posZ;
+		if(!testingMode)	par.mesh1.add(screw);
+		
+		var plug = drawTimberPlug(25);
+		plug.rotation.z = Math.PI / 2
+		plug.position.x = par.keyPoints.topPoint.x + params.rackSize + 1 + 0.5;
+		plug.position.y = par.keyPoints.topPoint.y - 100;
+		plug.position.z = posZ;
+		if(!testingMode)	par.mesh1.add(plug);
+	}
+
+	if (par.side == 'in' && par.marshId != 1) {
+		var screwPar = {
+			id: "screw_8x120",
+			description: "Крепление косоуров к столбу",
+			group: "Каркас",
+			hasShim: true
+		}
+		var screw = drawScrew(screwPar).mesh;
+		screw.rotation.z = -Math.PI / 2
+		screw.position.x = par.keyPoints.botPoint.x + 60 - params.rackSize - 0.5;
+		screw.position.y = par.keyPoints.botPoint.y + 200;
+		screw.position.z = posZ;
+		if(!testingMode)	par.mesh1.add(screw);
+		
+		var plug = drawTimberPlug(25);
+		plug.rotation.z = -Math.PI / 2
+		plug.position.x = par.keyPoints.botPoint.x - params.rackSize - 1 - 0.5;
+		plug.position.y = par.keyPoints.botPoint.y + 200;
+		plug.position.z = posZ;
+		if(!testingMode)	par.mesh1.add(plug);
+	}
 
 	//signKeyPoints(par.keyPoints, par.dxfBasePoint);
 
@@ -69,34 +159,38 @@ function drawComplexStringer(par){
 	addLine(trashShape, dxfPrimitivesArr, par.keyPoints.botPoint, par.keyPoints.topPoint, par.dxfBasePoint, layer);
 
 	var partName = "stringer";
-	if (typeof specObj != 'undefined'){
-		if (!specObj[partName]){
-			specObj[partName] = {
-				types: {},
-				amt: 0,
-				name: "Тетива",
-				area: 0,
-				paintedArea: 0,
-				metalPaint: false,
-				timberPaint: true,
-				division: "timber",
-				workUnitName: "area", //единица измерения
-				group: "stringers",
+	if (getMarshParams(par.marshId).stairAmt > 0) {
+		if (typeof specObj != 'undefined'){
+			if (!specObj[partName]){
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Тетива",
+					area: 0,
+					paintedArea: 0,
+					metalPaint: false,
+					timberPaint: true,
+					division: "timber",
+					workUnitName: "area", //единица измерения
+					group: "stringers",
+				}
+				if(par.type == "косоур") specObj[partName].name = "Косоур";
 			}
-			if(par.type == "косоур") specObj[partName].name = "Косоур";
+			var stringerNname = (par.side === 'out' ? 'внешн. ' : 'внутр. ') + par.marshId + " марш";
+	
+			var name = stringerNname + " L=" + Math.round(par.maxLen);
+			var area = 300 * par.maxLen / 1000000;
+	
+			if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+			if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+			specObj[partName]["amt"] += 1;
+			specObj[partName]["area"] += area;
+			specObj[partName]["paintedArea"] += area * 2;
 		}
-		var stringerNname = (par.side === 'out' ? 'внешн. ' : 'внутр. ') + par.marshId + " марш";
-
-		var name = stringerNname + " L=" + Math.round(par.maxLen);
-		var area = 300 * par.maxLen / 1000000;
-
-		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
-		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
-		specObj[partName]["amt"] += 1;
-		specObj[partName]["area"] += area;
-		specObj[partName]["paintedArea"] += area * 2;
+		
+		par.mesh1.specId = partName + name;
 	}
-
+	
 	return par;
 }
 
@@ -299,6 +393,10 @@ function drawStrightStringer(par){
 			topLine = [];
 			var length = params.marshDist + params.nose;
 			if (params.riserType == 'нет') length -= params.riserThickness;
+			if (par.marshId == 2 && params.stairModel == 'П-образная с забегом' && par.side == 'in') {
+				length = params.marshDist;
+			}
+
 			var p1 = {x: -params.marshDist + params.nose, y: -params.treadThickness};
 			var p2 = newPoint_xy(p1, 0, -228);
 			var p3 = newPoint_xy(p1, length, -228);
@@ -323,8 +421,12 @@ function drawStrightStringer(par){
 			botLine.push(p2, p3);
 			topLine.push(p4, p1);
 
+			botLineP1 = copyPoint(p4);
+
 			hasBotFixingHoles = false;
 			hasTopFixingHoles = false;
+
+			par.keyPoints.botPoint = p2;
 		}
 
 		if (params.calcType == 'timber_stock' && stairAmt == 1 && par.marshId !== 1) {
@@ -384,63 +486,116 @@ function drawStrightStringer(par){
 			points: topLine.concat(botLine),
 			dxfArr: dxfArr,
 			dxfBasePoint: par.dxfBasePoint,
-			markPoints: true, //пометить точки в dxf для отладки
+			markPoints: true //пометить точки в dxf для отладки
 		}
-		
+		if (par.slots) shapePar.drawing = {group: "stringer", dimPoints:[{p1: par.keyPoints.botPoint, p2: par.keyPoints.topPoint, type:'dist'}]};		
 		stringerShape = drawShapeByPoints2(shapePar).shape;
 
 		//отверстия для крепления ступеней
-		if(par.slots == true && params.calcType == "timber"){
+		if(par.slots == true){
 			var xSlotOffset = 25.5;
 			var ySlotOffset = 25.5;
 			var slotDiam = 25.5;
 
+			var treadMetis = new THREE.Object3D();
+			var screwPar = {
+				id: "screw_4x35",
+				description: "Крепление ступеней к косоуру",
+				group: "Ступени"
+			}
+			
 			for(var i = 0; i < stairAmt; ++i) {
 				var center = {x: b * i + (a - b) + (risers == true ? params.riserThickness : 0) + xSlotOffset,y:h * (i + 1) - params.treadThickness - ySlotOffset}
 				addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+
+				var screw = drawScrew(screwPar).mesh;
+				screw.position.x = center.x;
+				screw.position.y = center.y;
+				screw.position.z = 0;
+				if (turnFactor == -1) screw.position.z = params.stringerSlotsDepth;
+				if(!testingMode) treadMetis.add(screw);
+	
+				var plug = drawTimberPlug(25);
+				plug.position.x = center.x;
+				plug.position.y = center.y;
+				// if (turnFactor == 1) plug.position.z = params.stringerSlotsDepth;
+				plug.rotation.z = Math.PI / 2;
+				plug.rotation.y = Math.PI / 2;
+				if(!testingMode) treadMetis.add(plug);
+				
 				if(params.riserType == "нет"){
 					var center2 = newPoint_xy(center, marshPar.b - xSlotOffset * 3, 0);
 					addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
+
+					var screw = drawScrew(screwPar).mesh;
+					screw.position.x = center2.x;
+					screw.position.y = center2.y;
+					screw.position.z = 0;
+					// if (turnFactor == -1) screw.position.z = params.stringerSlotsDepth;
+					if(!testingMode) treadMetis.add(screw);
+		
+					var plug = drawTimberPlug(25);
+					plug.position.x = center2.x;
+					plug.position.y = center2.y;
+					if (turnFactor == 1) plug.position.z = params.stringerSlotsDepth;
+					plug.rotation.z = Math.PI / 2;
+					plug.rotation.y = Math.PI / 2;
+					if(!testingMode) treadMetis.add(plug);
 				}
 			}
+			par.meshes.push(treadMetis);
 		}
 
-		//отверстия для крепления косоуров к столбам
-		if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock"){
-			var slotDiam = 40;
-			var xSlotOffset = 30 + slotDiam / 2;
-			var ySlotOffset = 50;
+		// //отверстия для крепления косоуров к столбам
+		// if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock"){
+		// 	var slotDiam = 40;
+		// 	var xSlotOffset = 30 + slotDiam / 2;
+		// 	var ySlotOffset = 50;
 
-			if (marshPar.lastMarsh) hasTopFixingHoles = false;
-			if (par.marshId == 1) hasBotFixingHoles = false;
-			if (par.side == 'in' && marshPar.botTurn == 'забег') {
-				hasBotFixingHoles = false;
-			}
-			if (params.stairModel == 'П-образная с площадкой' && par.side == 'in') {
-				hasBotFixingHoles = false;
-				hasTopFixingHoles = false;
-			}
+		// 	if (marshPar.lastMarsh) hasTopFixingHoles = false;
+		// 	if (par.marshId == 1) hasBotFixingHoles = false;
+		// 	if (par.side == 'in' && marshPar.botTurn == 'забег') {
+		// 		hasBotFixingHoles = false;
+		// 	}
+		// 	if (params.stairModel == 'П-образная с площадкой' && par.side == 'in') {
+		// 		hasBotFixingHoles = false;
+		// 		hasTopFixingHoles = false;
+		// 	}
 			
-			if (hasTopFixingHoles) {
-				var center = newPoint_xy(botLineP1, -xSlotOffset, -ySlotOffset);
-				addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
-				var center2 = newPoint_xy(center, 0, -96);
-				addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
-			}
-			if (hasBotFixingHoles) {
-				var center = newPoint_xy(topLineP0, xSlotOffset, 228 - ySlotOffset);
-				addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
-				var center2 = newPoint_xy(center, 0, -96);
-				addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
-			}
-		}
+		// 	if (hasTopFixingHoles) {
+		// 		var center = newPoint_xy(botLineP1, -xSlotOffset, -ySlotOffset);
+		// 		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+		// 		var center2 = newPoint_xy(center, 0, -96);
+		// 		addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
+		// 	}
+		// 	if (hasBotFixingHoles) {
+		// 		var center = newPoint_xy(topLineP0, xSlotOffset, 228 - ySlotOffset);
+		// 		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+		// 		var center2 = newPoint_xy(center, 0, -96);
+		// 		addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
+		// 	}
+		// }
+
+		// //отверстия для крепления косоуров к столбам
+		// if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock" && stairAmt == 1){
+		// 	var slotDiam = 40;
+		// 	var xSlotOffset = 30 + slotDiam / 2;
+		// 	var ySlotOffset = 64;
+		// 	hasTopFixingHoles = true;
+
+		// 	if (marshPar.lastMarsh) hasTopFixingHoles = false;
+		// 	if (hasTopFixingHoles) {
+		// 		var center = newPoint_xy(p4, -xSlotOffset, -ySlotOffset);
+		// 		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+		// 	}
+		// }
 
 		//сохраняем точки для отрисовки верхнего столба
 		par.botLineP1 = copyPoint(botLineP1);
 		par.botLineP2 = copyPoint(botLineP2);
 
 		par.keyPoints.botPoint = topLineP0;
-		par.keyPoints.topPoint = botLineP2;
+		par.keyPoints.topPoint = botLineP1;
 		//сохраняем точки для столбов ограждений
 		// par.keyPoints.rack1Pos = newPoint_xy(topLineP0, - params.rackSize/2, 0);
 		// if(par.botEnd == "пол" && params.riserType == "есть") par.keyPoints.rack1Pos.x -= params.riserThickness;
@@ -684,7 +839,7 @@ function drawStrightStringer(par){
 			var shapePar = {
 				points: topLine.concat(slotsTopPoints),
 				dxfArr: dxfArr,
-				dxfBasePoint: par.dxfBasePoint,
+				dxfBasePoint: par.dxfBasePoint
 				//markPoints: true, //пометить точки в dxf для отладки
 			}
 
@@ -693,7 +848,7 @@ function drawStrightStringer(par){
 			var shapePar = {
 				points: slotsBotPoints.concat(botLine),
 				dxfArr: dxfArr,
-				dxfBasePoint: par.dxfBasePoint,
+				dxfBasePoint: par.dxfBasePoint
 			}
 			var stringerShape2 = drawShapeByPoints2(shapePar).shape;
 		}
@@ -776,13 +931,12 @@ function drawStrightStringer(par){
 		if (par.type == "тетива") par.endHeightBot = distance(topLineP0, topLineP01);
 		if (par.type == "косоур") par.endHeightBot = distance(topLineP0, topLineP1);
 	}
-	if(par.topEnd == "столб") {
-		par.endHeightTop = distance(topLineP21, botLineP2);
-		if (par.type == 'косоур') par.endHeightTop = distance(botLineP1, botLineP2);
-		if (par.type == "косоур" && stairAmt == 1) par.endHeightTop = distance(topLineP0, topLineP1);
-	}
+	// if(par.topEnd == "столб") {
+	// }
+	par.endHeightTop = distance(topLineP21, botLineP2);
+	if (par.type == 'косоур') par.endHeightTop = distance(botLineP1, botLineP2);
+	if (par.type == "косоур" && stairAmt == 1) par.endHeightTop = distance(topLineP0, topLineP1);
 	if (deltaY) par.endHeightYOffset = deltaY;
-
 } //end of drawStrightStringer
 
 /*внешний косоур/тетива нижнего марша*/
@@ -2910,7 +3064,6 @@ function drawTopUnit(par){
 		newellType: params.timberNewellType,
 		newellTopType: params.newellTopType,
 	}
-	console.log(par.dxfBasePoint, par)
 	var dxfBasePoint = par.dxfBasePoint || {x:0, y: -500};
 
 	var text = 'Верхний выходной узел';
@@ -3006,7 +3159,6 @@ function drawTopUnit(par){
 	if (params.railingSide_1 == 'внутреннее' && params.stairModel == 'Прямая' && params.model !== 'косоуры') {
 		par.width += params.rackSize/2 - params.stringerThickness/2;
 	}
-	console.log('topUnit where are you')
 	//левый столб
 	if(isNewellLeft){
 		newellParams.dxfBasePoint = newPoint_xy(dxfBasePoint, -heightLeft + 0.03, -params.M / 2);
@@ -3507,6 +3659,7 @@ function drawOpColumn(par){
 		specObj[partName]["area"] += area;
 		specObj[partName]["paintedArea"] += area * 2;
 	}
+	par.mesh.specId = partName + name;
 
 	return par
 }
