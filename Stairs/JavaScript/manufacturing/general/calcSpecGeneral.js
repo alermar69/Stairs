@@ -1413,6 +1413,7 @@ function addGeneralItems(list){
 function isPainting(item){
     var paintType;
 
+
 	//покраска металла
     if('metalPaint' in item && item.metalPaint){
 		//детали каркаса
@@ -1422,7 +1423,7 @@ function isPainting(item){
 		
 		//детали ограждений		
 		if(params.calcType != 'vint' && (item.group == "Ограждения" || item.group == "handrails" || item.group == "Балюстрада")){
-			paintType = params.metalPaint_railing;
+			paintType = params.metalPaint_railing || "нет";
 			if(params.metalPaint_railing !== 'нет')	paintType += ", цвет " + params.metalBalColor;
 		}
 	}
@@ -1564,7 +1565,7 @@ function addFixParts(par){
 		if(item.amt > 0) partsList.addItem(item);
 
 		 item = {
-			id: "shim_M10",
+			id: "shim_М10",
 			amt: par.amt,
 			discription: par.discription,
 			unit: par.unit,

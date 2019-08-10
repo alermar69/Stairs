@@ -379,6 +379,7 @@ function setA4(par){
 	var posOrient = par.posOrientation || 'hor';
 
 	var listBasePoint = par.basePoint;
+	
 	for (var i = 0; i < elemArr.length; i++) {
 		var set = draw.set();
 		var obj = elemArr[i];

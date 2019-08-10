@@ -303,7 +303,7 @@ function drawSpiralRailing(par) {
 
 			posY = stepHeight - params.treadThickness - banisterBottomOverhang;
 
-			for (var i = 0; i < stairAmt + 1; i++) {
+			for (var i = 0; i < stairAmt; i++) {
 				var shimDelta = 0;
 				//учитываем регулировочную шайбу
 				if (i <= params.regShimAmt) {
@@ -600,7 +600,7 @@ function drawSpiralRailing(par) {
 
 		//сохраняем данные для спецификации
 		var partName = par.partName;
-		if (params.handrailMaterial == "ПВХ") partName = "pvcHandrail"
+		if (params.handrailMaterial == "ПВХ" && partName !== "spiralRigel") partName = "pvcHandrail"
 		if (typeof specObj != 'undefined') {
 			if (!specObj[partName]) {
 				specObj[partName] = {

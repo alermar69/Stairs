@@ -559,6 +559,7 @@
     <Content Include="JavaScript\manufacturing\vint\content\manual.php" />
     <Content Include="JavaScript\manufacturing\vint\drawCarcasParts.js" />
     <Content Include="JavaScript\manufacturing\vint\drawRailing.js" />
+    <Content Include="JavaScript\manufacturing\vint\drawBalSect_man_4.0.js" />
     <Content Include="JavaScript\manufacturing\vint\draw_vint.js" />
     <Content Include="JavaScript\manufacturing\vint\index.php" />
     <Content Include="JavaScript\manufacturing\vint\main.js" />

@@ -11,8 +11,9 @@ function drawTreads() {
     if (params.calcType == "timber") drawWndTreads = drawWndTreadsTimber;
     if (params.calcType == "timber_stock") drawWndTreads = drawWndTreadsTimber_stock;
     if (params.calcType == "geometry") {
-        if (params.staircaseType == "mono") drawWndTreads = drawWndTreadsMono;
-        if (params.staircaseType == "timber") drawWndTreads = drawWndTreadsTimber;
+			if (params.staircaseType == "mono") drawWndTreads = drawWndTreadsMono;
+			if (params.staircaseType == "timber") drawWndTreads = drawWndTreadsTimber;
+			if (params.staircaseType == "timber_stock") drawWndTreads = drawWndTreadsTimber_stock;
     }
 
 
@@ -1997,9 +1998,9 @@ function drawWndTreadsMetal(par) {
 			hasTopScrews: true,
 			hasBotScrews: true
 		};
-
+		// console.log(par.turnId)
 		if (params.stairModel == "П-образная с забегом" && par.turnId == 2) riserPar.width = par.h;
-		if (par.botMarshId == 1 && params.stairAmt1 == 0) riserPar.width -= params.treadThickness;
+		if (par.botMarshId == 1 && params.stairAmt1 == 0 && params.stairModel != "П-образная с забегом") riserPar.width -= params.treadThickness;
 
 		//отрисовка
 		riserPar = drawRectRiser(riserPar);
@@ -2092,7 +2093,7 @@ function drawWndTreadsMetal(par) {
 		if (hasTurnRack && treadParams[1].riserFix) {//Меняем размер подступенка, riserFix рассчитывается в calcWndTread1Points
 			riserPar.cutWndIn = treadParams[1].riserFix / Math.cos(treadParams[1].edgeAngle) + 0.03;
 		}
-		if (testingMode) riserPar.len += 1;//Фикс пересечения с ковкой
+		//if (testingMode) riserPar.len += 1;//Фикс пересечения с ковкой
 
 		//отрисовка
 		riserPar = drawRectRiser(riserPar);
@@ -2206,6 +2207,10 @@ function drawWndTreadsMetal(par) {
 		riser.position.y = (turnFactor > 0 ? riserPar.width : 0) + par.h - params.treadThickness + 0.1;
 		riser.position.z = tread2.position.z + treadParams[2].stepWidthX * turnFactor;
 		if (turnFactor < 0) riser.rotation.x = -Math.PI;
+		if (turnFactor < 0) {
+			riser.position.z += params.riserThickness / 2 / Math.cos(treadParams[3].edgeAngle);
+			riser.position.x += params.riserThickness / 2 / Math.sin(treadParams[3].edgeAngle);
+		}
 
 
 		risers.add(riser);
@@ -2642,14 +2647,14 @@ function drawWndTreadsTimber(par){
 
 		var displacementZ = ((6 * Math.cos(riserPar.ang)) / Math.tan(riserPar.ang) - params.riserThickness) * Math.sin(riserPar.ang) + 1;	// 1 Подогнано, т.к. позиция неверная// перемещение базовой точки подступенка на шстрый угол для удобства позиционирования, 6 = длина фаски
 
-		riser2.rotation.z = Math.PI / 2;
+		riser2.rotation.y = -Math.PI / 2;
 		riser2.position.y -= params.treadThickness - techDelta;
 		riser2.position.x = -displacementZ * Math.tan(riserPar.ang) + treadParams[1].stepWidthLow + params.riserThickness / Math.cos(riserPar.ang);
 		riser2.position.z = riser.position.z + (treadParams[1].treadWidth - (displacementZ - 0.01)) * turnFactor;
 
 		if (turnFactor < 0) {
-			riser2.rotation.x = -Math.PI / 2;
-			riser2.position.y -= riserPar.height;
+			riser2.rotation.z = -Math.PI;
+			riser2.position.y += riserPar.height;
 		}
 
 		risers.add(riser2);
@@ -2739,14 +2744,14 @@ function drawWndTreadsTimber(par){
 		riserPar =  drawWinderRiser(riserPar);
 		var riser = riserPar.mesh;
 
-		riser.rotation.y = - Math.PI;
+		riser.rotation.z = - Math.PI;
 		riser.position.x = tread2.position.x + displacementZ - (treadParams[2].treadWidthY - treadParams[2].stepWidthY) + treadParams[2].innerOffsetY - thirdTreadFix;
 		riser.position.z = tread2.position.z + ((displacementZ - 0.025) * Math.tan(riserPar.ang) + treadParams[2].treadWidthX) * turnFactor;
-		riser.position.y = riserPar.height - params.treadThickness + techDelta * 3;
+		riser.position.y = riserPar.height * 2 - params.treadThickness + techDelta * 3;
 
 		if (turnFactor < 0){
-			riser.rotation.x = -Math.PI / 2;
-			riser.position.y += riserPar.height;
+			riser.rotation.x = Math.PI;
+			riser.position.y -= riserPar.height;
 		}
 
 		risers.add(riserPar.mesh);

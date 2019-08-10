@@ -97,6 +97,7 @@ $APPLICATION->SetTitle("Расчет винтовых лестниц v.2.1");
     <script type="text/javascript" src="/manufacturing/general/testing/debug/testSamples.js"></script>
 
 <!--оболочки-->
+<script type="text/javascript" src="/manufacturing/general/main.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

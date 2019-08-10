@@ -3,8 +3,6 @@ var testingMode = false;
 var boltDiam = 10;
 var boltBulge = 8;
 var boltLen = 30;
-var turnFactor = 1;
-
 var stairParams = {};
 
 
@@ -235,12 +233,21 @@ function drawStaircase(viewportId, isVisible) {
 			treadParams.type = "metal";
 			treadParams.material = params.materials.metal;
 		}
+		var divides = calcDivides(stepHeight);		
 
 		//отрисовывамем винтовую ступень
 		var posY = stepHeight;
 		for (var i = 0; i < stairAmt; i++) {
 
 			if (stairType != "metal" && i < regShimAmt) posY += regShimThk;
+
+			//определяем наличие разделения тетив под ступенью
+			treadParams.isDivide = false;
+			if (divides.length > 0) {
+				if (divides.indexOf(i + 1) != -1) {
+					treadParams.isDivide = true;
+				}
+			}
 
 			treadParams = drawVintTread(treadParams);
 			var tread = treadParams.mesh;
@@ -285,13 +292,13 @@ function drawStaircase(viewportId, isVisible) {
 
 	//первая бобышка
 	var posY0 = botFlanThk;
-	if (botFloorType == "черновой") posY0 -= params.botFloorsDist;
+	//if (botFloorType == "черновой") posY0 -= params.botFloorsDist;
 
-	var spacerHeight = stepHeight - params.treadThickness - posY0;
-	if (stairType == "metal") spacerHeight = stepHeight - posY0;
+	var spacerHeight0 = stepHeight - params.treadThickness - posY0;
+	if (stairType == "metal") spacerHeight0 = stepHeight - posY0 + 4; // 4 - подогнано
 
 	var spacerPar = {
-		height: spacerHeight,
+		height: spacerHeight0,
 		holeDiam: 50,
 	}
 	var spacerObj = drawDrum(spacerPar)
@@ -310,6 +317,8 @@ function drawStaircase(viewportId, isVisible) {
 	//var geomHolderDrum = new THREE.CylinderGeometry( radiusTop, radiusBottom, height-8, radialSegments, heightSegments, openEnded) 
 
 	var posY = stepHeight;
+	if (stairType == "metal") posY = spacerHeight0 + 8
+	
 	for (var i = 1; i < stairAmt + 1; i++) {
 		//регулировочная шайба
 		if (i <= regShimAmt) {
@@ -330,7 +339,11 @@ function drawStaircase(viewportId, isVisible) {
 			midHoldersParams.pos.indexOf(i) != -1) isMidHolderSpacer = true;
 
 		if (isMidHolderSpacer) spacerPar.height -= 8;
-
+		// if (isMidHolderSpacer) 
+		//if(i == stairAmt && (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку")) spacerPar.height -= 4;
+		//последняя бобышка на рифленке без крышки - вмето нее фланец
+		if (i == stairAmt && stairType == "metal") spacerPar.noShim = true;
+		
 		var spacerObj = drawDrum(spacerPar)
 		spacerObj.tubeMesh.position.y = spacerObj.shimMesh.position.y = posY;
 		if ((params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") &&
@@ -388,7 +401,7 @@ function drawStaircase(viewportId, isVisible) {
 	flanParams = drawRoundFlan(flanParams)
 
 	var topFlan = flanParams.mesh;
-	topFlan.position.y = stepHeight * (stairAmt + 1) + regShimAmt * regShimThk + 0.05 + 4;
+	topFlan.position.y = stepHeight * (stairAmt + 1) + regShimAmt * regShimThk + 4 + 0.05;
 	var sectionTyrnAngle = (platformAngle / 2 - platformExtraAngle + Math.PI) * turnFactor;
 	if (params.platformType == "square") sectionTyrnAngle = Math.PI / 2 * turnFactor + Math.PI;
 	topFlan.rotation.z = sectionTyrnAngle + Math.PI / 4;
@@ -412,7 +425,7 @@ function drawStaircase(viewportId, isVisible) {
 		var regShim = drawCylinder_2(cylParams).mesh;
 		regShim.position.x = 0;
 		regShim.position.y = (stepHeight + regShimThk) * (i + 1) - params.treadThickness - regShimThk;
-		if (stairType == "metal") regShim.position.y += params.treadThickness;
+		if (stairType == "metal") regShim.position.y += params.treadThickness + 4;
 		if (midHoldersParams.pos.indexOf(i + 1) != -1 && stairType != "metal") {
 			regShim.position.y -= 8;
 		}
@@ -463,8 +476,12 @@ function drawStaircase(viewportId, isVisible) {
 	for (var i = 0; i < rodAmt; i++) {
 		var rodPar = {
 			len: rodsLen[i] - endDist,
+			pos: i,
+			isLast: false,
 		}
-
+		
+		if(i == rodAmt-1) rodPar.isLast = true;
+		
 		var rod = drawRod(rodPar).mesh;
 		rod.position.y = posY0 + posY + endDist;
 		model.add(rod, "rod");
@@ -472,7 +489,7 @@ function drawStaircase(viewportId, isVisible) {
 		//удлинненная гайка на стыке
 		nutParams.isLong = true;
 		var nut = drawNut(nutParams).mesh;
-		nut.position.y = posY0 + posY - nutParams.height / 2;
+		nut.position.y = posY0 + posY - nutParams.nutHeight / 2;
 		if (i == 0) nut.position.y = posY0;
 		model.add(nut, "shims");
 		
@@ -480,7 +497,7 @@ function drawStaircase(viewportId, isVisible) {
 		if(i > 0){
 			nutParams.isLong = false;
 			var nut = drawNut(nutParams).mesh;
-			nut.position.y = posY0 + Math.floor(posY / maxRise) * maxRise + 0.5;
+			nut.position.y = posY0 + Math.floor(posY / maxRise) * maxRise + 8 + 0.01; //8 - костыль
 			model.add(nut, "shims")
 		}
 		
@@ -499,7 +516,7 @@ function drawStaircase(viewportId, isVisible) {
 	if(params.platformPosition == "ниже") nut.position.y -= stepHeight;
 	console.log(nut.position.y, posY0)
 	model.add(nut, "shims");
-	var nutTopPos = nut.position.y + nutParams.height;
+	var nutTopPos = nut.position.y + nutParams.nutHeight;
 
 	//верхняя контргайка
 	nutParams.isLong = false;
@@ -551,7 +568,9 @@ function drawStaircase(viewportId, isVisible) {
 			stringer.rotation.y += Math.PI / 2 * turnFactor;
 			translateObject(stringer, -stringerDXF.lenX, 0, params.staircaseDiam / 2 * turnFactor);
 
-		
+		//if(document.location.href.indexOf("manufacturing") != -1){		
+		//	model.add(stringer, "stringers2");
+		//}
 		model.add(stringer, "stringers2");
 
 		stringerParams = drawSpiralStripe(stringerParams);
@@ -566,7 +585,7 @@ function drawStaircase(viewportId, isVisible) {
 		model.add(stringer, "stringers");
 		
 		var floorAngle = drawAngleSupport("У4-70х70х100");
-		floorAngle.rotation.y = stairParams.stairCaseAngle + Math.PI / 2;// - treadExtraAngle;//stairParams.stairCaseAngle + Math.PI;
+		floorAngle.rotation.y = stairParams.stairCaseAngle + Math.PI / 2;
 		//if (params.turnFactor == 1) floorAngle.rotation.y += Math.PI / 2;
 		translateObject(floorAngle, 0, 0, -params.staircaseDiam / 2);
 		model.add(floorAngle, "stringers");
@@ -599,6 +618,13 @@ function drawStaircase(viewportId, isVisible) {
 		var lenX = (params.stepAmt - 1) * stepArcLen;
 		
 		var length = (par.height - botFaceOffset - topFaceHeight) / Math.sin(angle);
+
+		var typeTread = "timber";
+		if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку") typeTread = "metal";
+
+		par.partsLen = [];
+		par.meshes = [];
+
 	/*	
 		var p0 = {x:0,y:0};
 		var p0_1 = newPoint_xy(p0, botFaceOffsetOut, 0);
@@ -620,14 +646,26 @@ function drawStaircase(viewportId, isVisible) {
 		var p1 = newPoint_xy(p0, 20, 0);
 		var p1_1 = newPoint_xy(p0, -10, 100);
 		
-		var p2 = newPoint_xy(p0, -10, par.stepHeight + 10,);
-		var p3 = newPoint_xy(p0, lenX - 75, height);
+		var p2 = newPoint_xy(p0, -10, par.stepHeight + 10);
+		var pt = newPoint_xy(p0, 0, height);
+		var p3 = itercection(pt, polar(pt, 0, -100), p2, polar(p2, angle, -100));
+		//var p3 = newPoint_xy(p0, lenX - 75, height);
 		var p4 = newPoint_xy(p3, 75 + 70, 0);
 		var p5 = newPoint_xy(p4, 0, -params.treadThickness - 10);
 		var p6 = newPoint_xy(p5, 75 + 8.5, 0);
 		
 		var p7 = newPoint_xy(p6, 0, -200);
 		var p8 = itercection(p0, newPoint_xy(p0, 100, 0), p7, polar(p7, angle, -100));
+
+		if (params.platformType !== 'нет' && typeTread == "metal" && params.platformLedgeM > 0) {
+			var p5 = newPoint_xy(p0, lenX + 4 + 5.5 + 4, height - params.treadThickness - 14);
+			var p4 = newPoint_xy(p5, 0, -120);
+			p3 = itercection(p2, p5, p4, polar(p4, 0, 100));
+			var p6 = newPoint_xy(p5, 120, 0);
+			var p7 = itercection(p8, polar(p8, angle, 100), p6, polar(p6, Math.PI / 2, 100));
+
+			p6.filletRad = 40;
+		}
 		var points = [p1, p1_1, p2, p3, p4, p5, p6, p7, p8]
 		
 		//p1.filletRad = p2.filletRad = p3.filletRad = p5.filletRad = p6.filletRad = p7.filletRad = edgeRad;
@@ -638,17 +676,106 @@ function drawStaircase(viewportId, isVisible) {
 		var dxfBasePoint = {x:0,y:0};
 		
 		//var points = [p0_1,p1_1, p1,p2,p3,p4,p5,p6,p7, p8]
-		//создаем шейп
-		var shapePar = {
-			points: points,
-			dxfArr: dxfPrimitivesArr,
-			dxfBasePoint: par.dxfBasePoint,
-			markPoints: true,
+		
+
+		var divides = calcDivides(stepHeight);
+
+		if (divides.length == 0) {
+			//создаем шейп
+			var shapePar = {
+				points: points,
+				dxfArr: dxfPrimitivesArr,
+				dxfBasePoint: par.dxfBasePoint,
+				//radOut: 20, //радиус скругления внешних углов
+				markPoints: true,
+			}
+
+			stringerShape = drawShapeByPoints2(shapePar).shape;
+
+			par.partsLen.push(distance(p1, p6));
+		}
+		if (divides.length > 0) {
+
+			var heightDivides = [];
+			for (var j = 0; j < divides.length; j++) {
+				var heightDivide = stepHeight * divides[j] - params.treadThickness - 8;
+				if (typeTread == "metal") heightDivide -= 30;
+				heightDivides.push(heightDivide)
+			}
+
+			var divideShapes = [];
+			for (var j = 0; j < divides.length; j++) {
+				if (j == 0) {
+					points = [p1, p1_1, p2]
+				}
+				if (j !== 0) {
+					points = [pt2, pt1]
+				}
+
+				var pt = { x: 0, y: heightDivides[j]}
+				var pt1 = itercection(p2, p3, pt, polar(pt, 0, 100));
+				var pt2 = itercection(p8, p7, pt, polar(pt, 0, 100));
+
+				points.push(pt1);
+				points.push(pt2);
+				if (j == 0) points.push(p8);
+
+				//создаем шейп
+				var shapePar = {
+					points: points,
+					dxfArr: dxfPrimitivesArr,
+					dxfBasePoint: par.dxfBasePoint,
+					markPoints: true,
+				}
+				var shape = drawShapeByPoints2(shapePar).shape;
+				divideShapes.push(shape);
+				if (j == 0) par.partsLen.push(distance(p1, pt2));
+				if (j != 0) par.partsLen.push(distance(points[1], pt2));
+
+				//добавляем отверстия под фланец соединения тетив
+				if (j == 0) {
+					var line = parallel(p2, pt1,  -30);
+					var line1 = parallel(pt1, pt2, -20);
+
+					var hole1 = itercectionLines(line, line1);
+					addRoundHole(shape, dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+				}
+				if (j != 0) {
+					var line = parallel(points[1], pt1, -30);
+					var line1 = parallel(pt1, pt2, -20);
+					var line2 = parallel(points[0], points[1], 20);
+
+					var hole1 = itercectionLines(line, line1);
+					var hole2 = itercectionLines(line, line2);
+					addRoundHole(shape, dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+					addRoundHole(shape, dxfPrimitivesArr, hole2, 6.5, par.dxfBasePoint);
+				}
+
+				
+
+				if (j == (divides.length - 1)) {
+					points = [pt1, p3, p4, p5, p6, p7, pt2]
+					//создаем шейп
+					var shapePar = {
+						points: points,
+						dxfArr: dxfPrimitivesArr,
+						dxfBasePoint: par.dxfBasePoint,
+						markPoints: true,
+					}
+					var shape = drawShapeByPoints2(shapePar).shape;
+					divideShapes.push(shape);
+					par.partsLen.push(distance(pt1, p6));
+
+					//добавляем отверстия под фланец соединения тетив
+					var line = parallel(pt1, p3, -30);
+					var line1 = parallel(pt1, pt2, 20);
+
+					var hole1 = itercectionLines(line, line1);
+					addRoundHole(shape, dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+				}
+			}
 		}
 		
-		stringerShape = drawShapeByPoints2(shapePar).shape;
-		
-	
 		var hole1 = newPoint_xy(p0, 30, par.stepHeight - params.treadThickness - 15);
 		for (var i = 1; i <= par.stairAmt; i++) {
 			if (i > 1) {
@@ -656,11 +783,76 @@ function drawStaircase(viewportId, isVisible) {
 			}
 			var hole2 = newPoint_xy(hole1, stepArcLen / 2, 0);
 			var hole3 = newPoint_xy(hole2, stepArcLen / 2, 0);
-			
-			addRoundHole(stringerShape, dxfPrimitivesArr, hole1, 4, par.dxfBasePoint);
-			addRoundHole(stringerShape, dxfPrimitivesArr, hole2, 4, par.dxfBasePoint);
-			addRoundHole(stringerShape, dxfPrimitivesArr, hole3, 4, par.dxfBasePoint);
+
+			if (divides.length == 0) {
+				addRoundHole(stringerShape, dxfPrimitivesArr, hole1, 4, par.dxfBasePoint);
+				addRoundHole(stringerShape, dxfPrimitivesArr, hole2, 4, par.dxfBasePoint);
+				addRoundHole(stringerShape, dxfPrimitivesArr, hole3, 4, par.dxfBasePoint);
+			}
+			if (divides.length !== 0) {				
+				var indexDivide = getIndexDivide(hole1, heightDivides)
+				addRoundHole(divideShapes[indexDivide], dxfPrimitivesArr, hole1, 4, par.dxfBasePoint);
+				addRoundHole(divideShapes[indexDivide], dxfPrimitivesArr, hole2, 4, par.dxfBasePoint);
+				addRoundHole(divideShapes[indexDivide], dxfPrimitivesArr, hole3, 4, par.dxfBasePoint);
+			}
 		}
+
+		//отверстия под ограждение по внешней стороне
+		if (params.railingSide == "внешнее" || params.railingSide == "две") {
+			if (params.railingModel == "Ригели" || params.railingModel == "Стекло на стойках") {
+				//считаем длину ограждения
+				var railingLength = Math.sqrt((stepAngle * params.staircaseDiam / 2) * (stepAngle * params.staircaseDiam / 2) + stepHeight * stepHeight) * stairAmt;
+				var rackAmt = Math.ceil(railingLength / 900) + 1;
+				var rackDistY = stepHeight * (stairAmt - 0.3) / (rackAmt - 1);
+				var rackAngleDist = stepAngle * (stairAmt - 0.3) / (rackAmt - 1);
+
+				for (var j = 0; j < rackAmt; j++) {
+					var banistrPositionAngle = rackAngleDist * j;
+					var holeY = rackDistY * j + 50;
+					if (j == 0) holeY += 40;
+
+					var pt = { x: 0, y: holeY };
+					var pt1 = itercection(p2, p3, pt, polar(pt, 0, 100));
+					var pt2 = itercection(p7, p8, pt, polar(pt, 0, 100));
+
+					var hole1 = newPoint_xy(p0, 30, holeY);
+					if (j !== 0) {
+						//hole1.x = pt1.x + (pt2.x - pt1.x) / 2;
+						var stepArcLenRacks = banistrPositionAngle * params.staircaseDiam / 2; 
+						hole1 = newPoint_xy(hole1, stepArcLenRacks, 0)
+						hole1 = newPoint_xy(p0, stepArcLenRacks + 42, holeY)
+					}
+
+					var hole2 = newPoint_xy(hole1, 0, -60);
+					if (divides.length == 0) {
+						addRoundHole(stringerShape, dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+						addRoundHole(stringerShape, dxfPrimitivesArr, hole2, 6.5, par.dxfBasePoint);
+					}
+					if (divides.length !== 0) {
+						var indexDivide = getIndexDivide(hole1, heightDivides)
+						addRoundHole(divideShapes[indexDivide], dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+						addRoundHole(divideShapes[indexDivide], dxfPrimitivesArr, hole2, 6.5, par.dxfBasePoint);
+					}
+				}
+				
+			}
+		}
+
+		//отверстия под соединительный фланец верхней площадке к тетиве
+		if (params.platformType !== 'нет' && typeTread == "metal" && params.platformLedgeM > 0) {
+			var hole1 = newPoint_xy(p5, 30, -30);
+			var hole2 = newPoint_xy(hole1, 0, -60);
+			if (divides.length == 0) {
+				addRoundHole(stringerShape, dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+				addRoundHole(stringerShape, dxfPrimitivesArr, hole2, 6.5, par.dxfBasePoint);
+			}
+			if (divides.length !== 0) {
+				addRoundHole(divideShapes[divideShapes.length - 1], dxfPrimitivesArr, hole1, 6.5, par.dxfBasePoint);
+				addRoundHole(divideShapes[divideShapes.length - 1], dxfPrimitivesArr, hole2, 6.5, par.dxfBasePoint);
+			}
+		}
+
+		var meshStringer = new THREE.Object3D();
 	
 		var extrudeOptions = {
 			amount: 4,
@@ -668,16 +860,58 @@ function drawStaircase(viewportId, isVisible) {
 			curveSegments: 12,
 			steps: 1
 		};
-		
-		var geometry = new THREE.ExtrudeGeometry(stringerShape, extrudeOptions);
-		geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
-		var stringer = new THREE.Mesh(geometry, params.materials.metal);
-		stringer.position.x = 0;
-		stringer.position.y = 0;
-		stringer.position.z = 0;
-		
-		par.mesh = stringer;
+
+		if (divides.length == 0) {
+			var geometry = new THREE.ExtrudeGeometry(stringerShape, extrudeOptions);
+			geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+			var stringer = new THREE.Mesh(geometry, params.materials.metal);
+			meshStringer.add(stringer);
+			par.meshes.push(stringer);
+		}
+		if (divides.length !== 0) {
+			for (var j = 0; j < divideShapes.length; j++) {
+				var geometry = new THREE.ExtrudeGeometry(divideShapes[j], extrudeOptions);
+				geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+				var stringer = new THREE.Mesh(geometry, params.materials.metal);
+				meshStringer.add(stringer);
+				par.meshes.push(stringer);
+			}
+		}
+
+		par.mesh = meshStringer;
 		par.lenX = lenX;
+
+		var partName = "stringer";
+		if (typeof specObj != 'undefined') {
+			if (!specObj[partName]) {
+				specObj[partName] = {
+					types: {},
+					amt: 0,
+					name: "Тетива",
+					area: 0,
+					paintedArea: 0,
+					metalPaint: true,
+					timberPaint: false,
+					division: "metal",
+					workUnitName: "area", //единица измерения
+					group: "Каркас",
+				}
+			}
+			var stringerNname = 'внешн. ';
+
+			for (var i = 0; i < par.partsLen.length; i++) {
+				var name = stringerNname + " L=" + Math.round(par.partsLen[i]);
+				var area = 300 * par.partsLen[i] / 1000000;
+
+				if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+				if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+				specObj[partName]["amt"] += 1;
+				specObj[partName]["area"] += area;
+				specObj[partName]["paintedArea"] += area * 2;
+
+				par.meshes[i].specId = partName + name;
+			}
+		}
 		
 		return par;
 	}
@@ -860,7 +1094,7 @@ function drawStaircase(viewportId, isVisible) {
 		pole.position.y += regShimAmt0 * 4 - 8; //((midHoldersParams.pos[i] - regShimAmt0) * 4);// - 8;FIX
 		
 		if (params.treadMaterial == "рифленая сталь" || params.treadMaterial == "лотки под плитку"){
-			pole.position.y = midHoldersParams.pos[i] * stepHeight + regShimAmt0 * 4;
+			pole.position.y = midHoldersParams.pos[i] * stepHeight + regShimAmt0 * 4 + 4
 		}
 
 		//carcas.push(holderParams.mesh);
@@ -924,6 +1158,9 @@ function drawStaircase(viewportId, isVisible) {
 		if (params.railingModel_bal == "Деревянные балясины" || params.railingModel_bal == "Стекло" || params.railingModel_bal == "Дерево с ковкой") {
 			offsetX = 0;
 			offsetZ = 95 / 2
+		}
+		if (params.railingModel_bal == "Самонесущее стекло") {
+			offsetZ = 95;
 		}
 
 		translateObject(railingSection, offsetX, 150 + stepHeight * (stairAmt + 1) + regShimAmt * regShimThk, offsetZ);
@@ -1002,6 +1239,10 @@ function drawStaircase(viewportId, isVisible) {
 
 	printGeomParams();
 
+	setTimeout(function() {
+		if(typeof staircaseLoaded != 'undefined') staircaseLoaded();
+	}, 0);
+
 } //end of drawVintStaircase(scene);
 
 function printGeomParams() {
@@ -1025,3 +1266,147 @@ function printGeomParams() {
 
 
 } //end of printGeomParams()
+
+function getIndexDivide(point, divides) {
+	var index = 0;
+	var startY = 0;
+	var endY = 0;
+	for (var i = 0; i < divides.length; i++) {
+		endY = divides[i];
+		if (point.y > startY && point.y < endY) return index;
+		startY = endY;
+		index++;
+	}
+	return index;
+}
+
+function drawForgeFrame2(par) {
+	var mesh = new THREE.Object3D();
+	var basePoint = par.basePoint;//{x:0, y: 0};
+
+	var sectionLength = par.length;
+	var pos = { x: 0, y: 0 };
+	var railingPositionZ = -par.legProf;
+	var rackProfile = par.legProf;
+	var height = par.height - 20;
+
+	var svgMarshId = par.svgMarshId || 0;
+	var svgPoleId = par.svgPoleId || 0;
+	var material = par.material || params.materials.metal_railing;
+
+	var polePar = {
+		type: "pole",
+		poleProfileY: 20,
+		poleProfileZ: 40,
+		dxfBasePoint: par.dxfBasePoint,
+		len: sectionLength,
+		poleAngle: 0,
+		vertEnds: true,
+		material: material,
+		dxfArr: dxfPrimitivesArr,
+		marshId: 'balustrade_' + 111,
+		sectText: 'balustrade_' + 111,
+	}
+
+	var rackPar = {
+		type: "rack",
+		poleProfileY: 40,
+		poleProfileZ: 40,
+		dxfBasePoint: par.dxfBasePoint,
+		len: height,
+		angTop: 0,
+		material: material,
+		dxfArr: dxfPrimitivesArr,
+		marshId: 'balustrade_' + 111,
+		sectText: 'balustrade_' + 111,
+		isBanister: true,
+	}
+
+	var shortRackPar = {
+		type: "rack",
+		poleProfileY: 40,
+		poleProfileZ: 40,
+		dxfBasePoint: par.dxfBasePoint,
+		len: par.shortLegLength,
+		angTop: 0,
+		material: material,
+		dxfArr: dxfPrimitivesArr,
+		marshId: 'balustrade_' + 111,
+		sectText: 'balustrade_' + 111,
+		isBanister: true,
+	}
+
+	var firstRackPosition = newPoint_xy(basePoint, 0, -150);
+	if (par.firstRackDelta) rackPar.len -= par.firstRackDelta;
+	rackPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, firstRackPosition.x, firstRackPosition.y);
+	//4 максимально возможное кол-во секций марша
+	rackPar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'rack', pos: copyPoint(firstRackPosition), len: rackPar.len, key: 'balustrade' };
+	var rack = drawForgedFramePart2(rackPar).mesh;
+	rack.position.x = firstRackPosition.x;
+	rack.position.y = firstRackPosition.y;
+	if (par.firstRackDelta) rack.position.y += par.firstRackDelta;
+	rack.position.z = railingPositionZ;
+	mesh.add(rack);
+
+	var shortLegsAmt = Math.round((sectionLength - rackProfile) / 800) - 1;
+	if (shortLegsAmt < 0) shortLegsAmt = 0;
+	var shortLegDst = (sectionLength - rackProfile) / (shortLegsAmt + 1);
+	var shortBasePoint = newPoint_xy(firstRackPosition, shortLegDst, 0);
+
+	for (var i = 0; i < shortLegsAmt; i++) {
+		shortRackPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, shortBasePoint.x, shortBasePoint.y);
+		shortRackPar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'rack', pos: copyPoint(shortBasePoint), len: shortRackPar.len, key: 'balustrade' };
+		var rack = drawForgedFramePart2(shortRackPar).mesh;
+		rack.position.x = shortBasePoint.x;
+		rack.position.y = shortBasePoint.y;
+		rack.position.z = railingPositionZ;
+		mesh.add(rack)
+
+		shortBasePoint = newPoint_xy(shortBasePoint, shortLegDst, 0);
+	}
+
+	//последняя стойка
+	if (!par.hiddenLastRack) {
+		if (par.firstRackDelta) rackPar.len += par.firstRackDelta;
+		pos = newPoint_xy(firstRackPosition, sectionLength - rackProfile, 0);
+		rackPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
+		rackPar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'rack', pos: copyPoint(pos), len: rackPar.len, key: 'balustrade' };
+		var rack = drawForgedFramePart2(rackPar).mesh;
+		rack.position.x = pos.x;
+		rack.position.y = pos.y;
+		rack.position.z = railingPositionZ;
+		mesh.add(rack);
+	}
+
+	//верхняя перемычка
+	polePar.len = sectionLength;
+	if (par.hiddenLastRack) polePar.len -= 40;
+	polePar.poleAngle = 0;
+	pos = {
+		x: firstRackPosition.x - rackProfile / 2,
+		y: firstRackPosition.y + height,
+	}
+	polePar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
+	polePar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'pole', place: 'top', pos: copyPoint(pos), key: 'balustrade', len: polePar.len, ang: polePar.poleAngle };
+	var pole = drawForgedFramePart2(polePar).mesh;
+	pole.position.x = pos.x;
+	pole.position.y = pos.y;
+	pole.position.z = railingPositionZ;
+	mesh.add(pole)
+
+	//нижняя перемычка
+	polePar.len = sectionLength - rackProfile * 2;
+	pos = newPoint_xy(firstRackPosition, rackProfile / 2, par.shortLegLength);
+	polePar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
+	polePar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'pole', place: 'bot', pos: copyPoint(pos), key: 'balustrade', len: polePar.len, ang: polePar.poleAngle };
+	var pole = drawForgedFramePart2(polePar).mesh;
+	pole.position.x = pos.x;
+	pole.position.y = pos.y;
+	pole.position.z = railingPositionZ;
+	mesh.add(pole);
+
+	par.mesh = mesh;
+	return par;
+
+
+}

@@ -9,7 +9,7 @@
 	<h2>Комментарии к спецификации</h2>
 	<div id="specComment" class="toggleDiv"></div>
 
-	<h2>Спецификация лестницы (Комплектовка)</h2>
+	<h2 id='specHeader'>Спецификация лестницы (Комплектовка)</h2>
 	<div class="toggleDiv">
 		<div id="metal_list"></div>
 		<div id="timber_list"></div>

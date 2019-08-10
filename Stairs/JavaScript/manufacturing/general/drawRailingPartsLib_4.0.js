@@ -1002,6 +1002,11 @@ function drawPole3D_4(par) {
         poleGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 				var pole = new THREE.Mesh(poleGeometry, par.material);
 				pole.userData.angle = par.poleAngle;
+
+				if (par.drawing && par.drawing.group == 'timber_railing') {
+					shape.drawing = par.drawing;
+					if(shapesList) shapesList.push(shape);
+				}
 		}
     /*круглая палка*/
     if (par.type == "round") {
@@ -2136,6 +2141,7 @@ function drawHolderFlan(par){
 			par.material = params.materials.metal_railing;
 	}
 	if (handrailPar.handrailModel == "round") par.holderFlanId = "handrailHolderFlanArc";
+	if (params.handrail == "ПВХ" && params.calcType == 'vhod') par.holderFlanId = "handrailHolderFlanPlane";
 	
 	var len = 60;
 	var wid = 20;
@@ -2472,7 +2478,7 @@ function drawGlassRutel(par){
 
 	var rutelShims = drawRutelShims(diam);
 	rutelShims.position.y -= len / 2;
-	mesh.add(rutelShims);
+	if(!testingMode) mesh.add(rutelShims);
 
 	//На моно гайки и шайбы не нужны
 	if (params.calcType !== 'mono') {
@@ -3420,6 +3426,27 @@ function drawHandrailPorfile_4(par) {
 		shapesList.push(shape);
 	}
 
+	//параметры поручня
+	var handrailPar = {
+		prof: params.handrailProf,
+		sideSlots: params.handrailSlots,
+		handrailType: params.handrail,
+		metalPaint: params.metalPaint_railing,
+		timberPaint: params.timberPaint_perila,
+		handrailColor: params.handrailColor,
+	}
+	if (par.unit == "balustrade") {
+		var handrailPar = {
+			prof: params.handrailProf_bal,
+			sideSlots: params.handrailSlots_bal,
+			handrailType: params.handrail_bal,
+			metalPaint: params.metalPaint_bal,
+			timberPaint: params.timberPaint_bal,
+			handrailColor: params.handrailColor_bal,
+		}
+	}
+	handrailPar = calcHandrailMeterParams(handrailPar); //функция в файле priceLib.js
+
 	//сохраняем данные для спецификации
 	var partName = "handrails";
 	if (typeof specObj != 'undefined' && partName) {
@@ -3431,10 +3458,11 @@ function drawHandrailPorfile_4(par) {
 				name: "Поручень",
 				metalPaint: false,
 				timberPaint: false,
-				division: "metal",
+				division: handrailPar.mat,
 				workUnitName: "amt",
 			}
 		}
+
 		var name = Math.round(rightX - leftX)
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
@@ -3598,7 +3626,7 @@ function drawHandrail_4(par) {
 				shape.drawing.endAngle.p2 = angP1;
 			}
 		}
-
+		
 		shapesList.push(shape);
 	}
 
@@ -3642,6 +3670,24 @@ function drawHandrail_4(par) {
 		par.mesh.add(pole);
 	}
 
+	//Силикон
+	if (par.hasSilicone) {
+		var siliconePar = {
+			description: "Крепление поручней",
+			group: "Ограждения",
+			len: par.len2,
+		}
+		
+		var silicone = drawSilicone(siliconePar).mesh;
+		var silicone_pos = polar(p0, par.poleAngle, siliconePar.len / 2);
+		silicone.position.x = silicone_pos.x;
+		silicone.position.y = silicone_pos.y;
+
+		silicone.rotation.z = par.poleAngle + Math.PI / 2;
+		silicone.position.z = par.wallOffset - par.profWidth / 2;
+		if (par.side == "in") silicone.position.z = -par.wallOffset - par.profWidth / 2;
+		par.mesh.add(silicone);
+	}
 
 	//кронштейны
 	if (par.fixType == "кронштейны") {
@@ -3924,7 +3970,10 @@ function drawMeshBal(par) {
 		if (i == 0) profPar.type = par.botEnd;
 		if (i == par.insetAmt) profPar.type = par.topEnd;
 		if (profPar.type == "round") profPar.poleProfileY = 25;
-
+		// if (par.drawing && i == 0) {
+		// 	profPar.drawing = Object.assign({}, par.drawing);
+		// 	profPar.drawing.pos = newPoint_xy(par.drawing.pos, 0, (poleLen + par.insetLen) * i);
+		// }
 		var pole = drawPole3D_4(profPar).mesh;
 		pole.position.x = profPar.poleProfileY / 2;
 		pole.position.y = (poleLen + par.insetLen) * i;
@@ -3951,6 +4000,15 @@ function drawMeshBal(par) {
 			}
 			drawMeshInset(insetPar);
 		}
+	}
+	if(par.drawing && par.drawing.group == 'timber_railing'){
+		var fakeShape = new THREE.Shape();
+		fakeShape.drawing = Object.assign({}, par.drawing);
+		fakeShape.drawing.botLen = par.len - 740;
+		fakeShape.drawing.pos = newPoint_xy(fakeShape.drawing.pos, 12 / 2, par.len - 740);//740 / 2 + botLen + 72.9);
+		fakeShape.drawing.svg = true;
+		fakeShape.drawing.banisterType = par.banisterType;
+		shapesList.push(fakeShape);
 	}
 	return complexObj;
 } //drawMeshBal

@@ -363,7 +363,9 @@ if(par.basePlane == "xz"){
 	}
 	if (par.alwaysOnTop) {
 		par.mesh.traverse(function(node){
-			if (node.material) {
+			if (node.material && 
+				(!window.location.href.includes("customers") && 
+				gui.__folders["Настройки"].__controllers.find(function(elem){return elem.property == 'textures'}).getValue())) {
 				node.material.depthTest = false;
 			}
 		});

@@ -150,6 +150,42 @@ function setRailingParams(par) {
 
 }; //end of setRailingParams
 
+/**задает номера ступеней марша, где располагаются стойки ограждений
+*/
+	
+function setRackPosition(stairAmt) {
+
+    var rackPosition = [];
+    if (stairAmt == 0) rackPosition = [];
+    if (stairAmt == 1) rackPosition = [];
+    if (stairAmt == 2) rackPosition = [];
+    if (stairAmt == 3) rackPosition = [];
+    if (stairAmt == 4) rackPosition = [];
+    if (stairAmt == 5) rackPosition = [3];
+    if (stairAmt == 6) rackPosition = [4];
+    if (stairAmt == 7) rackPosition = [3, 6];
+    if (stairAmt == 8) rackPosition = [3, 6];
+    if (stairAmt == 9) rackPosition = [4, 7];
+    if (stairAmt == 10) rackPosition = [3, 6, 9];
+    if (stairAmt == 11) rackPosition = [3, 6, 9];
+    if (stairAmt == 12) rackPosition = [4, 7, 10];
+    if (stairAmt == 13) rackPosition = [3, 6, 9, 12];
+    if (stairAmt == 14) rackPosition = [3, 6, 9, 12];
+    if (stairAmt == 15) rackPosition = [4, 7, 10, 13];
+    if (stairAmt == 16) rackPosition = [3, 6, 9, 12, 15];
+    if (stairAmt == 17) rackPosition = [3, 6, 9, 12, 15];
+    if (stairAmt == 18) rackPosition = [4, 7, 10, 13, 16];
+    if (stairAmt == 19) rackPosition = [3, 6, 9, 12, 15, 18];	
+	if (stairAmt == 20) rackPosition = [3, 6, 9, 12, 15, 18];
+	if (stairAmt == 21) rackPosition = [4, 7, 10, 13, 17, 19];
+	if (stairAmt == 22) rackPosition = [3, 6, 9, 12, 15, 18, 21];
+	if (stairAmt == 23) rackPosition = [3, 6, 9, 12, 15, 18, 21];
+	if (stairAmt == 24) rackPosition = [4, 7, 10, 13, 17, 19, 22];
+	if (stairAmt == 25) rackPosition = [3, 6, 9, 12, 15, 18, 21, 24];
+
+			
+    return (rackPosition);
+}
 
 function setRackPos(marshId) {
 
@@ -162,28 +198,14 @@ function setRackPos(marshId) {
 	//учитываем начало ограждений не с первой ступени
 	if (marshId == 1) stairAmt -= params.railingStart;
 
-	if (stairAmt == 4) rackPos = [3];
-	if (stairAmt == 5) rackPos = [4];
-	if (stairAmt == 6) rackPos = [4];
-	if (stairAmt == 7) rackPos = [3, 6];
-	if (stairAmt == 8) rackPos = [4, 6];
-	if (stairAmt == 9) rackPos = [4, 7];
-	if (stairAmt == 10) rackPos = [3, 6, 9];
-	if (stairAmt == 11) rackPos = [3, 6, 9];
-	if (stairAmt == 12) rackPos = [4, 7, 10];
-	if (stairAmt == 13) rackPos = [3, 6, 9, 12];
-	if (stairAmt == 14) rackPos = [3, 6, 9, 12];
-	if (stairAmt == 15) rackPos = [4, 7, 10, 13];
-	if (stairAmt == 16) rackPos = [3, 6, 9, 12, 15];
-	if (stairAmt == 17) rackPos = [3, 6, 9, 12, 15];
-	if (stairAmt == 18) rackPos = [4, 7, 10, 13, 16];
-	if (stairAmt == 19) rackPos = [3, 6, 9, 12, 15, 18];
-	if (stairAmt == 20) rackPos = [3, 6, 9, 12, 15, 18];
-	if (stairAmt == 21) rackPos = [4, 7, 10, 13, 16, 19];
-	if (stairAmt == 22) rackPos = [3, 6, 9, 12, 15, 18, 21];
-	if (stairAmt == 23) rackPos = [3, 6, 9, 12, 15, 18, 21];
-	if (stairAmt == 24) rackPos = [4, 7, 10, 13, 16, 19, 22];
-
+	rackPos = setRackPosition(stairAmt);
+	
+	//смещяем все стойки если начало ограждений не с первой ступени
+	if (marshId == 1 && params.railingStart > 0){
+		for (var j = 0; j < rackPos.length; j++){
+			rackPos[j] += params.railingStart * 1.0;
+		}
+	}
 
 	return rackPos;
 

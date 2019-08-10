@@ -1,44 +1,4 @@
-var params = {}; //глобальный массив значений инпутов
-var dxfPrimitivesArr = []; //глобоальный массив примитивов длЯ экспорта в dxf
-var dxfPrimitivesArr0=[]; //вспомогательный массив, чтобы не засорЯть основной чертеж
-var staircasePrice = {}; //глобальный массив цен элементов лестницы
-var staircaseCost = {}; //глобальный массив себестоимости элементов лестницы
-var railingParams = {}; //глобальный массив параметров ограждений
-var banisterParams = {}; //глобальный массив параметров балюстрады
-var isPageChanged = false; // тригер на изменение любого значениЯ на странице
-var staircasePartsParams = {}; //параметры деталей лестницы для спецификации
-var midHoldersParams = {};
-//параметры деталей балюстрады для спецификации	
-var balPartsParams = {
-	handrails: [],
-	rigels: [],
-	};
-var workList = {}; //сдельные расценки для цеха
-var partsAmt = {}; //глобальный массив количеств эл-тов для спецификации лестницы
-var partsAmt_bal = {}; //глобальный массив количеств эл-тов для спецификации балюстрады
-var specObj = partsAmt; //ссылка на массив данных для спецификации (лестница или балюстрада)
-var layers = {};
-var anglesHasBolts = true; //отрисовывать болты уголков
-var drawLongBolts = true; //отрисовывать длинные болты, соединяющие два уголка через тетиву насквозь
-var shapesList = [];
-var isFixPats = true; //отрисовывать болты крепления к стенам, к нижнему и верхнему перекрытию
-var poleList = {}; //ведомость резки профилей и поручней
-
 $(function() {
-//добавляем видовые экраны на страницу
-	addViewport('WebGL-output', 'vl_1');//параметры outputDivId, viewportId
-	
-	//добавляем нижнее перекрытие
-	addFloorPlane('vl_1', true);//параметры viewportId, isVisible
-	
-	//добавляем стены
-	addWalls('vl_1', true);//параметры viewportId, isVisible 
-	
-	//добавляем балюстраду
-	addBanister('vl_1');
-	
-	//добавляем проем
-	addTopFloor('vl_1');
 
 	//Добавляем слои в 3Д меню
 	layers = {
@@ -54,6 +14,7 @@ $(function() {
 		forge: "Ковка",
 		handrails: "Поручни",
 		rigels: "Ригели",
+		metis: "Метизы",
 		wireframesinter: "Пересечения",
 		dimensions: "Размеры",
 		}
@@ -61,12 +22,7 @@ $(function() {
 		addLayer(layer, layers[layer]);
 		}
 		
-//конфигурируем правое меню
-	$("#rightMenu").lightTabs();
-	$("#wageInfo").lightTabs();
-	
-	//пересчитываем лестницу
-	recalculate();
+
 
 	
 	
@@ -81,10 +37,6 @@ $(function() {
 	setInputValue("wallLength_3", params.staircaseDiam);
 	
 	
-	//перерисовываем стены
-	redrawWalls();
-	
-	
 	//скрываем ненужные блоки 
 	$("#cost").hide();
 	//$("#rightMenu").hide();
@@ -93,12 +45,11 @@ $(function() {
 	$("#totalResult").hide();
 	$("#about").hide();
 	
-	//сворачивание блоков
-	initToggleDivs();
-	
+	//пересчитываем лестницу
+	recalculate();	
 });
 
-function recalculate() {
+function recalculate(){
 	getAllInputsValues(params);
 	changeAllForms();
 	drawStaircase('vl_1', true);
@@ -136,10 +87,10 @@ function changeAllForms(){
 }
 
 function configDinamicInputs() {
-		changeFormBanister();
-		changeFormTopFloor();
-		changeFormLedges();
-		changeAllForms();
-		//redrawWalls();
-		addDimRows();
-	}
+	changeFormBanister();
+	changeFormTopFloor();
+	changeFormLedges();
+	changeAllForms();
+	//redrawWalls();
+	addDimRows();
+}

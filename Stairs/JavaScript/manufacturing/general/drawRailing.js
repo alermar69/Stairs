@@ -1188,7 +1188,7 @@ function drawRailingSectionNewel2(par) {
 
 
 function drawPolylineHandrail(par) {
-
+	
 	var marshPar = getMarshParams(par.marshId);
 
 	var dxfBasePoint = par.dxfBasePoint;
@@ -1313,7 +1313,8 @@ function drawPolylineHandrail(par) {
 		var len = distance(point, nextPoint);
 		newPoints.push(point);
 		if (len > maxLen) {
-			var midPoint = midpoint(point, nextPoint);
+			//var midPoint = midpoint(point, nextPoint);
+			var midPoint = { x: Math.round((point.x + nextPoint.x) / 2 * 1000) / 1000, y: Math.round((point.y + nextPoint.y) / 2 * 1000) / 1000 };
 			// var ang = angle(point, nextPoint);
 			midPoint.isMidpoint = true;
 			newPoints.push(midPoint);
@@ -1488,7 +1489,7 @@ function drawPolylineHandrail(par) {
 
 					plug.rotation.x = Math.PI / 2;
 	
-					par.mesh.add(plug);
+					if(!testingMode) par.mesh.add(plug);
 				}
 				if (i == 0){
 					length -= handrailOffset + meterHandrailPar.profY * Math.tan(Math.PI / 2 - endAngle);	
@@ -1505,11 +1506,12 @@ function drawPolylineHandrail(par) {
 				endAngle = Math.PI / 2;
 			}
 
-			if (params.handrailConnectionType == 'прямые' && i > 0) {
-				var handrailOffset = 20;
+			var angle1 = handrailAngle;
+			if(i > 0) angle1 = angle(basePoint, points[i - 1])
+			var angle2 = handrailAngle;
 
-				var angle1 = angle(basePoint, points[i - 1])
-				var angle2 = handrailAngle;
+			if (params.handrailConnectionType == 'прямые' && i > 0 && angle1.toFixed(4) != angle2.toFixed(4)) {
+				var handrailOffset = 20;
 
 				var unitBasePoint = basePoint;
 				if ((angle2 - angle1) > 0) {
@@ -1537,7 +1539,7 @@ function drawPolylineHandrail(par) {
 					connectionFlan.position.z = -connectionFlan.position.z -meterHandrailPar.profZ;
 				}
 
-				par.mesh.add(connectionFlan);
+				if(!testingMode) par.mesh.add(connectionFlan);
 			}
 
 			if ((params.handrailConnectionType == "без зазора премиум" || params.handrailConnectionType == "без зазора") && i < points.length - 2 && meterHandrailPar.mat == 'timber') {
@@ -1561,7 +1563,7 @@ function drawPolylineHandrail(par) {
 
 				plug.rotation.x = Math.PI / 2;
 
-				par.mesh.add(plug);
+				if(!testingMode) par.mesh.add(plug);
 			}
 
 			//построение поручня
@@ -1585,7 +1587,8 @@ function drawPolylineHandrail(par) {
 			if (i == points.length - 2) handrailParams.endChamfer = "R6";
 
 			if (params.railingModel == "Самонесущее стекло") handrailParams.isGlassHandrail = true;
-
+			if (params.railingModel == 'Самонесущее стекло' && params.handrailFixType == "паз") handrailParams.hasSilicone = true;
+			if (params.railingModel == "Кованые балясины" && params.handrailFixType == "паз") handrailParams.hasSilicone = true;
 			if (par.connection !== "без зазора" && par.points.length > 0 && i > 0) {
 				var previousAngle = angle(points[i-1], points[i]);
 				var angP1 = polar(basePoint, previousAngle, -100);
@@ -2703,7 +2706,7 @@ function drawRailingSectionForge2(par) {
                 rack.position.x = pos.x;
                 rack.position.y = pos.y;
                 rack.position.z = railingPositionZ;
-                section.add(rack)
+                section.add(rack);
             }
 
         }
@@ -3580,6 +3583,25 @@ function drawForgedFramePart2(par) {
 					}
 					par.mesh.add(holder);
 				}
+
+				if (params.rackBottom == "боковое"){
+					var rackFlan = drawRackFlan(par.poleProfileY);
+					rackFlan.position.y += holeDist / 2 + 30;
+					rackFlan.position.z += 2;
+					if (par.key == "out") rackFlan.position.z += par.poleProfileY - 2 - 2;
+					if(!testingMode) par.mesh.add(rackFlan);
+					
+					var plugParams = {
+						id: "plasticPlug_40_40",
+						width: par.poleProfileY,
+						height: par.poleProfileY,
+						description: "Заглушка низа стойки",
+						group: "Ограждения"
+					}
+					var rackBotPlug = drawPlug(plugParams);
+					rackBotPlug.position.z += par.poleProfileY / 2;
+					if(!testingMode) par.mesh.add(rackBotPlug);
+				}
 			}
 
 			//фланец балясины
@@ -3960,7 +3982,7 @@ function drawForgedSectionConnectionFlan(par){
 */
 
 function drawGlass2(par){
-
+console.log("drawGlass2")
 	par.dxfArr = dxfPrimitivesArr;
 	if(!par.dxfBasePoint) {
 		par.dxfBasePoint = {x: 0, y:0,};

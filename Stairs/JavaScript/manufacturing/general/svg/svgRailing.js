@@ -641,6 +641,87 @@ function drawSVGForgedRailing(par){
 	}
 }
 
+
+function drawTimberRailingFunction(par){
+	var railingShapes = par.shapes;
+	var draw = par.draw;
+
+	if (railingShapes.length > 0) {
+		var sets = [];
+		$.each(railingShapes, function(){
+			var shape = this;
+			var par = this.drawing;
+			var mirror = isMirrored(par.key);
+			//Отрисовка секции
+			{
+				var set = sets.find(s => s.marshId == par.marshId && s.key == par.key);
+				if (!set){
+					set = draw.set();
+					set.marshId = par.marshId;
+					set.key = par.key;
+					//Кованные ограждения сверлятся сверху.
+					set.listText = "Марш " + par.marshId + " Сторона " + (par.key == 'out' ? 'внешняя' : 'внутренняя');
+					if (params.orderName) set.listText = params.orderName + "\n" + set.listText;
+					sets.push(set);
+				}
+				var elementBasePoint = {x:0, y:0};
+
+				if (par.type == 'rack' && par.svg == true) {
+					var svgPath = $("#railing_racks [data-itemName="+par.rackType+"]").find("path").eq(0).attr("d");
+					var obj = draw.path(svgPath);
+					var objBbox = obj.getBBox();
+					elementBasePoint = {x: objBbox.x + 95 / 2, y: objBbox.y2};
+				}
+				if (par.type == 'banister' && par.svg == true && params.railingModel == 'Деревянные балясины') {
+					var svgPath = $("#timber_banister [data-itemName="+par.banisterType+"]").find("path").eq(0).attr("d");
+					var obj = draw.path(svgPath);
+					var objBbox = obj.getBBox();
+					elementBasePoint = {x: objBbox.x + 25, y: objBbox.y2};
+				}
+				if (par.type == 'banister' && params.railingModel == 'Дерево с ковкой') {
+					var svgPath = $("#forgeModal .modalItem[data-itemName=" + par.banisterType + "]").find("path").eq(0).attr("d");
+					var obj = draw.path(svgPath);
+					var objBbox = obj.getBBox();
+					elementBasePoint = {x: objBbox.x, y: objBbox.y2};
+
+					var poleSize = 12;
+					if (par.banisterType == '20х20') poleSize = 20;
+console.log(par.banisterType)
+					//Удлинняем балясину снизу
+					if (par.botLen > 0) {
+						var rect = drawRect({x: 0, y: 0}, poleSize, par.botLen, draw).attr({
+							fill: "none",
+							stroke: "#000",
+							"stroke-width": 1,
+						});
+						rect.setClass("other");
+						moove(rect, {x: par.pos.x - poleSize / 2, y: par.pos.y}, 'left_bot');
+						set.push(rect);
+					}
+				}
+
+				if (par.svg !== true || !obj) {
+					var obj = makeSvgFromShape(shape, draw);
+				}
+
+				obj.setClass("railing");//Устанавливаем класс
+
+				if (shape.drawing.type == 'banister' && params.railingModel == 'Деревянные балясины') elementBasePoint.x -= 25;
+
+				elementBasePoint = newPoint_xy(elementBasePoint, par.pos.x, par.pos.y);
+				moove(obj, elementBasePoint, 'left_bot');
+				
+				set.push(obj);
+			}
+		});
+		return sets;
+	}
+}
+
+function drawForgedBanister(){
+
+}
+
 /**
 	Функция определяет нужно ли зеркалить секцию на основе стороны
 	@param {string} side - сторона секции 'in' или 'out'

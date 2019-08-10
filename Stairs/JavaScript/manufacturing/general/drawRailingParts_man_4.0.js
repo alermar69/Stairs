@@ -2115,41 +2115,6 @@ function drawTimberRack(rackSize){
 	
 } // end of drawTimberRack(); 
 
-function setRackPosition(stairAmt) {
-    /*задает номера ступеней марша, где располагаются стойки ограждений*/
-
-    var rackPosition = [];
-    if (stairAmt == 0) rackPosition = [];
-    if (stairAmt == 1) rackPosition = [];
-    if (stairAmt == 2) rackPosition = [];
-    if (stairAmt == 3) rackPosition = [];
-    if (stairAmt == 4) rackPosition = [];
-    if (stairAmt == 5) rackPosition = [3];
-    if (stairAmt == 6) rackPosition = [4];
-    if (stairAmt == 7) rackPosition = [4];
-    if (stairAmt == 8) rackPosition = [3, 6];
-    if (stairAmt == 9) rackPosition = [4, 6];
-    if (stairAmt == 10) rackPosition = [4, 7];
-    if (stairAmt == 11) rackPosition = [3, 6, 9];
-    if (stairAmt == 12) rackPosition = [3, 6, 9];
-    if (stairAmt == 13) rackPosition = [4, 7, 10];
-    if (stairAmt == 14) rackPosition = [3, 6, 9, 12];
-    if (stairAmt == 15) rackPosition = [3, 6, 9, 12];
-    if (stairAmt == 16) rackPosition = [4, 7, 10, 13];
-    if (stairAmt == 17) rackPosition = [3, 6, 9, 12, 15];
-    if (stairAmt == 18) rackPosition = [4, 7, 10, 13, 16];
-    if (stairAmt == 19) rackPosition = [4, 7, 10, 13, 16];	
-	if (stairAmt == 20) rackPosition = [3, 6, 9, 12, 15, 18];
-	if (stairAmt == 21) rackPosition = [3, 6, 9, 12, 15, 18];
-	if (stairAmt == 22) rackPosition = [3, 6, 9, 12, 15, 18];
-	if (stairAmt == 23) rackPosition = [4, 7, 10, 13, 17, 19];
-	if (stairAmt == 24) rackPosition = [3, 6, 9, 12, 15, 18, 21];
-	if (stairAmt == 25) rackPosition = [3, 6, 9, 12, 15, 18, 21];
-	 
-
-    return (rackPosition);
-}
-
 /*функция отрисовывает стойку секции кованых балясин */
 function drawForgeFrameNewel2D_(newelParams) {
     var pStart = newelParams.pStart,
@@ -2759,12 +2724,12 @@ function drawForgedBanister_4(par) {
 	if (type == "20х20"){
 		poleSize = 20;
 		var poleGeometry = new THREE.BoxGeometry(poleSize, par.len, poleSize);
-        var pole = new THREE.Mesh(poleGeometry, par.material);
-        pole.position.x = 0;
-        pole.position.y = par.len / 2;
-        pole.position.z = poleSize / 2;
-        par.mesh.add(pole);
-		}
+		var pole = new THREE.Mesh(poleGeometry, par.material);
+		pole.position.x = 0;
+		pole.position.y = par.len / 2;
+		pole.position.z = poleSize / 2;
+		par.mesh.add(pole);
+	}
 
     if (type == "bal_1" || type == "bal_3") {
         //шишка
@@ -3130,7 +3095,16 @@ function drawForgedBanister_4(par) {
 	var p1 = {x:6, y: 0};
 	var p2 = newPoint_xy(p1, 0, par.len)
 	addLine(trashShape, dxfPrimitivesArr, p1, p2, par.dxfBasePoint);
-	 
+	
+	if(par.drawing && par.drawing.group == 'timber_railing'){
+		var fakeShape = new THREE.Shape();
+		fakeShape.drawing = Object.assign({}, par.drawing);
+		fakeShape.drawing.pos = newPoint_xy(fakeShape.drawing.pos, 12 / 2, 0);//740 / 2 + botLen + 72.9);
+		fakeShape.drawing.svg = true;
+		fakeShape.drawing.banisterType = par.type;
+		shapesList.push(fakeShape);
+	}
+
 	//сохраняем данные для спецификации
 	var partName = "forgedBal";
 	if(typeof specObj !='undefined'){
@@ -3174,7 +3148,9 @@ function drawForgedBanister_5(par) {
 			insetAmt: 1,
 			type: "forge",
 			insetName: "bulb",
+			banisterType: par.type,
 			len: par.len,
+			drawing: par.drawing
 		}
 		if(par.type == "bal_1" || par.type == "bal_2") balPar.insetName = "basket";
 		if(par.type == "bal_10" || par.type == "bal_11") balPar.insetName = "screw_sm";
@@ -3190,6 +3166,10 @@ function drawForgedBanister_5(par) {
 		var svgPath = $("#forgeModal .modalItem[data-itemName=" + par.type + "]").find("path").eq(0).attr("d");
 		if(par.type == "20х20") svgPath = $("#forgeModal .modalItem[data-itemName=20х20]").find("path").eq(0).attr("d");
 		var shape = transformSVGPath(svgPath);
+		
+		// if (par.drawing && par.drawing.pos) {
+		// 	par.drawing.pos.x -= poleSize / 2;
+		// }
 
 		var extrudeOptions = {
 			amount: 12,
@@ -3198,7 +3178,7 @@ function drawForgedBanister_5(par) {
 			steps: 1
 			};
 		if(par.type == "20х20") extrudeOptions.amount = 20;
-		
+
 		var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
 		geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
 		var mesh = new THREE.Mesh(geom, params.materials.metal_railing);
@@ -3206,9 +3186,7 @@ function drawForgedBanister_5(par) {
 		mesh.position.z = -poleSize / 2;
 		par.mesh.add(mesh);
 
-
 		//добавка снизу
-				
 		if(par.type == "20х20") poleSize = 20;
 		var profPar = {
 			type: "rect",
@@ -3220,17 +3198,26 @@ function drawForgedBanister_5(par) {
 			dxfBasePoint: { x: 0, y: 0 },
 			dxfArr: [], //профиль не выводим в dxf
 		};
-		
+
 		//палка
-	
 		var pole = drawPole3D_4(profPar).mesh;
 		pole.position.x = profPar.poleProfileY / 2;
 		pole.position.y = 0;
 		pole.position.z = -profPar.poleProfileY / 2;
 		par.mesh.add(pole);
-	
+
+		if(par.drawing && par.drawing.group == 'timber_railing'){
+			var fakeShape = new THREE.Shape();
+			fakeShape.drawing = Object.assign({}, par.drawing);
+			fakeShape.drawing.pos = newPoint_xy(fakeShape.drawing.pos, poleSize / 2,  par.len - 740);//740 / 2 + botLen + 72.9);
+			fakeShape.drawing.botLen = botLen;
+			fakeShape.drawing.svg = true;
+			fakeShape.drawing.banisterType = par.type;
+			shapesList.push(fakeShape);
+		}
 	}
 	
+
 	var railingModel = params.railingModel;
 	if(specObj.unit == "banister") railingModel = params.railingModel_bal;
 	//сохраняем данные для спецификации

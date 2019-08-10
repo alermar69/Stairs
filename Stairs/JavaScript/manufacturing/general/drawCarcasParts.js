@@ -347,7 +347,7 @@ function drawBolt(par) {
 		rivet.position.y = -par.len / 2 + headHeight;
         par.mesh.add(rivet)
 		}
-		if(params.isPlasticCaps == "есть" && params.calcType == 'lt-ko' && !par.noNut && par.diam == 10){
+		if(params.isPlasticCaps == "есть" && (params.calcType == 'lt-ko' || params.calcType == 'vhod') && !par.noNut && par.diam == 10){
 			var cap = drawPlasticCap(par.diam);
 			cap.position.y = par.len / 2 - 7;
 			par.mesh.add(cap);
@@ -1228,6 +1228,9 @@ function drawScrew(par){
 	par.mesh = new THREE.Object3D();
 	var screwParams = getScrewParams(par.id);
 	par.mesh.specId = screwParams.id + "_model";
+	if (screwParams.id == 'screw_10x100') {
+		par.mesh.specId = screwParams.id;//Костыль чтобы не было ошибки, будет тут пока не будут проработаны крепления к обстановке, после он не понадобится
+	}
 
 	par.len = screwParams.len;
 	par.diam = screwParams.diam;
@@ -1253,7 +1256,7 @@ function drawScrew(par){
 		}
 	
 		var dowel = drawDowel(dowelPar).mesh;
-		dowel.position.y = -30;
+		dowel.position.y = 30;
 		par.mesh.add(dowel);
 	}
 
@@ -1264,7 +1267,7 @@ function drawScrew(par){
 	}
 
 	//сохраняем данные для спецификации
-	par.partName = screwParams.id + "_model";
+	par.partName = par.mesh.specId;
 	if (typeof specObj != 'undefined' && par.partName) {
 		if (!specObj[par.partName]) {
 			specObj[par.partName] = {
@@ -1372,8 +1375,8 @@ function drawDowel(par){
 	par.len = 50;
 	par.dowelName = null;
 	if(partsList[par.id]) par.dowelName = partsList[par.id].name;
-	if (!par.dowelName) par.dowelName = "Дюбель Ф" + par.diam + "x" + par.len;
-	var dowelMaterial = new THREE.MeshLambertMaterial({ color: "#993300" });
+	if (!par.dowelName) par.dowelName = "Дюбель пласт. Ф" + par.diam + "x" + par.len;
+	var dowelMaterial = new THREE.MeshLambertMaterial({ color: "#0000FF" });
 	
 	var geometry = new THREE.CylinderGeometry(par.diam / 2, par.diam / 2, par.len, 10, 1, false);
 	var dowel = new THREE.Mesh(geometry, dowelMaterial);
@@ -1478,8 +1481,18 @@ function getScrewParams(screwId){
 		len = 16;
 		diam = 3;
 	}
+	if(screwId == "screw_5x90"){
+		screwName =  "Саморез Ф5х90 потай бел.";
+		len = 90;
+		diam = 5;
+	}
 	if(screwId == "screw_6x60"){
 		screwName =  "Саморез Ф6х60 потай желт.";
+		len = 60;
+		diam = 6;
+	}
+	if(screwId == "screw_6x60_r"){
+		screwName =  "Саморез Ф6,3х60 пол. гол. остр.";
 		len = 60;
 		diam = 6;
 	}
@@ -1599,9 +1612,53 @@ function drawSilicone(par){
 		}
 
 		name = 0;
+		var count = par.len / 10000;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += count;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = count;
+		specObj[par.partName]["amt"] += 1;
+	}
+
+	par.mesh.setLayer("metis");
+
+	return par
+}
+
+function drawChemAnc(){
+	par = {};
+	par.mesh = new THREE.Object3D();
+	par.mesh.specId = "chemAnc";
+	
+	var chemAncMaterial = new THREE.MeshLambertMaterial({ color: "#808080" });
+	var geometry = new THREE.CylinderGeometry(2, 2, par.len, 10, 1, false);
+	var silicone = new THREE.Mesh(geometry, chemAncMaterial);
+	par.mesh.add(silicone);
+
+	//сохраняем данные для спецификации
+	par.partName = "chemAnc";
+	if (typeof specObj != 'undefined' && par.partName) {
+		if (!specObj[par.partName]) {
+			specObj[par.partName] = {
+				types: {},
+				amt: 0,
+				name: "Химический анкер",
+				metalPaint: false,
+				timberPaint: false,
+				isModelData: true,
+				division: "stock_1",
+				purposes: [],
+				workUnitName: "amt",
+				group: "Метизы",
+			}
+			if (par.group) specObj[par.partName].group = par.group;
+		}
+		if (par.description) {
+			if (specObj[par.partName].purposes.indexOf(par.description) == -1) specObj[par.partName].purposes.push(par.description);
+		}
+
+		name = 0;
 		
-		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1 / 8;
-		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1 / 8;
+		if (specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] += 1;
+		if (!specObj[par.partName]["types"][name]) specObj[par.partName]["types"][name] = 1;
 		specObj[par.partName]["amt"] += 1;
 	}
 
@@ -1818,15 +1875,23 @@ function drawFixPart(par) {
 	}
 
 	if (par.fixPart == 'саморезы') {
-		//глухарь
+		//саморез
 		par.dopParams.name = "Саморез";
-		var screw = drawScrewF(par);
+		
+		//дюбель
+		if (par.fixType !== 'дерево') {
+			par.dowelId = "dowel_10x50"
+		}
+			
+		var screw = drawScrew(par).mesh;
+		//screw.position.y = 0;
 		fixPart.add(screw);
 
+		/*
 		if (par.fixType !== 'дерево') {
 			//дюбель	
 			par.dopParams = {
-				name: "Дюбель",
+				name: "Дюбель пласт.",
 				lenCylinder: 50,
 				diamCylinder: 10,
 				material: new THREE.MeshLambertMaterial({ color: "#0000FF" })
@@ -1835,6 +1900,7 @@ function drawFixPart(par) {
 			dowel.position.y = - par.len / 2 + par.dopParams.lenCylinder / 2 + 1;
 			fixPart.add(dowel);
 		}
+		*/
 
 		fixPart.position.y = (-par.len / 2) * turnFactor + thickness * (1 + turnFactor) * 0.5;
 
@@ -2054,6 +2120,7 @@ function drawStudF(par) {
 				group: "Крепление к обстановке",
 				discription: "Крепление к стене 1"
 			}
+			if (nameFix == 'Шпилька-шуруп') specObj[par.partName].division = 'metal';
 		}
 		var name = "М" + diam + "x" + len;
 		if (nameFix == "Шпилька") name = diam;
