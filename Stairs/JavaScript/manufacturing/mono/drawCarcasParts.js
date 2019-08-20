@@ -1073,15 +1073,17 @@ function drawHorPlate(par) {
 			description: "Крепление ступеней",
 			group: "Ступени"
 		}
-
+		
 		for (var i = 0; i < par.holes.length; i++) {
 			addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
 
 			//саморезы
-			var screw = drawScrew(screwPar).mesh;
-			screw.position.x = par.holes[i].y;
-			screw.position.z = par.holes[i].x;
-			par.mesh.add(screw)
+			if(params.stairType !== 'нет') {
+				var screw = drawScrew(screwPar).mesh;
+				screw.position.x = par.holes[i].y;
+				screw.position.z = par.holes[i].x;
+				par.mesh.add(screw)
+			}
 		}
 	}
 
@@ -1331,14 +1333,16 @@ function drawHorPlates(par) {
 					description: "Крепление ступеней",
 					group: "Ступени"
 				}
-
-				for (var i = 0; i < par.holes.length; i++) {
-					//саморезы
-					var screw = drawScrew(screwPar).mesh;
-					screw.position.x = par.holes[i].y + (par.height + gapPlates) * j;
-					screw.position.z = par.holes[i].x ;
-					if (j > 0) screw.position.x += par.frontOffset;
-					par.mesh.add(screw)
+				
+				if(params.stairType !== 'нет'){
+					for (var i = 0; i < par.holes.length; i++) {
+							//саморезы
+							var screw = drawScrew(screwPar).mesh;
+							screw.position.x = par.holes[i].y + (par.height + gapPlates) * j;
+							screw.position.z = par.holes[i].x ;
+							if (j > 0) screw.position.x += par.frontOffset;
+							par.mesh.add(screw)
+						}
 				}
 			}
 
@@ -1866,16 +1870,19 @@ function drawTurnPlate1(par) {
 		description: "Крепление ступеней",
 		group: "Ступени"
 	}
+	
+		for (var i = 0; i < par.holes.length; i++) {
+			addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
+	
+			if(params.stairType !== 'нет') {
+				//саморезы
+				var screw = drawScrew(screwPar).mesh;
+				screw.position.x = par.holes[i].y;
+				screw.position.z = par.holes[i].x;
+				par.mesh.add(screw);
+			}
+		}
 
-	for (var i = 0; i < par.holes.length; i++) {
-		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
-
-		//саморезы
-		var screw = drawScrew(screwPar).mesh;
-		screw.position.x = par.holes[i].y;
-		screw.position.z = par.holes[i].x;
-		par.mesh.add(screw)
-	}
 
 
 	var extrudeOptions = {
@@ -2022,15 +2029,18 @@ function drawTurnPlate3(par){
 		group: "Ступени"
 	}
 
+
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
-
 		//саморезы
-		var screw = drawScrew(screwPar).mesh;
-		screw.position.x = par.holes[i].y;
-		screw.position.z = par.holes[i].x;
-		par.mesh.add(screw)
+		if(params.stairType !== 'нет') {
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = par.holes[i].y;
+			screw.position.z = par.holes[i].x;
+			par.mesh.add(screw)
+		}
 	}
+	
 
 
 	var extrudeOptions = {
@@ -2224,15 +2234,19 @@ function drawTurnPlate2(par) {
 		group: "Ступени"
 	}
 
+
 	for (var i = 0; i < par.holes.length; i++) {
 		addRoundHole(shape, par.dxfArr, par.holes[i], par.holeRad, par.dxfBasePoint);
 
 		//саморезы
-		var screw = drawScrew(screwPar).mesh;
-		screw.position.x = par.holes[i].y;
-		screw.position.z = par.holes[i].x;
-		par.mesh.add(screw)
+		if(params.stairType !== 'нет') {
+			var screw = drawScrew(screwPar).mesh;
+			screw.position.x = par.holes[i].y;
+			screw.position.z = par.holes[i].x;
+			par.mesh.add(screw)
+		}
 	}
+
 
 
 	var extrudeOptions = {
@@ -2599,13 +2613,16 @@ function drawTreadPlateCabriole2(par) {
 		group: "Ступени"
 	}
 
+
 	for (var i = 0; i < holesScrew.length; i++) {
 		//саморезы
-		var screw = drawScrew(screwPar).mesh;
-		screw.rotation.x = Math.PI / 2;
-		screw.position.x = holesScrew[i].x - params.metalThickness;
-		screw.position.y = holesScrew[i].y;
-		plate.add(screw)
+		if(params.stairType !== 'нет') {
+			var screw = drawScrew(screwPar).mesh;
+			screw.rotation.x = Math.PI / 2;
+			screw.position.x = holesScrew[i].x - params.metalThickness;
+			screw.position.y = holesScrew[i].y;
+			plate.add(screw);
+		}
 	}
 
     treadPlate.add(plate);
@@ -3921,11 +3938,13 @@ function drawTurn1TreadPlateCabriole(par) {
 			description: "Крепление ступеней",
 			group: "Ступени"
 		}
-		for (var i = 0; i < holes.length; i++) {
-			var screw = drawScrew(screwPar).mesh;
-			screw.position.x = holes[i].y + stringerPlateThickness;
-			screw.position.z = -holes[i].x;
-			treadPlate.add(screw)
+		if(params.stairType !== 'нет') {
+			for (var i = 0; i < holes.length; i++) {
+				var screw = drawScrew(screwPar).mesh;
+				screw.position.x = holes[i].y + stringerPlateThickness;
+				screw.position.z = -holes[i].x;
+				treadPlate.add(screw)
+			}
 		}
 	}
 
@@ -4600,11 +4619,13 @@ function drawTurn2TreadPlateCabriole(par) {
 			description: "Крепление ступеней",
 			group: "Ступени"
 		}
-		for (var i = 0; i < holes.length; i++) {
-			var screw = drawScrew(screwPar).mesh;
-			screw.position.x = holes[i].y// + stringerPlateThickness;
-			screw.position.z = holes[i].x;
-			treadPlate.add(screw)
+		if(params.stairType !== 'нет') {
+			for (var i = 0; i < holes.length; i++) {
+				var screw = drawScrew(screwPar).mesh;
+				screw.position.x = holes[i].y// + stringerPlateThickness;
+				screw.position.z = holes[i].x;
+				treadPlate.add(screw)
+			}
 		}
 	}
 
@@ -4959,13 +4980,10 @@ function drawTurn2TreadPlateCabriole(par) {
 		center3 = newPoint_xy(center2, 0, -120);//120 расстояние между отверстиями
 
 
-		
-
-
-		//if (center3.y - 10 < p4.y) {
-		//	p0.y -= 10
-		//	p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
-		//}
+		if (center3.y - 10 < p4.y) {
+			p0.y -= 10
+			p4 = itercection(p0, polar(p0, 0, 100), pt2, pt3);
+		}	
 
 
 		var points = [p0, p1, p2]
@@ -5264,11 +5282,13 @@ function drawTurn3TreadPlateCabriole(par) {
 			description: "Крепление ступеней",
 			group: "Ступени"
 		}
-		for (var i = 0; i < holes.length; i++) {
-			var screw = drawScrew(screwPar).mesh;
-			screw.position.x = -holes[i].y;
-			screw.position.z = -holes[i].x;
-			treadPlate.add(screw)
+		if(params.stairType !== 'нет') {
+			for (var i = 0; i < holes.length; i++) {
+				var screw = drawScrew(screwPar).mesh;
+				screw.position.x = -holes[i].y;
+				screw.position.z = -holes[i].x;
+				treadPlate.add(screw)
+			}
 		}
 	}
 

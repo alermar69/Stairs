@@ -505,6 +505,7 @@
     <Content Include="JavaScript\manufacturing\mono\drawStringerPartsMk.js" />
     <Content Include="JavaScript\manufacturing\mono\drawStringers.js" />
     <Content Include="JavaScript\manufacturing\mono\drawSvg.js" />
+    <Content Include="JavaScript\manufacturing\mono\drawBalSect_man_4.0.js" />
     <Content Include="JavaScript\manufacturing\mono\index.php" />
     <Content Include="JavaScript\manufacturing\mono\main.js" />
     <Content Include="JavaScript\manufacturing\mono\testing.js" />

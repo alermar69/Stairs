@@ -19,6 +19,9 @@ function makeSvg(){
 	//Массив в который попадают элементы которые требуют уникальной отрисовки
 	var sortedShapes = {};
 	
+	//Группы которые отрисовываются отдельно
+	var customDrawingGroups = ["glass", "handrails", "forged_railing", "timber_railing"]
+	
 	// выводим только уникальные шейпы. Для повторяющихся считаем кол-во
 	var shapesAmtList = [];
 	$.each(shapesList, function(){
@@ -36,6 +39,7 @@ function makeSvg(){
 			if (shape.drawing.group) {
 				if (!sortedShapes[shape.drawing.group]) sortedShapes[shape.drawing.group] = [];
 				sortedShapes[shape.drawing.group].push(shape);
+				if (customDrawingGroups.includes(shape.drawing.group)) isUnique = false;
 			}
 		}
 		if(isUnique) {
@@ -46,6 +50,25 @@ function makeSvg(){
 		}
 	});
 	
+	var basePoint = {x:2500, y:0};
+
+	if (sortedShapes.timber_railing) {
+		var railingPar = {
+			draw: draw,
+			shapes: sortedShapes.timber_railing
+		};
+		var timber_railings = drawTimberRailingFunction(railingPar);
+		var a4Params = {
+			elements: timber_railings,
+			basePoint: basePoint,
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw
+		}
+		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
+	}
+
 	if (sortedShapes.forged_railing) {
 		var railingPar = {
 			draw: draw, 
@@ -54,12 +77,13 @@ function makeSvg(){
 		var railing = drawSVGRailing(railingPar);
 		var a4Params = {
 			elements: railing,
-			basePoint: {x:2500, y:0},
+			basePoint: basePoint,
 			orientation: 'hor',
 			posOrientation: 'hor',
 			draw: draw,
 		}
 		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
 	}
 	if (sortedShapes.glass) {
 		// var balustrade = drawBalustrade(sortedShapes.balustrade);
@@ -72,12 +96,13 @@ function makeSvg(){
 
 		var a4Params = {
 			elements: glasses,
-			basePoint: {x:2500, y:2000},
+			basePoint: basePoint,
 			orientation: 'hor',
 			posOrientation: 'hor',
 			draw: draw,
 		}
 		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
 	}
 
 	if (sortedShapes.handrails) {
@@ -89,16 +114,15 @@ function makeSvg(){
 
 		var a4Params = {
 			elements: handrails,
-			basePoint: {x:2500, y:4000},
+			basePoint: basePoint,
 			orientation: 'hor',
 			posOrientation: 'hor',
 			draw: draw,
 		}
 		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
 	}
 	
-	
-
 	/**
 		* Отрисовывает стекла с размерами
 		* @param par Поля объекта:

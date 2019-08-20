@@ -84,6 +84,7 @@ function calculateGlassPoints(par){
 			var startPoint = newPoint_xy(marshFirst, 0, -(par.sectionHeight + params.treadThickness + marshPar.h * 3));
 			startPoint.y -= marshFirstDelta * marshPar.ang;
 			if (prevMarshPar.hasRailing.in) startPoint.y -= prevMarshPar.h * 2;
+			startPoint.isTurnRackBasePoint = true;
 			handrailPoints.push(startPoint);
 		}
 		if (marshPar.botTurn == 'площадка' && par.key == 'in') {
@@ -579,13 +580,21 @@ function drawGlassSection(par){
 				glassPar.botCutHeight = glassOffsetY - par.marshPar.h;
 		}
 
-		//вырез для нахлеста на верхнее перекрытие
-		if (par.marshPar.topTurn == 'пол' && i == (par.glassPoints.length - 1)) {
-			glassPar.hasTopOverlap = true;
-			glassPar.extraLengthOverlap = (params.topHandrailExtraLength) / Math.cos(marshPar.ang);
-			glassPar.overlapCutHeight = -marshPar.h + sectionHeight + par.glassPoints[0].y - (par.glassPoints[0].x - params.nose) * Math.tan(glassPar.angleTop) - 10;
+		//коррекция последнего стекла последнего марша
+		if (par.marshPar.topTurn == 'пол' && i == (par.glassPoints.length - 1)){			
+			//уменьшение длины стекла
+			if(params.topGlassExtraLength < 0){
+				glassPar.width += params.topGlassExtraLength;
+			}
+			
+			//увеличение длины стекла с вырезом под верхнее перекрытие
+			if (params.topGlassExtraLength > 0) {
+				glassPar.hasTopOverlap = true;
+				glassPar.extraLengthOverlap = (params.topGlassExtraLength) / Math.cos(marshPar.ang);
+				glassPar.overlapCutHeight = -marshPar.h + sectionHeight + par.glassPoints[0].y - (par.glassPoints[0].x - params.nose) * Math.tan(glassPar.angleTop) - 10;
+			}
 		}
-		
+			
 		glassPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, par.glassPoints[i].x, par.glassPoints[i].y);
 		var glass = drawGlass2(glassPar).mesh;
 		glass.position.x = par.glassPoints[i].x;
@@ -607,6 +616,16 @@ function drawGlassSection(par){
 				holderMesh.position.x = holderPosition.x;
 				holderMesh.position.y = holderPosition.y;
 				holderMesh.position.z = 0;//glassThickness;
+
+				var rutelPar = {
+					size: 10
+				};
+				var rutel = drawGlassRutel(rutelPar);
+				rutel.position.x = holderPosition.x;
+				rutel.position.y = holderPosition.y;
+				rutel.position.z = (50 - 15) * turnFactor;
+				rutel.rotation.x = -Math.PI / 2;
+				section.add(rutel);
 				
 				var marshPar = getMarshParams(par.marshId);
 				var side = marshPar.side[par.key];
@@ -695,6 +714,69 @@ function drawGlassSection(par){
 			
 		}
 		handrails.add(handrail);
+
+		if(key == 'in' && marshPar.botTurn == 'забег') {
+			var startPoint = handrailPoints0.find( p => {return p.isTurnRackBasePoint});
+			if (startPoint) {
+				var screwPar = {
+					id: "screw_5x90",
+					description: "Крепление ограждения к ступени",
+					group: "Ограждения",
+					timberPlugDiam: 12
+				}
+
+				var pos = newPoint_xy(startPoint, handrail.position.x - 15, handrail.position.y + params.treadThickness / 2);
+				pos.z = 20 * turnFactor;
+
+				var hasPrevRailing = false;
+				if (par.marshId > 1) {
+					var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+					if (prevMarshPar.hasRailing.in) hasPrevRailing = true;
+				}
+
+				if (hasPrevRailing) {
+					pos.y += marshPar.h
+					var screw = drawScrew(screwPar).mesh;
+					screw.rotation.z = Math.PI / 2;
+					screw.position.x = pos.x + 10;
+					screw.position.y = pos.y;
+					screw.position.z = pos.z;
+					handrails.add(screw);
+					pos.y += marshPar.h;
+				}
+
+				var screw = drawScrew(screwPar).mesh;
+				screw.rotation.z = Math.PI / 2;
+				screw.position.x = pos.x + 10;
+				screw.position.y = pos.y;
+				screw.position.z = pos.z;
+				handrails.add(screw);
+
+				pos.y += marshPar.h;
+				var screw = drawScrew(screwPar).mesh;
+				screw.rotation.z = Math.PI / 2;
+				screw.position.x = pos.x + 10;
+				screw.position.y = pos.y;
+				screw.position.z = pos.z;
+				handrails.add(screw);
+				
+				pos.y += marshPar.h_topWnd;
+				var screw = drawScrew(screwPar).mesh;
+				screw.rotation.x = -Math.PI / 2 * turnFactor;
+				screw.position.x = pos.x;
+				screw.position.y = pos.y;
+				screw.position.z = pos.z;
+				handrails.add(screw);
+
+				pos.y += marshPar.h_topWnd;
+				var screw = drawScrew(screwPar).mesh;
+				screw.rotation.x = -Math.PI / 2 * turnFactor;
+				screw.position.x = pos.x;
+				screw.position.y = pos.y;
+				screw.position.z = pos.z;
+				handrails.add(screw);
+			}
+		}
 
 	} //конец поручней
 	
@@ -1742,10 +1824,11 @@ function calculateRacks(par){
 				}
 			}
 
+			/*
 			//смещаем средние стойки
 			for (var i = 0; i < rackPos.length; i++) {
 				rackPos[i] += +params.railingStart;
-			}
+			}*/
 		}
 	}
 

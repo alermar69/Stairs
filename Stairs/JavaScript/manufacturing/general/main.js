@@ -29,6 +29,7 @@ var anglesHasBolts = true; //отрисовывать болты уголков
 var drawLongBolts = true; //отрисовывать длинные болты, соединяющие два уголка через тетиву насквозь
 var priceObj = {};
 var shapesList = [];
+var isFixPats = true; //отрисовывать болты крепления к стенам, к нижнему и верхнему перекрытию
 
 $(function () {
 	

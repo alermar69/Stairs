@@ -4,6 +4,7 @@ var boltDiam = 10;
 var boltBulge = 8;
 var boltLen = 30;
 var turnFactor = 1;
+var treadsObj;
 
 drawStaircase = function (viewportId, isVisible) {
 	
@@ -11,7 +12,7 @@ drawStaircase = function (viewportId, isVisible) {
 	
 	for(var layer in layers){
 		removeObjects(viewportId, layer);
-		}
+	}
 	
 	//очищаем глобальный массив параметров для спецификации
 	staircasePartsParams = {
@@ -70,7 +71,7 @@ drawStaircase = function (viewportId, isVisible) {
 /*** СТУПЕНИ НА ВСЕ ЛЕСТНИЦЫ ***/
 	if (params.stairType == "лотки") params.treadThickness = 4;
 	
-	var treadsObj = drawTreads()
+	treadsObj = drawTreads()
 	model.add(treadsObj.treads, "treads");
 	model.add(treadsObj.risers, "risers");
 
@@ -183,8 +184,6 @@ drawStaircase = function (viewportId, isVisible) {
 
 	var handrail = drawSideHandrail_all(sideHandrailPar).mesh;
 	model.add(handrail, "handrails");
-
-
 	//сдвигаем и поворачиваем лестницу чтобы верхний марш был вдоль оси Х
 	var moove = calcStaircaseMoove(treadsObj.lastMarshEnd);	
 
@@ -217,9 +216,13 @@ drawStaircase = function (viewportId, isVisible) {
 		//добавляем в сцену
 		addObjects(viewportId, obj, model.objects[i].layer);
 		
-		}
+	}
 
 	//измерение размеров на модели
 	addMeasurement(viewportId);
+
+	setTimeout(function() {
+		if(typeof staircaseLoaded != 'undefined') staircaseLoaded();
+	}, 0);
 
 } //end of drawStair

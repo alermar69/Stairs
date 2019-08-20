@@ -305,7 +305,7 @@ function drawMiddleStringers(par, marshId){
 					if (params.model == "лт") bolt.position.x -= 5;
 					bolt.position.y = longBoltPos[j].y;
 					bolt.position.z = midAngle.position.z//params.stringerThickness/2;
-					mesh.add(bolt);
+					//mesh.add(bolt);
 				}
 			}
 		}

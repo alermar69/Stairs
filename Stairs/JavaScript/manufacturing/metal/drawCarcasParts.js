@@ -877,7 +877,7 @@ function drawTopPltStringer(par) {
 	//if (params.stairType == "рифленая сталь" || params.stairType == "рифленый алюминий" || params.stairType == "лотки")
 	//	shiftHoleY -= 50;
 	var shiftHoleY = -params.treadThickness - 5 - 20; //позиция верхнего отверстия уголка каркаса относительно верха тетивы
-	shiftHoleY -= framePar.profHeight + 5;
+	if (hasTreadFrames()) shiftHoleY -= framePar.profHeight + 5;
 
 	if (params.model == "ко") shiftHoleY = -par.stringerWidthPlatform + 25 + 60;
 	//if(params.model == "ко") shiftHoleY = -95;
@@ -1737,15 +1737,17 @@ function calcFlanHoles(par){
 	var center2 = par.angleHoles.center2;
 	
 	
-	if (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил") {
-		center1.y = center2.y = par.divideP1.y + holeDist / 2; // - params.treadThickness;
-		center1.hasAngle = center2.hasAngle = false;
-		//par.divideP2.y -= params.treadThickness;
-	}
-	else {
-		center1.headType = center2.headType = "потай";
-		center1.boltLen = center2.boltLen = boltLen + 10;
-	}
+	//if (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил") {
+	//	center1.y = center2.y = par.divideP1.y + holeDist / 2; // - params.treadThickness;
+	//	center1.hasAngle = center2.hasAngle = false;
+	//	//par.divideP2.y -= params.treadThickness;
+	//}
+	//else {
+	//	center1.headType = center2.headType = "потай";
+	//	center1.boltLen = center2.boltLen = boltLen + 10;
+	//}
+	center1.headType = center2.headType = "потай";
+	center1.boltLen = center2.boltLen = boltLen + 10;
 	
 	//крайние левые отверстия
 	if (params.stringerType != "прямая" || par.isMiddleStringer) {
@@ -2234,7 +2236,8 @@ function drawTopFixFlans(par){
 	
 	//левый фланец
 	var flan1 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
-	flan1.position.x = -params.M / 2 + sideOffset + calcStringerMoove(3).stringerOutMoove;
+	flan1.position.x = -params.M / 2 + sideOffset;
+	if(turnFactor == -1) flan1.position.x += calcStringerMoove(3).stringerOutMoove
 	flan1.position.y = -lastRise - botLedge; 
 	//if (params.stairType == "дпк") flan1.position.z = 8;
 	if (marshParams.stairAmt == 0 && marshParams.botTurn == "забег") {
@@ -2249,6 +2252,7 @@ function drawTopFixFlans(par){
 	//правый фланец
 	var flan2 = drawTopFixFlan(par.flanLen, dxfBasePoint).mesh;
 	flan2.position.x = params.M / 2 - 100 - sideOffset;
+	if(turnFactor == 1) flan2.position.x -= calcStringerMoove(3).stringerOutMoove
 	flan2.position.y = flan1.position.y; 
 	//if (params.stairType == "дпк") flan2.position.z = 8;
 	if (marshParams.stairAmt == 0 && marshParams.botTurn == "забег") {
@@ -3582,4 +3586,3 @@ function drawColumnF(par) {
 
 	return par;
 }//end of drawColumnF
-

@@ -496,7 +496,7 @@ function drawComplexStringer(par) {
 				if (par.botEnd == "площадка" && i == 1) {
 					if (params.model == "сварной") {
 						if (params.stairModel == "П-образная с площадкой" || par.botConnection) {
-							platePar.frontOff = 0;
+							platePar.frontOff = 1;
 							basePointShiftX = -(platePar.frontOff + params.flanThickness + 2);
 							if (params.stairModel !== "П-образная с площадкой" && par.botConnection)
 								basePointShiftX += - par.stringerLedge;
@@ -751,7 +751,7 @@ function drawComplexStringer(par) {
 							if (par.botEnd == "площадка" && i == 1) {
 								
 								if (params.stairModel == "П-образная с площадкой" || par.botConnection) {
-									platePar.frontOff = 0;
+									platePar.frontOff = 1;
 									platePar.frontOffset = 0;
 									platePar.basePointShiftX = -(platePar.frontOff + params.flanThickness + 2);
 									if (params.stairModel !== "П-образная с площадкой" && par.botConnection)

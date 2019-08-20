@@ -6,6 +6,7 @@ var boltLen = 30;
 var anglesHasBolts = true; //отрисовывать болты уголков
 var drawLongBolts = true; //отрисовывать длинные болты, соединяющие два уголка через тетиву насквозь
 var turnFactor = 1;
+var treadsObj;
 
 drawStaircase = function (viewportId, isVisible) {
 	
@@ -61,7 +62,7 @@ drawStaircase = function (viewportId, isVisible) {
 
 /*** СТУПЕНИ НА ВСЕ ЛЕСТНИЦЫ ***/
 
-	var treadsObj = drawTreads();
+	treadsObj = drawTreads();
 	model.add(treadsObj.treads, "treads");
 
 
@@ -146,6 +147,10 @@ drawStaircase = function (viewportId, isVisible) {
 
 	//измерение размеров на модели
 	addMeasurement(viewportId);
+
+	setTimeout(function() {
+		if(typeof staircaseLoaded != 'undefined') staircaseLoaded();
+	}, 0);
 
 } //end of drawStair
 	

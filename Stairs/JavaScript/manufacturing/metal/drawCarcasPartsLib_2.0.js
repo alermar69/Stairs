@@ -114,6 +114,7 @@ function drawAdjustableLeg(isAngle) {
 				fixPar.fixPart = 'саморезы';
 				fixPar.diam = 6;
 				fixPar.len = 60;
+				fixPar.id = "screw_6x60_r";
 			}
 			fixPar.thickness = thickness;
 			var holeXY = 15;

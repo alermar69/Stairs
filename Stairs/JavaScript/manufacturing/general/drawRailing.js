@@ -1548,7 +1548,9 @@ function drawPolylineHandrail(par) {
 
 				var plug = drawTimberPlug(plugDiam);
 
-				var plugPosition = polar(basePoint, handrailAngle, length);
+				var lengthHandrailIn = length - meterHandrailPar.profY / Math.tan(startAngle) - meterHandrailPar.profY / Math.tan(endAngle);
+
+				var plugPosition = polar(basePoint, handrailAngle, lengthHandrailIn);
 				plugPosition = polar(plugPosition, handrailAngle + Math.PI / 2, meterHandrailPar.profY / 2);
 				plugPosition = polar(plugPosition, handrailAngle, -plugDiam - 10);
 

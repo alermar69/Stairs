@@ -1431,7 +1431,7 @@ function drawVintPlatformShape(par) {
 				y: -43
 			};
 			var holeSize = 25;
-			var holeRad = 4;
+			var holeRad = 2;
 			var polarDst = holeSize / 2 / Math.sin(Math.PI / 4);
 
 			//круглые отверстия под болты
@@ -2889,7 +2889,8 @@ function drawMidFix(par) {
 		holeY: 20,
 		dxfBasePoint: dxfBasePoint,
 	};
-	flanPar.noBolts = par.noBolts; //болты не добавляются
+	//flanPar.noBolts = par.noBolts; //болты не добавляются
+	flanPar.noBolts = true; //болты не добавляются
 
 	flanPar.isFixPart = true; // болты крепления к стенам
 	var numberFix = par.numberFix;
@@ -2971,12 +2972,13 @@ function drawMidFix(par) {
 			var boltPar = {
 				diam: 10,
 				len: 70,
+				headType: "шестигр.",
 			}
 			var bolt = drawBolt(boltPar).mesh;
 			bolt.rotation.x = -Math.PI / 2;
 			bolt.position.x = center.x;
 			bolt.position.y = center.y;
-			bolt.position.z = -3 - 20;
+			bolt.position.z = -5 - 20;
 
 			flan.add(bolt)
 		}

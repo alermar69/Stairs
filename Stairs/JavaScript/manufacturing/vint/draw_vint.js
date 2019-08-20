@@ -107,7 +107,7 @@ function drawStaircase(viewportId, isVisible) {
 		if (params.platformType == "square") G -= 100; //учитываем раму под площадкой 
 	}
 
-	if(G < 2000 && !testingMode) alert("ВНИМАНИЕ! Габарит G = " + G + "мм! Рекомендуется делать габарит не менее 2000мм!")
+	if(G < 2000 && !testingMode) alertTrouble("ВНИМАНИЕ! Габарит G = " + G + "мм! Рекомендуется делать габарит не менее 2000мм!")
 
 	//заносим значения в глобальный массив параметров
 	stairParams.stepHeight = stepHeight;
@@ -563,15 +563,15 @@ function drawStaircase(viewportId, isVisible) {
 		
 		
 
-			stringer.rotation.y = (platformExtraAngle - platformAngle / 2 + Math.PI);
-			if (params.platformType == "square") stringer.rotation.y = -Math.PI * turnFactor;
-			stringer.rotation.y += Math.PI / 2 * turnFactor;
-			translateObject(stringer, -stringerDXF.lenX, 0, params.staircaseDiam / 2 * turnFactor);
+		stringer.rotation.y = (platformExtraAngle - platformAngle / 2 + Math.PI);
+		if (params.platformType == "square") stringer.rotation.y = -Math.PI * turnFactor;
+		stringer.rotation.y += Math.PI / 2 * turnFactor;
+		translateObject(stringer, -stringerDXF.lenX, 0, params.staircaseDiam / 2 * turnFactor);
 
-		//if(document.location.href.indexOf("manufacturing") != -1){		
-		//	model.add(stringer, "stringers2");
-		//}
-		model.add(stringer, "stringers2");
+		if(document.location.href.indexOf("manufacturing") != -1){		
+			model.add(stringer, "stringers2");
+		}
+		//model.add(stringer, "stringers2");
 
 		stringerParams = drawSpiralStripe(stringerParams);
 		var stringer = stringerParams.mesh;
@@ -586,7 +586,11 @@ function drawStaircase(viewportId, isVisible) {
 		
 		var floorAngle = drawAngleSupport("У4-70х70х100");
 		floorAngle.rotation.y = stairParams.stairCaseAngle + Math.PI / 2;
-		//if (params.turnFactor == 1) floorAngle.rotation.y += Math.PI / 2;
+		if (params.turnFactor == 1) {
+			floorAngle.rotation.y = -stairParams.stairCaseAngle + Math.PI / 2;
+			floorAngle.position.x += 100 * Math.cos(Math.PI * 2 - (stairParams.stairCaseAngle + Math.PI / 2));
+			floorAngle.position.z -= 100 * Math.sin(Math.PI * 2 - (stairParams.stairCaseAngle + Math.PI / 2));
+		}
 		translateObject(floorAngle, 0, 0, -params.staircaseDiam / 2);
 		model.add(floorAngle, "stringers");
 	}
@@ -1278,135 +1282,4 @@ function getIndexDivide(point, divides) {
 		index++;
 	}
 	return index;
-}
-
-function drawForgeFrame2(par) {
-	var mesh = new THREE.Object3D();
-	var basePoint = par.basePoint;//{x:0, y: 0};
-
-	var sectionLength = par.length;
-	var pos = { x: 0, y: 0 };
-	var railingPositionZ = -par.legProf;
-	var rackProfile = par.legProf;
-	var height = par.height - 20;
-
-	var svgMarshId = par.svgMarshId || 0;
-	var svgPoleId = par.svgPoleId || 0;
-	var material = par.material || params.materials.metal_railing;
-
-	var polePar = {
-		type: "pole",
-		poleProfileY: 20,
-		poleProfileZ: 40,
-		dxfBasePoint: par.dxfBasePoint,
-		len: sectionLength,
-		poleAngle: 0,
-		vertEnds: true,
-		material: material,
-		dxfArr: dxfPrimitivesArr,
-		marshId: 'balustrade_' + 111,
-		sectText: 'balustrade_' + 111,
-	}
-
-	var rackPar = {
-		type: "rack",
-		poleProfileY: 40,
-		poleProfileZ: 40,
-		dxfBasePoint: par.dxfBasePoint,
-		len: height,
-		angTop: 0,
-		material: material,
-		dxfArr: dxfPrimitivesArr,
-		marshId: 'balustrade_' + 111,
-		sectText: 'balustrade_' + 111,
-		isBanister: true,
-	}
-
-	var shortRackPar = {
-		type: "rack",
-		poleProfileY: 40,
-		poleProfileZ: 40,
-		dxfBasePoint: par.dxfBasePoint,
-		len: par.shortLegLength,
-		angTop: 0,
-		material: material,
-		dxfArr: dxfPrimitivesArr,
-		marshId: 'balustrade_' + 111,
-		sectText: 'balustrade_' + 111,
-		isBanister: true,
-	}
-
-	var firstRackPosition = newPoint_xy(basePoint, 0, -150);
-	if (par.firstRackDelta) rackPar.len -= par.firstRackDelta;
-	rackPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, firstRackPosition.x, firstRackPosition.y);
-	//4 максимально возможное кол-во секций марша
-	rackPar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'rack', pos: copyPoint(firstRackPosition), len: rackPar.len, key: 'balustrade' };
-	var rack = drawForgedFramePart2(rackPar).mesh;
-	rack.position.x = firstRackPosition.x;
-	rack.position.y = firstRackPosition.y;
-	if (par.firstRackDelta) rack.position.y += par.firstRackDelta;
-	rack.position.z = railingPositionZ;
-	mesh.add(rack);
-
-	var shortLegsAmt = Math.round((sectionLength - rackProfile) / 800) - 1;
-	if (shortLegsAmt < 0) shortLegsAmt = 0;
-	var shortLegDst = (sectionLength - rackProfile) / (shortLegsAmt + 1);
-	var shortBasePoint = newPoint_xy(firstRackPosition, shortLegDst, 0);
-
-	for (var i = 0; i < shortLegsAmt; i++) {
-		shortRackPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, shortBasePoint.x, shortBasePoint.y);
-		shortRackPar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'rack', pos: copyPoint(shortBasePoint), len: shortRackPar.len, key: 'balustrade' };
-		var rack = drawForgedFramePart2(shortRackPar).mesh;
-		rack.position.x = shortBasePoint.x;
-		rack.position.y = shortBasePoint.y;
-		rack.position.z = railingPositionZ;
-		mesh.add(rack)
-
-		shortBasePoint = newPoint_xy(shortBasePoint, shortLegDst, 0);
-	}
-
-	//последняя стойка
-	if (!par.hiddenLastRack) {
-		if (par.firstRackDelta) rackPar.len += par.firstRackDelta;
-		pos = newPoint_xy(firstRackPosition, sectionLength - rackProfile, 0);
-		rackPar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
-		rackPar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'rack', pos: copyPoint(pos), len: rackPar.len, key: 'balustrade' };
-		var rack = drawForgedFramePart2(rackPar).mesh;
-		rack.position.x = pos.x;
-		rack.position.y = pos.y;
-		rack.position.z = railingPositionZ;
-		mesh.add(rack);
-	}
-
-	//верхняя перемычка
-	polePar.len = sectionLength;
-	if (par.hiddenLastRack) polePar.len -= 40;
-	polePar.poleAngle = 0;
-	pos = {
-		x: firstRackPosition.x - rackProfile / 2,
-		y: firstRackPosition.y + height,
-	}
-	polePar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
-	polePar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'pole', place: 'top', pos: copyPoint(pos), key: 'balustrade', len: polePar.len, ang: polePar.poleAngle };
-	var pole = drawForgedFramePart2(polePar).mesh;
-	pole.position.x = pos.x;
-	pole.position.y = pos.y;
-	pole.position.z = railingPositionZ;
-	mesh.add(pole)
-
-	//нижняя перемычка
-	polePar.len = sectionLength - rackProfile * 2;
-	pos = newPoint_xy(firstRackPosition, rackProfile / 2, par.shortLegLength);
-	polePar.dxfBasePoint = newPoint_xy(par.dxfBasePoint, pos.x, pos.y);
-	polePar.drawing = { marshId: svgMarshId, poleId: svgPoleId, group: 'forged_railing', elemType: 'pole', place: 'bot', pos: copyPoint(pos), key: 'balustrade', len: polePar.len, ang: polePar.poleAngle };
-	var pole = drawForgedFramePart2(polePar).mesh;
-	pole.position.x = pos.x;
-	pole.position.y = pos.y;
-	pole.position.z = railingPositionZ;
-	mesh.add(pole);
-
-	par.mesh = mesh;
-	return par;
-
-
 }

@@ -322,7 +322,15 @@ if(params.stairModel == "П-образная трехмаршевая" && par.ma
 					pointsHoleBot.push(center1);
 				}
 			}
-		}
+	}
+	if (par.key == "in") {
+		center1 = newPoint_xy(p0, 30, 25);
+		center2 = newPoint_xy(center1, 0.0, 60.0);
+		center1.hasAngle = center2.hasAngle = true;
+		center1.rotated = center2.rotated = true;
+		par.pointsHole.push(center1);
+		par.pointsHole.push(center2);	
+	}
 	//}
 
 	//крепление к стенам
@@ -1381,11 +1389,9 @@ function drawTopStepKo_floor(par){
 		if (params.topFlan == "есть") center1 = newPoint_xy(center1, -8, 0);
 		center2 = newPoint_xy(center1, 0.0, -60.0);
 		center1.hasAngle = center2.hasAngle = true;
+		center1.pos = center2.pos = "topFloor";
 		if (params.riserType == "есть" && par.botEnd == "winder" && par.stairAmt == 0) {
-			center1.x = center2.x += 5;
-		}
-		else {
-			center1.pos = center2.pos = "topFloor";
+			//center1.x = center2.x += 5;
 		}	
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);

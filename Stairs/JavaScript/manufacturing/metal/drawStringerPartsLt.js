@@ -1170,6 +1170,8 @@ function drawBotStepLt_wndIn(par) {
 
 					//дополнительное отверстие для крепления поворотной стойки
 					var center2 = newPoint_xy(p2, pt.x, -params.treadThickness / 2 - par.stringerLedge);
+					if (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил")
+						center2 = newPoint_xy(p2, pt.x, -42);
 					//var center2 = newPoint_xy(p2, pt.x, par.stepHoleY + 5);
 					center2.rad = 3.5;
 					center2.noRack = true; // отверстие не учитывается при построении заграждения
@@ -1326,6 +1328,7 @@ function drawBotStepLt_wndOut(par) {
 	par.keyPoints.botPoint = copyPoint(botLineP1);
 
 	/*ОТВЕРСТИЯ*/
+	var pointsAngles = []; //точки контуров уголков на тетиве {p1: точка левого нижнего угла, p2: точка правого верхнего угла, orientationVert: true - вертикальное расположение уголка}
 
 	// отверстия под нижние крепежные уголки
 	// первый уголок
@@ -1357,7 +1360,8 @@ function drawBotStepLt_wndOut(par) {
 		var center2 = newPoint_xy(center1, 0, -60);
 		center1.hasAngle = center2.hasAngle = false; 
 		par.pointsHole.push(center2);
-		par.pointsHole.push(center1); 
+		par.pointsHole.push(center1);
+		pointsAngles.push({ p1: newPoint_xy(center2, -50, -40), p2: newPoint_xy(center1, 50, 40), orientationVert: true })
 		}
 
 	if (hasTreadFrames()) {
@@ -1398,6 +1402,7 @@ function drawBotStepLt_wndOut(par) {
 		center2 = newPoint_xy(center1, -angPar.angleHoleDist, 0);
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
+		pointsAngles.push({ p1: newPoint_xy(center2, -55, -40), p2: newPoint_xy(center1, 55, 40), orientationVert: false })
 
 		// третья забежная ступень
 		// первый уголок
@@ -1406,6 +1411,7 @@ function drawBotStepLt_wndOut(par) {
 		center2 = newPoint_xy(center1, angPar.angleHoleDist, 0);
 		par.pointsHole.push(center1);
 		par.pointsHole.push(center2);
+		pointsAngles.push({ p1: newPoint_xy(center1, -55, -40), p2: newPoint_xy(center2, 55, 40), orientationVert: false })
 
 		// второй уголок
 		center1 = newPoint_xy(p4, 20, angleHoleY);
@@ -1413,6 +1419,7 @@ function drawBotStepLt_wndOut(par) {
 		center2 = newPoint_xy(center1, -angPar.angleHoleDist, 0);
 		par.pointsHole.push(center2);
 		par.pointsHole.push(center1);
+		pointsAngles.push({ p1: newPoint_xy(center2, -55, -40), p2: newPoint_xy(center1, 55, 40), orientationVert: false })
 		/*
 		// отверстия под перемычку
 		if (par.stairAmt > 0 && !(par.stairAmt == 1 && params.stairModel == "П-образная трехмаршевая")) {
@@ -1500,14 +1507,17 @@ function drawBotStepLt_wndOut(par) {
 		//отверстие ближе к маршу
 		center1 = newPoint_xy(p4, -150, -150);
 		if (params.stringerType == "ломаная") center1.y += 50;
+		center1 = calculateOffsetHole(center1, pointsAngles);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.noZenk = true;
 		center1.noBolts = true;
 		center1.wallFix = true;
 		par.pointsHole.push(center1);
+
 		//отверстие ближе к углу
 		center1 = newPoint_xy(p1, 200, -150);
+		center1 = calculateOffsetHole(center1, pointsAngles);
 		center1.rad = fixPar.diam / 2 + 1;
 		center1.hasAngle = false;
 		center1.noZenk = true;
@@ -1613,11 +1623,13 @@ function drawMiddleStepsLt(par) {
 		// отверстия под уголок/рамку ступени
 		var hasTreadFixHoles = true;
 		//ступень где есть перемычка на лестнице с уголками
-		if(!hasTreadFrames() && par.bridge.indexOf(i+1) != -1) hasTreadFixHoles = false;
+		if (!hasTreadFrames() && par.bridge.indexOf(i + 1) != -1) hasTreadFixHoles = false;
+
 		//ступень где есть соединительный фланец, кроме лотков и рифленых ступеней
-		if(params.stairType != "лотки" && params.stairType != "рифленая сталь" && params.stairType != "пресснастил") {
-			if(i == par.divide-1) hasTreadFixHoles = false;
-			}
+		//if(params.stairType != "лотки" && params.stairType != "рифленая сталь" && params.stairType != "пресснастил") {
+		//	if(i == par.divide-1) hasTreadFixHoles = false;
+		//	}
+		if (i == par.divide - 1) hasTreadFixHoles = false;
 		
 		if (hasTreadFixHoles) {
 			//пригласительные ступени
@@ -1674,8 +1686,8 @@ function drawMiddleStepsLt(par) {
 			//позиция линии стыка кусков тетивы
 			divideY = par.stringerLedge + params.treadThickness + 100 / 2;
 			
-			if(params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил")
-				divideY = par.stringerLedge + calcTreadFixHeight() + 5 + 100 / 2 + params.treadThickness;
+			//if(params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил")
+			//	divideY = par.stringerLedge + calcTreadFixHeight() + 5 + 100 / 2 + params.treadThickness;
 
 				
 			var divideP1 = newPoint_xy(p1, 0.0, -divideY);
@@ -1696,10 +1708,10 @@ function drawMiddleStepsLt(par) {
 			var center1 = newPoint_xy(p1, par.stepHoleX1, par.stepHoleY);
 			//if (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил")
 			//	center1.x += par.a - par.b + 2;
-			if (par.isMiddleStringer && (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил")) {
-				center1.x += par.a - par.b + 2;
-				center1.y -= params.treadThickness - par.stringerLedge;
-			}
+			//if (par.isMiddleStringer && (params.stairType == "лотки" || params.stairType == "рифленая сталь" || params.stairType == "пресснастил")) {
+			//	center1.x += par.a - par.b + 2;
+			//	center1.y -= params.treadThickness - par.stringerLedge;
+			//}
 			var center2 = newPoint_xy(center1, par.holeDist, 0.0);
 			
 			if (hasTreadFrames()) {
@@ -2326,7 +2338,10 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 	// отверстия под задний крепежный уголок
 	if (isAngel) {
 		var shiftHoleY = par.carcasAnglePosY;
-		if(par.marshPar.lastMarsh) shiftHoleY = -params.treadThickness - 5 - 20 - par.platformFramesParams.profHeight - 5;
+		if (par.marshPar.lastMarsh) {
+			shiftHoleY = -params.treadThickness - 5 - 20;
+			if (hasTreadFrames()) shiftHoleY -= par.platformFramesParams.profHeight + 5
+		}
 		center1 = newPoint_xy(topLineP1, -30.0, shiftHoleY);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);
 		center1.hasAngle = center2.hasAngle = true;
@@ -3464,18 +3479,18 @@ function drawTopStepLt_wndIn(par) {
 	par.keyPoints[par.key].botLineP10 = newPoint_xy(p2, 36, 0);
 
 	//точки на нижней линии марша для самонесущего стекла
-	if (par.stairAmt == 2 && par.botEnd !== "floor") {
-		var p10 = polar(par.midUnitEnd,
-			(par.marshAng - Math.PI / 2),
-			par.stringerWidth) // первая точка на нижней линии марша
-		var p20 = polar(p10, par.marshAng, -100.0)
+	//if (par.stairAmt == 2 && par.botEnd !== "floor") {
+	//	var p10 = polar(par.midUnitEnd,
+	//		(par.marshAng - Math.PI / 2),
+	//		par.stringerWidth) // первая точка на нижней линии марша
+	//	var p20 = polar(p10, par.marshAng, -100.0)
 
-		p10 = polar(p10, par.marshAng + Math.PI / 2, 30);
-		p20 = polar(p20, par.marshAng + Math.PI / 2, 30);
+	//	p10 = polar(p10, par.marshAng + Math.PI / 2, 30);
+	//	p20 = polar(p20, par.marshAng + Math.PI / 2, 30);
 
-		par.keyPoints[par.key].marshBotLineP1 = copyPoint(p10)
-		par.keyPoints[par.key].marshBotLineP2 = copyPoint(p20)
-	}
+	//	par.keyPoints[par.key].marshBotLineP1 = copyPoint(p10)
+	//	par.keyPoints[par.key].marshBotLineP2 = copyPoint(p20)
+	//}
 
 }//end of drawTopStepLt_wndIn
 
@@ -4331,3 +4346,18 @@ function findItercectionHoles(center, par) {
 	}
 	return false;
 } //end of findItercectionHoles
+
+
+/** функция ищет находится ли точка в пределах границы, и если находится тогда смещает ее за пределы границы
+*/
+function calculateOffsetHole(point, pointsBorders) {
+	for (var i = 0; i < pointsBorders.length; i++) {
+		var border = pointsBorders[i];
+		if (point.x > border.p1.x && point.x < border.p2.x && point.y > border.p1.y && point.y < border.p2.y) {
+			if (border.orientationVert) point = { x: border.p1.x, y: point.y }
+			else point = { x: point.x, y: border.p1.y }
+			break;
+		}
+	}
+	return point;
+} //end of calculateOffsetHole

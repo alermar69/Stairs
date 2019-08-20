@@ -20,6 +20,7 @@ function makeSvg() {
 	var railingShapes = [];
 	var glassShapes = [];
 	var handrailShapes = [];
+	var timberRailingShapes = [];
 	var shapesMarsh = {};
 	var shapesPlatform = {};
 	var shapesTreadPlateCabriole = {};
@@ -35,14 +36,16 @@ function makeSvg() {
 			if (isShapesEqual(shape, shapesAmtList[i])) {
 				isUnique = false;
 				index = i;
-			}			
+			}
 		}
-
-		if (isUnique) {
-			shape.amt = 1;
-			shapesAmtList.push(shape);
-		}else {
-			shapesAmtList[index].amt += 1;
+		
+		if (!(shape.drawing && shape.drawing.group == 'timber_stock')) {
+			if (isUnique) {
+				shape.amt = 1;
+				shapesAmtList.push(shape);
+			}else {
+				shapesAmtList[index].amt += 1;
+			}
 		}
 
 
@@ -58,6 +61,10 @@ function makeSvg() {
 		}
 		if (shape.drawing.group == 'glass') {
 			glassShapes.push(shape);
+		}
+
+		if (shape.drawing.group == 'timber_railing') {
+			timberRailingShapes.push(shape);
 		}
 
 		//выбираем shapes для сборочных чертежей
@@ -519,6 +526,24 @@ function makeSvg() {
 		var lists = setA4(a4Params);
 		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
 	}
+
+	if (timberRailingShapes && timberRailingShapes.length > 0) {
+		var railingPar = {
+			draw: draw,
+			shapes: timberRailingShapes
+		};
+		var timber_railings = drawTimberRailingFunction(railingPar);
+		var a4Params = {
+			elements: timber_railings,
+			basePoint: {x:0, y:basePoint.y},
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
+		basePoint = newPoint_xy(a4Params.basePoint, 0, -a4Params.height - 100);
+	}
+
 	if (glassShapes.length > 0) {
 		var glassPar = {
 			draw: draw, 

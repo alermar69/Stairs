@@ -24,9 +24,9 @@ function drawFrames(par){
 				offsetHoleTopFlanDpk: offsetHoleTopFlanDpk,
 				}
 			//для лотков и рифленки рамка не накладывается на фланец
-			if(params.stairType == "лотки" || params.stairType == "рифленая сталь"){
-				isFlanFrame = false;
-			}
+			//if(params.stairType == "лотки" || params.stairType == "рифленая сталь"){
+			//	isFlanFrame = false;
+			//}
 
 
 			//для средней тетивы входной лестницы убираем болты
@@ -55,6 +55,9 @@ function drawFrames(par){
 				framePar.isFrameSideNoBolts1 = true;
 				framePar.isFrameSideNoBolts2 = true;
 			}
+			//if (params.stairModel == "П-образная с площадкой" && framePar.isPltPFrame) {
+			//	framePar.isFrameSideNoBolts1 = true;
+			//}
 			
 			var frame = drawTreadFrame2(framePar);
 			par.length = framePar.length;
@@ -72,7 +75,7 @@ function drawFrames(par){
 					marshId: par.marshId,
 					isP: true,
 				}
-				if (params.stairType == "лотки") pltPar.len -= 4 * 2; // 4 - толщина переднего и заднего фланца лотка
+				if (params.stairType == "лотки") pltPar.len -= 4 * 2; // 4 - толщина переднего и заднего фланца лотка				
 				pltPar = drawPlatform2(pltPar);
 				var platform = pltPar.treads;
 				platform.position.x = frame.position.x - framePar.sideHolePosX;
@@ -119,9 +122,11 @@ function drawFrames(par){
 						marshId: par.marshId,
 						isP: true,
 					}
+					if (params.stairType == "лотки") pltPar.len -= 4 * 2; // 4 - толщина переднего и заднего фланца лотка
 					pltPar = drawPlatform2(pltPar);
 					var platform = pltPar.treads;
 					platform.position.x = frame.position.x - framePar.sideHolePosX;
+					if (params.stairType == "лотки") platform.position.x += 4;
 					platform.position.y = frame.position.y - framePar.profHeight / 2 - 0.01;
 					if (params.stairType == "рифленая сталь")
 						platform.position.y = frame.position.y + framePar.profHeight / 2 - 1 + 0.01;
@@ -323,8 +328,7 @@ function drawWndFrame(par){
 		if (par.frameId == 3) stringerOutMoove = calcStringerMoove(par.marshId).stringerOutMooveNext;
 		pathPar = {
 			treadWidth: params.M - params.sideOverHang * 2 - params.stringerThickness * 2 - thk.side * 2 - stringerOutMoove,
-			edgeAngle: par.frameId == 1 ? treadParams.edgeAngle / 2 : treadParams.edgeAngle,
-			//edgeAngle: treadParams.edgeAngle,
+			edgeAngle: treadParams.edgeAngle,
 			stepWidthLow: stepWidthLow, 
 		}
 
@@ -355,16 +359,6 @@ par.frameParams = {
 
 	var outLine = calcWndTread1Points(pathPar); //точки наружного контура
 	var pathOut = outLine.points;
-
-	if(params.model == "ко" && par.frameId == 3){
-		// модфицируем массив точек
-		if (!isSideOutOffset) outLine.points[0] = newPoint_xy(outLine.points[0], 0, distance(outLine.points[0], outLine.points[1]) / 2);
-		// модифицируем линии
-		outLine.front.p2 = outLine.points[0];
-		outLine.front.len = distance(outLine.points[outLine.points.length - 1], outLine.points[0])
-		outLine.sideOut.p1 = outLine.points[0];
-		outLine.sideOut.len = distance(outLine.points[0], outLine.points[1])
-	}
 
 	//смещаем точки так, чтобы базовая точка была в середине передней грани
 	for(var i=0; i<outLine.points.length; i++){
@@ -816,15 +810,15 @@ function drawWndFrame2(par){
 	if(params.model == "ко"){
 		var pathPar = {
 			angleX: treadParams.angleX,
-			angleY: 35 / 180 * Math.PI, //константа
+			angleY: 30 / 180 * Math.PI, //константа
 			treadWidthY: params.M - params.stringerThickness * 2 - thk.side * 2 - params.sideOverHang * 2 - calcStringerMoove(par.marshId).stringerOutMooveNext,
 			treadWidthX: treadParams.treadWidthX, //пересчитывается ниже
 			innerOffsetY: 0, //константа
 		}
 		//рассчитываем treadWidthX и innerOffsetX графическим методом
 		//точки ступени - костыль, надо взять их из treadParams
-		var p1 = {x:0, y:0};
-		var p2 = newPoint_xy(p1, treadParams.innerOffsetX, 0);
+		var p1 = {x: 0, y: -10}; //-10 подогнано
+		var p2 = newPoint_xy(p1, treadParams.innerOffsetX - 15, 0); //-15 подогнано
 		var p3 = polar(p1, Math.PI - treadParams.angleX, 100); //вспомогательная точка на передней линии
 		var p4 = polar(p2, treadParams.angleY + Math.PI / 2, 100); //вспомогательная точка на задней линии
 		//линия, параллельная передней линии
@@ -1413,7 +1407,14 @@ function drawTopFixFrame2(par){
 
 	var frameFlanThickness = 8;
 	var width = params.M - params.stringerThickness * 2;
-	if (params.model == "ко") width -= 2 * params.sideOverHang;
+	if (params.model == "ко") {
+		width -= 2 * params.sideOverHang;
+		console.log(par)
+		par.marshId = 3;
+		if (params.stairModel == "Прямая") par.marshId = 1;
+		par.stringerOutMoove = calcStringerMoove(par.marshId).stringerOutMoove;
+		width -= par.stringerOutMoove;
+	}
 	
 	var height = params.h3;
 	if(params.stairModel == "Прямая") height = params.h1;
@@ -1424,7 +1425,11 @@ function drawTopFixFrame2(par){
 	var firstPosition_x = - anglesize / 2;
 	var firstPosition_y = par.basepoint.y - 50;
 	var firstPosition_z = -params.M / 2;
-	if (params.model == "ко") firstPosition_z += params.sideOverHang;
+	if (params.model == "ко") {
+		
+		firstPosition_z += params.sideOverHang
+		if(turnFactor == 1) firstPosition_z += par.stringerOutMoove
+	}
 
 
 	var deltaY = params.treadThickness / 2; //непонятный параметр

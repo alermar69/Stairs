@@ -142,10 +142,7 @@ function drawSideHandrailSect(par){
 	if(turnFactor == -1){
 		if(handrailParams.side == "in") handrailParams.side = "out"
 		else handrailParams.side = "in";
-	}
-
-	handrailParams.startPlug = true;
-	handrailParams.endPlug = true;
+		}
 	
 	//нижний поворот
 	if(marshPar.botTurn != "пол" && par.side == "out"){
