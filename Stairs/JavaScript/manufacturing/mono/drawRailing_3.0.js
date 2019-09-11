@@ -303,7 +303,7 @@ function calculateGlassPoints(par){
 		
 		glassPoints.push(p1, p2)
 	
-	}
+	}	
 	//marshId: "topPlt"
 
 	glassPoints.sort(function (a, b){
@@ -514,6 +514,7 @@ function drawGlassSection(par){
 	setRailingParams(par);
 	var marshPar = getMarshParams(par.marshId);
 	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
 	
 	var glassThickness = par.glassThickness;
 	var glassOffsetY = par.glassOffsetY = marshPar.h * 2;
@@ -2216,6 +2217,54 @@ function calcHolderTopPointMono(rackPar){
 	return point;
 } //end of calcTopPoint
 
+
+/** функция задает расположение и ориентацию отверстий под уголки в стойках марша кроме поворотных
+	*расположение уголков изначально задается для ограждения с правой стороны марша. Для левой стороны выполняется модификация в конце функции
+	*массив хранит следующие данные о каждом отверстии:
+	*offset: отступ от нижней части стойки
+	*anglePos: на какой грани расположен уголок. Грань определяется если смотреть на секцию ограждения так, чтобы она отрисовывалась слева снизу - направо вверх
+	*@param marshId
+	*@param type - является ли первой стойкой секции
+*/
+function setRackHoles(par) {
+	var holes = [];
+	var p0 = { x: 0, y: 0, }; //базовая точка на оси стойки на уровне верхней плоскости ступени
+	//параметры марша
+	var marshPar = getMarshParams(par.marshId);
+	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+
+	console.log(marshPar)
+	//верхнее отверстие
+	var center1 = newPoint_xy(p0, 0, -params.treadThickness - par.banisterAngleOffset);
+	center1.anglePos = 'сзади';
+	if (params.stairModel == "П-образная трехмаршевая" && par.key == "in" && par.marshId == 1 && params.stairAmt2 == 0 && marshPar.topTurn == "площадка") {
+		center1.anglePos = 'справа';
+	}
+	holes.push(center1)
+
+	//нижнее отверстие
+	if (par.type == 'middle') {
+		var center2 = newPoint_xy(center1, 0, -marshPar.h);
+		center2.anglePos = 'сзади';
+		//уголок первой стойки к пригласительной ступени
+		if (par.isFirstMove) center2.anglePos = 'слева';
+
+		holes.push(center2);
+	}
+
+	//для левой стороны марша передние и задние уголки меняются местами
+	if (marshPar.side[par.key] == "left") {
+		for (var i = 0; i < holes.length; i++) {
+			if (holes[i].anglePos == 'сзади') holes[i].anglePos = 'спереди';
+			else if (holes[i].anglePos == 'спереди') holes[i].anglePos = 'сзади';
+		}
+	}
+
+	par.holes = holes;
+	return par;
+
+}
 
 
 /** функция задает расположение и ориентацию отверстий под уголки в поворотных столбах

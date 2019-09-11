@@ -257,7 +257,7 @@ function drawMiddleStringers(par, marshId){
 	var midStringers = [];
 	var stringerThickness = params.stringerThickness;
 	var treadWidth = params.M - 2 * stringerThickness;
-	var midStringerAmt = Math.floor(treadWidth / 1100);
+	var midStringerAmt = Math.floor(treadWidth / 1090);
 	var midstringerBetweenLen = (treadWidth - stringerThickness * midStringerAmt) / (midStringerAmt + 1);
 	if (midStringerAmt > 0) {
 		for (i = 1; i <= midStringerAmt; i++) {
@@ -305,7 +305,7 @@ function drawMiddleStringers(par, marshId){
 					if (params.model == "лт") bolt.position.x -= 5;
 					bolt.position.y = longBoltPos[j].y;
 					bolt.position.z = midAngle.position.z//params.stringerThickness/2;
-					//mesh.add(bolt);
+					mesh.add(bolt);
 				}
 			}
 		}
@@ -1681,4 +1681,555 @@ function drawStringerBotHoles(par, typeDop) {
 			}
 		}
 	}	
+}
+
+//------------------------------------------------------------------------
+
+function drawScirtingSection(par) {
+
+	var marshPar = getMarshParams(par.marshId);
+	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+	var mesh = new THREE.Object3D();
+	var dxfBasePoint0 = copyPoint(par.dxfBasePoint);
+
+	var skirtingParams = {
+		rise: marshPar.h,
+		step: marshPar.b,
+		isLast: false,
+		dxfArr: dxfPrimitivesArr,
+		dxfBasePoint: par.dxfBasePoint,
+		skirtingDescription: "Плинтус площадки " + par.marshId + " марша ",
+	}
+
+	//нижний участок
+
+	var turnPar = calcTurnParams(marshPar.prevMarshId);
+
+
+	if (par.side == "out" && marshPar.botTurn == "площадка") {
+		skirtingParams.skirtingDescription = "Плинтус площадки ";
+		skirtingParams.dxfArr = dxfPrimitivesArr;
+		skirtingParams.rise = 0;
+		skirtingParams.step = turnPar.turnLengthBot + params.nose - 0.1// - params.riserThickness * 2;
+		skirtingParams.isNotVerticalPlank = true; //нет вертикальной планки
+		//подрезамем плинтус если на нижнем марше тоже есть плинтус
+		if (prevMarshPar.hasSkirting.out) skirtingParams.step -= params.riserThickness;
+		if (params.stairModel === "П-образная с площадкой")
+			skirtingParams.step = params.platformLength_1 + params.nose;
+
+		if (marshPar.stairAmt == 0 && par.marshId == 3) {
+			skirtingParams.isLast = true;
+		}
+		var basePoint = {
+			x: params.nose - skirtingParams.step,
+			y: 0,
+		}
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = params.nose - skirtingParams.step;
+		skirting.position.y = 0;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+
+		skirtingParams.isNotVerticalPlank = false;
+	}
+	if (par.side == "out" && marshPar.botTurn == "забег") {
+		//вторая забежная ступень
+		//skirtingParams.skirtingDescription = "Плинтус площадки " + 1 + "шт.";
+		skirtingParams.dxfArr = dxfPrimitivesArr;
+		skirtingParams.rise = 0;
+		skirtingParams.step = par.wndPar.params[2].stepWidthX - 0.15// - params.riserThickness * 2;
+		skirtingParams.isNotVerticalPlank = true; //нет вертикальной планки
+		//подрезамем плинтус если на нижнем марше тоже есть плинтус
+		if (prevMarshPar.hasSkirting.out) {
+			if (!(params.stairModel == "П-образная с забегом" && par.marshId == 3))
+				skirtingParams.step -= params.riserThickness;
+		}
+
+		var basePoint = {
+			x: -turnPar.turnLengthBot,
+			y: -marshPar.h,
+		}
+		//сдвигаем плинтус если на нижнем марше тоже есть плинтус
+		if (prevMarshPar.hasSkirting.out) {
+			if (!(params.stairModel == "П-образная с забегом" && par.marshId == 3))
+				basePoint.x += params.riserThickness + 0.1;
+		}
+		if (marshPar.stairAmt == 0 && !marshPar.lastMarsh) basePoint.x -= ((params.marshDist - 57) + (params.nose - 40));
+
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = -turnPar.turnLengthBot;
+		//сдвигаем плинтус если на нижнем марше тоже есть плинтус
+		if(prevMarshPar.hasSkirting.out) skirting.position.x += params.riserThickness + 0.1;
+		skirting.position.y = -marshPar.h;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+
+		skirtingParams.isNotVerticalPlank = false;
+
+		//третья забежная ступень
+		skirtingParams.skirtingDescription = "Плинтус площадки";
+		skirtingParams.dxfArr = dxfPrimitivesArr;
+		skirtingParams.rise = marshPar.h;
+		if (marshPar.stairAmt == 0 && par.marshId == 3) {
+			skirtingParams.isLast = true;
+			if (params.topAnglePosition == "вертикальная рамка") skirtingParams.isLast = false;
+		}
+		//skirtingParams.step = par.wndPar.params[3].stepWidthHi - params.nose - 0.01// - params.riserThickness * 2;
+		skirtingParams.nose = 21.824 / Math.cos(par.wndPar.params[3].edgeAngle) + 0.01;
+		if (params.calcType == 'timber') skirtingParams.nose = params.nose / Math.cos(par.wndPar.params[3].edgeAngle) + 0.01;
+		skirtingParams.step = par.wndPar.params[3].stepWidthHi - skirtingParams.nose // - params.riserThickness * 2;
+		//if (marshPar.stairAmt == 0) skirting.step += 45;
+
+
+		var basePoint = {
+			x: params.nose - par.wndPar.params[3].stepWidthHi + skirtingParams.nose - 0.01,
+			y: -marshPar.h,
+		}
+		if (marshPar.stairAmt == 0 && marshPar.lastMarsh) {
+			basePoint.x += 45 - (100 - params.lastWinderTreadWidth);
+			if (params.topAnglePosition !== "вертикальная рамка" && params.calcType != 'timber') skirtingParams.step -= true;
+		}
+		if (marshPar.stairAmt == 0 && !marshPar.lastMarsh) basePoint.x -= (params.nose - 20);
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = params.nose - par.wndPar.params[3].stepWidthHi + skirtingParams.nose - 0.01;
+		if (marshPar.stairAmt == 0) skirting.position.x += 45 - (100 - params.lastWinderTreadWidth);
+		skirting.position.y = -marshPar.h;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+
+		skirtingParams.nose = params.nose;
+	}
+
+	if (par.side == "in" && marshPar.botTurn == "площадка") {
+		skirtingParams.rise = 0;
+		skirtingParams.isNotVerticalPlank = true; //нет вертикальной планки
+
+		if (params.stairModel === "П-образная с площадкой") {
+			skirtingParams.rise = marshPar.h;
+		}
+		skirtingParams.step = marshPar.b + params.nose;
+		skirtingParams.stepOffsetX = - params.nose; //сдвиг по оси Х
+
+		var basePoint = {
+			x: params.nose,
+			y: 0,
+		}
+		if (params.stairModel !== "П-образная с площадкой") basePoint.y = marshPar.h;
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = params.nose;
+		if (params.stairModel !== "П-образная с площадкой") skirting.position.y = marshPar.h;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+
+		skirtingParams.isNotVerticalPlank = false;
+		skirtingParams.stepOffsetX = 0;
+	}
+
+	//плинтус на пригласительных ступенях
+	var hasStartTreadScirting = false;
+	if (params.stairModel == "Прямая" && marshPar.side[par.side] == params.arcSide) hasStartTreadScirting = true;
+	if (params.stairModel != "Прямая" && marshPar.side[par.side] != params.arcSide && params.arcSide != "two")
+		hasStartTreadScirting = true;
+
+	if (params.startTreadAmt > 0 && hasStartTreadScirting && par.marshId == 1) {
+		skirtingParams.skirtingDescription = "Плинтус площадки ";
+		skirtingParams.dxfArr = dxfPrimitivesArr;
+		skirtingParams.rise = params.h1;
+
+		var stepName = 'stepLeft';
+		if (params.arcSide == "left") stepName = 'stepRight';
+
+		for (var i = 1; i <= params.startTreadAmt; i++) {
+			skirtingParams.isNotBotPlank = false; // наличие нижней планки плинтуса
+			if (i == 1) skirtingParams.isNotBotPlank = true;
+
+			var treadPar = staircasePartsParams.startTreadsParams[i];
+			var treadNextPar = {}; // параметры следующей пригласительной ступени
+			if (i + 1 <= params.startTreadAmt) treadNextPar = staircasePartsParams.startTreadsParams[i + 1];
+			if (!treadNextPar.stepOff) treadNextPar.stepOff = 0; // сдвиг подступенка, который сверху от края ступени(для радиусных и веера)
+			var treadLen = treadPar[stepName];
+
+			// костыль
+			// если пригласительных ступеней больше двух, на нижних надо уменьшить длину
+			var n = params.startTreadAmt - 1 - i;
+			if (n > 0) treadNextPar.stepOff -= params.nose * n;
+			treadLen += treadNextPar.stepOff;
+
+			skirtingParams.step = treadLen - params.nose;
+			//if (params.fullArcFront == "да") skirtingParams.step += 2; //костыль чтобы не было пересечений
+
+			var basePoint = {
+				x: params.b1 * i + params.nose - skirtingParams.step,
+				y: params.h1 * (i - 1),
+			}
+			skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+			skirtingParams = drawSkirting2(skirtingParams);
+			var skirting = skirtingParams.mesh;
+
+			skirting.position.x = basePoint.x;
+			if (treadNextPar.stepOff) skirting.position.x += treadNextPar.stepOff;
+			skirting.position.y = basePoint.y;
+			mesh.add(skirting);
+		}
+	}
+
+	//марш
+	skirtingParams.rise = marshPar.h;
+	skirtingParams.step = marshPar.b;
+	var startTread = 0;
+	if (marshPar.botTurn == "площадка" && par.side == "in" && par.marshId > 1) startTread = 1;
+	if (params.startTreadAmt > 0 && par.marshId == 1) startTread = params.startTreadAmt;
+
+	for (var i = startTread; i < marshPar.stairAmt; i++) {
+		skirtingParams.isNotBotPlank = false; // наличие нижней планки плинтуса
+		if (i == startTread && marshPar.botTurn == "пол" && !hasStartTreadScirting) {
+			skirtingParams.isNotBotPlank = true;
+		}
+		if (i == startTread && marshPar.botTurn == "забег" && par.side == "in") {
+			skirtingParams.isNotBotPlank = true;
+		}
+		if (i == marshPar.stairAmt - 1 && marshPar.topTurn == "пол") {
+			skirtingParams.skirtingDescription = "Плинтус последней ступени " + par.marshId + " марша ";
+			skirtingParams.dxfArr = dxfPrimitivesArr;
+			skirtingParams.dxfBasePoint.x -= 1000;
+			if (params.topAnglePosition !== "вертикальная рамка" && params.calcType != 'timber') skirtingParams.isLast = true;
+			if (params.calcType == 'timber') skirtingParams.step -= params.nose;
+		}
+
+		var basePoint = {
+			x: params.nose + marshPar.b * i,
+			y: marshPar.h * i,
+		}
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = params.nose + marshPar.b * i;
+		skirting.position.y = marshPar.h * i;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+		//skirtingParams.dxfArr = dxfPrimitivesArr0;
+	}
+
+	if ((params.topAnglePosition == "вертикальная рамка" || params.calcType == 'timber') && marshPar.topTurn == "пол") {
+		skirtingParams.isLast = true;
+		var basePoint = {
+			x: params.nose + marshPar.b * marshPar.stairAmt,
+			y: marshPar.h * marshPar.stairAmt,
+		}
+		skirtingParams.nose = params.nose;
+		if (params.calcType == 'timber') {
+			basePoint.x -= params.nose;
+			skirtingParams.nose = 0;
+		}
+		skirtingParams.step = turnPar.topStepDelta - skirtingParams.nose;
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+	}
+
+	//верхний участок
+
+	if (marshPar.topTurn == "площадка") {
+		skirtingParams.skirtingDescription = "Плинтус площадки ";
+		skirtingParams.dxfArr = dxfPrimitivesArr;
+		skirtingParams.dxfBasePoint.x -= params.M + 500;
+		if (par.side == "out") {
+			skirtingParams.step = turnPar.turnLengthTop - params.nose;
+			if (params.stairModel === "П-образная с площадкой")
+				skirtingParams.step = params.platformLength_1;
+		}
+		if (par.side == "in") {
+			skirtingParams.step = turnPar.topMarshOffsetX;
+			if (params.stairModel === "П-образная с площадкой")
+				skirtingParams.step = 0;
+		}
+
+		skirtingParams.isLast = true;
+
+		var basePoint = {
+			x: params.nose + marshPar.b * marshPar.stairAmt,
+			y: marshPar.h * marshPar.stairAmt,
+		}
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = params.nose + marshPar.b * marshPar.stairAmt;
+		skirting.position.y = marshPar.h * marshPar.stairAmt;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+	}
+	if (marshPar.topTurn == "забег") {
+		//skirtingParams.skirtingDescription = "Плинтус площадки " + 1 + "шт.";riserThickness
+
+		//первая забежная ступень
+		skirtingParams.dxfArr = dxfPrimitivesArr;
+		skirtingParams.dxfBasePoint.x -= params.M + 500;
+
+		skirtingParams.nose = params.nose;
+		if (marshPar.stairAmt == 0 && !marshPar.lastMarsh) skirtingParams.nose = 20;
+
+		if (par.side == "out") {
+			skirtingParams.step = par.wndPar.params[1].stepWidthHi - skirtingParams.nose - params.riserThickness * Math.tan(par.wndPar.params[1].edgeAngle);
+		}
+		if (par.side == "in")
+			skirtingParams.step = par.wndPar.params[1].stepWidthLow - skirtingParams.nose;
+		//skirtingParams.step = par.wndPar.params[1].stepWidthLow + 60 - skirtingParams.nose;
+
+		skirtingParams.isLast = false;
+
+		var basePoint = {
+			x: skirtingParams.nose + marshPar.b * marshPar.stairAmt,
+			y: marshPar.h * marshPar.stairAmt,
+		}
+		skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+		skirtingParams = drawSkirting2(skirtingParams);
+		var skirting = skirtingParams.mesh;
+		/*
+		skirting.position.x = params.nose + marshPar.b * marshPar.stairAmt;
+		skirting.position.y = marshPar.h * marshPar.stairAmt;
+		*/
+		skirting.position.x = basePoint.x;
+		skirting.position.y = basePoint.y;
+		mesh.add(skirting);
+
+		//вторая забежная ступень
+		if (par.side == "out") {
+			skirtingParams.step = par.wndPar.params[2].stepWidthY - 20.525 / Math.cos(par.wndPar.params[1].edgeAngle) + params.riserThickness * Math.tan(par.wndPar.params[1].edgeAngle);
+			skirtingParams.nose = 20.525 / Math.cos(par.wndPar.params[1].edgeAngle);
+			if (params.stairModel == "П-образная с забегом" && par.marshId == 2 && nextMarshPar.hasSkirting.out)
+				skirtingParams.step -= params.riserThickness;
+			//skirtingParams.step = par.wndPar.params[2].stepWidthY - params.nose;
+			skirtingParams.rise = nextMarshPar.h;
+			skirtingParams.isLast = true;
+			var basePoint = {
+				x: marshPar.b * marshPar.stairAmt + par.wndPar.params[1].stepWidthHi - params.riserThickness * Math.tan(par.wndPar.params[1].edgeAngle),
+				y: marshPar.h * marshPar.stairAmt + marshPar.h,
+				//y: marshPar.h * marshPar.stairAmt + nextMarshPar.h,
+			}
+			skirtingParams.dxfBasePoint = newPoint_xy(dxfBasePoint0, basePoint.x, basePoint.y);
+
+			skirtingParams = drawSkirting2(skirtingParams);
+			var skirting = skirtingParams.mesh;
+			/*
+			skirting.position.x = marshPar.b * marshPar.stairAmt + par.wndPar.params[1].stepWidthHi - params.riserThickness * Math.tan(par.wndPar.params[1].edgeAngle);
+			skirting.position.y = marshPar.h * marshPar.stairAmt + nextMarshPar.h;
+			*/
+			skirting.position.x = basePoint.x;
+			skirting.position.y = basePoint.y;
+			mesh.add(skirting);
+		}
+	}
+
+	return mesh;
+
+}
+
+function setTurnRacksParams(marshId, key) {
+	var marshPar = getMarshParams(marshId);
+	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+
+	var rackProfile = 40;
+
+	var turnParams = calcTurnParams(marshPar.prevMarshId)
+
+	if (params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная с площадкой")
+		prevMarshPar.hasRailing.in = false;
+
+	var par = {
+		stringerShiftPoint: { x: 0, y: 0 }, // смещение поворотной стойки
+		rackLenAdd: 0, // удлинение стойки
+		shiftBotFrame: 0, //сдвиг кронштейна крепления к косоуру вниз чтобы не попадал на крепление рамки
+		shiftYtoP0: 0, //сдвиг вниз от начальной точки
+		shiftYforShiftX: 0,//сдвиг вниз по Y из-за сдвига по Х
+	}
+	if (marshPar.botTurn != "пол" && key == "in" && prevMarshPar.hasRailing.in) {
+
+		par.shiftYforShiftX = (marshPar.b * 0.5 - rackProfile / 2) * Math.tan(marshPar.ang);
+
+		if (params.model == "ко") {
+			par.shiftBotFrame = 30;
+			if (marshPar.botTurn == "забег") {
+				par.shiftYtoP0 = marshPar.h * 2 + prevMarshPar.h + par.shiftBotFrame;
+				par.stringerShiftPoint.x = -(turnParams.topMarshOffsetZ + params.nose) + rackProfile / 2;
+				par.stringerShiftPoint.y = - par.shiftYtoP0;
+				par.rackLenAdd = par.shiftYtoP0 + marshPar.h - par.shiftYforShiftX - (turnParams.topMarshOffsetZ + params.nose) * Math.tan(marshPar.ang);
+				if (params.riserType == "есть") {
+					par.stringerShiftPoint.x -= params.riserThickness;
+					par.rackLenAdd -= params.riserThickness * Math.tan(marshPar.ang);
+				}
+			}
+			if (marshPar.botTurn == "площадка") {
+				par.shiftYtoP0 = marshPar.h + prevMarshPar.h + par.shiftBotFrame;
+				par.stringerShiftPoint.x = rackProfile / 2;
+				par.stringerShiftPoint.y = - par.shiftYtoP0;
+				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX;
+				if (params.riserType == "есть") {
+					par.stringerShiftPoint.x -= params.riserThickness;
+					par.rackLenAdd -= params.riserThickness * Math.tan(marshPar.ang);
+				}
+			}
+		}
+
+		if (params.model == "лт") {
+			if (marshPar.botTurn == "забег") {
+				par.shiftYtoP0 = marshPar.h * 3 + prevMarshPar.h;
+				par.stringerShiftPoint.x = rackProfile / 2;
+				par.stringerShiftPoint.y = -par.shiftYtoP0;
+				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX;
+			}
+			if (marshPar.botTurn == "площадка") {
+				par.shiftYforShiftX -= (40) * Math.tan(marshPar.ang);
+				//par.shiftYtoP0 = marshPar.h + prevMarshPar.h;
+				par.shiftYtoP0 = prevMarshPar.h;
+				par.stringerShiftPoint.x = rackProfile / 2 + 40;
+				par.stringerShiftPoint.y = - par.shiftYtoP0;
+				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX + 5;
+				if (params.stairType == "лотки" || params.stairType == "рифленая сталь")
+					par.rackLenAdd -= 40 - 5;
+				if (params.stairType == "дпк")
+					par.rackLenAdd -= 20;
+			}
+		}
+	}
+
+	return par;
+}
+
+function drawPlatform2(par) {
+
+	/*
+	параметры:
+	par.len - общая длина (глубина) площадки
+	par.width - общая ширина площадки
+	dxfBasePoint
+	isP
+	botMarshId
+	*/
+
+	par.treads = new THREE.Object3D();
+	par.risers = new THREE.Object3D();
+	//поперек волокон площадка делается из кусков не шире 600мм. Рассчитываем параметры и добавляем в par
+	calcPltPartsParams(par);
+
+	var marshPar = getMarshParams(par.botMarshId);
+
+	if (!par.isNotTread) {
+		var plateParams = {
+			len: par.width,
+			width: par.partLen,
+			dxfBasePoint: par.dxfBasePoint,
+			dxfArr: dxfPrimitivesArr,
+			thk: params.treadThickness,
+			material: params.materials.tread,
+			partName: "tread",
+		}
+		if (params.stairType == 'дпк' || params.stairType == "лиственница тер.") {
+			plateParams.material = params.materials.dpc;
+			plateParams.dxfArr = [];
+		}
+		if (params.stairType == 'лотки') {
+			// рассчитываем параметры рамки
+			var parFrame = {}
+			calcFrameParams(parFrame);
+			plateParams.thkFull = plateParams.thk + parFrame.profHeight;
+		}
+
+		var partLen = par.partLen;
+		for (var i = 0; i < par.partsAmt; i++) {
+			par.partLen = partLen;
+			if (par.lastPartLen && i == par.partsAmt - 1) par.partLen = par.lastPartLen;
+			plateParams.width = par.partLen;
+			if (params.calcType == 'timber_stock' && $sceneStruct["vl_1"]["newell_fixings"]) {
+				if (i == 0) plateParams.holes = calcTimberStokPltHoles(plateParams.width, i == 0);
+				if (i == par.partsAmt - 1) plateParams.holes = calcTimberStokPltHoles(plateParams.width, i == 0);
+			}
+			var tread = drawPlate(plateParams).mesh;
+			tread.rotation.set(Math.PI * 0.5, 0, Math.PI * 0.5);
+			tread.position.x = (partLen + par.partsGap) * i + plateParams.width;
+			tread.position.y = 0.01;
+			tread.position.z = - calcTreadLen() / 2;
+			if (turnFactor == -1) tread.position.z = calcTreadLen() / 2 - plateParams.len;
+			plateParams.dxfBasePoint.y += plateParams.width + 150;
+
+			par.treads.add(tread);
+		} //end of for
+
+		/*подступенок под площадкой*/
+
+		if (params.riserType == "есть") {
+			var riserPar = {
+				//len: params.M,
+				len: plateParams.len,
+				width: marshPar.h,
+				thk: params.riserThickness,
+				dxfArr: dxfPrimitivesArr,
+				dxfBasePoint: dxfBasePoint,
+				hasTopScrews: true,
+				hasBotScrews: true
+			};
+
+			//отрисовка
+			riserPar = drawRectRiser(riserPar);
+			riser = riserPar.mesh;
+
+			riser.rotation.y = Math.PI / 2;
+			riser.rotation.x = Math.PI / 2;
+			riser.position.x = params.nose;
+			riser.position.y = tread.position.y - params.treadThickness - marshPar.h + 0.01;
+			riser.position.z = tread.position.z;
+			if (params.stairModel == "П-образная с площадкой" && turnFactor == -1 && par.botMarshId == 1) {
+				riser.position.z = -plateParams.len / 2 + riserPar.len / 2 + params.marshDist / 2;
+			}
+
+			par.risers.add(riser);
+		}
+	}
+
+	//сохраняем позицию последней ступени
+	par.endPos = {
+		x: 0,
+		y: 0,
+	}
+
+	return par;
 }

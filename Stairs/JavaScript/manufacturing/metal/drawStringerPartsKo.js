@@ -936,7 +936,7 @@ function drawBotStepKo_wndOut(par){
 		calcFrameParams(parFrames); // рассчитываем параметры рамки
 		//позиция уголка относительно угла косоура
 		var anglePos = {
-			x: params.M - params.sideOverHang * 2 - params.stringerThickness * 2,
+			x: params.M - params.sideOverHang * 2 - params.stringerThickness * 2 - calcStringerMoove(par.marshId).stringerOutMoovePrev,
 			y: par.h - parFrames.profHeight,
 			}
 		var center1 = newPoint_xy(p2, anglePos.x - 30, anglePos.y -25);
@@ -1565,7 +1565,7 @@ function drawTopStepKo_pltG(par){
 					//отверстия для крепления поворотной стойки следущего марша
 					var center2 = newPoint_xy(p0, par.b - params.nose + par.turnBotParams.topMarshOffsetX - 40 / 2, par.stepHoleY);
 					if (params.riserType == "есть") center2.x -= params.riserThickness;
-					center2.y -= setTurnRacksParams(par.marshId + 1, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
+					center2.y -= setTurnRacksParams(par.marshPar.nextMarshId, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
 					center2.noRack = true; // отверстие не учитывается при построении заграждения
 					par.railingHoles.push(center2);
 				}
@@ -2111,7 +2111,7 @@ function drawTopStepKo_wndIn(par) {
 	if (par.longStringerTop) {
 		var parFrames = { marshId: par.marshId };
 		calcFrameParams(parFrames); // рассчитываем параметры рамки
-		var extraLen = params.M - params.sideOverHang * 2 - params.stringerThickness * 2 - 60 - 5 - 0.02;
+		var extraLen = params.M - params.sideOverHang * 2 - params.stringerThickness * 2 - 60 - 5 - 0.02 - calcStringerMoove(par.marshId).stringerOutMooveNext;
 		var topLineP3 = newPoint_xy(topLineP1, extraLen, par.h_topWnd * 2 - parFrames.profHeight); //верхний правый угол
 		var topLineP2 = newPoint_xy(topLineP3, -100, 0);
 		var topLineP4 = newPoint_xy(topLineP3, 0, -120);

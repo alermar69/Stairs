@@ -1153,7 +1153,7 @@ function drawBotStepLt_wndIn(par) {
 
 	//Отверстия под ограждения
 	if (par.hasRailing) {
-		if (params.railingModel != "Самонесущее стекло") {
+		if (params.railingModel != "Самонесущее стекло" && params.railingModel != "Трап") {
 			//if (par.stairAmt != 1 && !(par.stairAmt == 2 && par.topEnd == "winder")) {
 				center1 = newPoint_xy(p2, par.b * 0.5, par.rackTopHoleY);
 				//смещаем точку ближе к низу марша
@@ -1181,6 +1181,15 @@ function drawBotStepLt_wndIn(par) {
 			}
 				par.railingHoles.push(center1);
 			//}
+		}
+		if (params.railingModel == "Трап") {
+			var balOnlay = 150;
+			center1 = polar(p2, par.marshAng - Math.PI / 2, balOnlay - 30);
+			center1 = newPoint_xy(center1, 5, -5 - par.h / 2);
+			center2 = polar(center1, par.marshAng + Math.PI / 2, 60);
+			center1.noHole2 = center2.noHole2 = true;//второе отверстие делать не надо
+			par.railingHoles.push(center1);
+			par.railingHoles.push(center2);
 		}
 		if (params.railingModel == "Самонесущее стекло") {
 
@@ -2497,7 +2506,7 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 						//отверстия для крепления поворотной стойки следущего марша
 						//var center2 = newPoint_xy(p0, par.b + par.turnBotParams.topMarshOffsetX - 40 / 2 + 5, par.stepHoleY);
 						var center2 = newPoint_xy(p2, 15, par.carcasAnglePosY);
-						center2.y -= setTurnRacksParams(par.marshId + 1, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
+						center2.y -= setTurnRacksParams(par.marshPar.nextMarshId, par.key).shiftBotFrame;//сдвиг кронштейна вниз чтобы не попадал на крепление рамки
 						center2.noRack = true;// отверстие не учитывается при построении заграждения
 						par.railingHoles.push(center2);
 
@@ -3471,6 +3480,12 @@ function drawTopStepLt_wndIn(par) {
 
 		if (params.railingModel == "Самонесущее стекло") {
 			center1 = center2 = 0;
+			if (par.botEnd == "winder" && par.stairAmt == 2) {
+				center1 = newPoint_xy(p0, par.rutelPosX, par.rutelPosY);
+				center2 = newPoint_xy(center1, 0.0, -par.rutelDist);
+				par.railingHoles.push(center1);
+				par.railingHoles.push(center2);
+			}
 		}
 	}
 

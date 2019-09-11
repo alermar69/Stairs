@@ -2344,9 +2344,9 @@ function drawTreadPlateHoles(par) {
 	var p1 = { x: center.x, y: center.y + 10 / Math.sqrt(3) };
 	var p2 = polar(p1, -Math.PI / 3, 10);
 	var p3 = polar(p2, Math.PI, 10);
-	addLine(hole, dxfPrimitivesArr, p1, p2, dxfBasePoint);
-	addLine(hole, dxfPrimitivesArr, p2, p3, dxfBasePoint);
-	addLine(hole, dxfPrimitivesArr, p3, p1, dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p1, p2, par.dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p2, p3, par.dxfBasePoint);
+	addLine(hole, dxfPrimitivesArr, p3, p1, par.dxfBasePoint);
 	par.holes.push(hole);
 
 	//прямогуольный вырез в центре детали

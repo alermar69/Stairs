@@ -1346,6 +1346,11 @@ function drawColumnStock(par) {
 	columnBotPlug.position.z = flanThickness + par.profWidth / 2;
 	if(!testingMode) grp.add(columnBotPlug);
 
+	var columnBotPlug = drawPlug(plugParams);
+	columnBotPlug.position.y = par.length;
+	columnBotPlug.position.z = flanThickness + par.profWidth / 2;
+	if(!testingMode) grp.add(columnBotPlug);
+
 	par.mesh = grp;
 
 	//сохраняем данные для спецификации

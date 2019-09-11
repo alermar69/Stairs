@@ -890,7 +890,7 @@ function drawTopPltStringer(par) {
 	}
 	
 	if (params.model == "ко") {
-		plateLen -= params.sideOverHang * 2;
+		plateLen -= params.sideOverHang * 2 + calcStringerMoove(par.marshId).stringerOutMoove;
 		distanceHole = 50; //расстояние между отверстиями для уголков крепления покрытия площадки у2-90
 	}
 
@@ -902,6 +902,7 @@ function drawTopPltStringer(par) {
 	if(params.model == "лт") p0.y += 5;
 	if(params.model == "ко") {
 		p0.x += params.sideOverHang;
+		if (turnFactor == -1) p0.x += calcStringerMoove(par.marshId).stringerOutMoove;
 		p0.y -= params.treadThickness;
 		}
 	var p1 = newPoint_xy(p0, 0.0, -plateWidth);
@@ -1268,7 +1269,7 @@ function drawSlidePart(par){
 
 		//длинные болты
 
-		if (drawLongBolts) {
+		if (drawLongBolts && stringerParams.elmIns[stringerParams.key]) {
 			var boltPar = {
 				diam: 10,
 				len: 40,
@@ -1515,7 +1516,7 @@ function drawStringerFlans_all(par) {
 	par.botLeft = null;
 	par.botRight = null;
 	par.topRight = null;
-	
+	if(!par.carcasHoles) return mesh;
 	for (var i = 0; i < par.carcasHoles.length; i++){
 		if (par.carcasHoles[i].isTopFlanHole){
 			par.holeCenters.push(par.carcasHoles[i]);

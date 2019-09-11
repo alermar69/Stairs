@@ -2366,7 +2366,7 @@ function calcFrameParams(par){
 		var stringerThickness = params.stringerThickness;
 		var treadWidth = params.M - 2 * stringerThickness;
 		var treadSideOffset = 0;
-		var midStringerAmt = Math.floor(treadWidth / 1100);
+		var midStringerAmt = Math.floor(treadWidth / 1090);
 		var midstringerBetweenLen = (treadWidth - stringerThickness * midStringerAmt) / (midStringerAmt + 1);
 		if (midStringerAmt > 0) {
 			par.length = midstringerBetweenLen;
