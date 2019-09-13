@@ -3723,7 +3723,8 @@ function drawHandrail_4(par) {
 		par.holderAmt = holderAmt;
 	}
 
-	if ((par.startPlug || par.endPlug) && (handrailPar.mat == 'metal' || handrailPar.mat == 'inox')) {
+	if ((par.startPlug || par.endPlug) && 
+		(handrailPar.mat == 'metal' || handrailPar.mat == 'inox' || handrailPar.handrailType == 'ПВХ')) {
 		var plugParams = {
 			id: handrailPar.handrailPlugId,
 			width: handrailPar.profY,
@@ -3731,12 +3732,25 @@ function drawHandrail_4(par) {
 			description: "Заглушка поручня",
 			group: "Ограждения"
 		}
+		if ((params.handrailMaterial == 'ПВХ' || handrailPar.handrailType == 'ПВХ') && par.partName !== "spiralRigel") {
+			var plugParams = {
+				id: "stainlessPlug_pvc",
+				width: 50,
+				height: 50,
+				description: "Заглушка поручня",
+				group: "Поручни",
+				isCirclePlug: true,
+				type: "inox",
+			}
+		}
 		if(handrailPar.mat == 'inox') plugParams.type = "inox";
 
 		if(handrailPar.handrailType == "Ф50 нерж.") plugParams.isCirclePlug = true;
 		
-		var zOffset = -par.wallOffset;
-		if (par.side == 'out') zOffset = par.wallOffset;
+		//var zOffset = -par.wallOffset;
+		//if (par.side == 'out') zOffset = par.wallOffset;
+		var zOffset = par.wallOffset;
+		if (par.side == 'in') zOffset = -par.wallOffset;
 
 		if (par.startPlug) {
 			var plugBasePoint = polar(p1, par.poleAngle + Math.PI / 2, -handrailPar.profY / 2);

@@ -460,77 +460,78 @@ function wallsMountingItemsAdd(){} //пустая функция для нави
 	timberPlug_20Amt = treadScrewAmt + stringerScrewTAmt + stringerScrewKAmt;
 			
 			
-	item = {
-		id:  "screw_3x35",
-		amt: riserScrewAmt,
-		discription: "Крепление подступенков к торцу ступени",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "screw_3x35",
+	// 	amt: riserScrewAmt,
+	// 	discription: "Крепление подступенков к торцу ступени",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "screw_8x80",
-		amt: treadScrewAmt,
-		discription: "Крепление ступеней к тетивам",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "screw_8x80",
+	// 	amt: treadScrewAmt,
+	// 	discription: "Крепление ступеней к тетивам",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// 	console.log(treadScrewAmt)
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "screw_8x120",
-		amt: stringerScrewTAmt,
-		discription: "Крепление тетив к столбам",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "screw_8x120",
+	// 	amt: stringerScrewTAmt,
+	// 	discription: "Крепление тетив к столбам",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "screw_6x60",
-		amt: stringerScrewKAmt,
-		discription: "Крепление косоуров к столбам",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "screw_6x60",
+	// 	amt: stringerScrewKAmt,
+	// 	discription: "Крепление косоуров к столбам",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "nagel",
-		amt: nagelAmt_risers,
-		discription: "Крепление подступенков к ступени",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "nagel",
+	// 	amt: nagelAmt_risers,
+	// 	discription: "Крепление подступенков к ступени",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "nagel",
-		amt: nagelAmt_treads,
-		discription: "Крепление ступеней к косоурам",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "nagel",
+	// 	amt: nagelAmt_treads,
+	// 	discription: "Крепление ступеней к косоурам",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "timberPlug_10",
-		amt: timberPlug_10Amt,
-		discription: "Заглушки креплений подступенков к торцу ступени",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "timberPlug_10",
+	// 	amt: timberPlug_10Amt,
+	// 	discription: "Заглушки креплений подступенков к торцу ступени",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 	
-	item = {
-		id:  "timberPlug_20",
-		amt: timberPlug_20Amt,
-		discription: "Заглушки глухарей каркаса",
-		unit: "screwsAdd",
-		itemGroup: "Каркас",
-		};
-	if(item.amt > 0) partsList.addItem(item);
+	// item = {
+	// 	id:  "timberPlug_20",
+	// 	amt: timberPlug_20Amt,
+	// 	discription: "Заглушки глухарей каркаса",
+	// 	unit: "screwsAdd",
+	// 	itemGroup: "Каркас",
+	// 	};
+	// if(item.amt > 0) partsList.addItem(item);
 
 
 	

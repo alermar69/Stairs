@@ -520,7 +520,7 @@ function drawSVGForgedRailing(par){
 						return false;
 					});
 					if (pole) {
-						var firstRack = railingShapes.find(shape =>{
+						var firstRack = racks.find(shape =>{
 							var data = shape.drawing || {};
 							if (shape.drawing.elemType == 'rack') {
 								if (data.marshId == pole.drawing.marshId && data.key == pole.drawing.key && pole.drawing.poleId == data.poleId) {

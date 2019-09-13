@@ -245,6 +245,7 @@ function drawScirtingSection(par) {
 		skirtingParams.rise = marshPar.h;
 		if (marshPar.stairAmt == 0 && par.marshId == 3) {
 			skirtingParams.isLast = true;
+			if (params.topAnglePosition == "вертикальная рамка") skirtingParams.isLast = false;
 		}
 		//skirtingParams.step = par.wndPar.params[3].stepWidthHi - params.nose - 0.01// - params.riserThickness * 2;
 		skirtingParams.nose = 21.824 / Math.cos(par.wndPar.params[3].edgeAngle) + 0.01;

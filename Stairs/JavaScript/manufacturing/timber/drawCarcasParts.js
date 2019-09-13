@@ -546,49 +546,49 @@ function drawStrightStringer(par){
 			par.meshes.push(treadMetis);
 		}
 
-		// //отверстия для крепления косоуров к столбам
-		// if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock"){
-		// 	var slotDiam = 40;
-		// 	var xSlotOffset = 30 + slotDiam / 2;
-		// 	var ySlotOffset = 50;
+		 ////отверстия для крепления косоуров к столбам
+		 //if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock"){
+		 //	var slotDiam = 12;
+		 //	var xSlotOffset = 30 + slotDiam / 2;
+		 //	var ySlotOffset = 50;
 
-		// 	if (marshPar.lastMarsh) hasTopFixingHoles = false;
-		// 	if (par.marshId == 1) hasBotFixingHoles = false;
-		// 	if (par.side == 'in' && marshPar.botTurn == 'забег') {
-		// 		hasBotFixingHoles = false;
-		// 	}
-		// 	if (params.stairModel == 'П-образная с площадкой' && par.side == 'in') {
-		// 		hasBotFixingHoles = false;
-		// 		hasTopFixingHoles = false;
-		// 	}
+		 //	if (marshPar.lastMarsh) hasTopFixingHoles = false;
+		 //	if (par.marshId == 1) hasBotFixingHoles = false;
+		 //	if (par.side == 'in' && marshPar.botTurn == 'забег') {
+		 //		hasBotFixingHoles = false;
+		 //	}
+		 //	if (params.stairModel == 'П-образная с площадкой' && par.side == 'in') {
+		 //		hasBotFixingHoles = false;
+		 //		hasTopFixingHoles = false;
+		 //	}
 			
-		// 	if (hasTopFixingHoles) {
-		// 		var center = newPoint_xy(botLineP1, -xSlotOffset, -ySlotOffset);
-		// 		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
-		// 		var center2 = newPoint_xy(center, 0, -96);
-		// 		addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
-		// 	}
-		// 	if (hasBotFixingHoles) {
-		// 		var center = newPoint_xy(topLineP0, xSlotOffset, 228 - ySlotOffset);
-		// 		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
-		// 		var center2 = newPoint_xy(center, 0, -96);
-		// 		addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
-		// 	}
-		// }
+		 //	if (hasTopFixingHoles) {
+		 //		var center = newPoint_xy(botLineP1, -xSlotOffset, -ySlotOffset);
+		 //		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+		 //		var center2 = newPoint_xy(center, 0, -96);
+		 //		addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
+		 //	}
+		 //	if (hasBotFixingHoles) {
+		 //		var center = newPoint_xy(topLineP0, xSlotOffset, 228 - ySlotOffset);
+		 //		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+		 //		var center2 = newPoint_xy(center, 0, -96);
+		 //		addRoundHole(stringerShape, dxfArr, center2, slotDiam/2, dxfBasePoint);
+		 //	}
+		 //}
 
-		// //отверстия для крепления косоуров к столбам
-		// if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock" && stairAmt == 1){
-		// 	var slotDiam = 40;
-		// 	var xSlotOffset = 30 + slotDiam / 2;
-		// 	var ySlotOffset = 64;
-		// 	hasTopFixingHoles = true;
+		 ////отверстия для крепления косоуров к столбам
+		 //if($sceneStruct["vl_1"]["newell_fixings"] && params.calcType == "timber_stock" && stairAmt == 1){
+		 //	var slotDiam = 40;
+		 //	var xSlotOffset = 30 + slotDiam / 2;
+		 //	var ySlotOffset = 64;
+		 //	hasTopFixingHoles = true;
 
-		// 	if (marshPar.lastMarsh) hasTopFixingHoles = false;
-		// 	if (hasTopFixingHoles) {
-		// 		var center = newPoint_xy(p4, -xSlotOffset, -ySlotOffset);
-		// 		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
-		// 	}
-		// }
+		 //	if (marshPar.lastMarsh) hasTopFixingHoles = false;
+		 //	if (hasTopFixingHoles) {
+		 //		var center = newPoint_xy(p4, -xSlotOffset, -ySlotOffset);
+		 //		addRoundHole(stringerShape, dxfArr, center, slotDiam/2, dxfBasePoint);
+		 //	}
+		 //}
 
 		//сохраняем точки для отрисовки верхнего столба
 		par.botLineP1 = copyPoint(botLineP1);

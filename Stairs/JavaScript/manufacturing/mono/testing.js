@@ -14,7 +14,7 @@ $(function(){
 	*/
 	var parParams = {
 		id: "stairModel",
-		ignorOptions: ["Прямая"],
+		ignorOptions: ["Прямая", "П-образная трехмаршевая"],
 		}
 	configurator.addParToTest(parParams);
 	
@@ -41,7 +41,7 @@ $(function(){
 			},
 		ignorOptions: ["003", "004"],
 		}
-	configurator.addParToTest(parParams);
+	//configurator.addParToTest(parParams);
 	
 	var parParams = {
 		id: "carcasConfig",
@@ -50,7 +50,7 @@ $(function(){
 			},
 		ignorOptions: ["003", "004"],
 		}
-	configurator.addParToTest(parParams);
+	//configurator.addParToTest(parParams);
 	
 	var parParams = {
 		id: "carcasConfig",
@@ -58,7 +58,7 @@ $(function(){
 			stairModel: "П-образная с площадкой",
 			},
 		}
-	configurator.addParToTest(parParams);
+	//configurator.addParToTest(parParams);
 	
 	var parParams = {
 		id: "carcasConfig",
@@ -66,7 +66,7 @@ $(function(){
 			stairModel: "П-образная с забегом",
 			},
 		}
-	configurator.addParToTest(parParams);
+	//configurator.addParToTest(parParams);
 	
 	var parParams = {
 		id: "carcasConfig",
@@ -74,8 +74,30 @@ $(function(){
 			stairModel: "П-образная трехмаршевая",
 			},
 		}
+	//configurator.addParToTest(parParams);
+	
+	//ограждения
+	
+	var parParams = {
+		id: "railingSide_1",
+		ignorOptions: ["внешнее", "две"],
+		}
 	configurator.addParToTest(parParams);
 	
+	var parParams = {
+		id: "railingSide_2",
+		onlyFor: {
+			stairModel: "П-образная трехмаршевая",
+			},
+		ignorOptions: ["внешнее", "две"],
+		}
+	configurator.addParToTest(parParams);
+	
+	var parParams = {
+		id: "railingSide_3",
+		ignorOptions: ["внешнее", "две"],
+		}
+	configurator.addParToTest(parParams);
 
 	console.log(configurator.configs);
 	

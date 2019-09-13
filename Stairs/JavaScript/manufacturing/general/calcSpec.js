@@ -79,7 +79,7 @@ function addSpecObjItems(par){
 					params.treadMaterial != "рифленая сталь" && 
 					params.treadMaterial != "лотки под плитку" &&
 					partName == "drum" &&
-					par.specObj[partName]["types"][type] > 1){
+					par.specObj[partName]["types"][type] > 2){
 					this[itemId].comment = "одну приварить к рамке площадки"
 				}
 					

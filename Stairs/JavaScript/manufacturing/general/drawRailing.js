@@ -1536,7 +1536,7 @@ function drawPolylineHandrail(par) {
 				if (turnFactor == -1 && key == 'out') connectionFlan.position.z = -50 - meterHandrailPar.profZ / 2;
 
 				if (params.stairModel == 'Прямая' && params.calcType == 'vhod') {
-					connectionFlan.position.z = -connectionFlan.position.z -meterHandrailPar.profZ;
+					//connectionFlan.position.z = -connectionFlan.position.z -meterHandrailPar.profZ;
 				}
 
 				if(!testingMode) par.mesh.add(connectionFlan);
@@ -1548,9 +1548,7 @@ function drawPolylineHandrail(par) {
 
 				var plug = drawTimberPlug(plugDiam);
 
-				var lengthHandrailIn = length - meterHandrailPar.profY / Math.tan(startAngle) - meterHandrailPar.profY / Math.tan(endAngle);
-
-				var plugPosition = polar(basePoint, handrailAngle, lengthHandrailIn);
+				var plugPosition = polar(basePoint, handrailAngle, length);
 				plugPosition = polar(plugPosition, handrailAngle + Math.PI / 2, meterHandrailPar.profY / 2);
 				plugPosition = polar(plugPosition, handrailAngle, -plugDiam - 10);
 
@@ -1661,7 +1659,7 @@ function drawPolylineHandrail(par) {
 			}
 
 			//добавляем кронштейн поручня к поворотному столбу
-			if (par.topPoint) {
+			if (par.topPoint && i == 0) {
 				//если нет последней стойки
 				if (par.topPoint.noDraw) {
 					var holderPar = {
@@ -2241,8 +2239,9 @@ function drawRailingSectionForge2(par) {
         material: params.materials.metal_railing,
         dxfArr: dxfPrimitivesArr,
         marshId: par.marshId,
+		key: par.key,
         side: par.railingSide,
-        sectText: par.text,
+        sectText: par.text,		
     }
 
     var rackPar = {
@@ -2256,6 +2255,7 @@ function drawRailingSectionForge2(par) {
         material: params.materials.metal_railing,
         dxfArr: dxfPrimitivesArr,
         marshId: par.marshId,
+		key: par.key,
         side: par.railingSide,
         sectText: par.text,
     }
@@ -2271,6 +2271,7 @@ function drawRailingSectionForge2(par) {
         material: params.materials.metal_railing,
         dxfArr: dxfPrimitivesArr,
         marshId: par.marshId,
+		key: par.key,
         side: par.railingSide,
         sectText: par.text,
     }
@@ -3302,6 +3303,9 @@ function drawForgedFramePart2(par) {
 		par.len2 = par.len - deltaHeight;
 		par.angStart = 0;
 		par.angEnd = par.angTop;
+		
+		par.isFirstFlan = false;
+		if (par.monoType == 'first' || par.monoType == 'platformRear') par.isFirstFlan = true;
 
 		//стойки монокосоуров
 
@@ -3406,7 +3410,24 @@ function drawForgedFramePart2(par) {
 				if (params.startTreadAmt == params.railingStart && (params.arcSide == par.railingSide || params.arcSide == "two"))
 					isFirstMove = true;
 			}
-
+console.log(par)
+			//отверстия на стойке марша
+			if(par.monoType == 'first' || par.monoType == 'middle'){
+				var rackPar = {
+					marshId: par.marshId,
+					key: par.key,
+					type: par.monoType,
+					isFirstFlan: par.isFirstFlan,
+					banisterAngleOffset: banisterAngleOffset - 90,
+					isFirstMove: isFirstMove,
+				}
+				holeCenters = setRackHoles(rackPar).holes;
+				
+				//размер для спецификации
+				var sizeA = botLen + holeCenters[0].y;
+				if (par.type == 'middle') sizeA = distance(holeCenters[0], holeCenters[1])
+			}
+	/*
 			//верхнее отверстие
 			if (par.monoType != 'last' && par.monoType != 'platformRear') {
 				var center1 = newPoint_xy(p0, 0, -params.treadThickness - banisterAngleOffset);
@@ -3420,15 +3441,21 @@ function drawForgedFramePart2(par) {
 				if (isFirstMove) center2.anglePos = 'слева';
 				holeCenters.push(center2);
 			}
+		*/	
 			if (par.monoType == 'turnRackStart' || par.monoType == 'turnRackEnd') {
 				var rackPar = {
 					marshId: par.marshId,
+					key: par.key,
 					type: par.monoType,
+					isFirstFlan: par.isFirstFlan,
+					banisterAngleOffset: banisterAngleOffset - 90,
 				}
 				holeCenters = setTurnRackHoles(rackPar).holes;
+				/*
 				for (var center in holeCenters) {
 					holeCenters[center].y += 90;
 				}
+				*/
 			}
 
 			//добавлем уголки
@@ -3442,7 +3469,7 @@ function drawForgedFramePart2(par) {
 			par.mesh.add(angles);
 
 			//фланцы
-			if (par.monoType == 'first' || par.monoType == 'platformRear') {
+			if (par.isFirstFlan) {
 				var flanPar = {
 					dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
 				}
@@ -3626,28 +3653,28 @@ function drawForgedFramePart2(par) {
 		}
 
 		//Нижняя заглушка
-		if(!(par.monoType == 'first' || par.isBotFlan || par.monoType == 'platformRear')){
-			var plugParams = {
-				id: "plasticPlug_40_40",
-				width: 40,
-				height: 40,
-				description: "Заглушка низа стоек ограждения",
-				group: "Ограждения"
-			}
-			var rackBotPlug = drawPlug(plugParams);
-			rackBotPlug.position.z = par.poleProfileY / 2;
-			rackBotPlug.position.y = p0.y - botLen;
+		//if(!(par.monoType == 'first' || par.isBotFlan || par.monoType == 'platformRear')){
+		//	var plugParams = {
+		//		id: "plasticPlug_40_40",
+		//		width: 40,
+		//		height: 40,
+		//		description: "Заглушка низа стоек ограждения",
+		//		group: "Ограждения"
+		//	}
+		//	var rackBotPlug = drawPlug(plugParams);
+		//	rackBotPlug.position.z = par.poleProfileY / 2;
+		//	rackBotPlug.position.y = p0.y - botLen;
 
-			if (par.monoType == 'last'){
-				rackBotPlug.position.z = sideLenLast + plugParams.width / 2 + par.poleProfileY / 2;
-				rackBotPlug.position.y += plugParams.height / 2;
-				if(par.railingSide === "right") rackBotPlug.position.z = -sideLenLast - plugParams.width / 2 + par.poleProfileY / 2;
-				rackBotPlug.rotation.y = Math.PI / 2;
-				rackBotPlug.rotation.z = Math.PI / 2;
-			}
+		//	if (par.monoType == 'last'){
+		//		rackBotPlug.position.z = sideLenLast + plugParams.width / 2 + par.poleProfileY / 2;
+		//		rackBotPlug.position.y += plugParams.height / 2;
+		//		if(par.railingSide === "right") rackBotPlug.position.z = -sideLenLast - plugParams.width / 2 + par.poleProfileY / 2;
+		//		rackBotPlug.rotation.y = Math.PI / 2;
+		//		rackBotPlug.rotation.z = Math.PI / 2;
+		//	}
 
-			if(!testingMode) par.mesh.add(rackBotPlug);
-		}
+		//	if(!testingMode) par.mesh.add(rackBotPlug);
+		//}
 
 		//создаем шейп
 		var shapePar = {
@@ -4541,7 +4568,7 @@ function setTurnRacksParams(marshId, key) {
 			if (marshPar.botTurn == "площадка") {
 				par.shiftYforShiftX -= (40) * Math.tan(marshPar.ang);
 				//par.shiftYtoP0 = marshPar.h + prevMarshPar.h;
-				par.shiftYtoP0 = prevMarshPar.h + 65;
+				par.shiftYtoP0 = prevMarshPar.h// + 65;
 				par.stringerShiftPoint.x = rackProfile / 2 + 40;
 				par.stringerShiftPoint.y = - par.shiftYtoP0;
 				par.rackLenAdd = par.shiftYtoP0 - par.shiftYforShiftX + 5;

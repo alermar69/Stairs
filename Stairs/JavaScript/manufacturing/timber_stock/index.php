@@ -42,6 +42,9 @@ $APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1")
 <!--форма доставка, сборка-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/assemblingForm.php" ?>
 
+<!--комментарии менеджера-->
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/comments.php" ?>
+
 <!--себестоимость-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/cost.php" ?>
 
@@ -59,6 +62,7 @@ $APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1")
 <!-- правое меню -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/right_menu/rightMenu.php" ?>
 
+<?php include $_SERVER['DOCUMENT_ROOT']."/dev/egorov/calculator/general/forms/timberRailingSvg.php" ?>
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
@@ -69,7 +73,7 @@ $APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1")
 	<script type="text/javascript" src="drawSvg.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
 	
-	<script type="text/javascript" src="/manufacturing/timber/drawCarcasParts.js"></script>
+	<script type="text/javascript" src="../timber/drawCarcasParts.js"></script>
 	<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 	<script type="text/javascript" src="/manufacturing/timber/drawStringerParts.js"></script>
 
@@ -102,6 +106,7 @@ $APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1")
 <script type="text/javascript" src="/calculator/timber_stock/forms/stockFormsChange.js"></script>
 
 <!--оболочки-->
+<script type="text/javascript" src="../general/main.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

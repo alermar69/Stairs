@@ -577,7 +577,7 @@ function drawSpiralRailing(par) {
 				description: "Заглушка поручня",
 				group: "Поручни",
 				isCirclePlug: true,
-				type: "inox",
+				type: "ПВХ",
 			}
 			var plug = drawPlug(plugParams);
 			plug.position.x = handrailPoints[0].x;

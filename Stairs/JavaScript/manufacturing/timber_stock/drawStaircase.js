@@ -8,7 +8,7 @@ var topRackTreadOffset = 0; //смещение верхней проступи �
 var excerptDepthForStaircase1 = 0; //выборка под опорный столб для прямой лестницы
 var excerptDepthForStaircase2 = 0; //выборка под опорный столб для прямой лестницы
 var turnFactor = 1;
-var treadsObj = {};
+var treadsObj;
 
 var testingMode = false;
 var frontEdgeRad = 6; //Радиус передней кромки ступени
@@ -135,6 +135,9 @@ model.add(skirting, "treads");
 	var handrail = drawSideHandrail_all(sideHandrailPar).mesh;
 	model.add(handrail, "handrails");
 
+	var fixings = drawFixings();
+	model.add(fixings, "fixings");
+
 
 	//сдвигаем и поворачиваем лестницу чтобы верхний марш был вдоль оси Х
 	var moove = calcStaircaseMoove(treadsObj.lastMarshEnd);
@@ -162,4 +165,47 @@ model.add(skirting, "treads");
 	//измерение размеров на модели
 	addMeasurement(viewportId);
 
+	setTimeout(function() {
+		if(typeof staircaseLoaded != 'undefined') staircaseLoaded();
+	}, 0);
+
 } //end of drawStair
+
+/**
+ * Функция отрисовывает крепления лестницы к окружению
+ */
+function drawFixings(){
+	var basePoint = { x:0, y:0, z:params.M + 100 };
+	var fixings = new THREE.Object3D();
+	var fixTypes = [];
+	for (var i = 1; i <= 6; i++) {fixTypes.push(params["fixPart" + i])};
+	for (var i = 0; i < fixTypes.length; i++) {
+		var fixType = fixTypes[i];
+		if (fixType == 'химия') {
+			var chemAnc = drawChemAnc().mesh;
+			chemAnc.rotation.z = Math.PI / 2;
+			chemAnc.position.x = basePoint.x;
+			chemAnc.position.y = basePoint.y;
+			chemAnc.position.z = basePoint.z;
+			fixings.add(chemAnc);
+		}
+		if (fixType == 'глухари') {
+			// screw_10x100
+			var screwPar = {
+				id: "screw_10x100",
+				description: "Крепление к обстановке",
+				group: "Окружение",
+				hasShim: true
+			}
+			
+			var screw = drawScrew(screwPar).mesh;
+			screw.rotation.z = Math.PI / 2;
+			screw.position.x = basePoint.x;
+			screw.position.y = basePoint.y;
+			screw.position.z = basePoint.z;
+			fixings.add(screw);
+		}
+		basePoint.z += 50
+	}
+	return fixings;
+}

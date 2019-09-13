@@ -92,6 +92,7 @@ $APPLICATION->SetTitle("Расчет деревянных лестниц v.4.1")
 <script type="text/javascript" src="calcSpec_2.0.js"></script>
 
 <!--оболочки-->
+<script type="text/javascript" src="../general/main.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

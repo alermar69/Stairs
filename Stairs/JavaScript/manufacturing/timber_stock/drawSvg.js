@@ -61,6 +61,34 @@ function makeSvg(){
 		}
 		var lists = setA4(a4Params);
 	}
+
+	if (sortedShapes.stringer) {
+		var stringers = drawUniqueShapes({draw: draw, shapes: sortedShapes.stringer})
+		// var a4Params = {
+		// 	elements: [stringers],
+		// 	basePoint: {x:2500, y:0},
+		// 	orientation: 'hor',
+		// 	posOrientation: 'hor',
+		// 	draw: draw,
+		// }
+		// var lists = setA4(a4Params);
+	}
+
+	if (sortedShapes.timber_railing) {
+		var railingPar = {
+			draw: draw,
+			shapes: sortedShapes.timber_railing
+		};
+		var timber_railings = drawTimberRailingFunction(railingPar);
+		var a4Params = {
+			elements: timber_railings,
+			basePoint: {x:2500, y:3000},
+			orientation: 'hor',
+			posOrientation: 'hor',
+			draw: draw,
+		}
+		var lists = setA4(a4Params);
+	}
 	
 	// var sections = [];
 	// addForgedSections(sections, view.scene);
@@ -184,6 +212,95 @@ function drawTimberStockNewellSVG(par){
 		});
 	}
 	return sets;
+}
+
+function drawUniqueShapes(par){
+	var set = par.draw.set();
+	var draw = par.draw;
+	var basePoint = {x:0,y:0};
+	//выводим на страницу уникальные шейпы
+	$.each(par.shapes, function(i){
+
+		var objSet = draw.set();
+
+		var obj = makeSvgFromShape(this, draw);
+		obj.setClass("parts");
+
+		objSet.push(obj);
+		
+		//угол поворота
+		var ang = 0;
+		var isBaseLine = false;
+		if (this.drawing.baseLine) {
+			if (this.drawing.baseLine.p1 && this.drawing.baseLine.p2) isBaseLine = true;
+		}
+		if (this.drawing && isBaseLine){
+			ang = angle(this.drawing.baseLine.p1, this.drawing.baseLine.p2) / Math.PI * 180;
+		};
+		
+		if (this.drawing) {
+			if (this.drawing.dimPoints) {
+				var dimPar = {
+					dimPoints: this.drawing.dimPoints,
+					draw: draw,
+					basePoint: p2,//newPoint_xy(basePoint, 0, -b.height),
+				};
+				var dim = drawDimensionsByPoints(dimPar);
+				dim.setClass("dimensions");
+				objSet.push(dim);
+			}
+		}
+
+		rotate(objSet, ang);
+		moove(objSet, basePoint);
+		set.push(objSet);
+
+		//описанный прямоугольник
+		var b = obj.getBBox()
+		var rect = drawRect({x: b.x, y: -b.y}, b.width, b.height, draw).attr({
+			fill: "none",
+			stroke: "#555",
+			"stroke-width": 1,
+		})
+		rect.setClass("other");
+		set.push(rect);
+
+		//базовые точки размеров
+		var p1 = {x: b.x, y: -b.y}
+		var p2 = newPoint_xy(p1, b.width, 0)
+		var p3 = newPoint_xy(p1, b.width, -b.height)
+		
+		//горизонтальный размер
+		var dimPar = {
+			type: "hor",
+			p1: p1,
+			p2: p2,
+			offset: 50,
+			side: "top",
+			draw: draw,
+		}
+		
+		var dim = drawDim(dimPar);
+		dim.setClass("dimensions");
+		set.push(dim);
+		//вертикальный размер
+		var dimPar = {
+			type: "vert",
+			p1: p2,
+			p2: p3,
+			offset: 50,
+			side: "right",
+			draw: draw,
+		}
+		
+		var dim = drawDim(dimPar);
+		dim.setClass("dimensions");
+		set.push(dim);
+		
+		basePoint.y -= b.height + 100;
+	});
+
+	return set;
 }
 
 /**

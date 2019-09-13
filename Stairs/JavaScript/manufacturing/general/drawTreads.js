@@ -489,6 +489,13 @@ function drawMarshTreads2(par) {
 
 		var posZ = 0;
 		for (var i = startIndex; i < par.stairAmt; i++) {
+			//коррекция длины
+			if (params.stairType == 'лотки') {
+				// длина ступени уменьшаеться если ступень попадает на фланец разделения тетив
+				var divide = ltko_set_divide(par.marshId).divide;
+				if (i == divide - 1) plateParams.len = par.treadLen - 8 * 2;
+				else plateParams.len = par.treadLen;
+			}
 			var addToDxf = true;
 			if (params.calcType == "timber" || params.calcType == "timber_stock") {
 				par.notches = calcMarshNotches(par.marshId);
@@ -961,7 +968,7 @@ function drawPlatform2(par) {
 
 		if (params.riserType == "есть") {
 			var riserPar = {
-				len: params.M,
+				len: plateParams.len,
 				width: marshPar.h,
 				thk: params.riserThickness,
 				dxfArr: dxfPrimitivesArr,

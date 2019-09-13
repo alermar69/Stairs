@@ -347,7 +347,7 @@ function drawBolt(par) {
 		rivet.position.y = -par.len / 2 + headHeight;
         par.mesh.add(rivet)
 		}
-		if(params.isPlasticCaps == "есть" && (params.calcType == 'lt-ko' || params.calcType == 'vhod') && !par.noNut && par.diam == 10){
+	if (!testingMode && params.isPlasticCaps == "есть" && (params.calcType == 'lt-ko' || params.calcType == 'vhod') && !par.noNut && par.diam == 10){
 			var cap = drawPlasticCap(par.diam);
 			cap.position.y = par.len / 2 - 7;
 			par.mesh.add(cap);

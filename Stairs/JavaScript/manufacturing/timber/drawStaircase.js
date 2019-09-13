@@ -8,7 +8,7 @@ var topRackTreadOffset = 0; //смещение верхней проступи �
 var excerptDepthForStaircase1 = 0; //выборка под опорный столб для прямой лестницы
 var excerptDepthForStaircase2 = 0; //выборка под опорный столб для прямой лестницы
 var turnFactor = 1;
-
+var treadsObj;
 var testingMode = false;
 var frontEdgeRad = 6; //Радиус передней кромки ступени
 
@@ -62,7 +62,7 @@ if(testingMode) frontEdgeRad = 0;
 
 /*** СТУПЕНИ НА ВСЕ ЛЕСТНИЦЫ ***/
 
-	var treadsObj = drawTreads()
+	treadsObj = drawTreads()
 	model.add(treadsObj.treads, "treads");
 	model.add(treadsObj.risers, "risers");
 	
@@ -160,5 +160,9 @@ if(testingMode) frontEdgeRad = 0;
 
 	//измерение размеров на модели
 	addMeasurement(viewportId);
+
+	setTimeout(function() {
+		if(typeof staircaseLoaded != 'undefined') staircaseLoaded();
+	}, 0);
 
 } //end of drawStair

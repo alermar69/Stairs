@@ -75,16 +75,6 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <!-- общие библиотеки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/libs_man.php" ?>
 
-<!--файлы с едиными функциями (сейчас в работе)-->
-<script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
-<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
-<script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
-<script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>
-<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawCarcasParts.js"></script>
-<script type="text/javascript" src="/manufacturing/general/drawRailing.js"></script>
-<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
-
 <!--визуализация-->
 <script type="text/javascript" src="drawStaircase.js"></script>
 <script type="text/javascript" src="drawCarcasParts.js"></script>
@@ -93,17 +83,24 @@ $APPLICATION->SetTitle("Производство лестниц на монок�
 <script type="text/javascript" src="drawCarcas.js"></script>
 <script type="text/javascript" src="drawStringers.js"></script>
 <script type="text/javascript" src="drawRailing_3.0.js"></script>
-
+<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 
 <script type="text/javascript" src="drawSvg.js"></script>
 
-
+<!--файлы с едиными функциями (сейчас в работе)-->
+<script type="text/javascript" src="../general/drawTreads.js"></script>
+<script type="text/javascript" src="../general/calcParams.js"></script>
+<script type="text/javascript" src="../general/testing/testingLib.js"></script>
+<script type="text/javascript" src="../general/testing/testingActions.js"></script>
+<script type="text/javascript" src="../general/calcRailingParams.js"></script>
+<script type="text/javascript" src="../general/drawCarcasParts.js"></script>
+<script type="text/javascript" src="../general/drawRailing.js"></script>
 
 <!--расчет спецификации-->
 <script type="text/javascript" src="calcSpec_3.0.js"></script>
 
 <!--оболочки-->
-<script type="text/javascript" src="/manufacturing/general/main.js"></script>
+<script type="text/javascript" src="../general/main.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 <!--тестирование-->

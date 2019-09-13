@@ -3139,6 +3139,12 @@ function drawForgedBanister_4(par) {
 
 function drawForgedBanister_5(par) {
 	par.mesh = new THREE.Object3D();
+
+	var material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
+	var minRadius = 30 / 2;
+	var maxRadius = 39 / 2;
+	var height = 38;
+	var segments = 32;
 	
 	//балясина со вставкой мэша
 	if (par.type == "bal_1" || par.type == "bal_2" || par.type == "bal_3" || 
@@ -3158,6 +3164,12 @@ function drawForgedBanister_5(par) {
 		
 		var bal = drawMeshBal(balPar);
 		par.mesh.add(bal);
+
+		//основание
+		var geometry = new THREE.CylinderBufferGeometry(minRadius, maxRadius, height, segments);
+		var cylinder = new THREE.Mesh(geometry, material);
+		cylinder.position.y = height / 2;
+		if (!testingMode) par.mesh.add(cylinder);
 	}
 	//балясина из svg
 	else {
@@ -3215,6 +3227,12 @@ function drawForgedBanister_5(par) {
 			fakeShape.drawing.banisterType = par.type;
 			shapesList.push(fakeShape);
 		}
+
+		//основание
+		var geometry = new THREE.CylinderBufferGeometry(minRadius, maxRadius, height, segments);
+		var cylinder = new THREE.Mesh(geometry, material);
+		cylinder.position.y = height / 2;
+		if (!testingMode) par.mesh.add(cylinder);
 	}
 	
 

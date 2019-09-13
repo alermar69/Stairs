@@ -35,6 +35,13 @@ function setRailingParams(par) {
 		if (par.prevMarshId == "3" && params.backRailing_1 == "нет") {
 			par.botConnection = false;
 		}
+
+		if (par.marshId == "1" && params.backRailing_1 == "есть") {
+			par.topConnection = true;
+		}
+		if (par.marshId == "3" && params.backRailing_1 == "есть") {
+			par.botConnection = true;
+		}
 	}
 
 
@@ -61,24 +68,7 @@ function setRailingParams(par) {
 			isTopPlt = true;
 		}
 	}
-	/*
-	if (marshParams.lastMarsh && (params.platformTop == "площадка" || params.platformTop == "увеличенная")) {
-		par.topEnd = "нет";
-		if (!(params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой')) {
-			if (topPltRailing[par.key] && !(params.platformTop == 'увеличенная' && par.key == 'in')) {//FIX
-				par.topEnd = "площадка";
-				isTopPlt = true;
-			}
-		}
-		if (params.stairModel == 'Прямая' || params.stairModel == 'Прямая с промежуточной площадкой') {
-			//if (topPltRailing[par.key] && !(params.platformTop == 'увеличенная' && par.key == 'out')) {//FIX
-			if (topPltRailing[par.key]) {//FIX
-				par.topEnd = "площадка";
-				isTopPlt = true;
-			}
-		}
-	}
-	*/
+
 	if (par.key == 'in' && hasCustomMidPlt(par) && params.middlePltWidth >= params.M + 200 && par.marshId == 3) par.botEnd = "площадка";
 	if (par.key == "in" && hasCustomMidPlt(par) && params.middlePltLength >= params.M + 200 && par.marshId == 1) par.topEnd = "площадка";
 
