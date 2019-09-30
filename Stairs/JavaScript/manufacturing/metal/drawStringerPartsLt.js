@@ -953,10 +953,10 @@ function drawBotStepLt_wndIn(par) {
 
 	//рассчитываем высоту вертикального участка тетивы исходя из позиции уголков соединения тетив
 	var holePos = -(par.h * 2 + params.treadThickness + 20); // позиция верхнего отверстия перемычки / отверстия рамки относительно верха первой забежной ступени
-	if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 3 && params.stairAmt2 == 0) {
-		holePos -= 30;
-		if (hasTreadFrames()) holePos -= 30;
-	}
+	//if (params.stairModel == "П-образная трехмаршевая" && par.marshId == 3 && params.stairAmt2 == 0) {
+	//	holePos -= 30;
+	//	if (hasTreadFrames()) holePos -= 30;
+	//}
 
 
 	//низ верхнего крепежного уголка
@@ -972,7 +972,7 @@ function drawBotStepLt_wndIn(par) {
 	//если в нижнем марше 0 ступеней, тогда укорачиваем снизу высоту тетивы, чтобы она не врезалась в пол
 	//при этом остается только верхний уголок
 	var hasBotAngle = true;
-	if (par.stairAmt_prev == 0 && !(params.stairModel == "П-образная с забегом" && par.marshId == 3)) {
+	if (par.stairAmt_prev == 0 && !((params.stairModel == "П-образная с забегом" || params.stairModel == "П-образная трехмаршевая") && par.marshId == 3)) {
 		if (hasTreadFrames()) botAngPosY = topAngPosY;
 		//верхнее отверстие уголка совпадает с уголком крепления ступени
 		if (!hasTreadFrames()) {
@@ -1101,6 +1101,7 @@ function drawBotStepLt_wndIn(par) {
 			holes: par.wndFramesHoles.topMarsh.in[3],
 			basePoint: newPoint_xy(p0, offsetX, -params.treadThickness),
 		}
+		if (par.wndFramesHoles1 && par.marshId == 3) holePar.holes = par.wndFramesHoles1.topMarsh.in[3];
 		if (par.stringerLast && par.stairAmt == 0) {
 			//holePar.holes[0].x += (params.lastWinderTreadWidth - 86) / 2;
 			//if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
@@ -1391,6 +1392,7 @@ function drawBotStepLt_wndOut(par) {
 			holes: par.wndFramesHoles.topMarsh.out[3],
 			basePoint: newPoint_xy(p4, offsetX, -(par.stringerLedge + params.treadThickness)),
 		}
+		if (par.wndFramesHoles1 && par.marshId == 3) holePar.holes = par.wndFramesHoles1.topMarsh.out[3];
 		if (par.stringerLast && par.stairAmt == 0) {
 			//holePar.holes[1].x += (params.lastWinderTreadWidth - 86);
 			//if (params.stairType == "рифленая сталь" || params.stairType == "лотки")
@@ -2349,7 +2351,7 @@ console.log(par.marshId, par.pointsShape[par.pointsShape.length-1])
 		var shiftHoleY = par.carcasAnglePosY;
 		if (par.marshPar.lastMarsh) {
 			shiftHoleY = -params.treadThickness - 5 - 20;
-			if (hasTreadFrames()) shiftHoleY -= par.platformFramesParams.profHeight + 5
+			if (hasTreadFrames() && (params.stairType == "рифленая сталь" || params.stairType == "лотки")) shiftHoleY -= par.platformFramesParams.profHeight + 5
 		}
 		center1 = newPoint_xy(topLineP1, -30.0, shiftHoleY);
 		center2 = newPoint_xy(center1, 0.0, -par.holeDistU4);

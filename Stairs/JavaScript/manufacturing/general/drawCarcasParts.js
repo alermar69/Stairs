@@ -2274,8 +2274,10 @@ function getFixPart(marshId, wall = 'wall') {
 	//определяем параметры крепления в зависимости от типа крепления и типа стены
 	if (fixPar.fixPart == 'глухари') {
 		if (params.model == "ко" && fixPar.fixType == 'дерево') {
-			fixPar.diam = 12;
-			fixPar.len = 200;
+			//fixPar.diam = 12;
+			//fixPar.len = 200;
+			fixPar.diam = 10;
+			fixPar.len = 100;
 		}
 	}
 

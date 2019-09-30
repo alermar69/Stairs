@@ -924,7 +924,8 @@ function drawTopStepMk_wnd(par) {
 
 	// Задняя кромка
 	var topLineP2 = newPoint_xy(topLineP1, 0.0, -215.0);
-	if (params.model == "труба") topLineP2 = newPoint_xy(topLineP1, 0.0, -(60 - params.treadPlateThickness + params.sidePlateOverlay));
+	//if (params.model == "труба") topLineP2 = newPoint_xy(topLineP1, 0.0, -(60 - params.treadPlateThickness + params.sidePlateOverlay));
+	if (params.model == "труба") topLineP2 = newPoint_xy(topLineP1, 0.0, -(60 + params.sidePlateOverlay));
 
 	par.pointsShape.push(p2);
 	par.pointsShape.push(p3);
@@ -1007,7 +1008,8 @@ function drawTopStepMk_wnd(par) {
 		if (par.key == "in") {
 			var topLineP3 = newPoint_xy(topLineP2, -(params.M - params.profileWidth) / 2 + 60 + 8 - par.stringerLedge, 0.0);
 
-			var topLineP31 = newPoint_xy(topLineP3, 0.0, -(params.profileHeight - params.sidePlateOverlay) - 2);
+			//var topLineP31 = newPoint_xy(topLineP3, 0.0, -(params.profileHeight - params.sidePlateOverlay) - 2);
+			var topLineP31 = newPoint_xy(topLineP3, 0.0, -(params.profileHeight - params.sidePlateOverlay));
 			var topLineP4 = itercection(topLineP31, polar(topLineP31, Math.PI, 100.0), p20, p21);
 
 			par.pointsShape.push(topLineP3);

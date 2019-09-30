@@ -484,7 +484,17 @@ function drawBotStepKo_pltP(par){
 	var center2 = newPoint_xy(p2, -par.stepHoleX1 - params.nose, par.stepHoleY);
 	var center1 = newPoint_xy(p2, -par.stepHoleX2 - params.nose, par.stepHoleY);
     //для П-образная с площадкой делаем рамки на площадке одинаковой ширины (ширина как на первом марше)
-    if (params.stairModel == "П-образная с площадкой") center1.x += params.b3 - params.b1;
+    //if (params.stairModel == "П-образная с площадкой") center1.x += params.b3 - params.b1;
+	if (params.stairModel == "П-образная с площадкой") {
+		var marshFramesParams = { marshId: 1 };
+		calcFrameParams(marshFramesParams); 
+		var center2 = newPoint_xy(p2, -marshFramesParams.stepHoleX1 - params.nose, par.stepHoleY);
+		var center1 = newPoint_xy(p2, -marshFramesParams.stepHoleX2 - params.nose, par.stepHoleY);
+		if (params.riserType == "есть") {
+			center1.x -= params.riserThickness * 2;
+			center2.x -= params.riserThickness * 2;
+		}
+	}
 
 	par.pointsHole.push(center1);
     par.pointsHole.push(center2);

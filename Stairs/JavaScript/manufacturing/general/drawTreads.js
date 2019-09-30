@@ -968,7 +968,7 @@ function drawPlatform2(par) {
 
 		if (params.riserType == "есть") {
 			var riserPar = {
-				len: plateParams.len,
+				len: params.M,
 				width: marshPar.h,
 				thk: params.riserThickness,
 				dxfArr: dxfPrimitivesArr,
@@ -986,6 +986,7 @@ function drawPlatform2(par) {
 			riser.position.x = params.nose;
 			riser.position.y = tread.position.y - params.treadThickness - marshPar.h + 0.01;
 			riser.position.z = tread.position.z;
+			if (turnFactor == -1) riser.position.z += plateParams.len - riserPar.len;
 			if (params.stairModel == "П-образная с площадкой" && turnFactor == -1	&& par.botMarshId == 1) {
 				riser.position.z = -plateParams.len / 2 + riserPar.len / 2 + params.marshDist / 2;
 			}

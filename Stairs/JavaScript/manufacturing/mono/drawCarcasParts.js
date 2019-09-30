@@ -895,7 +895,7 @@ function calcColumnParams(par, stringerParams){
 		if (top2.isVisible) {
 			pStart = par.pointsShape[par.pointsShape.length - 1];
 			pEnd = par.pointsShape[par.pointsShape.length - 2];
-			if (params.model == 'труба') {
+			if (params.model == 'труба' && stringerParams.isKinkTop) {
 				let tempPStart = par.pointsShape[par.pointsShape.length - 2];
 				let tempPEnd = par.pointsShape[par.pointsShape.length - 3];
 				if (distance(tempPEnd, tempPStart) > 220) {//200 размер фланца + 20 зазор с каждой стороны по 10
@@ -1743,7 +1743,7 @@ function calcColumnsPosition(par, stringerParams){
 		// columnPosition.top2
 		startPoint = par.pointsShape[par.pointsShape.length - 1];
 		endPoint = par.pointsShape[par.pointsShape.length - 2];
-		if (params.model == "труба") {
+		if (params.model == "труба" && stringerParams.isKinkTop) {
 			if (marshParams.topTurn == "забег") {
 				startPoint = par.pointsShape[par.pointsShape.length - 2];
 				endPoint = par.pointsShape[par.pointsShape.length - 3];

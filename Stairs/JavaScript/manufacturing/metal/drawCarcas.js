@@ -437,6 +437,7 @@ function drawMarshStringers(par, marshId){
 	var flans = drawStringerFlans_all(franPar);
 	if(params.model == "лт") flans.position.x -= 5;
 	flans.position.z = (params.M / 2 - stringerParams.stringerSideOffset - params.stringerThickness * 2)
+	if (turnFactor == -1) flans.position.z -= calcStringerMoove(par.marshId).stringerOutMoove
 	mesh.add(flans);
 
 
@@ -505,6 +506,7 @@ function drawMarshStringers(par, marshId){
 	var flans = drawStringerFlans_all(franPar);
 	if(params.model == "лт") flans.position.x -= 5;
 	flans.position.z = -(params.M / 2 - stringerParams.stringerSideOffset - params.stringerThickness)
+	if (turnFactor == 1) flans.position.z += calcStringerMoove(par.marshId).stringerOutMoove
 	mesh.add(flans);				
 
 
@@ -902,6 +904,7 @@ function drawColumnSide(par, key){
 		if (params.model == "ко") var columnOffsetZ = -(profSize.profHeight / 2 + params.stringerThickness) * turnFactor;
 		if (key == "in") columnOffsetZ *= -1;
 		if (params.stairModel == "Прямая") columnOffsetZ *= -1;
+		//if (params.model == "ко" && params.columnFixSide == "изнутри") columnOffsetZ *= -1;
 		var columnOffsetX = 5;
 		if (params.model == "ко") columnOffsetX = 0;
 		if (params.stairModel == "П-образная с площадкой" && par.key == "rear") columnOffsetX = 0;
@@ -963,12 +966,21 @@ function drawColumnSide(par, key){
 				}
 				
 				col1.position.z = par.anglesPosZ + columnOffsetZ;
+
+				if (params.model == "ко" && params.columnFixSide == "изнутри") {
+					col1.rotation.y += Math.PI;
+					col1.position.x -= profSize.profWidth;
+					if (key == 'out') col1.position.z += (profSize.profHeight + params.stringerThickness) * turnFactor;
+					if (key == 'in') col1.position.z -= (profSize.profHeight + params.stringerThickness) * turnFactor;
+				}
+
 				if (key == "front") {
 					col1.rotation.y = Math.PI / 2;
 					col1.position.z -= (90 - params.stringerThickness) * turnFactor;
 					col1.position.x -= 90;
 					if (turnFactor == -1) col1.position.z += (profSize.profWidth + params.stringerThickness);
 				}
+				
 				mesh.add(col1);
 				i++; //пропускаем следующее отверстие
 			}
@@ -1482,7 +1494,10 @@ function calcColumnPosHoles(par) {
 					var colHole1 = holePos[k];
 					var colHole2 = newPoint_xy(colHole1, 0, -holeDist);
 					colHole2.isColumnHole = colHole1.isColumnHole = true;
-					if(params.model == "ко") colHole2.backZenk = colHole1.backZenk = true;
+					if (params.model == "ко") colHole2.backZenk = colHole1.backZenk = true;
+					if (params.model == "ко" && params.columnFixSide == "изнутри") {
+						colHole2.backZenk = colHole1.backZenk = false;
+					}
 					colHole2.hasAngle = colHole1.hasAngle = false;
                     if ((k == 1 || k == 2) && par.botEnd == "platformG" && (stringerPar.stringerDivision || stringerPar.stringerDivisionBot))
 						colHole2.place = colHole1.place = "bot";		// в массти для отверстий в нижней части тетивы (pointsHoleBot) должны попасть только отвертия для 1 и 2 колонн
@@ -1567,20 +1582,25 @@ function calcStringerMoove(marshId) {
 		stringerOutMoovePrev: 0,
 	};
 	if (params.model == "ко") {
-		if (marshId == 1) {
+		if (params.stairModel == 'Прямая') {
 			par.stringerOutMoove = params.stringerMoove_1;
-			par.stringerOutMooveNext = params.stringerMoove_3;
-			if (~params.stairModel.indexOf("П-образная")) par.stringerOutMooveNext = params.stringerMoove_2;
 		}
-		if (marshId == 2) {
-			par.stringerOutMoove = params.stringerMoove_2;
-			par.stringerOutMoovePrev = params.stringerMoove_1;
-			par.stringerOutMooveNext = params.stringerMoove_3;
-		}
-		if (marshId == 3) {
-			par.stringerOutMoove = params.stringerMoove_3;
-			par.stringerOutMoovePrev = params.stringerMoove_1;
-			if (~params.stairModel.indexOf("П-образная")) par.stringerOutMoovePrev = params.stringerMoove_2;
+		else {
+			if (marshId == 1) {
+				par.stringerOutMoove = params.stringerMoove_1;
+				par.stringerOutMooveNext = params.stringerMoove_3;
+				if (~params.stairModel.indexOf("П-образная")) par.stringerOutMooveNext = params.stringerMoove_2;
+			}
+			if (marshId == 2) {
+				par.stringerOutMoove = params.stringerMoove_2;
+				par.stringerOutMoovePrev = params.stringerMoove_1;
+				par.stringerOutMooveNext = params.stringerMoove_3;
+			}
+			if (marshId == 3) {
+				par.stringerOutMoove = params.stringerMoove_3;
+				par.stringerOutMoovePrev = params.stringerMoove_1;
+				if (~params.stairModel.indexOf("П-образная")) par.stringerOutMoovePrev = params.stringerMoove_2;
+			}
 		}
 	}
 	return par;
@@ -1682,3 +1702,5 @@ function drawStringerBotHoles(par, typeDop) {
 		}
 	}	
 }
+
+

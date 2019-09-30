@@ -285,6 +285,7 @@ function drawMarshRailing(par, marshId) {
 	var hasRailing = false;
 	if (marshParams.hasRailing.in) hasRailing = true;
 	if (marshParams.hasTopPltRailing.in) hasRailing = true;
+	if (marshParams.hasTopBalRailing.in) hasRailing = true;
 	//костыль для ограждения верхней площадки Прямой с промежуточной площадкой: там объединяются массивы для 1 и 3 марша и отрисовывается ограждение как будто только для первого марша
 	if (params.stairModel == "Прямая с промежуточной площадкой") {
 		if (getMarshParams(3).hasTopPltRailing.in) hasRailing = true;

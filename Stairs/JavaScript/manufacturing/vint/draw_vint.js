@@ -292,7 +292,7 @@ function drawStaircase(viewportId, isVisible) {
 
 	//первая бобышка
 	var posY0 = botFlanThk;
-	//if (botFloorType == "черновой") posY0 -= params.botFloorsDist;
+	if (botFloorType == "черновой") posY0 -= params.botFloorsDist;
 
 	var spacerHeight0 = stepHeight - params.treadThickness - posY0;
 	if (stairType == "metal") spacerHeight0 = stepHeight - posY0 + 4; // 4 - подогнано
@@ -317,7 +317,8 @@ function drawStaircase(viewportId, isVisible) {
 	//var geomHolderDrum = new THREE.CylinderGeometry( radiusTop, radiusBottom, height-8, radialSegments, heightSegments, openEnded) 
 
 	var posY = stepHeight;
-	if (stairType == "metal") posY = spacerHeight0 + 8
+	if (stairType == "metal") posY += botFlanThk / 2;
+	//if (stairType == "metal") posY = spacerHeight0 + 8
 	
 	for (var i = 1; i < stairAmt + 1; i++) {
 		//регулировочная шайба
@@ -373,7 +374,7 @@ function drawStaircase(viewportId, isVisible) {
 	flanParams = drawRoundFlan(flanParams)
 
 	var botFlan = flanParams.mesh;
-	if (botFloorType == "черновой") botFlan.position.y = -params.botFloorsDist;
+	if (botFloorType == "черновой") botFlan.position.y -= params.botFloorsDist;
 	//carcas.push(botFlan);
 	model.add(botFlan, "shims");
 	
@@ -1283,3 +1284,4 @@ function getIndexDivide(point, divides) {
 	}
 	return index;
 }
+

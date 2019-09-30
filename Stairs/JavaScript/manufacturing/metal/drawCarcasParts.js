@@ -2342,30 +2342,30 @@ function drawTopFixFlan(length, dxfBasePoint) {
 	flanParams.mesh.add(mesh);
 
 	//болты
-	if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
-		var boltPar = {
-			diam: boltDiam,
-			len: boltLen,
-		}
+	//if (typeof anglesHasBolts != "undefined" && anglesHasBolts) { //глобальная переменная
+	//	var boltPar = {
+	//		diam: boltDiam,
+	//		len: boltLen,
+	//	}
 		
-		var x = flanParams.width / 2;
-		var z = -boltPar.len / 2;
-		var y = flanParams.hole1Y;
+	//	var x = flanParams.width / 2;
+	//	var z = -boltPar.len / 2;
+	//	var y = flanParams.hole1Y;
 
-		var bolt = drawBolt(boltPar).mesh;
-		bolt.rotation.x = -Math.PI / 2;
-		bolt.position.x = x;
-		bolt.position.z = z;
-		bolt.position.y = y;
-		flanParams.mesh.add(bolt);
+	//	var bolt = drawBolt(boltPar).mesh;
+	//	bolt.rotation.x = -Math.PI / 2;
+	//	bolt.position.x = x;
+	//	bolt.position.z = z;
+	//	bolt.position.y = y;
+	//	flanParams.mesh.add(bolt);
 
-		var bolt2 = drawBolt(boltPar).mesh;
-		bolt2.rotation.x = -Math.PI / 2;
-		bolt2.position.x = x;
-		bolt2.position.y = flanParams.hole4Y;
-		bolt2.position.z = z;
-		flanParams.mesh.add(bolt2);
-	}
+	//	var bolt2 = drawBolt(boltPar).mesh;
+	//	bolt2.rotation.x = -Math.PI / 2;
+	//	bolt2.position.x = x;
+	//	bolt2.position.y = flanParams.hole4Y;
+	//	bolt2.position.z = z;
+	//	flanParams.mesh.add(bolt2);
+	//}
 	
 	//сохраняем данные для спецификации
 	var partName = "topFlan";

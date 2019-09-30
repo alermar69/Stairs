@@ -2682,7 +2682,7 @@ function drawBanistersArr(par) {
 		}
 
 	//рейка в поручень
-	if(timberBalTopEnd == "квадрат"){
+	if(timberBalTopEnd == "квадрат" && params.railingModel != "Дерево с ковкой"){
 
 		var polePar = {
 			type: "rect",

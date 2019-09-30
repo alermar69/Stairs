@@ -607,6 +607,9 @@ function drawComplexStringer(par) {
 						if (par.topEnd == "забег" && par.botEnd == "забег" && i == par.stepPoints.length - 4) {
 							platePar.isLong = false;
 						}
+						if (par.botEnd == "пол" && params.stairAmt1 < 3) {
+							platePar.isLong = false;
+						}
 						//if (par.botEnd == "забег" && platePar.plateId == 3) {
 						//	platePar.stairAngle1 = calcAngleX1(par.pointsShape[1], par.pointsShape[0]);
 						//}
@@ -2552,7 +2555,7 @@ function calcStringerPar(par) {
 	par.stringerWidth = params.stringerThickness;
 	if (params.model == "труба") par.stringerWidth = params.profileWidth;
 
-
+	par.stringerLedge = 0;
 	if (params.stairModel == "Г-образная с площадкой" || params.stairModel == "Г-образная с забегом") {
 		par.stringerLedge = params.stringerLedge1;
 	}

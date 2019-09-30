@@ -590,6 +590,9 @@ function drawPlug(par){
 		if(par.type == "timber"){
 			name = "дер. грибок для отв.Ф" + par.width + " " + getTimberPlugType(params.handrailsMaterial);
 		}
+		if (par.type == "ПВХ") {
+			name = "внешняя для поручня ПВХ";
+		}
 		
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
@@ -3743,7 +3746,8 @@ function drawHandrail_4(par) {
 				type: "inox",
 			}
 		}
-		if(handrailPar.mat == 'inox') plugParams.type = "inox";
+		if (handrailPar.mat == 'inox') plugParams.type = "inox";
+		if (params.handrailMaterial == 'ПВХ') plugParams.type = "ПВХ";
 
 		if(handrailPar.handrailType == "Ф50 нерж.") plugParams.isCirclePlug = true;
 		

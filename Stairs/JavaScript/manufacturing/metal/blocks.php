@@ -81,9 +81,9 @@
 </tbody></table>
 
 <!--
-<button id="saveIntoFile" onclick="saveToXml('content', 'test')">Сохранить в файл</button>
+<button id="saveIntoFile" onclick="saveToFile('content', 'test')">Сохранить в файл</button>
 <button onclick="$('#loadXML').click();">Загрузить из файла</button>
-<p><input type="file" accept="text/xml" id="loadXML" onchange="loadFromXml('content');" style="display:none"></p>
+<p><input type="file" accept="text/json" id="loadXML" onchange="loadFromFile('content');" style="display:none"></p>
 
 <button id="compareModalShow">Сравнить с другим</button>
 -->

@@ -3139,12 +3139,9 @@ function drawForgedBanister_4(par) {
 
 function drawForgedBanister_5(par) {
 	par.mesh = new THREE.Object3D();
-
-	var material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
-	var minRadius = 30 / 2;
-	var maxRadius = 39 / 2;
-	var height = 38;
-	var segments = 32;
+	
+	
+	var railingModel = params.railingModel;
 	
 	//балясина со вставкой мэша
 	if (par.type == "bal_1" || par.type == "bal_2" || par.type == "bal_3" || 
@@ -3166,10 +3163,10 @@ function drawForgedBanister_5(par) {
 		par.mesh.add(bal);
 
 		//основание
-		var geometry = new THREE.CylinderBufferGeometry(minRadius, maxRadius, height, segments);
-		var cylinder = new THREE.Mesh(geometry, material);
-		cylinder.position.y = height / 2;
-		if (!testingMode) par.mesh.add(cylinder);
+		if (railingModel == "Дерево с ковкой") {
+			var baseBal = drawBaseBal();
+			if (!testingMode) par.mesh.add(baseBal);
+		}
 	}
 	//балясина из svg
 	else {
@@ -3229,14 +3226,14 @@ function drawForgedBanister_5(par) {
 		}
 
 		//основание
-		var geometry = new THREE.CylinderBufferGeometry(minRadius, maxRadius, height, segments);
-		var cylinder = new THREE.Mesh(geometry, material);
-		cylinder.position.y = height / 2;
-		if (!testingMode) par.mesh.add(cylinder);
+		if (railingModel == "Дерево с ковкой") {
+			var baseBal = drawBaseBal();
+			if (!testingMode) par.mesh.add(baseBal);
+		}
 	}
 	
 
-	var railingModel = params.railingModel;
+	
 	if(specObj.unit == "banister") railingModel = params.railingModel_bal;
 	//сохраняем данные для спецификации
 	var partName = "forgedBal";
@@ -3347,5 +3344,52 @@ function drawForgedBanistersArr(par) {
 	return obj3D;
 }
 
+// функция возвращает основание кованых балясин для Дерево с ковкой
+function drawBaseBal() {
+	var minRadius = 30 / 2;
+	var maxRadius = 39 / 2;
+	var height = 38;
+	var segments = 32;
 
+	var obj3D = new THREE.Object3D();
+
+	var geometry = new THREE.CylinderBufferGeometry(minRadius, maxRadius, height, segments);
+	var cylinder = new THREE.Mesh(geometry, params.materials.metal_railing);
+	cylinder.position.y = height / 2;
+	obj3D.add(cylinder);
+
+	//Саморез
+	var screwPar = {
+		id: "screw_4x35",
+		description: "Крепление основания балясины",
+		group: "Ограждения"
+	}
+	var screw = drawScrew(screwPar).mesh;
+	if (!testingMode) obj3D.add(screw);
+
+
+	//сохраняем данные для спецификации
+	var partName = "baseBal"
+	if (typeof specObj != 'undefined' && partName) {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				name: "Основание кованой балясины",
+				metalPaint: true,
+				timberPaint: false,
+				division: "stock_1",
+				workUnitName: "amt",
+				group: "Ограждения",
+			}
+		}
+		var name = "0";
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+	}
 	
+	obj3D.specId = partName;
+
+	return obj3D;
+}
