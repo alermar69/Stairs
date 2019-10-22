@@ -78,21 +78,25 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 <script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
 
 <!--визуализация-->
-	<script type="text/javascript" src="drawStaircase.js"></script>
-	<script type="text/javascript" src="drawCarcasParts.js"></script>
-	<script type="text/javascript" src="drawCarcasPartsLib_2.0.js"></script>
-	<script type="text/javascript" src="drawRailing_3.0.js"></script>
-	<script type="text/javascript" src="drawStringerPartsLt.js"></script>
-	<script type="text/javascript" src="drawStringerPartsKo.js"></script>
-	<script type="text/javascript" src="ladderRailing.js"></script>
-	<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
-	<script type="text/javascript" src="drawCarcas.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawCarcas.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawCarcasParts.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawRailing.js"></script>
 
-	<script type="text/javascript" src="drawFrames.js"></script>
-	<script type="text/javascript" src="drawStringers.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawStaircase.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawCarcasParts.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawCarcasPartsLib_2.0.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawRailing_3.0.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawStringerPartsLt.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawStringerPartsKo.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/ladderRailing.js"></script>
+	<script type="text/javascript" src="/manufacturing/general/drawSkirting.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawCarcas.js"></script>
+
+	<script type="text/javascript" src="/manufacturing/metal/drawFrames.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawStringers.js"></script>
 	<script type="text/javascript" src="/manufacturing/timber/drawRailing.js"></script>
 	
-	<script type="text/javascript" src="drawSvg.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/drawSvg.js"></script>
 
 <!--файлы с едиными функциями (сейчас в работе)-->
 	
@@ -103,7 +107,7 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 	<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
     
 	<!-- автотесты -->
-	<script type="text/javascript" src="testing.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/testing.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/baseTest.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
     <script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>
@@ -113,10 +117,9 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
     <script type="text/javascript" src="/manufacturing/general/testing/debug/testSamples.js"></script>
 
 <!--расчет спецификации-->
-<script type="text/javascript" src="calcSpec_3.0.js"></script>
+<script type="text/javascript" src="/manufacturing/metal/calcSpec_3.0.js"></script>
 
 <!--оболочки-->
-<script type="text/javascript" src="personalScripts.js"></script>
 <script type="text/javascript" src="../general/main.js"></script>
 <script type="text/javascript" src="main.js"></script>
 

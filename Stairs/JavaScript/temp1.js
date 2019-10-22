@@ -1,83 +1,172 @@
-﻿function drawWndTreadFlan(par) {
+﻿
+/**функция отрисовки колонны. базовая точка это центр верхнего отверстия
+*/
+function drawBolzs(par) {
 
-	if (turnFactor > 0 && par.frameId != 3) {
-		var tempPoint = copyPoint(par.line.p1);
-		par.line.p1 = copyPoint(par.line.p2);
-		par.line.p2 = copyPoint(tempPoint);
+	par.mesh = new THREE.Object3D();
+
+	//параметры марша
+	var marshPar = getMarshParams(par.marshId);
+
+	par.a = marshPar.a;
+	par.b = marshPar.b;
+	par.h = marshPar.h;
+	par.stairAmt = marshPar.stairAmt;
+
+	var bolzProfile = 40;
+
+	var offsetX = (params.nose - bolzProfile) / 2;
+	var offsetZ = 10;
+
+	var bolzPar = {
+		marshId: par.marshId,
+		dxfBasePoint: par.dxfBasePoint,
+		h: par.h,
+		bolzProfile: bolzProfile,
 	}
 
-	var flanHeight = 40;
-	if (par.flanHeight) flanHeight = par.flanHeight;
+	var countBolz = par.stairAmt;
+	if (marshPar.topTurn !== 'пол') countBolz += 1;
 
-	var holeOffset = 20;
-	var thkTop = 4;
+	for (var i = 0; i < countBolz; i++) {
 
-	var flanPar = {
-		height: flanHeight,
-		width: par.line.len,
-		thk: 4,
-		roundHoleCenters: [],
+		var bolz = drawBolz(bolzPar).mesh;
+		bolz.position.y = par.h * i;
+		bolz.position.x = par.b * i + offsetX;
+		bolz.position.z = offsetZ * turnFactor;
+		if (params.stairModel !== "Прямая") bolz.position.z = -offsetZ * turnFactor;
+		if (params.stairModel == "Прямая" && turnFactor == -1) bolz.position.z -= bolzProfile;
+		if (params.stairModel !== "Прямая" && turnFactor == 1) bolz.position.z -= bolzProfile;
+
+		par.mesh.add(bolz);
+	}
+
+	if (marshPar.botTurn == 'забег') {
+		var bolz = drawBolz(bolzPar).mesh;
+		bolz.position.y = - marshPar.h;
+		bolz.position.x = offsetX;
+		bolz.position.z = -offsetZ * turnFactor;
+		if (turnFactor == 1) bolz.position.z -= bolzProfile;
+		par.mesh.add(bolz);
+	}
+	if (marshPar.topTurn == 'забег') {
+		var bolz = drawBolz(bolzPar).mesh;
+		bolz.position.y = par.h * marshPar.stairAmt + marshPar.h_topWnd;
+		bolz.position.x = par.b * marshPar.stairAmt + offsetX + 44;
+		bolz.position.z = -offsetZ * turnFactor;
+		if (turnFactor == 1) bolz.position.z -= bolzProfile;
+		par.mesh.add(bolz);
+	}
+
+	return par;
+}//end of drawBolzs
+
+/**функция отрисовки колонны. базовая точка это центр верхнего отверстия
+*/
+function drawBolz(par) {
+
+	par.mesh = new THREE.Object3D();
+
+	var bolzLength = par.h - params.treadThickness;
+
+
+	var p0 = { x: 0, y: 0 }
+	var p1 = copyPoint(p0)
+	var p2 = newPoint_xy(p1, 0, bolzLength);
+	var p3 = newPoint_xy(p2, par.bolzProfile, 0)
+	var p4 = newPoint_xy(p1, par.bolzProfile, 0)
+
+	var pointsShape = [p1, p2, p3, p4];
+
+	//создаем шейп
+	var shapePar = {
+		points: pointsShape,
+		dxfArr: dxfPrimitivesArr,
 		dxfBasePoint: par.dxfBasePoint,
 	}
-	par.flanWidth = flanPar.width;
-	par.flanThickness = flanPar.thk;
-	par.flanHeight = flanHeight;
-
-	//Отверстия под шурупы крепления подступенка
-	if (par.type == "riser_holes" && params.riserType == "есть") {
-		var center1 = {
-			x: flanPar.width / 2,
-			y: flanPar.height / 2,
-		};
-		var center2 = newPoint_xy(center1, flanPar.width / 2 - 50, 0);
-		var center3 = newPoint_xy(center1, -(flanPar.width / 2 - 50), 0);
-		flanPar.roundHoleCenters.push(center1, center2, center3);
-		flanPar.holeRad = 4;
-		flanPar.noBolts = true;
-	}
-
-	// Отверстие для крепления к каркасу
-	if (par.type == "1_hole") {
-		var center1 = {
-			x: flanPar.width / 2,
-			y: flanPar.height / 2,
-		}
-		flanPar.roundHoleCenters.push(center1);
-	}
-	if (par.type == "2_holes") {
-		var center1 = {
-			x: holeOffset,
-			y: flanPar.height / 2,
-		}
-		var center2 = newPoint_xy(center1, flanPar.width - holeOffset * 2, 0)
-		flanPar.roundHoleCenters.push(center1, center2);
-	}
-
-	flanPar.mirrowBolts = true;
-
 	//параметры для рабочего чертежа
 	if (!par.drawing) {
-		flanPar.drawing = {
-			name: "Фланец",
-			group: "Flans",
+		shapePar.drawing = {
+			name: "Больц",
+			group: "Bolzs",
 		}
 	}
+	shape = drawShapeByPoints2(shapePar).shape;
 
-	var flan = drawRectFlan2(flanPar).mesh;
-	flan.rotation.y = - Math.PI / 2 + calcAngleX1(par.line.p1, par.line.p2);
-	flan.position.x = par.line.p1.y;
-	flan.position.z = par.line.p1.x;
-	flan.position.y = -flanPar.height + thkTop;
+	//подпись под фигурой
+	var text = 'Больц';
+	var textHeight = 30;
+	var textBasePoint = newPoint_xy(par.dxfBasePoint, -70, -100)
+	addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
 
-	par.roundHoleCenters = flanPar.roundHoleCenters;
-	par.mesh = flan;
+	//тело
+	var extrudeOptions = {
+		amount: par.bolzProfile,
+		bevelEnabled: false,
+		curveSegments: 12,
+		steps: 1
+	};
+	var geom = new THREE.ExtrudeGeometry(shape, extrudeOptions);
+	geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, 0));
+	var bolz = new THREE.Mesh(geom, params.materials.metal);
+	par.mesh.add(bolz);
 
 
 	//сохраняем данные для спецификации
-	var frameName = "frame" + par.frameId + "Flans";
-	staircasePartsParams[frameName].push(Math.round(par.flanWidth))
+	var partName = "bolz";
+	if (typeof specObj != 'undefined') {
+		if (!specObj[partName]) {
+			specObj[partName] = {
+				types: {},
+				amt: 0,
+				sumLength: 0,
+				name: "Больц",
+				metalPaint: true,
+				timberPaint: false,
+				division: "metal",
+				workUnitName: "amt", //единица измерения
+				group: "Каркас",
+			}
+		}
+		var name = 'h=' + bolzLength + 'мм';
+		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
+		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
+		specObj[partName]["amt"] += 1;
+		specObj[partName]["sumLength"] += bolzLength;
+	}
+	par.mesh.specId = partName + name;
 
+	par.dxfBasePoint.x += par.bolzProfile + 100;
 
 	return par;
+}//end of drawBolz
 
-}//end of drawWndTreadFlan;
+function calcRacksBolzs(par) {
+	//параметры марша
+	var marshPar = getMarshParams(par.marshId);
+	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
+	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
+	par.a = marshPar.a;
+	par.b = marshPar.b;
+	par.h = marshPar.h;
+	par.stairAmt = marshPar.stairAmt;
+
+	var rackProfile = 40;
+
+	var offsetX = (params.nose - rackProfile) / 2 + rackProfile / 2;
+
+	ltko_set_railing(par.stairAmt + 1, par);
+
+	var rack = { x: offsetX, y: par.h }
+	par.racks.push(rack);
+
+	for (var i = 0; i < par.railing.length; i++) {
+		var rack = { x: offsetX + par.b * (par.railing[i] - 1), y: par.h * par.railing[i] }
+		par.racks.push(rack);
+	}
+
+	var rack = { x: offsetX + par.b * (par.stairAmt - 1), y: par.h * par.stairAmt }
+	par.racks.push(rack);
+
+	return par;
+}

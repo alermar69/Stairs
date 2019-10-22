@@ -100,6 +100,7 @@
     <Content Include="JavaScript\manufacturing\bolz\drawCarcasParts.js" />
     <Content Include="JavaScript\manufacturing\bolz\drawCarcasPartsLib_2.0.js" />
     <Content Include="JavaScript\manufacturing\bolz\drawFrames.js" />
+    <Content Include="JavaScript\manufacturing\bolz\drawRailing.js" />
     <Content Include="JavaScript\manufacturing\bolz\drawRailing_3.0.js" />
     <Content Include="JavaScript\manufacturing\bolz\drawStaircase.js" />
     <Content Include="JavaScript\manufacturing\bolz\drawStringerPartsKo.js" />
