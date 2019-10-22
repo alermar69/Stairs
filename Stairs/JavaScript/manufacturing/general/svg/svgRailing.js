@@ -24,20 +24,20 @@ function drawSVGRailing(par){
 
 	* @returns Сет(draw.set()) с секциями
 */
-function drawSVGForgedRailing(par){
+function drawSVGForgedRailing(par) {
 	var railingShapes = par.shapes;
 	var draw = par.draw;
 
 	if (railingShapes.length > 0) {
 		var sets = [];
-		$.each(railingShapes, function(){
+		$.each(railingShapes, function () {
 			var shape = this;
 			var par = this.drawing;
 			var mirror = isMirrored(par.key);
 			//Отрисовка секции
 			{
 				var set = sets.find(s => s.marshId == par.marshId && s.key == par.key);
-				if (!set){
+				if (!set) {
 					set = draw.set();
 					set.marshId = par.marshId;
 					set.key = par.key;
@@ -46,10 +46,30 @@ function drawSVGForgedRailing(par){
 					if (params.orderName) set.listText = params.orderName + "\n" + set.listText;
 					sets.push(set);
 				}
-				var elementBasePoint = {x:0, y:0};
-	
-				if (par.elemType !== 'banister'){
+				var elementBasePoint = { x: 0, y: 0 };
+
+				if (par.elemType !== 'banister') {
 					var obj = makeSvgFromShape(shape, draw);
+
+					if (par.elemType == 'rack' && shape.holes.length == 0) {
+						var objBbox = obj.getBBox()
+						var text = getIdByPoleIndex(par.partIndex);
+
+						//подпись
+						var detailedTextPar = {
+							draw: draw,
+							center: shape.drawing.pos,
+							//center: { x: objBbox.cx, y: objBbox.cy * -1 },
+							text: "Нога Г-образная\nНа нас",
+							side: 'left',
+							lineWidth: 2,
+							textHeight: 30 * dimScale,
+							offset: 50,
+						}
+						if (mirror) detailedTextPar.side = 'right';
+						var text = drawDetailText(detailedTextPar);
+						set.push(text);
+					}
 				}
 				if (par.elemType == 'banister') {
 					var svgPath = $("#forgeModal .modalItem[data-itemName=" + par.banisterType + "]").find("path").eq(0).attr("d");
@@ -60,53 +80,53 @@ function drawSVGForgedRailing(par){
 					par.pos.x *= -1;
 				}
 				obj.setClass("railing");//Устанавливаем класс
-	
+
 				if (par.elemType !== 'pole' && par.elemType !== 'banister') {
 					elementBasePoint = newPoint_xy(elementBasePoint, par.pos.x, par.pos.y);
-				}else if(par.elemType == 'banister') {//Тк центр смещен в середину стойки
+				} else if (par.elemType == 'banister') {//Тк центр смещен в середину стойки
 					var poleSize = 12;
 					if (par.banisterType == '20х20') poleSize = 20;
 					var b = obj.getBBox();
-	
+
 					var deltaY = par.balLen - b.height;//Высота штырька
-	
+
 					//Подогнано нужно потестить, но вроде ок
 					// elementBasePoint = newPoint_xy(elementBasePoint, par.pos.x - poleSize / 2, par.pos.y + b.height + deltaY);
 					elementBasePoint = newPoint_xy(elementBasePoint, par.pos.x - b.width / 2 + poleSize + poleSize / 2, par.pos.y + deltaY + 297);
 					//Удлинняем балясину снизу
 					if (deltaY > 0) {
-						var rect = drawRect({x: 0, y: 0}, poleSize, deltaY, draw).attr({
+						var rect = drawRect({ x: 0, y: 0 }, poleSize, deltaY, draw).attr({
 							fill: "none",
 							stroke: "#000",
 							"stroke-width": 1,
 						});
 						rect.setClass("other");
-						moove(rect, {x: elementBasePoint.x + b.width / 2 - poleSize / 2, y: par.pos.y + deltaY}, 'left_bot');
+						moove(rect, { x: elementBasePoint.x + b.width / 2 - poleSize / 2, y: par.pos.y + deltaY }, 'left_bot');
 						set.push(rect);
 					}
-				}else{
+				} else {
 					elementBasePoint = newPoint_xy(elementBasePoint, par.pos.x + 20/*profile/2*/, par.pos.y);
 				}
-	
+
 				if (par.elemType == 'pole' && mirror) {
 					var b = obj.getBBox();
 					elementBasePoint = newPoint_xy(elementBasePoint, -b.width, b.height);
 					moove(obj, elementBasePoint);
-				}else if(par.elemType == 'banister'){
+				} else if (par.elemType == 'banister') {
 					moove(obj, elementBasePoint, 'left_bot');
-				}else{
+				} else {
 					moove(obj, elementBasePoint, 'left_bot');
 				}
-				
+
 				//Если есть свойство listText добавляем текст
 				if (par.partIndex) {
 					var objBbox = obj.getBBox()
 					var text = getIdByPoleIndex(par.partIndex);
-					
+
 					//подпись
 					var detailedTextPar = {
 						draw: draw,
-						center: {x: objBbox.cx, y: objBbox.cy * -1},
+						center: { x: objBbox.cx, y: objBbox.cy * -1 },
 						text: text + " ",
 						side: 'left',
 						lineWidth: 2,
@@ -117,37 +137,37 @@ function drawSVGForgedRailing(par){
 					var text = drawDetailText(detailedTextPar);
 					set.push(text);
 				}
-	
+
 				var dimSet = null;
 				//Размеры
-				if(par.elemType !== 'pole' && par.elemType !== 'banister'){
-						// var dimPar = {
-						// 	obj: obj,
-						// 	draw: draw,
-						// }
-						// dimSet = drawDimensions(dimPar).set;
-						// dimSet.setClass("dimensions");
+				if (par.elemType !== 'pole' && par.elemType !== 'banister') {
+					// var dimPar = {
+					// 	obj: obj,
+					// 	draw: draw,
+					// }
+					// dimSet = drawDimensions(dimPar).set;
+					// dimSet.setClass("dimensions");
 				}
-				
+
 				//Диагональный размер 
 				if (par.elemType == 'pole') {
 					var poleBox = obj.getBBox();
 					var cutLen = 20 / Math.cos(par.ang);
-					var p1 = {x: poleBox.x, y: poleBox.y + poleBox.height - cutLen};
-					var p2 = {x: poleBox.x2, y:poleBox.y2 - poleBox.height};
+					var p1 = { x: poleBox.x, y: poleBox.y + poleBox.height - cutLen };
+					var p2 = { x: poleBox.x2, y: poleBox.y2 - poleBox.height };
 					if (mirror) {
-						p1 = {x: poleBox.x2, y:poleBox.y2 - cutLen};
-						p2 = {x: poleBox.x, y: poleBox.y};
+						p1 = { x: poleBox.x2, y: poleBox.y2 - cutLen };
+						p2 = { x: poleBox.x, y: poleBox.y };
 					}
-					
+
 					/* разворачиваем иначе размеры не там где нужно */
 					p1.y *= -1;
 					p2.y *= -1;
-					
+
 					//Сохраняем точки начала и конца, в дальнейшем пригодятся для размеров балясин
 					par.startPoint = p1;
 					par.endPoint = p2;
-					
+
 					// //горизонтальный размер
 					// var dimPar = {
 					// 	type: "dist",
@@ -157,24 +177,24 @@ function drawSVGForgedRailing(par){
 					// 	side: "top",
 					// 	draw: draw,
 					// }
-					
+
 					// if (par.place == 'bot') {
 					// 	dimPar.side = 'bot';
 					// 	dimPar.offset = 200;
 					// }
-					
+
 					// dimSet = drawDim(dimPar);
 					// dimSet.setClass("dimensions");
-					
+
 					if (par.place == 'top') {
-						var center = {x: p1.x, y: p1.y - cutLen};
+						var center = { x: p1.x, y: p1.y - cutLen };
 						var offset = 80;
 						if (!mirror) {
 							if (par.place == 'top' && !(getMarshParams(par.marshId).botTurn !== 'пол' && par.key == 'out' && par.poleId == 1)) center = newPoint_xy(center, 40, 40 * Math.tan(par.ang));
 							var p1 = polar(center, par.ang, offset);
 							var p2 = newPoint_xy(center, 0, -offset);
 						}
-						
+
 						if (mirror) {
 							if (par.place == 'top' && !(getMarshParams(par.marshId).botTurn !== 'пол' && par.key == 'out' && par.poleId == 1)) center = newPoint_xy(center, -40, 40 * Math.tan(par.ang));
 							var p1 = newPoint_xy(center, 0, -offset);
@@ -187,19 +207,19 @@ function drawSVGForgedRailing(par){
 							p2: p2,
 							offset: offset,
 						}
-		
+
 						var angleDim = drawAngleDim2(anglePar);
 						if (angleDim) set.push(angleDim);
 					}
-	
+
 					if (par.place == 'bot') {
-						var center = {x: p1.x, y: p1.y};
+						var center = { x: p1.x, y: p1.y };
 						var offset = 80;
 						if (!mirror) {
 							var p1 = newPoint_xy(center, 0, offset);
 							var p2 = polar(center, par.ang, offset);
 						}
-						
+
 						if (mirror) {
 							var p1 = polar(center, -par.ang, -offset);
 							var p2 = newPoint_xy(center, -0.01, offset);
@@ -211,24 +231,24 @@ function drawSVGForgedRailing(par){
 							p2: p2,
 							offset: offset,
 						}
-		
+
 						var angleDim = drawAngleDim2(anglePar);
 						if (angleDim) set.push(angleDim);
 					}
 				}
-	
-				if (par.elemType == 'rack' && shape.holes.length > 0) {
-					var rackPar = {
-						draw: draw,
-						shape: shape,
-						obj: obj,
-						drawHoleSide: par.isTurnRack,
-					}
-					var rackSet = drawSVGRackHoles(rackPar);
-					moove(rackSet, newPoint_xy(elementBasePoint, 20/*profile/2*/ - rackPar.xOffset, 0), 'left_bot');
-					set.push(rackSet);
-				}
-	
+
+				//if (par.elemType == 'rack' && shape.holes.length > 0) {
+				//	var rackPar = {
+				//		draw: draw,
+				//		shape: shape,
+				//		obj: obj,
+				//		drawHoleSide: par.isTurnRack,
+				//	}
+				//	var rackSet = drawSVGRackHoles(rackPar);
+				//	moove(rackSet, newPoint_xy(elementBasePoint, 20/*profile/2*/ - rackPar.xOffset, 0), 'left_bot');
+				//	set.push(rackSet);
+				//}
+
 				set.push(obj);
 				if (dimSet) set.push(dimSet);
 			}
@@ -236,7 +256,7 @@ function drawSVGForgedRailing(par){
 			{
 				if (par.elemType == 'banister') return;
 				var set = sets.find(s => s.marshId == par.marshId && s.key == par.key && s.isParts == true);
-				if (!set){
+				if (!set) {
 					set = draw.set();
 					set.marshId = par.marshId;
 					set.key = par.key;
@@ -252,27 +272,27 @@ function drawSVGForgedRailing(par){
 				if (par.partIndex) {
 					var index = getIdByPoleIndex(par.partIndex);
 					if (set.drawedParts.includes(index)) return;
-				} 
+				}
 
 				if (par.startAngle) {
-					var point1 = {x:par.startAngle.center.x, y:par.startAngle.center.y * -1}
+					var point1 = { x: par.startAngle.center.x, y: par.startAngle.center.y * -1 }
 					var circle1 = draw.circle(point1.x, point1.y, 3);
 					circle1.attr("fill", "transparent");
 					circle1.attr("stroke", "none");
 					objShape.push(circle1);
-			
-					var point2 = {x:par.startAngle.p1.x, y:par.startAngle.p1.y * -1}
+
+					var point2 = { x: par.startAngle.p1.x, y: par.startAngle.p1.y * -1 }
 					var circle2 = draw.circle(point2.x, point2.y, 3);
 					circle2.attr("fill", "transparent");
 					circle2.attr("stroke", "none");
 					objShape.push(circle2);
-			
-					var point3 = {x:par.startAngle.p2.x, y:par.startAngle.p2.y * -1}
+
+					var point3 = { x: par.startAngle.p2.x, y: par.startAngle.p2.y * -1 }
 					var circle3 = draw.circle(point3.x, point3.y, 3);
 					circle3.attr("fill", "transparent");
 					circle3.attr("stroke", "none");
 					objShape.push(circle3);
-			
+
 					objShape.startAngle = {
 						center: circle1,
 						p1: circle2,
@@ -281,31 +301,31 @@ function drawSVGForgedRailing(par){
 				}
 
 				if (par.endAngle) {
-					var point1 = {x:par.endAngle.center.x, y:par.endAngle.center.y * -1}
+					var point1 = { x: par.endAngle.center.x, y: par.endAngle.center.y * -1 }
 					var circle1 = draw.circle(point1.x, point1.y, 3);
 					circle1.attr("fill", "transparent");
 					circle1.attr("stroke", "none");
 					objShape.push(circle1);
-			
-					var point2 = {x:par.endAngle.p1.x, y:par.endAngle.p1.y * -1}
+
+					var point2 = { x: par.endAngle.p1.x, y: par.endAngle.p1.y * -1 }
 					var circle2 = draw.circle(point2.x, point2.y, 3);
 					circle2.attr("fill", "transparent");
 					circle2.attr("stroke", "none");
 					objShape.push(circle2);
-			
-					var point3 = {x:par.endAngle.p2.x, y:par.endAngle.p2.y * -1}
+
+					var point3 = { x: par.endAngle.p2.x, y: par.endAngle.p2.y * -1 }
 					var circle3 = draw.circle(point3.x, point3.y, 3);
 					circle3.attr("fill", "transparent");
 					circle3.attr("stroke", "none");
 					objShape.push(circle3);
-			
+
 					objShape.endAngle = {
 						center: circle1,
 						p1: circle2,
 						p2: circle3
 					}
 				}
-			
+
 				// if (par.startAngle) {
 				// 	var anglePar = {
 				// 		draw: draw,
@@ -316,7 +336,7 @@ function drawSVGForgedRailing(par){
 				// 		debug: true,
 				// 		drawLines: true,
 				// 	}
-			
+
 				// 	var angleDim = drawAngleDim2(anglePar);
 				// 	objShape.push(angleDim);
 				// }
@@ -331,12 +351,14 @@ function drawSVGForgedRailing(par){
 				// 		debug: true,
 				// 		drawLines: true,
 				// 	}
-			
+
 				// 	var angleDim = drawAngleDim2(anglePar);
 				// 	objShape.push(angleDim);
 				// }
 
-				var obj = makeSvgFromShape(shape, draw);
+				var isRotate = shape.drawing.isTurnRack;
+
+				var obj = makeSvgFromShape(shape, draw, isRotate);
 				//угол поворота
 				var ang = 0;
 				if (par.baseLine) ang = angle(par.baseLine.p1, par.baseLine.p2) / Math.PI * 180;
@@ -346,15 +368,15 @@ function drawSVGForgedRailing(par){
 				if (par.dimPoints) {
 					objShape.dimPoints = [];
 
-					$.each(par.dimPoints, function(){
+					$.each(par.dimPoints, function () {
 						// objShape.
-						var point1 = {x:this.p1.x, y:this.p1.y * -1};
+						var point1 = { x: this.p1.x, y: this.p1.y * -1 };
 						var circle1 = draw.circle(point1.x, point1.y, 3);
 						circle1.attr("fill", "transparent");
 						circle1.attr("stroke", "none");
 						objShape.push(circle1);
 
-						var point2 = {x:this.p2.x, y:this.p2.y * -1};
+						var point2 = { x: this.p2.x, y: this.p2.y * -1 };
 						var circle2 = draw.circle(point2.x, point2.y, 3);
 						circle2.attr("fill", "transparent");
 						circle2.attr("stroke", "none");
@@ -367,17 +389,17 @@ function drawSVGForgedRailing(par){
 				}
 
 				rotateSet2(objShape, ang);
-				moove(objShape, {x:0, y: set.baseY});
+				moove(objShape, { x: 0, y: set.baseY });
 
 				if (mirror) objShape.transform("S-1,1,0,0...");
 
 				if (objShape.startAngle) {
-					var center = {x: objShape.startAngle.center.getBBox().cx, y: objShape.startAngle.center.getBBox().cy * -1};
-					var p1 = {x: objShape.startAngle.p1.getBBox().cx, y: objShape.startAngle.p1.getBBox().cy * -1};
-					var p2 = {x: objShape.startAngle.p2.getBBox().cx, y: objShape.startAngle.p2.getBBox().cy * -1};
+					var center = { x: objShape.startAngle.center.getBBox().cx, y: objShape.startAngle.center.getBBox().cy * -1 };
+					var p1 = { x: objShape.startAngle.p1.getBBox().cx, y: objShape.startAngle.p1.getBBox().cy * -1 };
+					var p2 = { x: objShape.startAngle.p2.getBBox().cx, y: objShape.startAngle.p2.getBBox().cy * -1 };
 					p1.x += 0.01;
 					p2.x -= 0.01;
-			
+
 					var anglePar = {
 						draw: draw,
 						center: center,
@@ -386,18 +408,18 @@ function drawSVGForgedRailing(par){
 						offset: 150,
 						drawLines: true,
 					}
-			
+
 					var angleDim = drawAngleDim2(anglePar);
 					set.push(angleDim);
 				}
 
-				if (objShape.endAngle) {
-					var center = {x: objShape.endAngle.center.getBBox().cx, y: objShape.endAngle.center.getBBox().cy * -1};
-					var p1 = {x: objShape.endAngle.p1.getBBox().cx, y: objShape.endAngle.p1.getBBox().cy * -1};
-					var p2 = {x: objShape.endAngle.p2.getBBox().cx, y: objShape.endAngle.p2.getBBox().cy * -1};
+				if (objShape.endAngle && !isRotate) {
+					var center = { x: objShape.endAngle.center.getBBox().cx, y: objShape.endAngle.center.getBBox().cy * -1 };
+					var p1 = { x: objShape.endAngle.p1.getBBox().cx, y: objShape.endAngle.p1.getBBox().cy * -1 };
+					var p2 = { x: objShape.endAngle.p2.getBBox().cx, y: objShape.endAngle.p2.getBBox().cy * -1 };
 					p1.x += 0.01;
 					p2.x -= 0.01;
-			
+
 					var anglePar = {
 						draw: draw,
 						center: center,
@@ -406,17 +428,17 @@ function drawSVGForgedRailing(par){
 						offset: 150,
 						drawLines: true,
 					}
-			
+
 					var angleDim = drawAngleDim2(anglePar);
 					set.push(angleDim);
 				}
 
 				if (objShape.dimPoints) {
 					var dimPoints = [];
-					$.each(objShape.dimPoints, function(){
-						var p1 = {x: this.p1.getBBox().cx, y: this.p1.getBBox().cy * -1};
-						var p2 = {x: this.p2.getBBox().cx, y: this.p2.getBBox().cy * -1};
-						dimPoints.push({p1: p1, p2: p2, type: 'hor'});
+					$.each(objShape.dimPoints, function () {
+						var p1 = { x: this.p1.getBBox().cx, y: this.p1.getBBox().cy * -1 };
+						var p2 = { x: this.p2.getBBox().cx, y: this.p2.getBBox().cy * -1 };
+						dimPoints.push({ p1: p1, p2: p2, type: 'hor' });
 					});
 					var dimPar = {
 						dimPoints: dimPoints,
@@ -429,9 +451,9 @@ function drawSVGForgedRailing(par){
 				}
 
 				var bbox = obj.getBBox();
-				
+
 				set.baseY -= bbox.height + 200;
-				
+
 				set.push(objShape);
 
 				bbox = obj.getBBox();
@@ -443,18 +465,18 @@ function drawSVGForgedRailing(par){
 						text += " " + info.poleProfileY + "х" + info.poleProfileZ;
 					}
 					set.drawedParts.push(getIdByPoleIndex(par.partIndex));
-					text += " " + railingShapes.filter(function(s){
+					text += " " + railingShapes.filter(function (s) {
 						var shapePar = s.drawing;
 						if (shapePar.marshId == par.marshId && shapePar.key == par.key && getIdByPoleIndex(shapePar.partIndex) == getIdByPoleIndex(par.partIndex)) {
 							return true;
 						}
 						return false;
 					}).length + " шт.";
-					
+
 					//подпись
 					var detailedTextPar = {
 						draw: draw,
-						center: {x: bbox.cx, y: bbox.cy * -1},
+						center: { x: bbox.cx, y: bbox.cy * -1 },
 						text: text + " ",
 						side: 'left',
 						lineWidth: 2,
@@ -479,10 +501,10 @@ function drawSVGForgedRailing(par){
 				// set.push(obj);
 			}
 		});
-		
+
 		//Устанавливаем размер между стойками и балясинами
 		{
-			$.each(sets, function(){
+			$.each(sets, function () {
 				if (this.isParts) return;
 				var marshId = this.marshId;
 				var key = this.key;
@@ -499,7 +521,7 @@ function drawSVGForgedRailing(par){
 					}
 					return false
 				});
-				
+
 				//Сортируем в правильном порядке
 				racks.sort(function (a, b) {
 					if (mirror) {
@@ -509,10 +531,10 @@ function drawSVGForgedRailing(par){
 						return a.drawing.pos.x - b.drawing.pos.x;
 					}
 				});
-				
+
 				//Расстояние между стойками
 				for (var i = 0; i < racks.length - 1; i++) {
-					var pole = railingShapes.find(shape =>{
+					var pole = railingShapes.find(shape => {
 						var data = shape.drawing || {};
 						if (data.place == 'bot' && data.marshId == marshId && data.key == key && racks[i].drawing.poleId == data.poleId) {
 							return shape
@@ -520,7 +542,7 @@ function drawSVGForgedRailing(par){
 						return false;
 					});
 					if (pole) {
-						var firstRack = racks.find(shape =>{
+						var firstRack = racks.find(shape => {
 							var data = shape.drawing || {};
 							if (shape.drawing.elemType == 'rack') {
 								if (data.marshId == pole.drawing.marshId && data.key == pole.drawing.key && pole.drawing.poleId == data.poleId) {
@@ -534,7 +556,7 @@ function drawSVGForgedRailing(par){
 						var polePos = copyPoint(pole.drawing.pos);
 						var poleAngle = pole.drawing.ang;
 						var cutLen = 20 / Math.cos(poleAngle);
-						
+
 						if (!mirror) p1.x += 40;
 						if (mirror) p2.x += 40;
 
@@ -551,13 +573,53 @@ function drawSVGForgedRailing(par){
 							side: "bot",
 							draw: draw,
 						}
-						
+
+						dimSet = drawDim(dimPar);
+						dimSet.setClass("dimensions");
+						this.push(dimSet);
+
+						//размер от нижнего края стойки до нижней трубы секции
+						var pt1 = copyPoint(racks[i].drawing.pos);
+						if (racks[i].drawing.zeroDelta) pt1.y -= racks[i].drawing.zeroDelta - 90;
+						if (!mirror) pt1.x += 40;
+						var pt2 = itercection(polePos, polar(polePos, poleAngle * factor, 100), pt1, newPoint_xy(pt1, 0, 100));
+						var dimPar = {
+							type: "dist",
+							p1: pt1,
+							p2: pt2,
+							offset: 100,
+							side: "bot",
+							draw: draw,
+						}
+
 						dimSet = drawDim(dimPar);
 						dimSet.setClass("dimensions");
 						this.push(dimSet);
 					}
 				}
-				
+
+				//размер от нижнего края последней стойки до нижней трубы кованной секции
+				if (polePos) {
+					var pt1 = newPoint_xy(racks[racks.length - 1].drawing.pos, 40, 0);
+					if (racks[racks.length - 1].drawing.zeroDelta)
+						pt1.y -= racks[racks.length - 1].drawing.zeroDelta - 90;
+					var pt2 = itercection(polePos, polar(polePos, poleAngle * factor, 100), pt1, newPoint_xy(pt1, 0, 100));
+					var dimPar = {
+						type: "dist",
+						p1: pt1,
+						p2: pt2,
+						offset: -100,
+						side: "bot",
+						draw: draw,
+					}
+					if (Math.floor(dimPar.p1.x) == Math.floor(dimPar.p2.x)) {
+						dimSet = drawDim(dimPar);
+						dimSet.setClass("dimensions");
+						this.push(dimSet);
+					}
+				}
+
+
 				var poles = railingShapes.filter(shape => {
 					if (shape.drawing) {
 						if (shape.drawing.elemType == 'pole' && shape.drawing.place == 'bot') {
@@ -568,7 +630,7 @@ function drawSVGForgedRailing(par){
 					}
 					return false
 				});
-				
+
 				var balDimOffset = 30;//Отступ размера балясин
 				//Расстояние между балясинами
 				for (var i = 0; i < poles.length; i++) {
@@ -592,17 +654,17 @@ function drawSVGForgedRailing(par){
 								}
 							}
 						});
-						
+
 						if (firstBal && secondBal) {
 
-							poleStartPoint = newPoint_xy(poleStartPoint, 0, firstBal.drawing.balLen / 3);
+							poleStartPoint = newPoint_xy(poleStartPoint, 0, firstBal.drawing.balLen / 5);
 
 							var firstBalPos = newPoint_xy(firstBal.drawing.pos, 20, 0);
 							firstBalPos = itercection(poleStartPoint, polar(poleStartPoint, poleAngle * factor, 100), firstBalPos, newPoint_xy(firstBalPos, 0, 100));
-						
+
 							var secondBalPos = newPoint_xy(secondBal.drawing.pos, 20, 0);//20 - profile / 2
 							secondBalPos = itercection(poleStartPoint, polar(poleStartPoint, poleAngle * factor, 100), secondBalPos, newPoint_xy(secondBalPos, 0, 100));
-							
+
 							var dimPar = {
 								type: "dist",
 								p1: firstBalPos,
@@ -611,7 +673,7 @@ function drawSVGForgedRailing(par){
 								side: "top",
 								draw: draw,
 							}
-						
+
 							dimSet = drawDim(dimPar);
 							dimSet.setClass("dimensions");
 							this.push(dimSet);
@@ -625,18 +687,47 @@ function drawSVGForgedRailing(par){
 								side: "left",
 								draw: draw,
 							}
-							if(!mirror) dimPar.offset = -50;
-						
+							if (!mirror) dimPar.offset = -50;
+
 							dimSet = drawDim(dimPar);
 							dimSet.setClass("dimensions");
 							this.push(dimSet);
 						}
-						
+
 					}
 				}
+
+				//диагональный размер секции
+				var pole = railingShapes.filter(shape => {
+					if (shape.drawing) {
+						if (shape.drawing.elemType == 'pole') {
+							if (marshId == shape.drawing.marshId &&
+								key == shape.drawing.key &&
+								shape.drawing.place == 'top') {
+								return true;
+							}
+						}
+					}
+					return false
+				});
+				var dimPar = {
+					type: "dist",
+					p1: racks[0].drawing.pos,
+					p2: pole[0].drawing.endPoint,
+					offset: 0,
+					side: "bot",
+					draw: draw,
+				}
+				if (racks[0].drawing.zeroDelta) dimPar.p1.y -= racks[0].drawing.zeroDelta - 90;
+
+				dimSet = drawDim(dimPar);
+				dimSet.setClass("dimensions");
+				this.push(dimSet);
 			});
 		}
-		
+
+
+
 		return sets;
 	}
 }
@@ -922,7 +1013,7 @@ function drawGlass(par){
 
 	* @returns сет со всеми размерами
  */
-function drawSVGRackHoles(par){
+function drawSVGRackHoles(par) {
 	var draw = par.draw;
 	var set = draw.set(); //Сет со стойкой
 	var shape = par.shape;
@@ -941,11 +1032,11 @@ function drawSVGRackHoles(par){
 	//Ищем крайний левый угол, чтобы найти центр стойки
 	var xmin = b.x;
 	if (b.x2 < xmin) xmin = b.x2;
-	
-	var dimBasePoint = {x:xmin + b.width / 2, y: -rackLengthDelta};
-	
+
+	var dimBasePoint = { x: xmin + b.width / 2, y: -rackLengthDelta };
+
 	//Сортируем массив, по возрастанию порядка отверстий
-	var holes = shape.holes.sort(function (a, b){
+	var holes = shape.holes.sort(function (a, b) {
 		return a.currentPoint.y - b.currentPoint.y;
 	});
 
@@ -1049,7 +1140,7 @@ function drawSVGHandrails(par){
 		var par = this.drawing;
 		var set = sets.find(s => s.marshId == par.marshId && s.key == par.key);
 		if (!set){
-			if (getSectionPartsCount(handrailShapes, par.marshId, par.key).count > 1) {
+			if (getSectionPartsCount(handrailShapes, par.marshId, par.key).count > 0) {
 				set = draw.set();
 				set.marshId = par.marshId;
 				set.key = par.key;

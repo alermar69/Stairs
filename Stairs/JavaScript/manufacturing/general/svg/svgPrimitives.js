@@ -692,10 +692,25 @@ function createBackZenkCurve(curve){
 /** функция отрисовывает на холсте draw линии на основе shape
 */
 
-function makeSvgFromShape(shape, draw){
-	
+function makeSvgFromShape(shape, draw, isRotate){	
 	var curveArr = [];
-	var curvesArr = shape.curves;
+	var curvesArr = shape.curves.concat();
+
+	if (isRotate) {
+		var y = curvesArr[0].v1.y;
+		curvesArr[2].v2.y = y;
+		curvesArr[3].v1.y = y;
+	}
+
+	if (shape.holes.length == 0) {
+		// '40' вызывает ошибки построения, пока убрал. Вероятно это вызовет проблему там, для чего костыль, появление костыля - ревизия 162
+		var pt1 = newPoint_xy(shape.curves[1].v1, 0, 0);//40);
+		var pt2 = newPoint_xy(shape.curves[1].v2, 0, 0);//40);
+
+		var line = new THREE.LineCurve(pt1, pt2);
+		curvesArr.push(line);
+	}
+
 	//добавлем отверстия
 
 	$.each(shape.holes, function(){

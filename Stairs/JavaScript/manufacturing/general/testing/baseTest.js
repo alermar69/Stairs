@@ -82,7 +82,7 @@ function setNextConfigBd(){
 	$("#orderName").val(configName);
 	
 	var showAlert = false;
-	_loadFromBD('content', '/calculator/general/db_data_exchange/dataExchangeXml_2.1.php', configName, showAlert);
+	_loadFromBD(configName, showAlert);
 	
 	//затираем загруженные из базы параметры тестов
 	$("#configPrefBd").val(pref);
@@ -102,23 +102,22 @@ function loadLastOffers(callback){
 		daysAmt: $("#daysAmt").val(),
 		calcType: $("#calcType").val(),
 		testResult: $("#testResult").val(),
-		}
+	}
 	
 	if(filter.calcType == "все") filter.calcType = "";
 	
 	//очищаем глобальные массивы
 	offers = [];
 	offerProps = [];
-	
 	$.ajax({
-		url: '/calculator/offers/db/actions.php',
+		url: '/orders/calc-controller/load-data',
 		type: 'GET',
 		data: {
-			queryType: 'load-data', //загружается все данные кп
 			filter: filter,
-			},
+		},
 		dataType: 'json',
 		success: function(result){
+			console.log(result);
 			if(result.status == 'ok'){
 				offers = result.data;
 				offerProps = result.metadata;
@@ -129,9 +128,8 @@ function loadLastOffers(callback){
 		},
 		error: function(result){
 			console.log(result)
-			},
+		},
 	});
-	
 }
 
 function redrawTable() {

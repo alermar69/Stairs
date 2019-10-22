@@ -67,14 +67,37 @@ $(function () {
 		getAllInputsValues(params);
 		drawTopFloor();
 		redrawWalls();
-		drawCustomDimensions('vl_1');
-		}
-	);
+		drawSceneDimensions();
+	});
 
 });
 
+function recalculate(){
+	try {
+	
+		if (window.location.href.includes('/timber_stock')) {
+			setStockParams();
+		}
+		getAllInputsValues(params);
+		changeAllForms();
+		if (!window.location.href.includes('/railing') && !window.location.href.includes('/coupe')) {
+			drawStaircase('vl_1', true);
+		}
+		redrawWalls();
+		if (!window.location.href.includes('/railing')) {
+			drawTopFloor();
+		}
+
+		//Вызываем локальный recalculate для модуля
+		recalculateModule()
+	} catch (error) {
+		prepareFatalErrorNotify(error);
+	}	
+	
+}
+
 function fontLoadedCallback(){
-	setDimensions("vl_1", "3d");
+	drawSceneDimensions();
 }
 
 

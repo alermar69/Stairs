@@ -9,6 +9,7 @@
 
 
 <div class="noPrint">
+	<button id='createBuildingTask'>Распечатать строительное задание</button>
 	<button id="cloneCanvas">Дублировать</button>
 	<button onclick="exportToDxf(dxfPrimitivesArr);">Сохранить dxf</button>
 	<button onclick="exportToObj($['vl_1']);">Сохранить OBJ</button>
@@ -42,6 +43,9 @@
 		<div id='svgOutputDiv'></div>	
 	</div>
 	
+	<!-- модальное окно создания/редактирования письма -->
+	<?php include $_SERVER['DOCUMENT_ROOT'].'/orders/mail/forms/mailModal.php' ?>
+
 	
 
 </div>

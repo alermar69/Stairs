@@ -1464,8 +1464,13 @@ function isPainting(item){
 	if(!('metalPaint' in item && item.metalPaint && params.metalPaint !== 'нет')){
 		if('timberPaint' in item && item.timberPaint && params.timberPaint !== 'нет'){
 			paintType = params.timberPaint;
-			if(item.group) var groupColor = params[item.group + "Color"];
-			if(groupColor && groupColor != "без морилки") paintType += ", морилка " + groupColor;
+		//	if (params.timberPaint == "морилка+лак" || params.timberPaint == "цветное масло") paintType += ", цвет " + params.timberColorNumber;
+			if(params.calcType == "vint") paintType += ", цвет " + params.timberColorNumber;
+			if(item.group) {
+				var groupColor = params[item.group + "Color"];
+				if(isFinite(groupColor) && groupColor < 10) groupColor = "0" + groupColor;
+			}
+			if(groupColor && groupColor != "без морилки") paintType += ", цвет " + groupColor;
 			if(groupColor == "без морилки") paintType += ", " + groupColor;
 		}
 	

@@ -1,7 +1,12 @@
-function drawCustomDimensions(viewportId){
-
+function drawSceneDimensions(viewType){
+	if (!viewType) viewType = '3d';
+	var viewportId = 'vl_1';//Он у нас уже один, но функции используют этот ид
 	removeObjects(viewportId, "dimensions");
-	
+	drawCustomDimensions(viewportId);
+	setDimensions(viewportId, viewType);
+}
+
+function drawCustomDimensions(viewportId){	
 	var mesh = new THREE.Object3D();
 	var dimensions = [];
 	
@@ -359,13 +364,51 @@ if(par.basePlane == "xz"){
 
 	if (dimText) par.text = dimText;
 	if (par.mirror) {
-		text.rotation.z += Math.PI;
+		if (par.basePlane == "xz" && par.baseAxis == "z" || (par.baseAxis == "x" || par.baseAxis == "z") && par.basePlane == "yz") {
+			if(par.dimSide == "сзади") {
+				text.rotation.z -= Math.PI;
+				// text.position.z -= dimTextLen;
+			}else{
+				text.rotation.z += Math.PI;
+				text.position.z += dimTextLen;
+			}
+		}else if (par.basePlane == 'xy' || par.basePlane == "yz") {
+			if(par.baseAxis == "y"){
+				text.rotation.z += Math.PI;
+				if (par.dimSide == 'спереди') {
+					text.position.y += dimTextLen;
+				}else{
+					text.position.y -= dimTextLen;
+				}
+			}
+		}else{
+			text.rotation.z += Math.PI;
+		}
+	}
+	if (par.mirrorSide) {
+		if (par.basePlane == 'xy' || par.basePlane == "yz") {
+			if(par.baseAxis == "y"){
+				text.rotation.z += Math.PI;
+				if (par.dimSide == 'сзади') {
+					text.position.y -= dimTextLen;
+				}else{
+					text.position.y += dimTextLen;
+				}
+			}
+		}else if(par.basePlane == 'xz'){
+			if (par.baseAxis == 'x') {
+				text.rotation.z += Math.PI;
+				if (par.dimSide == 'сзади') {
+					text.position.x -= dimTextLen;
+				}else{
+					text.position.x += dimTextLen;
+				}
+			}
+		}
 	}
 	if (par.alwaysOnTop) {
 		par.mesh.traverse(function(node){
-			if (node.material && 
-				(!window.location.href.includes("customers") && 
-				gui.__folders["Настройки"].__controllers.find(function(elem){return elem.property == 'textures'}).getValue())) {
+			if (node.material && !window.location.href.includes("/customers")) {
 				node.material.depthTest = false;
 			}
 		});

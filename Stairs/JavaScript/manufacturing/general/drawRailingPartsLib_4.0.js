@@ -1163,6 +1163,47 @@ function drawPole3D_4(par) {
 		}
 	}
 
+	
+	if (par.topType) {
+		var rackSize = params.rackSize;
+		if (!rackSize) rackSize = 95;
+		var maxSize = rackSize;
+		//верхняя крышка
+		if (par.topType != "пирамидка" && par.topType != "плоское") {
+			var capSize = maxSize + 15;
+			var capThk = 20;
+			var platePar = {
+				len: capSize,
+				width: capSize,
+				thk: capThk,
+				dxfArr: par.dxfArr,
+				dxfBasePoint: newPoint_xy(par.dxfBasePoint, -(capSize - maxSize) / 2, 200),
+				text: "",
+				material: params.materials.newell,
+			}
+			var cap = drawPlate(platePar).mesh;
+			cap.rotation.x = Math.PI / 2;
+			cap.position.x = -maxSize / 2 - capSize / 2;
+			cap.position.y = par.length + capThk;
+			cap.position.z = maxSize / 2 - capSize / 2;
+			par.mesh.add(cap);
+		}
+		//шар
+		if (par.topType == "шар" && !testingMode) {
+			var ballPar = {
+				dxfArr: par.dxfArr,
+				dxfBasePoint: newPoint_xy(par.dxfBasePoint, maxSize / 2, 400),
+				material: params.materials.newell,
+			}
+			var ball = drawLatheBall(ballPar).mesh;
+			ball.position.y = par.length + capThk;
+			ball.position.x = -maxSize / 2;
+			ball.position.z = maxSize / 2;
+			par.mesh.add(ball);
+		}
+	}
+
+
 	//сохраняем данные для спецификации
 	//параметры поручня
 	var handrailPar = {
@@ -1521,6 +1562,20 @@ function draw4AngleGlass_4(par) {
 	var mesh = new THREE.Mesh(geom, params.materials.glass);
 
 	par.mesh = mesh;
+
+	for (var i = 0; i < par.holes.length; i++) {
+		var rutelPar = {
+			size: 14
+		};
+
+		var rutel = drawGlassRutel(rutelPar);
+		rutel.rotation.x = -Math.PI / 2;
+		
+		rutel.position.x = par.holes[i].x;
+		rutel.position.y = par.holes[i].y;
+
+		if(!testingMode) par.mesh.add(rutel);
+	}
 
 	//сохраняем данные для спецификации
 	var partName = "glasses";
@@ -2600,6 +2655,7 @@ function drawRackCover(par){
 				workUnitName: "amt",
 				group: "Ограждения",
 			}
+			if (par.id == 'steelCover_model') specObj[par.partName].metalPaint = true; 
 
 			if (par.group) specObj[par.partName].group = par.group;
 		}

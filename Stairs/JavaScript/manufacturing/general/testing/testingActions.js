@@ -49,9 +49,9 @@ $(function(){
 			configurator.resetCounter();
 			configurator.configs = [];
 			$.each(offers, function(){
-				var config = JSON.parse(this.orderdata);
+				var config = JSON.parse(this.order_data);
 				configurator.configs.push(config);					
-				});
+			});
 			console.log(configurator.configs)
 			$("#configAmt").val(configurator.configs.length);
 			});
@@ -74,7 +74,7 @@ $(function(){
 				//записываем конфигурации
 				configurator.configs = [];
 				$.each(offers, function(){
-					var config = JSON.parse(this.orderdata);
+					var config = JSON.parse(this.order_data);
 					removeTestingParams(config); //удалем параметры инпутов тестирования
 					configurator.configs.push(config);					
 					});

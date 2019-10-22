@@ -6,6 +6,7 @@ var boltLen = 30;
 var turnFactor = 1;
 var treadsObj;
 
+
 drawStaircase = function (viewportId, isVisible) {
 	//удаляем старую лестницу
 	
@@ -65,6 +66,7 @@ drawStaircase = function (viewportId, isVisible) {
 
 	if (params.railingModel == "Самонесущее стекло" && params.rackBottom == "сверху с крышкой")
 		params.rackBottom = "боковое";
+	
 
 
 /*** СТУПЕНИ НА ВСЕ ЛЕСТНИЦЫ ***/
