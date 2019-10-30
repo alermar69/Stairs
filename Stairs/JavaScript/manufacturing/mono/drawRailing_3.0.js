@@ -221,7 +221,6 @@ function calculateGlassPoints(par){
 			x: lastMarshPoint.x + marshTurnParams.turnLengthTop + 10 - marshPar.b * 0.5,
 			y: lastMarshPoint.y + marshPar.h_topWnd
 		};		
-		// console.log(lastMarshPoint, handrailPoints[handrailPoints.length - 1])
 		var ang = calcAngleX1(handrailPoints[handrailPoints.length - 1], topLast);
 		if (params.handrailFixType == "паз") topLast = polar(topLast, ang, -meterHandrailPar.profY * Math.tan(ang));
 		var handrailPoint = copyPoint(topLast);
@@ -813,7 +812,7 @@ function drawGlassSection(par){
 		handrails.add(handrail);
 
 		if(key == 'in' && marshPar.botTurn == 'забег') {
-			var startPoint = handrailPoints0.find( p => {return p.isTurnRackBasePoint});
+			var startPoint = handrailPoints0.find( function(p){return p.isTurnRackBasePoint});
 			if (startPoint) {
 				var screwPar = {
 					id: "screw_5x90",
@@ -2192,11 +2191,15 @@ function calculateRacks(par){
 			type: 'middle'
 		});
     }
-    if (racksRearPlatform) par.racks.push(...racksRearPlatform);
+    if (racksRearPlatform) {
+		$.each(racksRearPlatform, function(){
+			par.racks.push(this);
+		})
+	}
+	
 	par.racks.push(parRacks.marshLast);
 	if(parRacks.topLast) par.racks.push(parRacks.topLast);
 	par.parRacks = parRacks;
-	
 }
 
 
@@ -2340,7 +2343,6 @@ function setRackHoles(par) {
 	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
 	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
 
-	console.log(marshPar)
 	//верхнее отверстие
 	var center1 = newPoint_xy(p0, 0, -params.treadThickness - par.banisterAngleOffset);
 	center1.anglePos = 'сзади';
@@ -2388,7 +2390,6 @@ function setRackHoles(par){
 	var prevMarshPar = getMarshParams(marshPar.prevMarshId);
 	var nextMarshPar = getMarshParams(marshPar.nextMarshId);
 
-console.log(marshPar)	
 	//верхнее отверстие
 	var center1 = newPoint_xy(p0, 0, -params.treadThickness - par.banisterAngleOffset);
 	center1.anglePos = 'сзади';
@@ -2651,7 +2652,6 @@ function setTurnRackHoles(par){
 
 	par.holes = holes;
 
-console.log(par)	
 	return par;
 
 }//end of setTurnRackHoles

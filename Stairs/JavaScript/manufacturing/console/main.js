@@ -4,14 +4,15 @@ $(function () {
 	layers = {
 		treads: "Ступени",
 		risers: "Подступенки",
-		treadPlates: "Подложки",
+		angles: "Уголки/рамки",
 		carcas: "Каркас",
 		carcas1: "Каркас1",
-		flans: "Фланцы",
 		railing: "Ограждения лестницы",
+		topRailing: "Балюстрада",
 		forge: "Ковка",
 		handrails: "Поручни", 
-		topRailing: "Балюстрада",
+		treads_new: "Ступени нов.",
+		carcas_new: "Каркас нов.",
 		doors: "Фасады",
 		shelfs: "Полки",
 		metis: "Метизы",
@@ -25,18 +26,15 @@ $(function () {
 		addLayer(layer, layers[layer]);
 		}
 
-	//скрываем ненужные блоки
-	$("#mainImages").hide();
-	$("#marshRailingImages2D").hide();
-	//$("#manufacturing_inputs").hide();
-	$("#description").hide();
-	$("#complect").hide();
-	$("#totalResult").hide();
-	$("#about").hide();
-	//$("#cost").hide();
+    //скрываем ненужные блоки
+    $("#mainImages").hide();
+    $("#marshRailingImages2D").hide();
+	//$("#svgDrawings").hide();
+    //$("#cost").hide();
+	$('#specificationList').show();
 	
 	//пересчитываем лестницу
-	recalculate();
+    recalculate();
 });
 
 function recalculateModule(){
@@ -48,22 +46,20 @@ function recalculateModule(){
 
 	setHiddenLayers();
 	drawBanister();
-	calcSpec();
-	if(!testingMode) checkSpec();
+	calculateSpec();	
 	drawSceneDimensions();
+	if(!testingMode) checkSpec();
 }
 
-
-function changeAllForms() {
+function changeAllForms() {		
 	getAllInputsValues(params);
 	changeFormsGeneral();
 	changeFormCarcas();
 	changeFormRailing();
 	changeFormBanisterConstruct();
-	//changeOffer();
-	//complectDescription();
 	changeFormAssembling();
 	changeFormWr();
+	changeFormStartTreads();
 	$('.installation_man').show();
 }
 
@@ -72,8 +68,8 @@ function configDinamicInputs() {
 	changeFormTopFloor();
 	changeFormLedges();
 	changeAllForms();
+	//setHandrailParams_bal();
 	configSectInputs();
 	configBoxInputs();
 	addDimRows();
 }
-

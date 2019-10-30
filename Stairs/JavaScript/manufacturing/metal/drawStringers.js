@@ -230,6 +230,7 @@ function drawStringer(par){
 
 		if (par.stairFrame == "нет" && par.marshId != 1 && par.stairAmt > 1 && par.botEnd == "winder")
 			par.bridge.unshift(1);
+		if (params.calcType === 'bolz') par.bridge = [];
 		
 		if(!par.isWndP) drawMiddleStepsLt(par);
 
@@ -1008,10 +1009,17 @@ function calcStringerPar(par){
 	if(par.marshId > 1){
 		if (params.model == "лт") {
 			par.botEndLength = params.M;
+			if (params.calcType == 'console') {
+				par.botEndLength = params.M + 10 + 5 + 8 + calcStringerMoove(par.marshId).stringerOutMoovePrev;
+			}
 			//площадка П-образной лестницы имеет длину platformLength_1
 			if (params.stairModel == "П-образная с площадкой"){
 				par.botEndLength = turnParams.turnLengthBot - params.stringerThickness;
+				if (params.calcType == 'console') {
+					par.botEndLength = turnParams.turnLengthBot + params.stringerThickness + 8 + calcStringerMoove(2).stringerOutMoove;
 				}
+			}
+			
 			}
 		if (params.model == "ко") par.botEndLength = getMarshParams(marshParams.prevMarshId).b + params.nose;
 	}
@@ -1024,9 +1032,16 @@ function calcStringerPar(par){
 			if (params.stairModel == 'Прямая с промежуточной площадкой') {
 				par.topEndLength = params.middlePltLength + 19 + 8;//FIX IT
 			}
+			if (params.calcType == 'console') {
+				par.topEndLength = turnParams.turnLengthTop + params.stringerThickness + 5 + 8 + calcStringerMoove(par.marshId).stringerOutMooveNext;
+			}
 			if (params.stairModel == "П-образная с площадкой") {
 				par.topEndLength += (params.nose - 20);
+				if (params.calcType == 'console') {
+					par.topEndLength = turnParams.turnLengthTop + params.stringerThickness + 5 + 8 + calcStringerMoove(2).stringerOutMoove - (turnParams.pltExtraLen - params.nose);
+				}
 			}
+			
 		}
 		
 		if(params.model == "ко") {

@@ -1348,7 +1348,14 @@ function calcHandrailPoints(par, parRacks){
 		//удлиннение и перенос последней стойки перед забегом на ко
 		if (params.model == "ко" && par.key == "in" && marshPar.topTurn == "забег"){
 			parRacks.marshLast.len += calcLastRackDeltaY("wnd_ko", par.marshId);
+		}
+
+		if (params.calcType == 'bolz') {
+			parRacks.marshLast.len = parRacks.marshFirst.len;
+			if (marshPar.topTurn == 'забег' && params.stairModel == "П-образная с забегом" && params.marshDist !== 0) {
+				parRacks.marshLast.len -= marshPar.h_topWnd * 2;
 			}
+		}
 		
 		
 		//Рассчитываем угол и длину марша
@@ -1453,3 +1460,4 @@ function calcHandrailPoints(par, parRacks){
 	
 			return par;
 	}
+

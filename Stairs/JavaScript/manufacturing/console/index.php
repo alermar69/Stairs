@@ -1,15 +1,15 @@
 <?
 require($_SERVER["DOCUMENT_ROOT"]."/bitrix/header.php");
-$APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
+$APPLICATION->SetTitle("Расчет консольной лестницы v.1.0");
 ?>
 
-<h1 id = "mainTitle">Расчет лестниц на больцах</h1>
+<h1 id = "mainTitle">Расчет консольной лестницы</h1>
 
 <!--служебные поля-->
 
 <div id="calcInfo" style="display: none">
     <select size="1" id="calcType">
-        <option value="bolz" selected >bolz</option>
+        <option value="console" selected >console</option>
         <option value="lt-ko">lt-ko</option>
         <option value="timber"  >timber</option>
         <option value="vint">vint</option>
@@ -36,7 +36,7 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 </div>
 
 <!-- форма параметров проемов каркаса-->
-<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/bolz/forms/carcas_form.php" ?>
+<?php include $_SERVER['DOCUMENT_ROOT']."/calculator/console/forms/carcas_form.php" ?>
 
 <!-- форма параметров ограждений-->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/metal/forms/railing_form.php" ?>
@@ -78,9 +78,6 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 <script type="text/javascript" src="/manufacturing/general/drawTreads.js"></script>
 
 <!--визуализация-->
-	<script type="text/javascript" src="drawCarcas.js"></script>
-	<script type="text/javascript" src="drawCarcasParts.js"></script>
-	<script type="text/javascript" src="drawRailing.js"></script>
 
 	<script type="text/javascript" src="/manufacturing/metal/drawStaircase.js"></script>
 	<script type="text/javascript" src="/manufacturing/metal/drawCarcasParts.js"></script>
@@ -98,6 +95,8 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 	
 	<script type="text/javascript" src="/manufacturing/metal/drawSvg.js"></script>
 
+	<script type="text/javascript" src="/manufacturing/mono/drawRailing_3.0.js"></script>
+
 <!--файлы с едиными функциями (сейчас в работе)-->
 	
 	<script type="text/javascript" src="/manufacturing/general/calcParams.js"></script>
@@ -106,8 +105,15 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 	<script type="text/javascript" src="/manufacturing/general/calcRailingParams.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/sideHandrail.js"></script>
     
+	<script type="text/javascript" src="drawCarcas.js"></script>
+	<script type="text/javascript" src="drawCarcasParts.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawStringerPartsLt.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawCarcas.js"></script>
+	<script type="text/javascript" src="/dev/mayorov/metal/drawStringers.js"></script>
+
+
 	<!-- автотесты -->
-	<script type="text/javascript" src="testing.js"></script>
+	<script type="text/javascript" src="/manufacturing/metal/testing.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/baseTest.js"></script>
 	<script type="text/javascript" src="/manufacturing/general/testing/testingLib.js"></script>
     <script type="text/javascript" src="/manufacturing/general/testing/testingActions.js"></script>
@@ -120,8 +126,10 @@ $APPLICATION->SetTitle("Расчет лестниц на больцах v.1.0");
 <script type="text/javascript" src="/manufacturing/metal/calcSpec_3.0.js"></script>
 
 <!--оболочки-->
+<script type="text/javascript" src="personalScripts.js"></script>
 <script type="text/javascript" src="../general/main.js"></script>
 <script type="text/javascript" src="main.js"></script>
+
 
 
 <?require($_SERVER["DOCUMENT_ROOT"]."/bitrix/footer.php");?>

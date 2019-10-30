@@ -1,10 +1,10 @@
-/**функция отрисовки колонны. базовая точка это центр верхнего отверстия
+/**С„СѓРЅРєС†РёСЏ РѕС‚СЂРёСЃРѕРІРєРё Р±РѕР»СЊС†РµРІ
 */
 function drawBolzs(par) {
 
 	par.mesh = new THREE.Object3D();
 
-	//параметры марша
+	//РїР°СЂР°РјРµС‚СЂС‹ РјР°СЂС€Р°
 	var marshPar = getMarshParams(par.marshId);
 
 	par.a = marshPar.a;
@@ -25,7 +25,7 @@ function drawBolzs(par) {
 	}
 
 	var countBolz = par.stairAmt;
-	if (marshPar.topTurn !== 'пол') countBolz += 1;
+	if (marshPar.topTurn !== 'РїРѕР»') countBolz += 1;
 
 	for (var i = 0; i < countBolz; i++) {
 
@@ -33,34 +33,42 @@ function drawBolzs(par) {
 		bolz.position.y = par.h * i;
 		bolz.position.x = par.b * i + offsetX;
 		bolz.position.z = offsetZ * turnFactor;
-		if (params.stairModel !== "Прямая") bolz.position.z = -offsetZ * turnFactor;
-		if (params.stairModel == "Прямая" && turnFactor == -1) bolz.position.z -= bolzProfile;
-		if (params.stairModel !== "Прямая" && turnFactor == 1) bolz.position.z -= bolzProfile;
-
+		if (params.stairModel !== "РџСЂСЏРјР°СЏ") bolz.position.z = -offsetZ * turnFactor;
+		if (params.stairModel == "РџСЂСЏРјР°СЏ" && turnFactor == -1) bolz.position.z -= bolzProfile;
+		if (params.stairModel !== "РџСЂСЏРјР°СЏ" && turnFactor == 1) bolz.position.z -= bolzProfile;
+		if (par.isWndP) {
+			bolz.position.x = -offsetX - 15 + params.marshDist;
+		}
 		par.mesh.add(bolz);
 	}
 
-	if (marshPar.botTurn == 'забег') {
+	if (marshPar.botTurn == 'Р·Р°Р±РµРі') {
 		var bolz = drawBolz(bolzPar).mesh;
 		bolz.position.y = - marshPar.h;
 		bolz.position.x = offsetX;
 		bolz.position.z = -offsetZ * turnFactor;
 		if (turnFactor == 1) bolz.position.z -= bolzProfile;
+		if (par.isWndP) {
+			bolz.position.x = -offsetX - 15;
+		}
 		par.mesh.add(bolz);
 	}
-	if (marshPar.topTurn == 'забег') {
+	if (marshPar.topTurn == 'Р·Р°Р±РµРі') {
 		var bolz = drawBolz(bolzPar).mesh;
 		bolz.position.y = par.h * marshPar.stairAmt + marshPar.h_topWnd;
-		bolz.position.x = par.b * marshPar.stairAmt + offsetX + 44;
+		bolz.position.x = par.b * marshPar.stairAmt + offsetX;
 		bolz.position.z = -offsetZ * turnFactor;
 		if (turnFactor == 1) bolz.position.z -= bolzProfile;
+		if (par.isWndP) {
+			bolz.position.x = -offsetX - 15 + params.marshDist;
+		}
 		par.mesh.add(bolz);
 	}
 
 	return par;
 }//end of drawBolzs
 
-/**функция отрисовки колонны. базовая точка это центр верхнего отверстия
+/**С„СѓРЅРєС†РёСЏ РѕС‚СЂРёСЃРѕРІРєРё Р±РѕР»СЊС†Р°
 */
 function drawBolz(par) {
 
@@ -77,28 +85,28 @@ function drawBolz(par) {
 
 	var pointsShape = [p1, p2, p3, p4];
 
-	//создаем шейп
+	//СЃРѕР·РґР°РµРј С€РµР№Рї
 	var shapePar = {
 		points: pointsShape,
 		dxfArr: dxfPrimitivesArr,
 		dxfBasePoint: par.dxfBasePoint,
 	}
-	//параметры для рабочего чертежа
+	//РїР°СЂР°РјРµС‚СЂС‹ РґР»СЏ СЂР°Р±РѕС‡РµРіРѕ С‡РµСЂС‚РµР¶Р°
 	if (!par.drawing) {
 		shapePar.drawing = {
-			name: "Больц",
+			name: "Р‘РѕР»СЊС†",
 			group: "Bolzs",
 		}
 	}
 	shape = drawShapeByPoints2(shapePar).shape;
 
-	//подпись под фигурой
-	var text = 'Больц';
+	//РїРѕРґРїРёСЃСЊ РїРѕРґ С„РёРіСѓСЂРѕР№
+	var text = 'Р‘РѕР»СЊС†';
 	var textHeight = 30;
 	var textBasePoint = newPoint_xy(par.dxfBasePoint, -70, -100)
 	addText(text, textHeight, dxfPrimitivesArr, textBasePoint);
 
-	//тело
+	//С‚РµР»Рѕ
 	var extrudeOptions = {
 		amount: par.bolzProfile,
 		bevelEnabled: false,
@@ -111,7 +119,7 @@ function drawBolz(par) {
 	par.mesh.add(bolz);
 
 
-	//сохраняем данные для спецификации
+	//СЃРѕС…СЂР°РЅСЏРµРј РґР°РЅРЅС‹Рµ РґР»СЏ СЃРїРµС†РёС„РёРєР°С†РёРё
 	var partName = "bolz";
 	if (typeof specObj != 'undefined') {
 		if (!specObj[partName]) {
@@ -119,15 +127,15 @@ function drawBolz(par) {
 				types: {},
 				amt: 0,
 				sumLength: 0,
-				name: "Больц",
+				name: "Р‘РѕР»СЊС†",
 				metalPaint: true,
 				timberPaint: false,
 				division: "metal",
-				workUnitName: "amt", //единица измерения
-				group: "Каркас",
+				workUnitName: "amt", //РµРґРёРЅРёС†Р° РёР·РјРµСЂРµРЅРёСЏ
+				group: "РљР°СЂРєР°СЃ",
 			}
 		}
-		var name = 'h=' + bolzLength + 'мм';
+		var name = 'h=' + bolzLength + 'РјРј';
 		if (specObj[partName]["types"][name]) specObj[partName]["types"][name] += 1;
 		if (!specObj[partName]["types"][name]) specObj[partName]["types"][name] = 1;
 		specObj[partName]["amt"] += 1;

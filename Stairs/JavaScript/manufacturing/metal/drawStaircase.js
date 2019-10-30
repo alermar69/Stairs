@@ -66,6 +66,13 @@ drawStaircase = function (viewportId, isVisible) {
 	if (params.railingModel == "Самонесущее стекло" && params.rackBottom == "сверху с крышкой")
 		params.rackBottom = "боковое";
 
+	var calcTypeTemp = params.calcType;
+	var modelTemp = params.model;
+	if (params.calcType == 'console') {
+		params.calcType = 'mono';
+		params.model = 'сварной';
+	}
+
 
 /*** СТУПЕНИ НА ВСЕ ЛЕСТНИЦЫ ***/
 	if (params.stairType == "лотки") params.treadThickness = 4;
@@ -73,6 +80,9 @@ drawStaircase = function (viewportId, isVisible) {
 	treadsObj = drawTreads()
 	model.add(treadsObj.treads, "treads");
 	model.add(treadsObj.risers, "risers");
+
+	params.calcType = calcTypeTemp;
+	params.model = modelTemp;
 
 	//добавляем параметры пригласительных ступеней в глобальный объект
 	staircasePartsParams.startTreadsParams = treadsObj.startTreadsParams;
@@ -161,6 +171,13 @@ drawStaircase = function (viewportId, isVisible) {
 	model.add(carcasObj.mesh, "carcas");
 	model.add(carcasObj.angles, "angles");
 
+	var calcTypeTemp = params.calcType;
+	var modelTemp = params.model;
+	if (params.calcType == 'console') {
+		params.calcType = 'mono';
+		params.model = 'сварной';
+	}
+
 /***  ОГРАЖДЕНИЯ НА ВСЕ ЛЕСТНИЦЫ  ***/
 	var railingPar = {
 		dxfBasePoint: {x: 15000, y: 2000},
@@ -172,6 +189,9 @@ drawStaircase = function (viewportId, isVisible) {
 	model.add(railingObj.mesh, "railing");
 	model.add(railingObj.forgedParts, "forge");
 	model.add(railingObj.handrails, "handrails");
+
+	params.calcType = calcTypeTemp;
+	params.model = modelTemp;
 	
 
 /*** ПРИСТЕННЫЙ ПОРУЧЕНЬ НА ВСЕ ЛЕСТНИЦЫ ***/

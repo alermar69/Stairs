@@ -84,7 +84,7 @@
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/leftMenuButtons.php" ?>
 
 <p>Ссылки: <br/>
-<a href="/calculator/metal/" id="comLink" target="_blank">КП</a><br/>
-<a href="/installation/metal/" id="montLink" target="_blank">Монтаж</a><br/>
+<a href="/calculator/bolz/" id="comLink" target="_blank">КП</a><br/>
+<a href="/installation/bolz/" id="montLink" target="_blank">Монтаж</a><br/>
 <button id="showPass">Показать пароль</button>
 </p>

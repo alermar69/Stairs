@@ -2,7 +2,6 @@
 <tr><td>Шапка</td>
 <td><input type="checkbox" checked="checked" onclick="showHideDiv('headerContainer', 200)"/></td>
 </tr>
-
 <tr><td>Правое меню</td>
 <td><input type="checkbox" checked="checked" onclick="showHideDiv('rightMenu', 200)"/></td>
 </tr>
@@ -24,6 +23,9 @@
 </tr>
 <tr><td>Экран 3</td>
 <td><input type="checkbox" checked onclick="$('.canvas canvas:eq(2)').toggle()"/></td>
+</tr>
+<tr><td>svg</td>
+<td><input type="checkbox" onclick="showHideDiv('svgDrawings', 200)" /></td>
 </tr>
 
 <tr><td>Картинки</td>
@@ -75,13 +77,14 @@
 <td> <input type="checkbox" onclick="showHideDiv('poleList', 200)" /></td>
 </tr>
 
+
 </tbody></table>
 
 <!-- кнопки -->
 <?php include $_SERVER['DOCUMENT_ROOT']."/calculator/general/forms/leftMenuButtons.php" ?>
 
 <p>Ссылки: <br/>
-<a href="/calculator/mono/" id="comLink" target="_blank">КП</a><br/>
-<a href="/installation/mono/" id="montLink" target="_blank">Монтаж</a>
+<a href="/calculator/metal/" id="comLink" target="_blank">КП</a><br/>
+<a href="/installation/metal/" id="montLink" target="_blank">Монтаж</a><br/>
 <button id="showPass">Показать пароль</button>
 </p>

@@ -1895,7 +1895,8 @@ function drawBridge_2(par) {
 	if (params.M > 1100 && params.calcType == "vhod") {
 		par.len = par.len / 2 - thk / 2;
 	}
-	if(params.model == "ко") par.len -= params.sideOverHang * 2;
+	if (params.model == "ко") par.len -= params.sideOverHang * 2;
+	if (params.calcType == 'bolz') par.len -= 55;
 	var gap = 0.1; //зазор для тестирования
 	
 	var p0 = {x: 0, y: 0};
@@ -1976,26 +1977,30 @@ function drawBridge_2(par) {
 		}
 	
 	//левый
-	//нет болтов в грани 1
-	carcasAnglePar.noBoltsInSide1 = false;	
-	if(turnFactor == -1 && par.noBoltsOnBridge) carcasAnglePar.noBoltsInSide1 = true;
-	if(par.noBoltsOnBridge2) carcasAnglePar.noBoltsInSide1 = true;
-	var angle = drawAngleSupport(carcasAnglePar);
-	angle.rotation.z = -Math.PI / 2;
-	angle.position.z = thk; 
-	par.mesh.add(angle);
-	
+	if (!par.isNotAngel1) {
+		//нет болтов в грани 1
+		carcasAnglePar.noBoltsInSide1 = false;
+		if (turnFactor == -1 && par.noBoltsOnBridge) carcasAnglePar.noBoltsInSide1 = true;
+		if (par.noBoltsOnBridge2) carcasAnglePar.noBoltsInSide1 = true;
+		var angle = drawAngleSupport(carcasAnglePar);
+		angle.rotation.z = -Math.PI / 2;
+		angle.position.z = thk;
+		par.mesh.add(angle);
+	}
+
 	//правый
-	//нет болтов в грани 1
-	carcasAnglePar.noBoltsInSide1 = false;
-	if(turnFactor == 1 && par.noBoltsOnBridge) carcasAnglePar.noBoltsInSide1 = true;
-	if(par.noBoltsOnBridge1) carcasAnglePar.noBoltsInSide1 = true;
-	angle = drawAngleSupport(carcasAnglePar);
-	angle.rotation.z = Math.PI / 2;
-	angle.position.x = par.len;
-	angle.position.y = -100;
-	angle.position.z = thk; 
-	par.mesh.add(angle);
+	if (!par.isNotAngel2) {
+		//нет болтов в грани 1
+		carcasAnglePar.noBoltsInSide1 = false;
+		if (turnFactor == 1 && par.noBoltsOnBridge) carcasAnglePar.noBoltsInSide1 = true;
+		if (par.noBoltsOnBridge1) carcasAnglePar.noBoltsInSide1 = true;
+		angle = drawAngleSupport(carcasAnglePar);
+		angle.rotation.z = Math.PI / 2;
+		angle.position.x = par.len;
+		angle.position.y = -100;
+		angle.position.z = thk;
+		par.mesh.add(angle);
+	}
 
 	// уголки крепления ступени
 	var treadAnglePar = {
@@ -3587,3 +3592,4 @@ function drawColumnF(par) {
 
 	return par;
 }//end of drawColumnF
+

@@ -8,6 +8,10 @@ function drawCarcas(par){
 
 	par.stringerParams = [];
 
+	var drawMarshStringers = drawMarshStringers;
+	if (params.calcType == 'console') drawMarshStringers = drawMarshStringersConsole;
+
+
 	// Каркас нижнего марша
 
 	par.stringerParams[1] = drawMarshStringers(par, 1);	
@@ -67,7 +71,7 @@ function drawCarcas(par){
 		par.angles.add(angles2);
 	}
 	
-	if (params.stairModel == "П-образная с площадкой"){
+	if (params.stairModel == "П-образная с площадкой" && params.calcType !== 'console'){
 		par.dxfBasePoint.x = dxfX0;
 		par.dxfBasePoint.y += 3000;
 		
@@ -396,186 +400,240 @@ function drawMarshStringers(par, marshId){
 	
 
 //внутренний косоур/тетива
+	
+	if (params.calcType !== 'bolz') {
+		stringerParams.key = "in";
+		if (marshId == 3 && params.stairModel == "Прямая горка") stringerParams.key = "out";
+		var stringer1 = drawStringer(stringerParams).mesh;
+		stringer1.position.x = -stringerParams.treadFrontOverHang;
+		stringer1.position.z = posZIn;
+		// if (turnFactor == 1) stringer1.position.z -= params.stringerThickness;
 
-	
-	stringerParams.key = "in";
-	if (marshId == 3 && params.stairModel == "Прямая горка") stringerParams.key = "out";
-	var stringer1 = drawStringer(stringerParams).mesh;
-	stringer1.position.x = -stringerParams.treadFrontOverHang;
-	stringer1.position.z = posZIn;
-	// if (turnFactor == 1) stringer1.position.z -= params.stringerThickness;
+		var midStringers = [];
 
-	var midStringers = [];
-	
-	//костыль
-	if (params.stairModel == "П-образная с забегом" && stringerParams.isWndP){
-		if(params.model == "лт") stringer1.position.x += 1;
-		if(params.model == "ко") stringer1.position.x += 17;
-	} 
-	
-	mesh.add(stringer1);
-	
-	//уголки на внутренней тетиве
-	var anglesIn = drawCarcasAngles(stringerParams.carcasHoles, sideIn);
-	anglesIn.position.x = stringer1.position.x;
-	anglesIn.position.z = stringer1.position.z;
-	if(sideIn == "left") anglesIn.position.z += params.stringerThickness;
-	angles.add(anglesIn);
-	
-		
-	// Соединительные фланцы на внутренней тетиве	
-	var franPar = {
-		carcasHoles: stringerParams.carcasHoles,
-		dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
-		skew1: stringerParams.skew1,
-		skew2: stringerParams.skew2,
-		marshAng: stringerParams.marshAng,	
-		side: sideIn,
-	}
-	
-	// Отрисовка фланцев 
-	var flans = drawStringerFlans_all(franPar);
-	if(params.model == "лт") flans.position.x -= 5;
-	flans.position.z = (params.M / 2 - stringerParams.stringerSideOffset - params.stringerThickness * 2)
-	if (turnFactor == -1) flans.position.z -= calcStringerMoove(par.marshId).stringerOutMoove
-	mesh.add(flans);
+		//костыль
+		if (params.stairModel == "П-образная с забегом" && stringerParams.isWndP) {
+			if (params.model == "лт") stringer1.position.x += 1;
+			if (params.model == "ко") stringer1.position.x += 17;
+		}
+
+		mesh.add(stringer1);
+
+		//уголки на внутренней тетиве
+		var anglesIn = drawCarcasAngles(stringerParams.carcasHoles, sideIn);
+		anglesIn.position.x = stringer1.position.x;
+		anglesIn.position.z = stringer1.position.z;
+		if (sideIn == "left") anglesIn.position.z += params.stringerThickness;
+		angles.add(anglesIn);
 
 
-	//колонны на внутренней тетиве
-	stringerParams.anglesPosZ = anglesIn.position.z;
-	stringerParams.dxfBasePoint.x += 2200;
-	var columnsIn = drawColumnSide(stringerParams, "in");
-	mesh.add(columnsIn);	
-		
-	//длинные болты
+		// Соединительные фланцы на внутренней тетиве	
+		var franPar = {
+			carcasHoles: stringerParams.carcasHoles,
+			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+			skew1: stringerParams.skew1,
+			skew2: stringerParams.skew2,
+			marshAng: stringerParams.marshAng,
+			side: sideIn,
+		}
 
-		if(drawLongBolts){
+		// Отрисовка фланцев 
+		var flans = drawStringerFlans_all(franPar);
+		if (params.model == "лт") flans.position.x -= 5;
+		flans.position.z = (params.M / 2 - stringerParams.stringerSideOffset - params.stringerThickness * 2)
+		if (turnFactor == -1) flans.position.z -= calcStringerMoove(par.marshId).stringerOutMoove
+		mesh.add(flans);
+
+
+		//колонны на внутренней тетиве
+		stringerParams.anglesPosZ = anglesIn.position.z;
+		stringerParams.dxfBasePoint.x += 2200;
+		var columnsIn = drawColumnSide(stringerParams, "in");
+		mesh.add(columnsIn);
+
+		//длинные болты
+
+		if (drawLongBolts) {
 			var boltPar = {
 				diam: 10,
 				len: 40,
 				headType: "шестигр.",
 				nutOffset: -40 + 20 + 12,
 				headShim: true,
-			}			
+			}
 			var longBoltPos = stringerParams.elmIns[stringerParams.key].longBolts;
-			for(var i=0; i<longBoltPos.length; i++){
+			for (var i = 0; i < longBoltPos.length; i++) {
 				var bolt = drawBolt(boltPar).mesh;
 				bolt.rotation.x = -Math.PI / 2 * turnFactor;
 				bolt.position.x = longBoltPos[i].x;
-				if(params.model == "лт") bolt.position.x -= 5;
+				if (params.model == "лт") bolt.position.x -= 5;
 				bolt.position.y = longBoltPos[i].y;
-				bolt.position.z = anglesIn.position.z//params.stringerThickness/2;
+				bolt.position.z = anglesIn.position.z //params.stringerThickness/2;
 				mesh.add(bolt);
 			}
 		}
 
+	}
 
 //внешний косоур/тетива
-	
-	stringerParams.wndFramesHoles = par.wndFramesHoles;
-	
-	par.dxfBasePoint.x += stringerParams.lenX;
-	stringerParams.dxfBasePoint = par.dxfBasePoint;
-	stringerParams.key = "out";
-	if (marshId == 3 && params.stairModel == "Прямая горка") stringerParams.key = "in";
-	var stringer2 = drawStringer(stringerParams).mesh;
-	stringer2.position.x = -stringerParams.treadFrontOverHang;
-	stringer2.position.z = posZOut;
-	mesh.add(stringer2);
-	
-	//уголки на внешней тетиве
-	var anglesOut = drawCarcasAngles(stringerParams.carcasHoles, sideOut);
-	anglesOut.position.x = -stringerParams.treadFrontOverHang
-	anglesOut.position.z = stringer2.position.z;
-	if(sideOut == "left") anglesOut.position.z += params.stringerThickness;
-	angles.add(anglesOut);
-	
+		stringerParams.wndFramesHoles = par.wndFramesHoles;
 
-	// Соединительные фланцы на внешней тетиве
-	
-	var franPar = {
-		carcasHoles: stringerParams.carcasHoles,
-		dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
-		skew1: stringerParams.skew1,
-		skew2: stringerParams.skew2,
-		marshAng: stringerParams.marshAng,
-		side: sideOut,
-	}
-	
-	// Отрисовка фланцев 
-	var flans = drawStringerFlans_all(franPar);
-	if(params.model == "лт") flans.position.x -= 5;
-	flans.position.z = -(params.M / 2 - stringerParams.stringerSideOffset - params.stringerThickness)
-	if (turnFactor == 1) flans.position.z += calcStringerMoove(par.marshId).stringerOutMoove
-	mesh.add(flans);				
+		par.dxfBasePoint.x += stringerParams.lenX;
+		stringerParams.dxfBasePoint = par.dxfBasePoint;
+		stringerParams.key = "out";
+		if (marshId == 3 && params.stairModel == "Прямая горка") stringerParams.key = "in";
+		var stringer2 = drawStringer(stringerParams).mesh;
+		stringer2.position.x = -stringerParams.treadFrontOverHang;
+		stringer2.position.z = posZOut;
+		mesh.add(stringer2);
+
+		//уголки на внешней тетиве
+		var anglesOut = drawCarcasAngles(stringerParams.carcasHoles, sideOut);
+		anglesOut.position.x = -stringerParams.treadFrontOverHang
+		anglesOut.position.z = stringer2.position.z;
+		if (sideOut == "left") anglesOut.position.z += params.stringerThickness;
+		angles.add(anglesOut);
 
 
-	par.dxfBasePoint.x += stringerParams.lenX;
+		// Соединительные фланцы на внешней тетиве
 
-	//перемычки
-	if(params.model == "лт" && params.stairFrame == "нет"){
-		par.dxfBasePoint.x += 2000;
-		var bridgePar = {
-			dxfBasePoint: par.dxfBasePoint,
-			hasDoubleTreadAngles: false,
+		var franPar = {
+			carcasHoles: stringerParams.carcasHoles,
+			dxfBasePoint: newPoint_xy(par.dxfBasePoint, 100, 0),
+			skew1: stringerParams.skew1,
+			skew2: stringerParams.skew2,
+			marshAng: stringerParams.marshAng,
+			side: sideOut,
 		}
-		var key = 'out'
-		if (params.stairModel == "Прямая") key = 'in';
-		for (i = 0; i < stringerParams.elmIns[key].bridges.length; i++) {
-			//перемычки с двойными уголками
 
-			bridgePar.hasDoubleTreadAngles = false;
-			bridgePar.rotated = false;
-			if (i == stringerParams.elmIns[key].bridges.length - 1 && marshParams.topTurn == "площадка" && !stringerParams.isWndP && stringerParams.topEndLength > 600) {
-				bridgePar.hasDoubleTreadAngles = true;
-				bridgePar.rotated = true;
-				}
-				
-			if (i == 0 && params.stairModel == "П-образная с площадкой" && marshId == 3) {
-				bridgePar.hasDoubleTreadAngles = true;
-				}
-			
-			//нет болтов на внутренней стороне
-			bridgePar.noBoltsOnBridge = false;
-			if (stringerParams.elmIns[key].bridges[i].noBoltsOnBridge) bridgePar.noBoltsOnBridge = true;
-			if (params.M > 1100 && params.calcType == "vhod") bridgePar.noBoltsOnBridge1 = true;
+		// Отрисовка фланцев 
+		var flans = drawStringerFlans_all(franPar);
+		if (params.model == "лт") flans.position.x -= 5;
+		flans.position.z = -(params.M / 2 - stringerParams.stringerSideOffset - params.stringerThickness)
+		if (turnFactor == 1) flans.position.z += calcStringerMoove(par.marshId).stringerOutMoove
+		mesh.add(flans);
 
-			var bridge = drawBridge_2(bridgePar).mesh;
-			bridge.rotation.y = -Math.PI / 2;
-			bridge.position.x = stringerParams.elmIns[key].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
-			bridge.position.y = stringerParams.elmIns[key].bridges[i].y;
-			bridge.position.z = -params.M/2 + params.stringerThickness;
-			//переворачиваем перемычку
-			if(bridgePar.rotated){
-				bridge.rotation.y = Math.PI / 2;
-				bridge.position.x -= params.stringerThickness;
-				bridge.position.z = params.M/2 - params.stringerThickness;
-				}
-			angles.add(bridge);
-			bridgePar.dxfBasePoint.x += params.M + 200;
 
-			//для входных если есть средняя тетива делаем дополнительную перемычку
-			if (params.M > 1100 && params.calcType == "vhod") {
+		par.dxfBasePoint.x += stringerParams.lenX;
+
+		//колонны на внешней тетиве
+		stringerParams.anglesPosZ = anglesOut.position.z;
+		var columnsOut = drawColumnSide(stringerParams, "out");
+		mesh.add(columnsOut);
+
+		//длинные болты
+		if (drawLongBolts) {
+			var boltPar = {
+				diam: 10,
+				len: 40,
+				headType: "шестигр.",
+			}
+			var longBoltPos = stringerParams.elmIns[stringerParams.key].longBolts;
+			for (var i = 0; i < longBoltPos.length; i++) {
+				var bolt = drawBolt(boltPar).mesh;
+				bolt.rotation.x = Math.PI / 2 * turnFactor;
+				bolt.position.x = longBoltPos[i].x;
+				if (params.model == "лт") bolt.position.x -= 5;
+				bolt.position.y = longBoltPos[i].y;
+				bolt.position.z = anglesOut.position.z//params.stringerThickness/2;
+				mesh.add(bolt);
+			}
+
+		}
+
+		//перемычки
+		if (params.model == "лт" && params.stairFrame == "нет" && params.calcType !== 'bolz') {
+			par.dxfBasePoint.x += 2000;
+			var bridgePar = {
+				dxfBasePoint: par.dxfBasePoint,
+				hasDoubleTreadAngles: false,
+			}
+			var key = 'out'
+			if (params.stairModel == "Прямая") key = 'in';
+			for (i = 0; i < stringerParams.elmIns[key].bridges.length; i++) {
+				//перемычки с двойными уголками
+
+				bridgePar.hasDoubleTreadAngles = false;
+				bridgePar.rotated = false;
+				if (i == stringerParams.elmIns[key].bridges.length - 1 && marshParams.topTurn == "площадка" && !stringerParams.isWndP && stringerParams.topEndLength > 600) {
+					bridgePar.hasDoubleTreadAngles = true;
+					bridgePar.rotated = true;
+				}
+
+				if (i == 0 && params.stairModel == "П-образная с площадкой" && marshId == 3) {
+					bridgePar.hasDoubleTreadAngles = true;
+				}
+
 				//нет болтов на внутренней стороне
-				bridgePar.noBoltsOnBridge1 = false;
-				bridgePar.noBoltsOnBridge2 = true;
+				bridgePar.noBoltsOnBridge = false;
+				if (stringerParams.elmIns[key].bridges[i].noBoltsOnBridge) bridgePar.noBoltsOnBridge = true;
+				if (params.M > 1100 && params.calcType == "vhod") bridgePar.noBoltsOnBridge1 = true;
 
 				var bridge = drawBridge_2(bridgePar).mesh;
 				bridge.rotation.y = -Math.PI / 2;
 				bridge.position.x = stringerParams.elmIns[key].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
 				bridge.position.y = stringerParams.elmIns[key].bridges[i].y;
-				bridge.position.z = params.stringerThickness / 2;
+				bridge.position.z = -params.M / 2 + params.stringerThickness;
 				//переворачиваем перемычку
 				if (bridgePar.rotated) {
 					bridge.rotation.y = Math.PI / 2;
 					bridge.position.x -= params.stringerThickness;
-					bridge.position.z = - params.stringerThickness;
+					bridge.position.z = params.M / 2 - params.stringerThickness;
 				}
 				angles.add(bridge);
 				bridgePar.dxfBasePoint.x += params.M + 200;
+
+				//для входных если есть средняя тетива делаем дополнительную перемычку
+				if (params.M > 1100 && params.calcType == "vhod") {
+					//нет болтов на внутренней стороне
+					bridgePar.noBoltsOnBridge1 = false;
+					bridgePar.noBoltsOnBridge2 = true;
+
+					var bridge = drawBridge_2(bridgePar).mesh;
+					bridge.rotation.y = -Math.PI / 2;
+					bridge.position.x = stringerParams.elmIns[key].bridges[i].x + 60 + params.stringerThickness * 2 - stringerParams.treadFrontOverHang;
+					bridge.position.y = stringerParams.elmIns[key].bridges[i].y;
+					bridge.position.z = params.stringerThickness / 2;
+					//переворачиваем перемычку
+					if (bridgePar.rotated) {
+						bridge.rotation.y = Math.PI / 2;
+						bridge.position.x -= params.stringerThickness;
+						bridge.position.z = - params.stringerThickness;
+					}
+					angles.add(bridge);
+					bridgePar.dxfBasePoint.x += params.M + 200;
+				}
 			}
 		}
+	
+	//отрисовка больцев по внутренней стороне
+	if (params.calcType == 'bolz') {
+		var bolzs = drawBolzs(stringerParams).mesh;
+		bolzs.position.z = calcTreadLen() / 2 * turnFactor;
+		if (params.stairModel == "Прямая")
+			bolzs.position.z = -calcTreadLen() / 2 * turnFactor;
+		mesh.add(bolzs);
+
+		//перемычки
+		if (marshParams.botTurn == "площадка" && params.stairModel !== "П-образная с площадкой") {
+			var bridgePar = {
+				dxfBasePoint: par.dxfBasePoint,
+				hasDoubleTreadAngles: false,
+			}
+			if (turnFactor == -1) bridgePar.isNotAngel1 = true;
+			if (turnFactor == 1) bridgePar.isNotAngel2 = true;
+
+			var bridge = drawBridge_2(bridgePar).mesh;
+			bridge.rotation.y = -Math.PI / 2;
+			bridge.position.x = 35;
+			bridge.position.y = -params.treadThickness;
+			bridge.position.z = -params.M / 2 + params.stringerThickness;
+			if (turnFactor == -1) bridge.position.z += 55;
+			angles.add(bridge);
+		}
+
 	}
+	
 	
 	//прямые рамки и ребра лотковых ступеней
 
@@ -596,10 +654,7 @@ function drawMarshStringers(par, marshId){
 		angles.add(frames)
 	}
 		
-	//колонны на внешней тетиве
-	stringerParams.anglesPosZ = anglesOut.position.z;
-	var columnsOut = drawColumnSide(stringerParams, "out");
-	mesh.add(columnsOut);
+	
 	
 	//рамка верхней ступени
 
@@ -619,25 +674,7 @@ function drawMarshStringers(par, marshId){
 		}
 
 
-	//длинные болты
-	if (drawLongBolts) {
-		var boltPar = {
-			diam: 10,
-			len: 40,
-			headType: "шестигр.",
-		}
-		var longBoltPos = stringerParams.elmIns[stringerParams.key].longBolts;
-		for (var i = 0; i < longBoltPos.length; i++) {
-			var bolt = drawBolt(boltPar).mesh;
-			bolt.rotation.x = Math.PI / 2 * turnFactor;
-			bolt.position.x = longBoltPos[i].x;
-			if (params.model == "лт") bolt.position.x -= 5;
-			bolt.position.y = longBoltPos[i].y;
-			bolt.position.z = anglesOut.position.z//params.stringerThickness/2;
-			mesh.add(bolt);
-		}
-
-	}
+	
 
 
 // промежуточные косоуры широкого марша
@@ -1581,7 +1618,7 @@ function calcStringerMoove(marshId) {
 		stringerOutMooveNext: 0,
 		stringerOutMoovePrev: 0,
 	};
-	if (params.model == "ко") {
+	if (params.model == "ко" || params.calcType == 'console') {
 		if (params.stairModel == 'Прямая') {
 			par.stringerOutMoove = params.stringerMoove_1;
 		}
@@ -1702,5 +1739,4 @@ function drawStringerBotHoles(par, typeDop) {
 		}
 	}	
 }
-
 
